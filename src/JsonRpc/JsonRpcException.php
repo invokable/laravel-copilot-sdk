@@ -12,7 +12,7 @@ use Exception;
 class JsonRpcException extends Exception
 {
     public function __construct(
-        public readonly int $code,
+        public $code,
         string $message,
         public readonly mixed $data = null,
     ) {

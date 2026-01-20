@@ -10,9 +10,10 @@ return [
     |
     | The path to the Copilot CLI executable. Defaults to 'copilot' which
     | assumes the CLI is available in your system PATH.
+    | If you specify `null`, the executable file will be searched automatically.
     |
     */
-    'cli_path' => env('COPILOT_CLI_PATH', 'copilot'),
+    'cli_path' => env('COPILOT_CLI_PATH'),
 
     /*
     |--------------------------------------------------------------------------

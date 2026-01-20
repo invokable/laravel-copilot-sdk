@@ -42,7 +42,7 @@ class CopilotClient
         }
 
         $this->processManager = new ProcessManager(
-            cliPath: $options['cli_path'] ?? 'copilot',
+            cliPath: $options['cli_path'] ?? null,
             cliArgs: $options['cli_args'] ?? [],
             cwd: $options['cwd'] ?? null,
             logLevel: $options['log_level'] ?? 'info',
@@ -91,10 +91,10 @@ class CopilotClient
                 fn (array $params) => $this->handlePermissionRequest($params),
             );
 
+            $this->state = ConnectionState::CONNECTED;
+
             // Verify protocol version
             $this->verifyProtocolVersion();
-
-            $this->state = ConnectionState::CONNECTED;
         } catch (\Throwable $e) {
             $this->state = ConnectionState::ERROR;
             throw $e;
@@ -236,7 +236,7 @@ class CopilotClient
      *
      * @return array{message: string, timestamp: int, protocolVersion?: int}
      *
-     * @throws RuntimeException
+     * @throws RuntimeException|JsonRpcException
      */
     public function ping(?string $message = null): array
     {

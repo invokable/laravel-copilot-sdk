@@ -6,7 +6,9 @@ namespace Revolution\Copilot\Process;
 
 use Illuminate\Process\InvokedProcess;
 use Illuminate\Support\Facades\Process;
+use Revolution\Copilot\Types\ConnectionState;
 use RuntimeException;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * Manages the Copilot CLI server process.
@@ -45,7 +47,7 @@ class ProcessManager
      * Create a new ProcessManager.
      */
     public function __construct(
-        protected string $cliPath = 'copilot',
+        protected ?string $cliPath = null,
         protected array $cliArgs = [],
         protected ?string $cwd = null,
         protected string $logLevel = 'info',
@@ -176,7 +178,12 @@ class ProcessManager
             ['--server', '--stdio', '--log-level', $this->logLevel],
         );
 
-        $command = escapeshellcmd($this->cliPath).' '.implode(' ', array_map('escapeshellarg', $args));
+        if (empty($this->cliPath)) {
+            $this->cliPath = new ExecutableFinder()->find(name: 'copilot', default: 'copilot');
+            info('Using copilot CLI path: '.$this->cliPath);
+        }
+
+        $commands = array_merge([$this->cliPath], $args);
 
         $descriptorSpec = [
             0 => ['pipe', 'r'],  // stdin
@@ -184,13 +191,13 @@ class ProcessManager
             2 => ['pipe', 'w'],  // stderr
         ];
 
-        $env = $this->env ?? $_ENV;
+        $env = $this->env ?? getenv();
 
         // Remove NODE_DEBUG to suppress debug output
         unset($env['NODE_DEBUG']);
 
         $this->rawProcess = proc_open(
-            $command,
+            $commands,
             $descriptorSpec,
             $pipes,
             $this->cwd,
@@ -198,7 +205,7 @@ class ProcessManager
         );
 
         if (! is_resource($this->rawProcess)) {
-            throw new RuntimeException("Failed to start CLI server: {$command}");
+            throw new RuntimeException('Failed to start CLI server');
         }
 
         $this->stdin = $pipes[0];
