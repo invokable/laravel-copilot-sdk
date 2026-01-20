@@ -1,159 +1,282 @@
-# Laravel版Copilot CLI SDK
+# Laravel版 Copilot CLI SDK 実装計画
 
-GitHub Copilot CLIへプログラムからアクセスするSDK。公式にはnode.js、Python、Go、.NETがサポートされているが、Laravel（PHP）からも利用できるようにコミュニティパッケージを作る。
-https://github.com/github/copilot-sdk
+## 概要
 
-まずは実装可能か調査。
+GitHub Copilot CLI への JSON-RPC クライアントを Laravel/PHP で実装する。公式SDKの Node.js 版と Python 版を参考に、PHP でも同等の機能を実現する。
 
-`./copilot-sdk/`内がgit submoduleで追加した公式SDKのコード。
+## 調査結果サマリー
 
-## Architecture
-
-`copilot --server`でCopilot CLI自身がサーバーとして起動。
-すべての SDK は JSON-RPC を介して Copilot CLI サーバーと通信。
+### アーキテクチャ
 
 ```
 Your Application
        ↓
-  SDK Client
-       ↓ JSON-RPC
+  SDK Client (PHP)
+       ↓ JSON-RPC (stdio)
   Copilot CLI (server mode)
 ```
 
-## Copilot CLIサーバーモード
+- **通信方式**: stdio トランスポート（TCP も可能だが stdio がデフォルト）
+- **プロトコル**: JSON-RPC 2.0 with Content-Length ヘッダー
+- **プロトコルバージョン**: `1`（sdk-protocol-version.json）
 
-```shell
-copilot --server --port 10513 # ポートを指定してTCPトランスポートで起動
-copilot --server              # ポートを指定してない場合はランダムなポートで起動
-copilot --server --stdio      # TCPではなくstdioトランスポートを使用
-# portとstdioは同時に指定できない
+### JSON-RPC メッセージフォーマット
+
+リクエスト:
+```
+Content-Length: {length}\r\n\r\n{"jsonrpc":"2.0","id":"uuid","method":"method.name","params":{}}
 ```
 
-LaravelのProcessで非同期に起動するのが良さそう。TCPとstdioのどちらかがいいかは調査。
-```php
-use Illuminate\Support\Facades\Process;
-
-$process = Process::start('copilot --server');
-
-while ($process->running()) {
-    echo $process->latestOutput();
-    echo $process->latestErrorOutput();
- 
-    sleep(1);
-}
-
-# もしくは
-# $typeは'stdout' か 'stderr'
-$process = Process::start('copilot --server', function (string $type, string $output) {
-    echo $output;
-});
-
-$result = $process->wait();
+レスポンス:
+```
+Content-Length: {length}\r\n\r\n{"jsonrpc":"2.0","id":"uuid","result":{}}
 ```
 
-## SDK
+### 主要なJSON-RPCメソッド
 
-node.js版を参考にする。
+| メソッド | パラメータ | 説明 |
+|---------|-----------|------|
+| `ping` | message? | 接続確認、protocolVersion を返す |
+| `session.create` | model?, sessionId?, tools?, systemMessage?, availableTools?, excludedTools?, provider?, requestPermission?, streaming?, mcpServers?, customAgents? | セッション作成 |
+| `session.resume` | sessionId, tools?, provider?, requestPermission?, streaming?, mcpServers?, customAgents? | セッション再開 |
+| `session.send` | sessionId, prompt, attachments?, mode? | メッセージ送信 |
+| `session.getMessages` | sessionId | メッセージ履歴取得 |
+| `session.destroy` | sessionId | セッション破棄 |
+| `session.abort` | sessionId | 処理中止 |
+| `session.getLastId` | - | 最後のセッションID取得 |
+| `session.delete` | sessionId | セッション削除 |
+| `session.list` | - | セッション一覧 |
 
-PHPでは実装できない難しいことはしてなさそう。
+### サーバーからの通知/リクエスト
 
-### CopilotClient
+| 種別 | メソッド | 説明 |
+|------|---------|------|
+| notification | `session.event` | セッションイベント（assistant.message, session.idle, etc.） |
+| request | `tool.call` | ツール呼び出しリクエスト |
+| request | `permission.request` | 権限リクエスト |
 
-Copilot CLIサーバーを管理。
+### セッションイベントタイプ
 
-別で起動しているサーバーがある場合はcli_urlで指定。
+- `session.start`, `session.resume`, `session.error`, `session.idle`, `session.info`
+- `session.model_change`, `session.handoff`, `session.truncation`, `session.usage_info`
+- `session.compaction_start`, `session.compaction_complete`
+- `user.message`, `pending_messages.modified`
+- `assistant.turn_start`, `assistant.intent`, `assistant.reasoning`, `assistant.reasoning_delta`
+- `assistant.message`, `assistant.message_delta`, `assistant.turn_end`, `assistant.usage`
+- `abort`
+- `tool.user_requested`, `tool.execution_start`, `tool.execution_partial_result`, `tool.execution_complete`
+- `subagent.started`, `subagent.completed`, `subagent.failed`, `subagent.selected`
+- `hook.start`, `hook.end`
+- `system.message`
 
-- `start()`: Copilot CLIサーバーを起動。
-  - `startCLIServer()`: cli_urlが指定されてない場合はプログラムからサーバーを起動、指定されていたら起動はスキップ。
-  - `connectToServer()`: サーバーに接続
-    - `connectViaStdio()`
-    - `connectViaTcp()`
-- `createSession()`: 新しい会話セッションを開始。
+## 実装方針
 
-### CopilotSession
+### 1. PHPでのプロセス管理
 
-一つの会話。
-`send()`か`sendAndWait()`でメッセージを送信。
-
-node.jsではtypeやinterfaceを定義してオブジェクトを引数にしているけどPHPでは名前付き引数を使う。
-
-```typescript
-const response = await session.sendAndWait({ prompt: "What is 2+2?" });
-```
+Laravel の `Illuminate\Support\Facades\Process` を使用してCLIサーバーを起動・管理。
 
 ```php
-$response = $session->sendAndWait(prompt: "What is 2+2?");
+$process = Process::start('copilot --server --stdio');
 ```
 
-## JSON-RPC
+### 2. JSON-RPC実装
 
-PHP用のcomposerパッケージはあるけど何も使わず自前実装する。
-Laravel MCPはJSON-RPCサーバーを自前実装してるのでLaravelだけで大丈夫そう。
-JSON-RPCクライアントなら決められたフォーマットのjsonを送信するだけなので簡単。
+Python版の `jsonrpc.py` を参考に、Content-Lengthヘッダー付きのJSON-RPC通信を実装。
 
-## 使い方
+- リクエスト/レスポンスの同期管理
+- 通知ハンドラー
+- リクエストハンドラー（tool.call, permission.request）
 
-最終的な想定する使い方。
+### 3. 同期 vs 非同期
 
-他言語のSDKを再現したレイヤーの上にLaravel流の使い方ができるFacadeやコマンドを作成する。
+PHPは基本的に同期処理。Node.js/Pythonのasync/awaitに相当する部分は：
+- `sendAndWait()` ではイベントループ的にstdoutを読み続ける
+- `session.idle` イベントを待って完了判定
 
-### 同期実行
+---
 
-Copilot CLIのプロンプトモードと同様の一つの処理だけしてすぐに結果を返す。
+## 実装タスク
+
+### Phase 1: Core Infrastructure
+
+- [ ] **1.1 JSON-RPC Client** (`src/JsonRpc/JsonRpcClient.php`)
+  - Content-Length 付き JSON-RPC 2.0 実装
+  - リクエスト送信・レスポンス受信
+  - 通知ハンドラー
+  - リクエストハンドラー（サーバーからのリクエスト対応）
+
+- [ ] **1.2 Process Manager** (`src/Process/ProcessManager.php`)
+  - `copilot --server --stdio` の起動
+  - stdin/stdout パイプ管理
+  - プロセス終了検知
+
+### Phase 2: Client & Session
+
+- [ ] **2.1 CopilotClient** (`src/CopilotClient.php`)
+  - サーバー起動/停止
+  - プロトコルバージョン検証
+  - セッション作成/再開/一覧/削除
+  - ping
+
+- [ ] **2.2 CopilotSession** (`src/CopilotSession.php`)
+  - send() / sendAndWait()
+  - イベントハンドラー登録（on()）
+  - イベントディスパッチ
+  - destroy() / abort()
+  - getMessages()
+
+- [ ] **2.3 Types & Data Objects** (`src/Types/`)
+  - CopilotClientOptions
+  - SessionConfig
+  - MessageOptions
+  - SessionEvent（各イベントタイプ）
+  - Tool, ToolInvocation, ToolResult
+  - PermissionRequest, PermissionRequestResult
+
+### Phase 3: Laravel Integration
+
+- [ ] **3.1 Facade** (`src/Facades/Copilot.php`)
+  ```php
+  Copilot::run($prompt);  // 簡易実行
+  Copilot::start(fn($session) => ...);  // セッション使用
+  ```
+
+- [ ] **3.2 Service Provider** (`src/CopilotSdkServiceProvider.php`)
+  - クライアントのシングルトン登録
+  - 設定ファイル公開
+
+- [ ] **3.3 Config** (`config/copilot.php`)
+  - cli_path
+  - log_level
+  - timeout
+  - auto_start/auto_restart
+
+### Phase 4: Artisan Commands
+
+- [ ] **4.1 基本コマンド**
+  - `copilot:start` - サーバー起動（バックグラウンド）
+  - `copilot:stop` - サーバー停止
+  - `copilot:restart` - サーバー再起動
+
+### Phase 5: Testing Support
+
+- [ ] **5.1 Fake/Mock** (`src/Testing/CopilotFake.php`)
+  ```php
+  Copilot::fake();
+  Copilot::fake(['*' => Copilot::response(output: '4')]);
+  ```
+
+### Phase 6: Advanced Features (後回し可能)
+
+- [ ] **6.1 Pool** - 並行セッション実行
+- [ ] **6.2 Tool Registration** - カスタムツール登録
+- [ ] **6.3 Permission Handler** - 権限ハンドラー
+- [ ] **6.4 MCP Server Config** - MCPサーバー設定
+- [ ] **6.5 Custom Agent** - カスタムエージェント設定
+
+---
+
+## ファイル構成案
+
+```
+src/
+├── CopilotClient.php
+├── CopilotSession.php
+├── CopilotSdkServiceProvider.php
+├── Facades/
+│   └── Copilot.php
+├── JsonRpc/
+│   ├── JsonRpcClient.php
+│   ├── JsonRpcMessage.php
+│   └── JsonRpcException.php
+├── Process/
+│   └── ProcessManager.php
+├── Types/
+│   ├── CopilotClientOptions.php
+│   ├── SessionConfig.php
+│   ├── MessageOptions.php
+│   ├── SessionEvent.php
+│   ├── SessionEventType.php
+│   ├── Tool.php
+│   ├── ToolInvocation.php
+│   └── PermissionRequest.php
+├── Testing/
+│   ├── CopilotFake.php
+│   └── FakeSession.php
+└── Console/
+    ├── StartCommand.php
+    ├── StopCommand.php
+    └── RestartCommand.php
+
+config/
+└── copilot.php
+
+tests/
+├── Unit/
+│   ├── JsonRpcClientTest.php
+│   └── ProcessManagerTest.php
+└── Feature/
+    ├── CopilotClientTest.php
+    └── CopilotSessionTest.php
+```
+
+---
+
+## 技術的考慮事項
+
+### 1. ブロッキングI/O
+
+PHPは同期的なので、stdout/stdinの読み書きで処理がブロックされる。
+- `sendAndWait()` では session.idle が来るまで読み続ける
+- タイムアウト設定で無限ブロックを防ぐ
+- `stream_set_timeout()` or `stream_select()` を使用
+
+### 2. イベントハンドリング
+
+Node.js/Pythonは非同期イベントループがあるが、PHPでは：
+- `sendAndWait()` 内でイベントを収集しつつハンドラーを呼ぶ
+- send() + 手動イベントポーリングの組み合わせも可能
+
+### 3. プロセス管理
+
+Laravel Process facade の `start()` は非同期プロセス起動に対応。
+```php
+$process = Process::start('copilot --server --stdio');
+// $process->latestOutput() で出力取得
+// $process->running() で実行中チェック
+```
+
+### 4. Content-Length パース
 
 ```php
-$response = Copilot::run($prompt);
-echo $response->output();
+// Header読み取り
+$header = fgets($stdout);  // "Content-Length: 123\r\n"
+$length = (int) explode(': ', trim($header))[1];
+
+// 空行スキップ
+fgets($stdout);
+
+// Body読み取り
+$body = fread($stdout, $length);
+$message = json_decode($body, true);
 ```
 
-### 複数処理を実行
+---
 
-クロージャ内で同じセッションでの複数の処理を実行。
+## 優先度と実装順序
 
-```php
-Copilot::start(function(CopilotSession $session) use (&$response) {
-    $response = $session->sendAndWait(prompt: "What is 2+2?");
-});
+1. **最優先**: JsonRpcClient + ProcessManager（基盤）
+2. **高**: CopilotClient + CopilotSession（コア機能）
+3. **中**: Types定義（型安全性）
+4. **中**: Laravel Integration（Facade, Provider, Config）
+5. **低**: Artisan Commands（利便性）
+6. **低**: Testing Support（テスト支援）
+7. **後回し**: Advanced Features
 
-echo $response->output();
-```
+---
 
-node.jsではawaitを使っているけどPythonではsendAndWaitから直接responseを返しているのでPHPでも同様にする。
+## 参考
 
-### 並行セッション
-
-実現可能なら複数セッションの並行実行。`Http::pool()`や`Process::pool()`のようなイメージ。
-
-```php
-$responses = Copilot::pool(fn (Pool $pool) => [
-    $pool->session(id: 'first')->sendAndWait(),
-    $pool->session(id: 'second')->sendAndWait(),
-    $pool->session(id: 'third')->sendAndWait(),
-]);
-
-echo $responses['first']->output();
-```
-
-### Artisan コマンド
-
-```shell
-php artisan copilot:start --port=10513
-php artisan copilot:restart
-php artisan copilot:stop
-```
-
-Laravel ForgeやLaravel Cloudではバックグラウンドプロセスを起動したままにできるので`copilot:start`でcopilotサーバーを起動しておき、アプリケーションからは常に接続できる形にする。
-
-### テスト
-
-```php
-Copilot::fake();
-```
-
-```php
-Copilot::fake([
-    '*' => Copilot::response(
-        output:, '4',
-    ),
-]);
-```
+- 公式SDK: https://github.com/github/copilot-sdk
+- Node.js版: `copilot-sdk/nodejs/src/`
+- Python版: `copilot-sdk/python/copilot/`
