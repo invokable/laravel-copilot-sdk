@@ -1,0 +1,65 @@
+{
+    "name": "revolution/laravel-copilot-sdk",
+    "description": "Copilot CLI SDK for Laravel",
+    "keywords": [
+        "laravel",
+        "copilot-cli"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "illuminate/support": "^12.30"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.25",
+        "orchestra/testbench": "^10.6",
+        "pestphp/pest": "^4.1",
+        "mockery/mockery": "^1.6",
+        "pestphp/pest-plugin-laravel": "^4.0",
+        "revolution/laravel-boost-copilot-cli": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Revolution\\Copilot\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "puklipo"
+        },
+        {
+            "name": "kawax",
+            "email": "kawaxbiz@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Revolution\\Copilot\\CopilotSdkServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "scripts": {
+        "test": "pest",
+        "test:coverage": "pest --coverage --coverage-clover build/logs/clover.xml",
+        "lint": [
+            "pint"
+        ],
+        "test:lint": [
+            "pint --test"
+        ],
+        "boost": "vendor/bin/testbench boost:install --no-interaction --ansi"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
