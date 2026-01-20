@@ -13,7 +13,7 @@ return [
     | If you specify `null`, the executable file will be searched automatically.
     |
     */
-    'cli_path' => env('COPILOT_CLI_PATH'),
+    'cli_path' => env('COPILOT_CLI_PATH', 'copilot'),
 
     /*
     |--------------------------------------------------------------------------
