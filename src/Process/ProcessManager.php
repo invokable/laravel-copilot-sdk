@@ -77,12 +77,12 @@ class ProcessManager
     {
         if ($this->rawProcess !== null) {
             // Close pipes first
-            if ($this->stdin !== null && is_resource($this->stdin)) {
+            if (is_resource($this->stdin)) {
                 fclose($this->stdin);
                 $this->stdin = null;
             }
 
-            if ($this->stdout !== null && is_resource($this->stdout)) {
+            if (is_resource($this->stdout)) {
                 fclose($this->stdout);
                 $this->stdout = null;
             }
@@ -135,7 +135,7 @@ class ProcessManager
      */
     public function getStdin(): mixed
     {
-        if ($this->stdin === null || ! is_resource($this->stdin)) {
+        if (! is_resource($this->stdin)) {
             throw new RuntimeException('Process not started or stdin not available');
         }
 
@@ -151,7 +151,7 @@ class ProcessManager
      */
     public function getStdout(): mixed
     {
-        if ($this->stdout === null || ! is_resource($this->stdout)) {
+        if (! is_resource($this->stdout)) {
             throw new RuntimeException('Process not started or stdout not available');
         }
 
@@ -173,17 +173,16 @@ class ProcessManager
      */
     protected function startProcess(): void
     {
-        $args = array_merge(
-            $this->cliArgs,
-            ['--server', '--stdio', '--log-level', $this->logLevel],
-        );
-
         if (empty($this->cliPath)) {
             $this->cliPath = new ExecutableFinder()->find(name: 'copilot', default: 'copilot');
             info('Using copilot CLI path: '.$this->cliPath);
         }
 
-        $commands = array_merge([$this->cliPath], $args);
+        $commands = array_merge(
+            [$this->cliPath],
+            $this->cliArgs,
+            ['--server', '--stdio', '--log-level', $this->logLevel],
+        );
 
         $descriptorSpec = [
             0 => ['pipe', 'r'],  // stdin
