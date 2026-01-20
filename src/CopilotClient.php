@@ -69,8 +69,8 @@ class CopilotClient
 
             // Create JSON-RPC client
             $this->rpcClient = new JsonRpcClient(
-                $this->processManager->getStdin(),
-                $this->processManager->getStdout(),
+                stdin: $this->processManager->getStdin(),
+                stdout: $this->processManager->getStdout(),
             );
 
             $this->rpcClient->start();
@@ -244,7 +244,7 @@ class CopilotClient
 
         return $this->rpcClient->request('ping', array_filter([
             'message' => $message,
-        ], fn ($v) => $v !== null));
+        ], fn ($v) => $v !== null), timeout: 5.0);
     }
 
     /**
@@ -312,7 +312,7 @@ class CopilotClient
     /**
      * Verify the server's protocol version matches the SDK.
      *
-     * @throws RuntimeException
+     * @throws RuntimeException|JsonRpcException
      */
     protected function verifyProtocolVersion(): void
     {
