@@ -42,6 +42,14 @@ class CopilotSession
     ) {}
 
     /**
+     * Get the session ID.
+     */
+    public function id(): string
+    {
+        return $this->sessionId;
+    }
+
+    /**
      * Send a message to this session.
      *
      * @param  array{prompt: string, attachments?: array, mode?: string}  $options
