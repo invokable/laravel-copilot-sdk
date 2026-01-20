@@ -138,6 +138,7 @@ echo $responses['first']->output();
 
 ```shell
 php artisan copilot:start --port=10513
+php artisan copilot:restart
 php artisan copilot:stop
 ```
 
