@@ -9,11 +9,11 @@ use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Session;
 
 use function Laravel\Prompts\info;
+use function Laravel\Prompts\intro;
 use function Laravel\Prompts\note;
+use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 
 // Artisan::command('inspire', function () {
 //     $this->comment(Inspiring::quote());
