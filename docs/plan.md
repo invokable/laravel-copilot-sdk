@@ -163,7 +163,8 @@ stdioでは意味がなさそうなのでスキップ。
   Copilot::fake(['*' => Copilot::response('4')]);
   ```
 
-これはCopilot Facadeから使う機能のモック。
+これはCopilot Facadeから使う機能のモック。シンプルにレスポンスの固定だけでもいいけど最近はサードパーティパッケージでもfake()形式のモックが普及しているので可能な範囲で実装。
+
 ```php
 use Revolution\Copilot\Facades\Copilot;
 
@@ -202,6 +203,15 @@ Copilot::assertPrompt('1 + *');
 プロンプトが呼び出されなかったことを確認。
 ```php
 Copilot::assertNotPrompt('1 + *');
+```
+
+JSON-RPCリクエストを全て防止。呼び出した場合は例外が発生。
+```php
+Copilot::preventStrayRequests();
+```
+一部のコマンドだけは許可する場合。
+```php
+Copilot::preventStrayRequests(allow: ['ping']);
 ```
 
 ### Phase 6: Advanced Features (後回し可能)
