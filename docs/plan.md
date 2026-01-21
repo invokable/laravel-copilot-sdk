@@ -112,13 +112,13 @@ PHPは基本的に同期処理。Node.js/Pythonのasync/awaitに相当する部�
 
 ### Phase 2: Client & Session
 
-- [ ] **2.1 CopilotClient** (`src/CopilotClient.php`)
+- [ ] **2.1 CopilotClient** (`src/Client.php`, `src/Contracts/CopilotClient.php`)
   - サーバー起動/停止
   - プロトコルバージョン検証
   - セッション作成/再開/一覧/削除
   - ping
 
-- [ ] **2.2 CopilotSession** (`src/CopilotSession.php`)
+- [ ] **2.2 CopilotSession** (`src/Session.php`, `src/Contracts/CopilotSession.php`)
   - send() / sendAndWait()
   - イベントハンドラー登録（on()）
   - イベントディスパッチ
@@ -151,20 +151,58 @@ PHPは基本的に同期処理。Node.js/Pythonのasync/awaitに相当する部�
   - timeout
   - auto_start/auto_restart
 
-### Phase 4: Artisan Commands
+### ~~Phase 4: Artisan Commands~~
 
-- [ ] **4.1 基本コマンド**
-  - `copilot:start` - サーバー起動（バックグラウンド）
-  - `copilot:stop` - サーバー停止
-  - `copilot:restart` - サーバー再起動
+stdioでは意味がなさそうなのでスキップ。
 
 ### Phase 5: Testing Support
 
 - [ ] **5.1 Fake/Mock** (`src/Testing/CopilotFake.php`)
   ```php
   Copilot::fake();
-  Copilot::fake(['*' => Copilot::response(output: '4')]);
+  Copilot::fake(['*' => Copilot::response('4')]);
   ```
+
+これはCopilot Facadeから使う機能のモック。
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+Copilot::fake('2'); // 常に'2'を返すモック
+$response = Copilot::run(prompt: '1 + 1'); // ここで実際にはCopilot CLIは呼ばれない
+$this->assertEquals('2', $response->getContent());
+```
+
+Copilot::startで複数呼び出した場合。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Session;
+
+Copilot::fake([
+    '*' => Copilot::sequence()
+            ->push(Copilot::response('2'))
+            ->push(Copilot::response('4')),
+]);
+
+Copilot::start(function (Session $session) use (&$response1, &$response2) {
+    $response1 = $session->sendAndWait(prompt: '1 + 1'); // '2'を返す
+    $response2 = $session->sendAndWait(prompt: '2 + 2'); // '4'を返す
+});
+
+$this->assertEquals('2', $response1->getContent());
+```
+
+アサーション。
+特定のプロンプトが呼び出されたことを確認。
+
+```php
+Copilot::assertPrompt('1 + *');
+```
+
+プロンプトが呼び出されなかったことを確認。
+```php
+Copilot::assertNotPrompt('1 + *');
+```
 
 ### Phase 6: Advanced Features (後回し可能)
 
