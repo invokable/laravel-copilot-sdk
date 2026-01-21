@@ -69,10 +69,10 @@ class Client implements CopilotClient
             $this->processManager->start();
 
             // Create JSON-RPC client
-            $this->rpcClient = new JsonRpcClient(
-                stdin: $this->processManager->getStdin(),
-                stdout: $this->processManager->getStdout(),
-            );
+            $this->rpcClient = app(JsonRpcClient::class, [
+                'stdin' => $this->processManager->getStdin(),
+                'stdout' => $this->processManager->getStdout(),
+            ]);
 
             $this->rpcClient->start();
 
@@ -173,7 +173,10 @@ class Client implements CopilotClient
 
         $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
 
-        $session = new Session($sessionId, $this->rpcClient);
+        $session = app(Session::class, [
+            'sessionId' => $sessionId,
+            'client' => $this->rpcClient,
+        ]);
         $session->registerTools($tools);
 
         if (isset($config['on_permission_request'])) {
@@ -217,7 +220,10 @@ class Client implements CopilotClient
 
         $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');
 
-        $session = new Session($resumedSessionId, $this->rpcClient);
+        $session = app(Session::class, [
+            'sessionId' => $resumedSessionId,
+            'client' => $this->rpcClient,
+        ]);
         $session->registerTools($tools);
 
         if (isset($config['on_permission_request'])) {

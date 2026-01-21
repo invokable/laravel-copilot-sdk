@@ -89,11 +89,13 @@ class CopilotManager implements Factory
     public function getClient(): CopilotClient
     {
         if ($this->client === null) {
-            $this->client = new Client([
-                'cli_path' => $this->config['cli_path'] ?? null,
-                'cli_args' => $this->config['cli_args'] ?? [],
-                'cwd' => $this->config['cwd'] ?? base_path(),
-                'log_level' => $this->config['log_level'] ?? 'info',
+            $this->client = app(Client::class, [
+                'options' => [
+                    'cli_path' => $this->config['cli_path'] ?? null,
+                    'cli_args' => $this->config['cli_args'] ?? [],
+                    'cwd' => $this->config['cwd'] ?? base_path(),
+                    'log_level' => $this->config['log_level'] ?? 'info',
+                ],
             ]);
 
             $this->client->start();
