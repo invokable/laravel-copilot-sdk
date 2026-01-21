@@ -188,7 +188,7 @@ class Client implements CopilotClient
     /**
      * Resume an existing session.
      *
-     * @param  array{tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array}  $config
+     * @param  array{tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws RuntimeException
      */
@@ -211,6 +211,8 @@ class Client implements CopilotClient
             'streaming' => $config['streaming'] ?? null,
             'mcpServers' => $config['mcp_servers'] ?? null,
             'customAgents' => $config['custom_agents'] ?? null,
+            'skillDirectories' => $config['skill_directories'] ?? null,
+            'disabledSkills' => $config['disabled_skills'] ?? null,
         ], fn ($v) => $v !== null));
 
         $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');
