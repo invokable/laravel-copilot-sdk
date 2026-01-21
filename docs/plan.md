@@ -221,7 +221,7 @@ Copilot::preventStrayRequests(false);
 
 ### Phase 6: Advanced Features (後回し可能)
 
-- [ ] **6.1 Pool** - 並行セッション実行
+- [ ] ~~**6.1 Pool** - 並行セッション実行~~ Laravelの別の機能で代用できるだろうから取りやめ。
 - [ ] **6.2 Tool Registration** - カスタムツール登録
 - [ ] **6.3 Permission Handler** - 権限ハンドラー
 - [ ] **6.4 MCP Server Config** - MCPサーバー設定
