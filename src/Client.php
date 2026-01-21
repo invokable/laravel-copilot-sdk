@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot;
 
 use Revolution\Copilot\Contracts\CopilotClient;
+use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
@@ -195,7 +196,7 @@ class Client implements CopilotClient
      *
      * @throws RuntimeException
      */
-    public function resumeSession(string $sessionId, array $config = []): Session
+    public function resumeSession(string $sessionId, array $config = []): CopilotSession
     {
         $this->ensureConnected();
 

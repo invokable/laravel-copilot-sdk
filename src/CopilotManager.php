@@ -48,18 +48,27 @@ class CopilotManager implements Factory
      * Start a session and execute a callback.
      *
      * @param  callable(CopilotSession): mixed  $callback
+     * @param  ?string  $resume  Session ID to resume
      */
-    public function start(callable $callback, array $config = []): mixed
+    public function start(callable $callback, array $config = [], ?string $resume = null): mixed
     {
         if ($this->isFake()) {
             return $this->fake->start($callback, $config);
         }
 
         $client = $this->getClient();
-        $session = $client->createSession(array_merge(
-            ['model' => $this->config['model'] ?? null],
-            $config,
-        ));
+
+        if (empty($resume)) {
+            $session = $client->createSession(array_merge(
+                ['model' => $this->config['model'] ?? null],
+                $config,
+            ));
+        } else {
+            $session = $client->resumeSession($resume, array_merge(
+                ['model' => $this->config['model'] ?? null],
+                $config,
+            ));
+        }
 
         try {
             return $callback($session);

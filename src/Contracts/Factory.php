@@ -17,8 +17,9 @@ interface Factory
      * Start a session and execute a callback.
      *
      * @param  callable(CopilotSession): mixed  $callback
+     * @param  ?string  $resume  Session ID to resume
      */
-    public function start(callable $callback, array $config = []): mixed;
+    public function start(callable $callback, array $config = [], ?string $resume = null): mixed;
 
     /**
      * Create a new session.

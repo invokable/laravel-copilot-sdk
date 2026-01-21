@@ -22,11 +22,16 @@ interface CopilotClient
     /**
      * Create a new conversation session.
      *
-     * @param  array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array}  $config
-     *
      * @throws RuntimeException
      */
     public function createSession(array $config = []): CopilotSession;
+
+    /**
+     * Resume an existing session.
+     *
+     * @throws RuntimeException
+     */
+    public function resumeSession(string $sessionId, array $config = []): CopilotSession;
 
     /**
      * Send a ping to verify connectivity.

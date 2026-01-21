@@ -105,7 +105,7 @@ class CopilotFake implements Factory
      *
      * @param  callable(CopilotSession): mixed  $callback
      */
-    public function start(callable $callback, array $config = []): mixed
+    public function start(callable $callback, array $config = [], ?string $resume = null): mixed
     {
         $sequence = $this->getSequenceFor('*');
         $session = new FakeSession('fake-session-'.++$this->sessionCounter, $sequence);
