@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
-use Revolution\Copilot\CopilotSession;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
@@ -15,7 +15,7 @@ use Revolution\Copilot\Types\SessionEvent;
  * @method static CopilotSession createSession(array $config = [])
  * @method static void fake(array $responses = [])
  *
- * @see \Revolution\Copilot\CopilotManager
+ * @mixin  \Revolution\Copilot\CopilotManager
  */
 class Copilot extends Facade
 {

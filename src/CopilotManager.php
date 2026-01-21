@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
+use Revolution\Copilot\Contracts\CopilotClient;
+use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -21,12 +23,14 @@ class CopilotManager implements Factory
     /**
      * Run a single prompt and return the response.
      */
-    public function run(string $prompt, array $options = []): ?SessionEvent
+    public function run(string $prompt, ?array $attachments = null, ?string $mode = null): ?SessionEvent
     {
         return $this->start(
             fn (CopilotSession $session) => $session->sendAndWait(
-                array_merge(['prompt' => $prompt], $options),
-                $this->config['timeout'] ?? 60.0,
+                prompt: $prompt,
+                attachments: $attachments,
+                mode: $mode,
+                timeout: $this->config['timeout'] ?? 60.0,
             ),
         );
     }
@@ -68,7 +72,7 @@ class CopilotManager implements Factory
     public function getClient(): CopilotClient
     {
         if ($this->client === null) {
-            $this->client = new CopilotClient([
+            $this->client = new Client([
                 'cli_path' => $this->config['cli_path'] ?? null,
                 'cli_args' => $this->config['cli_args'] ?? [],
                 'cwd' => $this->config['cwd'] ?? base_path(),

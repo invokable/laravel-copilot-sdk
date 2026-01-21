@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Revolution\Copilot;
 
 use Closure;
+use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\SessionEvent;
-use Revolution\Copilot\Types\SessionEventType;
 use RuntimeException;
 
 /**
  * Represents a single conversation session with the Copilot CLI.
  */
-class CopilotSession
+class Session implements CopilotSession
 {
     /**
      * Event handlers.
@@ -51,16 +51,14 @@ class CopilotSession
 
     /**
      * Send a message to this session.
-     *
-     * @param  array{prompt: string, attachments?: array, mode?: string}  $options
      */
-    public function send(array $options): string
+    public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string
     {
         $response = $this->client->request('session.send', [
             'sessionId' => $this->sessionId,
-            'prompt' => $options['prompt'],
-            'attachments' => $options['attachments'] ?? null,
-            'mode' => $options['mode'] ?? null,
+            'prompt' => $prompt,
+            'attachments' => $attachments,
+            'mode' => $mode,
         ]);
 
         return $response['messageId'] ?? '';
@@ -68,12 +66,11 @@ class CopilotSession
 
     /**
      * Send a message and wait until the session becomes idle.
-     *
-     * @param  array{prompt: string, attachments?: array, mode?: string}  $options
+
      *
      * @throws RuntimeException
      */
-    public function sendAndWait(array $options, float $timeout = 60.0): ?SessionEvent
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, float $timeout = 60.0): ?SessionEvent
     {
         $lastAssistantMessage = null;
         $idle = false;
@@ -94,7 +91,7 @@ class CopilotSession
 
         try {
             // Send the message
-            $this->send($options);
+            $this->send($prompt, $attachments, $mode);
 
             // Wait for idle or error
             $endTime = microtime(true) + $timeout;

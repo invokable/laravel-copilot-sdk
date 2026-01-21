@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Contracts;
 
-use Revolution\Copilot\CopilotSession;
 use Revolution\Copilot\Types\SessionEvent;
 
 interface Factory

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
+use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\JsonRpc\JsonRpcException;
 use Revolution\Copilot\Process\ProcessManager;
@@ -14,7 +15,7 @@ use RuntimeException;
 /**
  * Main client for interacting with the Copilot CLI.
  */
-class CopilotClient
+class Client implements CopilotClient
 {
     protected ProcessManager $processManager;
 
@@ -25,7 +26,7 @@ class CopilotClient
     /**
      * Active sessions.
      *
-     * @var array<string, CopilotSession>
+     * @var array<string, Session>
      */
     protected array $sessions = [];
 
@@ -142,7 +143,7 @@ class CopilotClient
      *
      * @throws RuntimeException
      */
-    public function createSession(array $config = []): CopilotSession
+    public function createSession(array $config = []): Session
     {
         $this->ensureConnected();
 
@@ -169,7 +170,7 @@ class CopilotClient
 
         $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
 
-        $session = new CopilotSession($sessionId, $this->rpcClient);
+        $session = new Session($sessionId, $this->rpcClient);
         $session->registerTools($tools);
 
         if (isset($config['on_permission_request'])) {
@@ -188,7 +189,7 @@ class CopilotClient
      *
      * @throws RuntimeException
      */
-    public function resumeSession(string $sessionId, array $config = []): CopilotSession
+    public function resumeSession(string $sessionId, array $config = []): Session
     {
         $this->ensureConnected();
 
@@ -211,7 +212,7 @@ class CopilotClient
 
         $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');
 
-        $session = new CopilotSession($resumedSessionId, $this->rpcClient);
+        $session = new Session($resumedSessionId, $this->rpcClient);
         $session->registerTools($tools);
 
         if (isset($config['on_permission_request'])) {
