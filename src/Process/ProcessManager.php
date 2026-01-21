@@ -15,7 +15,7 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 class ProcessManager
 {
-    protected const SDK_PROTOCOL_VERSION = 1;
+    protected const int SDK_PROTOCOL_VERSION = 1;
 
     /**
      * The running CLI process.
