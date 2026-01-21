@@ -228,8 +228,8 @@ Copilot::preventStrayRequests(allow: ['ping']);
 
 ```
 src/
-├── CopilotClient.php
-├── CopilotSession.php
+├── Client.php
+├── Session.php
 ├── CopilotSdkServiceProvider.php
 ├── Facades/
 │   └── Copilot.php
@@ -251,10 +251,10 @@ src/
 ├── Testing/
 │   ├── CopilotFake.php
 │   └── FakeSession.php
-└── Console/
-    ├── StartCommand.php
-    ├── StopCommand.php
-    └── RestartCommand.php
+└── Contracts/
+    ├── Factory.php
+    ├── CopilotClient.php
+    └── CopilotSession.php
 
 config/
 └── copilot.php
