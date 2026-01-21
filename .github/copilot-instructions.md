@@ -11,3 +11,6 @@ https://github.com/github/copilot-sdk
 - **Framework**: Laravel 12.x+
 - **Testing**: Pest PHP 4.x
 - **Code Quality**: Laravel Pint (PSR-12)
+
+## Debugging
+- パッケージプロジェクトなので`info()`などのログはtestbenchの`vendor/orchestra/testbench-core/laravel/storage/logs/laravel.log`に出力される。
