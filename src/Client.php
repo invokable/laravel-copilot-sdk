@@ -42,13 +42,13 @@ class Client implements CopilotClient
             throw new \InvalidArgumentException('cli_url is mutually exclusive with cli_path and use_stdio');
         }
 
-        $this->processManager = new ProcessManager(
-            cliPath: $options['cli_path'] ?? null,
-            cliArgs: $options['cli_args'] ?? [],
-            cwd: $options['cwd'] ?? null,
-            logLevel: $options['log_level'] ?? 'info',
-            env: $options['env'] ?? null,
-        );
+        $this->processManager = app(ProcessManager::class, [
+            'cliPath' => $options['cli_path'] ?? null,
+            'cliArgs' => $options['cli_args'] ?? [],
+            'cwd' => $options['cwd'] ?? null,
+            'logLevel' => $options['log_level'] ?? 'info',
+            'env' => $options['env'] ?? null,
+        ]);
     }
 
     /**
