@@ -240,51 +240,59 @@ class JsonRpcClient
             return null;
         }
 
-        // Read header line
-        $headerLine = fgets($this->stdout);
+        // Switch to blocking mode for reliable reads
+        stream_set_blocking($this->stdout, true);
 
-        if ($headerLine === false || $headerLine === '') {
-            return null;
-        }
+        try {
+            // Read header line
+            $headerLine = fgets($this->stdout);
 
-        // Parse Content-Length
-        $headerLine = trim($headerLine);
-
-        if (! str_starts_with($headerLine, 'Content-Length:')) {
-            return null;
-        }
-
-        $contentLength = (int) trim(substr($headerLine, 15));
-
-        if ($contentLength <= 0) {
-            return null;
-        }
-
-        // Read empty line (header/body separator)
-        fgets($this->stdout);
-
-        // Read exact content length
-        $content = '';
-        $remaining = $contentLength;
-
-        while ($remaining > 0) {
-            $chunk = fread($this->stdout, $remaining);
-
-            if ($chunk === false || $chunk === '') {
+            if ($headerLine === false || $headerLine === '') {
                 return null;
             }
 
-            $content .= $chunk;
-            $remaining -= strlen($chunk);
+            // Parse Content-Length
+            $headerLine = trim($headerLine);
+
+            if (! str_starts_with($headerLine, 'Content-Length:')) {
+                return null;
+            }
+
+            $contentLength = (int) trim(substr($headerLine, 15));
+
+            if ($contentLength <= 0) {
+                return null;
+            }
+
+            // Read empty line (header/body separator)
+            fgets($this->stdout);
+
+            // Read exact content length
+            $content = '';
+            $remaining = $contentLength;
+
+            while ($remaining > 0) {
+                $chunk = fread($this->stdout, $remaining);
+
+                if ($chunk === false || $chunk === '') {
+                    return null;
+                }
+
+                $content .= $chunk;
+                $remaining -= strlen($chunk);
+            }
+
+            $data = json_decode($content, true);
+
+            if (! is_array($data)) {
+                return null;
+            }
+
+            return JsonRpcMessage::fromArray($data);
+        } finally {
+            // Restore non-blocking mode
+            stream_set_blocking($this->stdout, false);
         }
-
-        $data = json_decode($content, true);
-
-        if (! is_array($data)) {
-            return null;
-        }
-
-        return JsonRpcMessage::fromArray($data);
     }
 
     /**
