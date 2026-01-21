@@ -99,26 +99,26 @@ PHPは基本的に同期処理。Node.js/Pythonのasync/awaitに相当する部�
 
 ### Phase 1: Core Infrastructure
 
-- [ ] **1.1 JSON-RPC Client** (`src/JsonRpc/JsonRpcClient.php`)
+- [x] **1.1 JSON-RPC Client** (`src/JsonRpc/JsonRpcClient.php`)
   - Content-Length 付き JSON-RPC 2.0 実装
   - リクエスト送信・レスポンス受信
   - 通知ハンドラー
   - リクエストハンドラー（サーバーからのリクエスト対応）
 
-- [ ] **1.2 Process Manager** (`src/Process/ProcessManager.php`)
+- [x] **1.2 Process Manager** (`src/Process/ProcessManager.php`)
   - `copilot --server --stdio` の起動
   - stdin/stdout パイプ管理
   - プロセス終了検知
 
 ### Phase 2: Client & Session
 
-- [ ] **2.1 CopilotClient** (`src/Client.php`, `src/Contracts/CopilotClient.php`)
+- [x] **2.1 CopilotClient** (`src/Client.php`, `src/Contracts/CopilotClient.php`)
   - サーバー起動/停止
   - プロトコルバージョン検証
   - セッション作成/再開/一覧/削除
   - ping
 
-- [ ] **2.2 CopilotSession** (`src/Session.php`, `src/Contracts/CopilotSession.php`)
+- [x] **2.2 CopilotSession** (`src/Session.php`, `src/Contracts/CopilotSession.php`)
   - send() / sendAndWait()
   - イベントハンドラー登録（on()）
   - イベントディスパッチ
@@ -135,17 +135,17 @@ PHPは基本的に同期処理。Node.js/Pythonのasync/awaitに相当する部�
 
 ### Phase 3: Laravel Integration
 
-- [ ] **3.1 Facade** (`src/Facades/Copilot.php`)
+- [x] **3.1 Facade** (`src/Facades/Copilot.php`)
   ```php
   Copilot::run($prompt);  // 簡易実行
   Copilot::start(fn($session) => ...);  // セッション使用
   ```
 
-- [ ] **3.2 Service Provider** (`src/CopilotSdkServiceProvider.php`)
+- [x] **3.2 Service Provider** (`src/CopilotSdkServiceProvider.php`)
   - クライアントのシングルトン登録
   - 設定ファイル公開
 
-- [ ] **3.3 Config** (`config/copilot.php`)
+- [x] **3.3 Config** (`config/copilot.php`)
   - cli_path
   - log_level
   - timeout
@@ -157,7 +157,7 @@ stdioでは意味がなさそうなのでスキップ。
 
 ### Phase 5: Testing Support
 
-- [ ] **5.1 Fake/Mock** (`src/Testing/CopilotFake.php`)
+- [x] **5.1 Fake/Mock** (`src/Testing/CopilotFake.php`)
   ```php
   Copilot::fake();
   Copilot::fake(['*' => Copilot::response('4')]);
