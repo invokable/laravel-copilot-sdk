@@ -205,7 +205,7 @@ Copilot::assertPrompt('1 + *');
 Copilot::assertNotPrompt('1 + *');
 ```
 
-JSON-RPCリクエストを全て防止。呼び出した場合は例外が発生。
+JSON-RPCリクエストを全て防止。呼び出した場合は例外`StrayRequestException`が発生。
 ```php
 Copilot::preventStrayRequests();
 ```
@@ -213,6 +213,11 @@ Copilot::preventStrayRequests();
 ```php
 Copilot::preventStrayRequests(allow: ['ping']);
 ```
+防止の停止。
+```php
+Copilot::preventStrayRequests(false);
+```
+防止するのはJSON-RPCリクエストだけなのでClientのstartは防止しない。
 
 ### Phase 6: Advanced Features (後回し可能)
 
