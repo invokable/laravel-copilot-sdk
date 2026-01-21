@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Process;
 
-use Illuminate\Process\InvokedProcess;
-use Illuminate\Support\Facades\Process;
-use Revolution\Copilot\Types\ConnectionState;
 use RuntimeException;
 use Symfony\Component\Process\ExecutableFinder;
 
@@ -18,30 +15,23 @@ class ProcessManager
     protected const int SDK_PROTOCOL_VERSION = 1;
 
     /**
-     * The running CLI process.
+     * The running process wrapper.
      */
-    protected ?InvokedProcess $process = null;
+    protected ?ProcessWrapper $process = null;
 
     /**
-     * Process stdin stream.
+     * Process stdin stream (pipe).
      *
      * @var resource|null
      */
     protected mixed $stdin = null;
 
     /**
-     * Process stdout stream.
+     * Process stdout stream (pipe).
      *
      * @var resource|null
      */
     protected mixed $stdout = null;
-
-    /**
-     * Raw process handle for pipe access.
-     *
-     * @var resource|null
-     */
-    protected mixed $rawProcess = null;
 
     /**
      * Create a new ProcessManager.
@@ -53,7 +43,7 @@ class ProcessManager
         protected string $logLevel = 'info',
         protected ?array $env = null,
     ) {
-        $this->cwd ??= getcwd();
+        $this->cwd ??= getcwd() ?: null;
     }
 
     /**
@@ -75,41 +65,22 @@ class ProcessManager
      */
     public function stop(): void
     {
-        if ($this->rawProcess !== null) {
-            // Close pipes first
-            if (is_resource($this->stdin)) {
-                fclose($this->stdin);
-                $this->stdin = null;
-            }
-
-            if (is_resource($this->stdout)) {
-                fclose($this->stdout);
-                $this->stdout = null;
-            }
-
-            // Terminate the process
-            proc_terminate($this->rawProcess, 15); // SIGTERM
-
-            // Wait briefly for graceful shutdown
-            $status = proc_get_status($this->rawProcess);
-            $waited = 0;
-
-            while ($status['running'] && $waited < 50) {
-                usleep(100000); // 100ms
-                $status = proc_get_status($this->rawProcess);
-                $waited++;
-            }
-
-            // Force kill if still running
-            if ($status['running']) {
-                proc_terminate($this->rawProcess, 9); // SIGKILL
-            }
-
-            proc_close($this->rawProcess);
-            $this->rawProcess = null;
+        // Close streams
+        if (is_resource($this->stdin)) {
+            fclose($this->stdin);
+            $this->stdin = null;
         }
 
-        $this->process = null;
+        if (is_resource($this->stdout)) {
+            fclose($this->stdout);
+            $this->stdout = null;
+        }
+
+        // Stop the process
+        if ($this->process !== null) {
+            $this->process->stop(5);
+            $this->process = null;
+        }
     }
 
     /**
@@ -117,13 +88,7 @@ class ProcessManager
      */
     public function isRunning(): bool
     {
-        if ($this->rawProcess === null) {
-            return false;
-        }
-
-        $status = proc_get_status($this->rawProcess);
-
-        return $status['running'] ?? false;
+        return $this->process?->isRunning() ?? false;
     }
 
     /**
@@ -167,22 +132,15 @@ class ProcessManager
     }
 
     /**
-     * Start the CLI process using proc_open for pipe access.
+     * Start the CLI process using proc_open for direct pipe access.
      *
      * @throws RuntimeException
      */
     protected function startProcess(): void
     {
         if (empty($this->cliPath)) {
-            $this->cliPath = new ExecutableFinder()->find(name: 'copilot', default: 'copilot');
-            // info('Using copilot CLI path: '.$this->cliPath);
+            $this->cliPath = (new ExecutableFinder)->find(name: 'copilot', default: 'copilot');
         }
-
-        $commands = array_merge(
-            [$this->cliPath],
-            $this->cliArgs,
-            ['--server', '--stdio', '--log-level', $this->logLevel],
-        );
 
         $descriptorSpec = [
             0 => ['pipe', 'r'],  // stdin
@@ -191,19 +149,23 @@ class ProcessManager
         ];
 
         $env = $this->env ?? getenv();
-
-        // Remove NODE_DEBUG to suppress debug output
         unset($env['NODE_DEBUG']);
 
-        $this->rawProcess = proc_open(
-            $commands,
+        $command = array_merge(
+            [$this->cliPath],
+            $this->cliArgs,
+            ['--server', '--stdio', '--log-level', $this->logLevel],
+        );
+
+        $rawProcess = proc_open(
+            $command,
             $descriptorSpec,
             $pipes,
             $this->cwd,
             $env,
         );
 
-        if (! is_resource($this->rawProcess)) {
+        if (! is_resource($rawProcess)) {
             throw new RuntimeException('Failed to start CLI server');
         }
 
@@ -217,18 +179,22 @@ class ProcessManager
         usleep(100000); // 100ms
 
         // Check if process started successfully
-        $status = proc_get_status($this->rawProcess);
+        $status = proc_get_status($rawProcess);
 
         if (! $status['running']) {
-            // Read any error output
             $stderr = stream_get_contents($pipes[2]);
             fclose($pipes[2]);
-            $this->stop();
+            fclose($pipes[0]);
+            fclose($pipes[1]);
+            proc_close($rawProcess);
 
             throw new RuntimeException("CLI server failed to start: {$stderr}");
         }
 
         // Close stderr pipe (we don't use it)
         fclose($pipes[2]);
+
+        // Create a wrapper for status checking
+        $this->process = new ProcessWrapper($rawProcess);
     }
 }
