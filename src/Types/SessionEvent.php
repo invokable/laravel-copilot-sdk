@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types;
 
+use Illuminate\Contracts\Support\Arrayable;
+
 /**
  * Represents a session event from the Copilot CLI.
  */
-readonly class SessionEvent
+readonly class SessionEvent implements Arrayable
 {
     public function __construct(
         public string $id,
