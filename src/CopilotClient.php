@@ -244,7 +244,7 @@ class CopilotClient
 
         return $this->rpcClient->request('ping', array_filter([
             'message' => $message,
-        ], fn ($v) => $v !== null), timeout: 5.0);
+        ], fn ($v) => $v !== null), timeout: 10.0);
     }
 
     /**
