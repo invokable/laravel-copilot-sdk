@@ -189,14 +189,4 @@ class CopilotFake implements Factory
     {
         $this->recorded[] = $record;
     }
-
-    /**
-     * Get all recorded prompts.
-     *
-     * @return array<array{prompt: string, attachments: ?array, mode: ?string}>
-     */
-    public function recorded(): array
-    {
-        return $this->recorded;
-    }
 }
