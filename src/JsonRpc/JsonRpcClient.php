@@ -6,6 +6,8 @@ namespace Revolution\Copilot\JsonRpc;
 
 use Closure;
 use Illuminate\Support\Str;
+use Revolution\Copilot\Exceptions\StrayRequestException;
+use Revolution\Copilot\Facades\Copilot;
 
 /**
  * JSON-RPC 2.0 client for stdio transport.
@@ -82,6 +84,10 @@ class JsonRpcClient
      */
     public function request(string $method, array $params = [], float $timeout = 30.0): mixed
     {
+        if (! Copilot::isAllowedMethod($method)) {
+            throw new StrayRequestException($method);
+        }
+
         $requestId = Str::uuid()->toString();
         $message = JsonRpcMessage::request($requestId, $method, $params);
 

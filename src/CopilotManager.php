@@ -7,6 +7,7 @@ namespace Revolution\Copilot;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
+use Revolution\Copilot\Testing\WithFake;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
@@ -14,17 +15,25 @@ use Revolution\Copilot\Types\SessionEvent;
  */
 class CopilotManager implements Factory
 {
+    use WithFake;
+
     protected ?CopilotClient $client = null;
 
     public function __construct(
         protected array $config = [],
-    ) {}
+    ) {
+        //
+    }
 
     /**
      * Run a single prompt and return the response.
      */
     public function run(string $prompt, ?array $attachments = null, ?string $mode = null): ?SessionEvent
     {
+        if ($this->isFake()) {
+            return $this->fake->run($prompt, $attachments, $mode);
+        }
+
         return $this->start(
             fn (CopilotSession $session) => $session->sendAndWait(
                 prompt: $prompt,
@@ -42,6 +51,10 @@ class CopilotManager implements Factory
      */
     public function start(callable $callback, array $config = []): mixed
     {
+        if ($this->isFake()) {
+            return $this->fake->start($callback, $config);
+        }
+
         $client = $this->getClient();
         $session = $client->createSession(array_merge(
             ['model' => $this->config['model'] ?? null],
@@ -60,6 +73,10 @@ class CopilotManager implements Factory
      */
     public function createSession(array $config = []): CopilotSession
     {
+        if ($this->isFake()) {
+            return $this->fake->createSession($config);
+        }
+
         return $this->getClient()->createSession(array_merge(
             ['model' => $this->config['model'] ?? null],
             $config,

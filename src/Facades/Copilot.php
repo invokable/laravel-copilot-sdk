@@ -7,7 +7,6 @@ namespace Revolution\Copilot\Facades;
 use Illuminate\Support\Facades\Facade;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
-use Revolution\Copilot\Testing\CopilotFake;
 use Revolution\Copilot\Testing\ResponseSequence;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -17,14 +16,14 @@ use Revolution\Copilot\Types\SessionEvent;
  * @method static CopilotSession createSession(array $config = [])
  * @method static SessionEvent response(string $content)
  * @method static ResponseSequence sequence()
- * @method static CopilotFake preventStrayRequests(array $allow = [])
- * @method static CopilotFake assertPrompt(string $pattern)
- * @method static CopilotFake assertNotPrompt(string $pattern)
- * @method static CopilotFake assertPromptCount(int $count)
- * @method static CopilotFake assertNothingSent()
+ * @method static bool preventingStrayRequests()
+ * @method static bool isAllowedMethod(string $method)
+ * @method static Factory assertPrompt(string $pattern)
+ * @method static Factory assertNotPrompt(string $pattern)
+ * @method static Factory assertPromptCount(int $count)
+ * @method static Factory assertNothingSent()
  *
  * @mixin  \Revolution\Copilot\CopilotManager
- * @mixin  \Revolution\Copilot\Testing\CopilotFake
  */
 class Copilot extends Facade
 {
@@ -36,14 +35,22 @@ class Copilot extends Facade
     /**
      * Swap the bound instance to a fake for testing.
      *
-     * @param  array<string, ResponseSequence|SessionEvent|string>|string|null  $responses
+     * @param  array<string, ResponseSequence|SessionEvent|string>|string|false|null  $responses
      */
-    public static function fake(array|string|null $responses = null): CopilotFake
+    public static function fake(array|string|false|null $responses = null): Factory
     {
-        $fake = new CopilotFake($responses);
+        return tap(static::getFacadeRoot(), function ($fake) use ($responses) {
+            static::swap($fake->fake($responses));
+        });
+    }
 
-        static::swap($fake);
-
-        return $fake;
+    /**
+     * Indicate that an exception should be thrown if any request is not faked.
+     */
+    public static function preventStrayRequests(array $allow = []): Factory
+    {
+        return tap(static::getFacadeRoot(), function ($fake) use ($allow) {
+            static::swap($fake->preventStrayRequests($allow));
+        });
     }
 }

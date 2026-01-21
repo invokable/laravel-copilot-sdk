@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\CopilotManager;
+use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Testing\CopilotFake;
 
 beforeEach(function () {
     // Reset the facade before each test
     Copilot::clearResolvedInstances();
+    Copilot::preventStrayRequests();
 });
 
 describe('Copilot::fake()', function () {
@@ -31,22 +33,21 @@ describe('Copilot::fake()', function () {
         expect($response->getContent())->toBe('42');
     });
 
-    it('returns CopilotFake instance', function () {
+    it('returns CopilotManager instance', function () {
         $fake = Copilot::fake();
 
-        expect($fake)->toBeInstanceOf(CopilotFake::class);
+        expect($fake)->toBeInstanceOf(CopilotManager::class)
+            ->and($fake->isFake())->toBeTrue();
     });
 });
 
 describe('Copilot::sequence()', function () {
     it('can push multiple responses in sequence', function () {
-        $fake = Copilot::fake();
-
-        $fake->fake([
-            '*' => $fake->sequence()
-                ->push($fake->response('First'))
-                ->push($fake->response('Second'))
-                ->push($fake->response('Third')),
+        Copilot::fake([
+            '*' => Copilot::sequence()
+                ->push(Copilot::response('First'))
+                ->push(Copilot::response('Second'))
+                ->push(Copilot::response('Third')),
         ]);
 
         $first = Copilot::run('1');
@@ -59,12 +60,12 @@ describe('Copilot::sequence()', function () {
     });
 
     it('returns null when sequence is exhausted without fallback', function () {
-        $fake = Copilot::fake();
-
-        $fake->fake([
-            '*' => $fake->sequence()
-                ->push($fake->response('Only One')),
-        ]);
+        Copilot::fake(
+            [
+                '*' => Copilot::sequence()
+                    ->push(Copilot::response('Only One')),
+            ],
+        );
 
         $first = Copilot::run('1');
         $second = Copilot::run('2');
@@ -74,12 +75,10 @@ describe('Copilot::sequence()', function () {
     });
 
     it('uses fallback when sequence is exhausted', function () {
-        $fake = Copilot::fake();
-
-        $fake->fake([
-            '*' => $fake->sequence()
-                ->push($fake->response('First'))
-                ->whenEmpty($fake->response('Fallback')),
+        Copilot::fake([
+            '*' => Copilot::sequence()
+                ->push(Copilot::response('First'))
+                ->whenEmpty(Copilot::response('Fallback')),
         ]);
 
         $first = Copilot::run('1');
@@ -94,12 +93,10 @@ describe('Copilot::sequence()', function () {
 
 describe('Copilot::start()', function () {
     it('can start a session with fake', function () {
-        $fake = Copilot::fake();
-
-        $fake->fake([
-            '*' => $fake->sequence()
-                ->push($fake->response('2'))
-                ->push($fake->response('4')),
+        Copilot::fake([
+            '*' => Copilot::sequence()
+                ->push(Copilot::response('2'))
+                ->push(Copilot::response('4')),
         ]);
 
         $results = [];
@@ -113,74 +110,76 @@ describe('Copilot::start()', function () {
     });
 
     it('records prompts from session', function () {
-        $fake = Copilot::fake('response');
+        Copilot::fake('response');
 
         Copilot::start(function (CopilotSession $session) {
             $session->sendAndWait('Hello');
             $session->sendAndWait('World');
         });
 
-        expect($fake->recorded())->toHaveCount(2)
-            ->and($fake->recorded()[0]['prompt'])->toBe('Hello')
-            ->and($fake->recorded()[1]['prompt'])->toBe('World');
+        $recorded = Copilot::recorded();
+
+        expect($recorded)->toHaveCount(2)
+            ->and($recorded[0]['prompt'])->toBe('Hello')
+            ->and($recorded[1]['prompt'])->toBe('World');
     });
 });
 
 describe('Assertions', function () {
     it('can assert prompt was sent', function () {
-        $fake = Copilot::fake('response');
+        Copilot::fake('response');
 
         Copilot::run('What is 1 + 1?');
 
-        $fake->assertPrompt('What is 1 + 1?');
+        Copilot::assertPrompt('What is 1 + 1?');
     });
 
     it('can assert prompt with wildcard pattern', function () {
-        $fake = Copilot::fake('response');
+        Copilot::fake('response');
 
         Copilot::run('What is 1 + 1?');
 
-        $fake->assertPrompt('What is *');
+        Copilot::assertPrompt('What is *');
     });
 
     it('can assert prompt was NOT sent', function () {
-        $fake = Copilot::fake('response');
+        Copilot::fake('response');
 
         Copilot::run('Hello');
 
-        $fake->assertNotPrompt('Goodbye');
+        Copilot::assertNotPrompt('Goodbye');
     });
 
     it('can assert prompt count', function () {
-        $fake = Copilot::fake('response');
+        Copilot::fake('response');
 
         Copilot::run('One');
         Copilot::run('Two');
         Copilot::run('Three');
 
-        $fake->assertPromptCount(3);
+        Copilot::assertPromptCount(3);
     });
 
     it('can assert nothing was sent', function () {
-        $fake = Copilot::fake('response');
+        Copilot::fake('response');
 
-        $fake->assertNothingSent();
+        Copilot::assertNothingSent();
     });
 });
 
 describe('preventStrayRequests()', function () {
     it('throws exception when no fake response matches', function () {
-        Copilot::fake()
-            ->preventStrayRequests();
+        Copilot::preventStrayRequests();
 
         expect(fn () => Copilot::run('Unexpected prompt'))
-            ->toThrow(RuntimeException::class, 'Attempted Copilot request without matching fake response');
+            ->toThrow(StrayRequestException::class, 'Attempted request to [ping] without a matching fake.');
     });
 
     it('allows requests that have matching responses', function () {
         Copilot::fake([
             '*' => 'response',
-        ])->preventStrayRequests();
+        ]);
+        Copilot::preventStrayRequests();
 
         $response = Copilot::run('Any prompt');
 

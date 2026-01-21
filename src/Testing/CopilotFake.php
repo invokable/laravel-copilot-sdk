@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Testing;
 
-use PHPUnit\Framework\Assert as PHPUnit;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
+use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionEvent;
 use RuntimeException;
 
@@ -27,19 +27,7 @@ class CopilotFake implements Factory
      *
      * @var array<array{prompt: string, attachments: ?array, mode: ?string}>
      */
-    protected array $recorded = [];
-
-    /**
-     * Whether to prevent stray requests.
-     */
-    protected bool $preventStrayRequests = false;
-
-    /**
-     * Allowed methods when preventing stray requests.
-     *
-     * @var array<string>
-     */
-    protected array $allowedMethods = [];
+    public array $recorded = [];
 
     /**
      * Session counter for generating unique IDs.
@@ -47,24 +35,22 @@ class CopilotFake implements Factory
     protected int $sessionCounter = 0;
 
     /**
-     * Create a new fake instance.
-     *
-     * @param  array<string, ResponseSequence|SessionEvent|string>|string|null  $responses
-     */
-    public function __construct(array|string|null $responses = null)
-    {
-        if ($responses !== null) {
-            $this->fake($responses);
-        }
-    }
-
-    /**
      * Set up fake responses.
      *
-     * @param  array<string, ResponseSequence|SessionEvent|string>|string  $responses
+     * @param  array<string, ResponseSequence|SessionEvent|string>|string|false|null  $responses
      */
-    public function fake(array|string $responses): self
+    public function fake(array|string|false|null $responses): self
     {
+        if ($responses === false) {
+            $this->stubCallbacks = [];
+
+            return $this;
+        }
+
+        if (is_null($responses)) {
+            $responses = '';
+        }
+
         if (is_string($responses)) {
             // Single string response for all prompts
             $this->stubCallbacks['*'] = (new ResponseSequence)
@@ -149,22 +135,6 @@ class CopilotFake implements Factory
     }
 
     /**
-     * Create a response helper.
-     */
-    public function response(string $content): SessionEvent
-    {
-        return ResponseSequence::responseFromContent($content);
-    }
-
-    /**
-     * Create a response sequence helper.
-     */
-    public function sequence(): ResponseSequence
-    {
-        return new ResponseSequence;
-    }
-
-    /**
      * Get the response sequence for a pattern.
      */
     protected function getSequenceFor(string $prompt): ResponseSequence
@@ -191,7 +161,7 @@ class CopilotFake implements Factory
         }
 
         // No match and preventing stray requests
-        if ($this->preventStrayRequests) {
+        if (Copilot::preventingStrayRequests()) {
             throw new RuntimeException("Attempted Copilot request without matching fake response: {$prompt}");
         }
 
@@ -202,7 +172,7 @@ class CopilotFake implements Factory
     /**
      * Check if a prompt matches a pattern.
      */
-    protected function matchesPattern(string $prompt, string $pattern): bool
+    public function matchesPattern(string $prompt, string $pattern): bool
     {
         // Convert pattern to regex (simple wildcard matching)
         $regex = '/^'.str_replace(['\*'], ['.*'], preg_quote($pattern, '/')).'$/';
@@ -218,77 +188,6 @@ class CopilotFake implements Factory
     protected function recordPrompt(array $record): void
     {
         $this->recorded[] = $record;
-    }
-
-    /**
-     * Prevent stray requests.
-     *
-     * @param  array<string>  $allow
-     */
-    public function preventStrayRequests(array $allow = []): self
-    {
-        $this->preventStrayRequests = true;
-        $this->allowedMethods = $allow;
-
-        return $this;
-    }
-
-    /**
-     * Assert that a prompt was sent.
-     */
-    public function assertPrompt(string $pattern): self
-    {
-        $found = false;
-
-        foreach ($this->recorded as $record) {
-            if ($this->matchesPattern($record['prompt'], $pattern)) {
-                $found = true;
-                break;
-            }
-        }
-
-        PHPUnit::assertTrue($found, "Failed asserting that a prompt matching [{$pattern}] was sent.");
-
-        return $this;
-    }
-
-    /**
-     * Assert that a prompt was NOT sent.
-     */
-    public function assertNotPrompt(string $pattern): self
-    {
-        $found = false;
-
-        foreach ($this->recorded as $record) {
-            if ($this->matchesPattern($record['prompt'], $pattern)) {
-                $found = true;
-                break;
-            }
-        }
-
-        PHPUnit::assertFalse($found, "Failed asserting that a prompt matching [{$pattern}] was not sent.");
-
-        return $this;
-    }
-
-    /**
-     * Assert the number of prompts sent.
-     */
-    public function assertPromptCount(int $count): self
-    {
-        PHPUnit::assertCount($count, $this->recorded, "Failed asserting that {$count} prompts were sent.");
-
-        return $this;
-    }
-
-    /**
-     * Assert that no prompts were sent.
-     */
-    public function assertNothingSent(): self
-    {
-        PHPUnit::assertEmpty($this->recorded, 'Failed asserting that no prompts were sent.');
-
-        return $this;
     }
 
     /**
