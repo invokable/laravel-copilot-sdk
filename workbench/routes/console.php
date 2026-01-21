@@ -22,8 +22,8 @@ use function Laravel\Prompts\outro;
 // vendor/bin/testbench copilot:ping
 Artisan::command('copilot:ping', function () {
     Copilot::start(function (CopilotSession $session) {
-        $this->info($session->id());
-        dump(Copilot::getClient()->ping());
+        $this->info('Session ID: '.$session->id());
+        $this->info(json_encode(Copilot::getClient()->ping()));
     });
 });
 
