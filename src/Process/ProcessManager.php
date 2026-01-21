@@ -175,7 +175,7 @@ class ProcessManager
     {
         if (empty($this->cliPath)) {
             $this->cliPath = new ExecutableFinder()->find(name: 'copilot', default: 'copilot');
-            info('Using copilot CLI path: '.$this->cliPath);
+            // info('Using copilot CLI path: '.$this->cliPath);
         }
 
         $commands = array_merge(
