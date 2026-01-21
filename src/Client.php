@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot;
 
 use Revolution\Copilot\Contracts\CopilotClient;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\JsonRpc\JsonRpcException;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Types\ConnectionState;
 use Revolution\Copilot\Types\SessionEvent;

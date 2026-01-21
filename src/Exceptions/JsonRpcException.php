@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Revolution\Copilot\JsonRpc;
+namespace Revolution\Copilot\Exceptions;
 
 use Exception;
 

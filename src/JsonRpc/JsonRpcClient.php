@@ -6,6 +6,7 @@ namespace Revolution\Copilot\JsonRpc;
 
 use Closure;
 use Illuminate\Support\Str;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Contracts;
 
-use Revolution\Copilot\JsonRpc\JsonRpcException;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use RuntimeException;
 
 /**
