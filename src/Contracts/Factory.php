@@ -11,7 +11,7 @@ interface Factory
     /**
      * Run a single prompt and return the response.
      */
-    public function run(string $prompt, array $options = []): ?SessionEvent;
+    public function run(string $prompt, ?array $attachments = null, ?string $mode = null): ?SessionEvent;
 
     /**
      * Start a session and execute a callback.
