@@ -139,7 +139,7 @@ class Client implements CopilotClient
     /**
      * Create a new conversation session.
      *
-     * @param  array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array}  $config
+     * @param  array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws RuntimeException
      */
@@ -166,6 +166,9 @@ class Client implements CopilotClient
             'streaming' => $config['streaming'] ?? null,
             'mcpServers' => $config['mcp_servers'] ?? null,
             'customAgents' => $config['custom_agents'] ?? null,
+            'configDir' => $config['config_dir'] ?? null,
+            'skillDirectories' => $config['skill_directories'] ?? null,
+            'disabledSkills' => $config['disabled_skills'] ?? null,
         ], fn ($v) => $v !== null));
 
         $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
