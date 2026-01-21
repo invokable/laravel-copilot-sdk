@@ -15,7 +15,7 @@ use Revolution\Copilot\Facades\Copilot;
 // vendor/bin/testbench copilot:ping
 Artisan::command('copilot:ping', function () {
     Copilot::start(function (CopilotSession $session) {
-        dump($session->id());
+        $this->info($session->id());
     });
     //    $client = Copilot::getClient();
     //    $client->start();
