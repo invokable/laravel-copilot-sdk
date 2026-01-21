@@ -6,11 +6,14 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Session;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\intro;
+use function Laravel\Prompts\outro;
 
 // Artisan::command('inspire', function () {
 //     $this->comment(Inspiring::quote());
@@ -25,9 +28,25 @@ Artisan::command('copilot:ping', function () {
 });
 
 // vendor/bin/testbench copilot:chat
+// vendor/bin/testbench copilot:chat --resume={session_id}
 Artisan::command('copilot:chat {--resume=}', function () {
-    Copilot::start(function (CopilotSession $session) {
+    $resume = $this->option('resume');
+
+    Copilot::start(function (Session $session) use ($resume) {
         info('Starting Copilot chat session: '.$session->id());
+
+        if ($resume) {
+            intro('Resumed previous session. Here are the past assistant messages:');
+
+            $messages = $session->getMessages();
+            foreach ($messages as $message) {
+                if ($message->isAssistantMessage()) {
+                    note($message->getContent());
+                }
+            }
+
+            outro('You can continue the conversation below.');
+        }
 
         while (true) {
             $prompt = text(
@@ -44,5 +63,5 @@ Artisan::command('copilot:chat {--resume=}', function () {
 
             note($response->getContent());
         }
-    }, resume: $this->option('resume'));
-});
+    }, resume: $resume);
+})->purpose('Interactive chat session with Copilot CLI SDK');
