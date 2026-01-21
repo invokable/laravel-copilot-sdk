@@ -176,7 +176,7 @@ Copilot::startで複数呼び出した場合。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Session;
+use Revolution\Copilot\Contracts\CopilotSession;
 
 Copilot::fake([
     '*' => Copilot::sequence()
@@ -184,7 +184,7 @@ Copilot::fake([
             ->push(Copilot::response('4')),
 ]);
 
-Copilot::start(function (Session $session) use (&$response1, &$response2) {
+Copilot::start(function (CopilotSession $session) use (&$response1, &$response2) {
     $response1 = $session->sendAndWait(prompt: '1 + 1'); // '2'を返す
     $response2 = $session->sendAndWait(prompt: '2 + 2'); // '4'を返す
 });
