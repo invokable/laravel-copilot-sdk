@@ -8,9 +8,11 @@ use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Events\Session\MessageSend;
 use Revolution\Copilot\Events\Session\MessageSendAndWait;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\SessionEvent;
 use RuntimeException;
+use Throwable;
 
 /**
  * Represents a single conversation session with the Copilot CLI.
@@ -53,6 +55,8 @@ class Session implements CopilotSession
 
     /**
      * Send a message to this session.
+     *
+     * @throws JsonRpcException
      */
     public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string
     {
@@ -70,8 +74,6 @@ class Session implements CopilotSession
 
     /**
      * Send a message and wait until the session becomes idle.
-     *
-     * @throws RuntimeException
      */
     public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, float $timeout = 60.0): ?SessionEvent
     {
@@ -155,7 +157,7 @@ class Session implements CopilotSession
         foreach ($this->eventHandlers as $handler) {
             try {
                 $handler($event);
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // Ignore handler errors
             }
         }
@@ -214,7 +216,7 @@ class Session implements CopilotSession
 
         try {
             return ($this->permissionHandler)($request, ['sessionId' => $this->sessionId]);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return ['kind' => 'denied-no-approval-rule-and-could-not-request-from-user'];
         }
     }
@@ -223,6 +225,8 @@ class Session implements CopilotSession
      * Get all messages from this session's history.
      *
      * @return array<SessionEvent>
+     *
+     * @throws JsonRpcException
      */
     public function getMessages(): array
     {
@@ -240,6 +244,8 @@ class Session implements CopilotSession
 
     /**
      * Destroy this session.
+     *
+     * @throws JsonRpcException
      */
     public function destroy(): void
     {
@@ -254,6 +260,8 @@ class Session implements CopilotSession
 
     /**
      * Abort the currently processing message.
+     *
+     * @throws JsonRpcException
      */
     public function abort(): void
     {
