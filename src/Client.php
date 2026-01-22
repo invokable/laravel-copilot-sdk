@@ -18,6 +18,8 @@ use RuntimeException;
  */
 class Client implements CopilotClient
 {
+    protected const int SDK_PROTOCOL_VERSION = 1;
+
     protected ProcessManager $processManager;
 
     protected ?JsonRpcClient $rpcClient = null;
@@ -323,13 +325,21 @@ class Client implements CopilotClient
     }
 
     /**
+     * Get the SDK protocol version.
+     */
+    public function getProtocolVersion(): int
+    {
+        return self::SDK_PROTOCOL_VERSION;
+    }
+
+    /**
      * Verify the server's protocol version matches the SDK.
      *
      * @throws RuntimeException|JsonRpcException
      */
     protected function verifyProtocolVersion(): void
     {
-        $expectedVersion = ProcessManager::getProtocolVersion();
+        $expectedVersion = $this->getProtocolVersion();
         $pingResult = $this->ping();
         $serverVersion = $pingResult['protocolVersion'] ?? null;
 
