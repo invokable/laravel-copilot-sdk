@@ -66,6 +66,8 @@ class CopilotManager implements Factory
 
         $client = $this->getClient();
 
+        $config = is_array($config) ? $config : $config->toArray();
+
         if (empty($resume)) {
             if (is_array($config)) {
                 $config = SessionConfig::fromArray(array_merge(
