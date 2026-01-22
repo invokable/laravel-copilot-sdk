@@ -46,6 +46,32 @@ Your Application
 
 ClientやSessionは公式SDKを再現しつつLaravel流にCopilot Facadeを中心にした使い方。
 
+## 基本的な使い方
+
+一つのプロンプトを実行してすぐに結果を取得する。
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+$response = Copilot::run('Tell me something about Laravel.');
+dump($response->content());
+```
+
+クロージャ内で一つのセッションで複数のプロンプトを実行する。
+```php
+use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Facades\Copilot;
+
+Copilot::start(function (CopilotSession $session) {
+    dump('Starting Copilot session: '.$session->id());
+
+    $response = $session->sendAndWait('Tell me something about PHP.');
+    dump($response->content());
+
+    $response = $session->sendAndWait('Tell me something about Laravel.');
+    dump($response->content());
+});
+```
+
 ## Directory Structure
 
 - 公式SDKのアップデートに合わせて更新する時は、Clientなどの実装とContractsのinterface、Testingのテスト用クラスが正しく更新されていることを確認。
