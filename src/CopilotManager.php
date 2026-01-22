@@ -19,10 +19,16 @@ class CopilotManager implements Factory
 
     protected ?CopilotClient $client = null;
 
+    /**
+     * The process ID that created this instance.
+     * Used to prevent cleanup in forked child processes.
+     */
+    protected int $ownerPid;
+
     public function __construct(
         protected array $config = [],
     ) {
-        //
+        $this->ownerPid = getmypid();
     }
 
     /**
@@ -126,9 +132,15 @@ class CopilotManager implements Factory
 
     /**
      * Destructor - ensure client is stopped.
+     *
+     * Only cleanup if we're in the same process that created this instance.
+     * This prevents forked child processes (e.g., from pcntl_fork() in Laravel Prompts spin())
+     * from destroying sessions that belong to the parent process.
      */
     public function __destruct()
     {
-        $this->stop();
+        if (getmypid() === $this->ownerPid) {
+            $this->stop();
+        }
     }
 }
