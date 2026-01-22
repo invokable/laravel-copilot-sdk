@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types;
 
+use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
@@ -50,6 +51,11 @@ readonly class SessionConfig implements Arrayable
          * When specified, uses the provided API endpoint instead of the Copilot API.
          */
         public ProviderConfig|array|null $provider = null,
+        /**
+         * Handler for permission requests from the server.
+         * When provided, the server will call this handler to request permission for operations.
+         */
+        public ?Closure $onPermissionRequest = null,
         /**
          * Enable streaming of assistant message and reasoning chunks.
          * When true, ephemeral assistant.message_delta and assistant.reasoning_delta
@@ -103,6 +109,7 @@ readonly class SessionConfig implements Arrayable
             availableTools: $data['availableTools'] ?? null,
             excludedTools: $data['excludedTools'] ?? null,
             provider: $provider,
+            onPermissionRequest: $data['onPermissionRequest'] ?? null,
             streaming: $data['streaming'] ?? null,
             mcpServers: $data['mcpServers'] ?? null,
             customAgents: $data['customAgents'] ?? null,
@@ -133,6 +140,7 @@ readonly class SessionConfig implements Arrayable
             'availableTools' => $this->availableTools,
             'excludedTools' => $this->excludedTools,
             'provider' => $provider,
+            'onPermissionRequest' => $this->onPermissionRequest,
             'streaming' => $this->streaming,
             'mcpServers' => $this->mcpServers,
             'customAgents' => $this->customAgents,
