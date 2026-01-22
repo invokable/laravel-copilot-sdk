@@ -79,4 +79,12 @@ class FakeSession implements CopilotSession
     {
         return $this->recorded;
     }
+
+    /**
+     * Destroy this session.
+     */
+    public function destroy(): void
+    {
+        // No-op in fake
+    }
 }
