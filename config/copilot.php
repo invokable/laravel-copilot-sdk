@@ -21,6 +21,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Additional arguments to pass to the CLI when starting the server.
+    | e.g. ['--yolo']
     |
     */
     'cli_args' => [],
