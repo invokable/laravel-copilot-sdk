@@ -31,6 +31,65 @@ composer run lint        # Run Laravel Pint for code style checks
 vendor/bin/testbench copilot:ping
 ```
 
+## Directory Structure
+
+- 公式SDKのアップデートに合わせて更新する時は、Clientなどの実装とContractsのinterface、Testingのテスト用クラスが正しく更新されていることを確認。
+- Node.jsのtypes.tsで定義されている型はTypesディレクトリにreadonly classとして作成。
+
+```
+src/
+├── Client.php                  # CopilotClient実装
+├── Session.php                 # CopilotSession実装
+├── CopilotManager.php          # Factory実装
+├── CopilotSdkServiceProvider.php
+├── Contracts/
+│   ├── CopilotClient.php       # クライアントインターフェース
+│   ├── CopilotSession.php      # セッションインターフェース
+│   └── Factory.php
+├── Enums/
+│   ├── ConnectionState.php
+│   └── SessionEventType.php
+├── Events/
+│   ├── Client/
+│   │   ├── ClientStarted.php
+│   │   └── PingPong.php
+│   ├── JsonRpc/
+│   │   ├── MessageReceived.php
+│   │   ├── MessageSending.php
+│   │   └── ResponseReceived.php
+│   ├── Process/
+│   │   └── ProcessStarted.php
+│   └── Session/
+│       ├── CreateSession.php
+│       ├── MessageSend.php
+│       ├── MessageSendAndWait.php
+│       └── ResumeSession.php
+├── Exceptions/
+│   ├── JsonRpcException.php
+│   └── StrayRequestException.php
+├── Facades/
+│   └── Copilot.php             # Laravelファサード
+├── JsonRpc/
+│   ├── JsonRpcClient.php       # JSON-RPC 2.0クライアント
+│   └── JsonRpcMessage.php
+├── Process/
+│   ├── ProcessManager.php      # CLIプロセス管理
+│   └── ProcessWrapper.php
+├── Support/
+│   └── PermissionRequestKind.php
+├── Testing/
+│   ├── CopilotFake.php         # テスト用モック
+│   ├── FakeSession.php
+│   ├── ResponseSequence.php
+│   └── WithFake.php
+└── Types/
+    ├── ProviderConfig.php
+    ├── ResumeSessionConfig.php
+    ├── SessionConfig.php
+    ├── SessionEvent.php
+    └── SystemMessageConfig.php
+```
+
 ## Debugging
 - パッケージプロジェクトなので`info()`などのログはtestbenchの`vendor/orchestra/testbench-core/laravel/storage/logs/laravel.log`に出力される。
 
