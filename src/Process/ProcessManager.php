@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Process;
 
+use Revolution\Copilot\Events\Process\ProcessStarted;
 use RuntimeException;
 use Symfony\Component\Process\ExecutableFinder;
 
@@ -186,5 +187,7 @@ class ProcessManager
 
         // Create a wrapper for status checking
         $this->process = new ProcessWrapper($rawProcess);
+
+        ProcessStarted::dispatch($this);
     }
 }
