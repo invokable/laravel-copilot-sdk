@@ -10,7 +10,7 @@ namespace Revolution\Copilot\JsonRpc;
 readonly class JsonRpcMessage
 {
     public function __construct(
-        public ?string $id = null,
+        public string|int|null $id = null,
         public ?string $method = null,
         public array $params = [],
         public mixed $result = null,
@@ -20,7 +20,7 @@ readonly class JsonRpcMessage
     /**
      * Create a request message.
      */
-    public static function request(string $id, string $method, array $params = []): self
+    public static function request(string|int $id, string $method, array $params = []): self
     {
         return new self(id: $id, method: $method, params: $params);
     }
@@ -36,7 +36,7 @@ readonly class JsonRpcMessage
     /**
      * Create a response message.
      */
-    public static function response(string $id, mixed $result): self
+    public static function response(string|int $id, mixed $result): self
     {
         return new self(id: $id, result: $result);
     }
@@ -44,7 +44,7 @@ readonly class JsonRpcMessage
     /**
      * Create an error response message.
      */
-    public static function errorResponse(string $id, int $code, string $message, mixed $data = null): self
+    public static function errorResponse(string|int $id, int $code, string $message, mixed $data = null): self
     {
         return new self(id: $id, error: [
             'code' => $code,
@@ -59,10 +59,11 @@ readonly class JsonRpcMessage
     public static function fromArray(array $data): self
     {
         // JSON-RPC 2.0 allows id to be string, number, or null
+        // Preserve the original type for proper response matching
         $id = $data['id'] ?? null;
 
         return new self(
-            id: $id !== null ? (string) $id : null,
+            id: $id,
             method: $data['method'] ?? null,
             params: $data['params'] ?? [],
             result: $data['result'] ?? null,

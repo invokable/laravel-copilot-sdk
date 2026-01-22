@@ -469,15 +469,15 @@ class Client implements CopilotClient
         $request = $params['permissionRequest'] ?? [];
 
         if ($sessionId === null) {
-            return ['kind' => 'denied-no-approval-rule-and-could-not-request-from-user'];
+            return ['result' => ['kind' => 'denied-no-approval-rule-and-could-not-request-from-user']];
         }
 
         $session = $this->sessions[$sessionId] ?? null;
 
         if ($session === null) {
-            return ['kind' => 'denied-no-approval-rule-and-could-not-request-from-user'];
+            return ['result' => ['kind' => 'denied-no-approval-rule-and-could-not-request-from-user']];
         }
 
-        return $session->handlePermissionRequest($request);
+        return ['result' => $session->handlePermissionRequest($request)];
     }
 }
