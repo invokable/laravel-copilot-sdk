@@ -1,7 +1,7 @@
 {
     "preset": "laravel",
     "rules": {
-        "no_unused_imports": false,
+        "no_unused_imports": true,
         "strict_comparison": true,
         "declare_strict_types": true
     }
