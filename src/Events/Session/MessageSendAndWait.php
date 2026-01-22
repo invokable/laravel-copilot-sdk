@@ -12,7 +12,7 @@ class MessageSendAndWait
     use Dispatchable;
 
     public function __construct(
-        public string $session_id,
+        public string $sessionId,
         public ?SessionEvent $lastAssistantMessage,
         public string $prompt,
         public ?array $attachments = null,

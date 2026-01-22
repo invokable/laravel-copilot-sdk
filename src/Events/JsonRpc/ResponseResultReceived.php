@@ -10,5 +10,5 @@ class ResponseResultReceived
 {
     use Dispatchable;
 
-    public function __construct(public string $request_id, public mixed $result) {}
+    public function __construct(public string $requestId, public mixed $result) {}
 }

@@ -11,8 +11,8 @@ class MessageSend
     use Dispatchable;
 
     public function __construct(
-        public string $session_id,
-        public string $message_id,
+        public string $sessionId,
+        public string $messageId,
         public string $prompt,
         public ?array $attachments = null,
         public ?string $mode = null,
