@@ -12,6 +12,7 @@ use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -28,15 +29,27 @@ Artisan::command('copilot:ping', function () {
 });
 
 // vendor/bin/testbench copilot:chat
-// vendor/bin/testbench copilot:chat --resume={session_id}
-Artisan::command('copilot:chat {--resume=}', function () {
-    $resume = $this->option('resume');
-
-    Copilot::start(function (Session $session) use ($resume) {
+// vendor/bin/testbench copilot:chat --resume
+Artisan::command('copilot:chat {--resume}', function () {
+    Copilot::start(function (Session $session) {
         info('Starting Copilot chat session: '.$session->id());
 
-        if ($resume) {
-            intro('Resumed previous session. Here are the past assistant messages:');
+        if ($this->option('resume')) {
+            $sessions = collect(Copilot::getClient()->listSessions())
+                ->mapWithKeys(function ($session) {
+                    return [$session['sessionId'] => $session['summary'] ?? ''];
+                })
+                ->toArray();
+
+            $session_id = select(
+                label: 'What session do you want to resume?',
+                options: $sessions,
+            );
+
+            $session->destroy();
+            $session = Copilot::getClient()->resumeSession($session_id);
+
+            intro("Resumed previous session: $session_id. Here are the past assistant messages");
 
             $messages = $session->getMessages();
             foreach ($messages as $message) {
@@ -63,5 +76,5 @@ Artisan::command('copilot:chat {--resume=}', function () {
 
             note($response->getContent());
         }
-    }, resume: $resume);
+    });
 })->purpose('Interactive chat session with Copilot CLI SDK');
