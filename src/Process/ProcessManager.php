@@ -12,8 +12,6 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 class ProcessManager
 {
-    protected const int SDK_PROTOCOL_VERSION = 1;
-
     /**
      * The running process wrapper.
      */
@@ -121,14 +119,6 @@ class ProcessManager
         }
 
         return $this->stdout;
-    }
-
-    /**
-     * Get the SDK protocol version.
-     */
-    public static function getProtocolVersion(): int
-    {
-        return self::SDK_PROTOCOL_VERSION;
     }
 
     /**
