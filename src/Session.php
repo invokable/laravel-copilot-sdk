@@ -86,7 +86,7 @@ class Session implements CopilotSession
             } elseif ($event->isIdle()) {
                 $idle = true;
             } elseif ($event->isError()) {
-                $error = $event->getErrorMessage() ?? 'Unknown error';
+                $error = $event->errorMessage() ?? 'Unknown error';
             }
         };
 

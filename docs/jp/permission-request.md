@@ -34,7 +34,7 @@ use function Laravel\Prompts\confirm;
                 message: 'Waiting for Copilot response...',
             );
 
-            note($response->getContent());
+            note($response->content());
         }
     }, config: $config);
 ```

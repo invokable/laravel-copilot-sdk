@@ -78,7 +78,7 @@ readonly class SessionEvent implements Arrayable
     /**
      * Get the error message from error data.
      */
-    public function getErrorMessage(): ?string
+    public function errorMessage(): ?string
     {
         return $this->data['message'] ?? null;
     }

@@ -92,7 +92,7 @@ Artisan::command('copilot:chat {--resume}', function () {
             if ($event->isAssistantMessage()) {
                 note($event->content());
             } elseif ($event->isError()) {
-                error($event->getErrorMessage() ?? 'Unknown error');
+                error($event->errorMessage() ?? 'Unknown error');
             } else {
                 info('Event: '.$event->type->value);
             }
@@ -178,6 +178,6 @@ Artisan::command('copilot:tools', function () {
             message: 'Copilot thinking...',
         );
 
-        note($response->getContent());
+        note($response->content());
     }, config: $config);
 })->purpose('Copilot Tools testing command');

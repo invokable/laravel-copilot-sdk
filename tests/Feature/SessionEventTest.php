@@ -91,7 +91,7 @@ describe('SessionEvent', function () {
             'data' => ['message' => 'Error occurred'],
         ]);
 
-        expect($event->getErrorMessage())->toBe('Error occurred');
+        expect($event->errorMessage())->toBe('Error occurred');
     });
 
     it('can convert to array', function () {
