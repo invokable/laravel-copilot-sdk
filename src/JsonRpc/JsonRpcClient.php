@@ -172,7 +172,7 @@ class JsonRpcClient
     /**
      * Send a response to an incoming request.
      */
-    protected function sendResponse(string $id, mixed $result): void
+    protected function sendResponse(string|int $id, mixed $result): void
     {
         $message = JsonRpcMessage::response($id, $result);
         $this->sendMessage($message);
@@ -181,7 +181,7 @@ class JsonRpcClient
     /**
      * Send an error response to an incoming request.
      */
-    protected function sendErrorResponse(string $id, int $code, string $errorMessage, mixed $data = null): void
+    protected function sendErrorResponse(string|int $id, int $code, string $errorMessage, mixed $data = null): void
     {
         $message = JsonRpcMessage::errorResponse($id, $code, $errorMessage, $data);
         $this->sendMessage($message);
