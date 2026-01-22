@@ -18,7 +18,7 @@ use RuntimeException;
  */
 class Client implements CopilotClient
 {
-    protected const int SDK_PROTOCOL_VERSION = 1;
+    protected const int SDK_PROTOCOL_VERSION = 2;
 
     protected ProcessManager $processManager;
 
