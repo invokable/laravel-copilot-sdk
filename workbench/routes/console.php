@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Support\PermissionRequestKind;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -38,13 +38,15 @@ Artisan::command('copilot:chat {--resume}', function () {
     $config = new SessionConfig(
         // availableTools: [],
         onPermissionRequest: function (array $request, array $invocation) {
+            // dump($request);
             $confirm = confirm(
                 label: 'Do you accept the requested permissions?',
             );
+
             if ($confirm) {
-                return ['kind' => 'approved'];
+                return PermissionRequestKind::approved();
             } else {
-                return ['kind' => 'denied-interactively-by-user'];
+                return PermissionRequestKind::deniedInteractivelyByUser();
             }
         },
     );
@@ -105,7 +107,7 @@ Artisan::command('copilot:chat {--resume}', function () {
 
             $response = spin(
                 callback: fn () => $session->sendAndWait($prompt),
-                message: 'Waiting for Copilot response...',
+                message: 'Copilot thinking...',
             );
 
             // 上のonハンドラで表示してるのでsendAndWaitからの最終メッセージの表示は不要。
