@@ -35,6 +35,7 @@ vendor/bin/testbench copilot:ping
 
 - 公式SDKのアップデートに合わせて更新する時は、Clientなどの実装とContractsのinterface、Testingのテスト用クラスが正しく更新されていることを確認。
 - Node.jsのtypes.tsで定義されている型はTypesディレクトリにreadonly classとして作成。
+- `copilot-sdk/nodejs/src/generated/session-events.ts`のtypeは`src/Enums/SessionEventType.php`のEnumで定義。
 
 ```
 src/
