@@ -12,6 +12,7 @@ beforeEach(function () {
 
 test('ping() returns pong', function () {
     $response = Copilot::client()->start()->ping();
+    Copilot::client()->stop();
 
     expect($response)->toContain('pong');
 });
