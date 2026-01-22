@@ -147,7 +147,7 @@ describe('CopilotManager', function () {
         $mockClient = Mockery::mock(CopilotClient::class);
         $mockClient->shouldReceive('start')->once();
         $mockClient->shouldReceive('createSession')
-            ->with(Mockery::on(fn ($config) => isset($config['model'])))
+            ->with(Mockery::on(fn ($config) => isset($config->toArray()['model'])))
             ->once()
             ->andReturn($mockSession);
         $mockClient->shouldReceive('stop')->andReturn([]);

@@ -7,7 +7,6 @@ namespace Revolution\Copilot;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Events\Client\ClientStarted;
-use Revolution\Copilot\Events\Client\ClientStopped;
 use Revolution\Copilot\Events\Client\PingPong;
 use Revolution\Copilot\Events\Session\CreateSession;
 use Revolution\Copilot\Events\Session\ResumeSession;
@@ -15,6 +14,8 @@ use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Types\ConnectionState;
+use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use RuntimeException;
 
@@ -149,13 +150,15 @@ class Client implements CopilotClient
     /**
      * Create a new conversation session.
      *
-     * @param  array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  SessionConfig|array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws RuntimeException
      */
-    public function createSession(array $config = []): Session
+    public function createSession(SessionConfig|array $config = []): Session
     {
         $this->ensureConnected();
+
+        $config = is_array($config) ? $config : $config->toArray();
 
         $tools = $config['tools'] ?? [];
         $toolsForRequest = array_map(fn ($tool) => [
@@ -165,20 +168,20 @@ class Client implements CopilotClient
         ], $tools);
 
         $response = $this->rpcClient->request('session.create', array_filter([
-            'sessionId' => $config['session_id'] ?? null,
+            'sessionId' => $config['sessionId'] ?? null,
             'model' => $config['model'] ?? null,
             'tools' => $toolsForRequest ?: null,
-            'systemMessage' => $config['system_message'] ?? null,
-            'availableTools' => $config['available_tools'] ?? null,
-            'excludedTools' => $config['excluded_tools'] ?? null,
+            'systemMessage' => $config['systemMessage'] ?? null,
+            'availableTools' => $config['availableTools'] ?? null,
+            'excludedTools' => $config['excludedTools'] ?? null,
             'provider' => $config['provider'] ?? null,
-            'requestPermission' => isset($config['on_permission_request']),
+            'requestPermission' => isset($config['onPermissionRequest']),
             'streaming' => $config['streaming'] ?? null,
-            'mcpServers' => $config['mcp_servers'] ?? null,
-            'customAgents' => $config['custom_agents'] ?? null,
-            'configDir' => $config['config_dir'] ?? null,
-            'skillDirectories' => $config['skill_directories'] ?? null,
-            'disabledSkills' => $config['disabled_skills'] ?? null,
+            'mcpServers' => $config['mcpServers'] ?? null,
+            'customAgents' => $config['customAgents'] ?? null,
+            'configDir' => $config['configDir'] ?? null,
+            'skillDirectories' => $config['skillDirectories'] ?? null,
+            'disabledSkills' => $config['disabledSkills'] ?? null,
         ], fn ($v) => $v !== null));
 
         $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
@@ -189,8 +192,8 @@ class Client implements CopilotClient
         ]);
         $session->registerTools($tools);
 
-        if (isset($config['on_permission_request'])) {
-            $session->registerPermissionHandler($config['on_permission_request']);
+        if (isset($config['onPermissionRequest'])) {
+            $session->registerPermissionHandler($config['onPermissionRequest']);
         }
 
         $this->sessions[$sessionId] = $session;
@@ -203,13 +206,15 @@ class Client implements CopilotClient
     /**
      * Resume an existing session.
      *
-     * @param  array{tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws RuntimeException
      */
-    public function resumeSession(string $sessionId, array $config = []): CopilotSession
+    public function resumeSession(string $sessionId, ResumeSessionConfig|array $config = []): CopilotSession
     {
         $this->ensureConnected();
+
+        $config = is_array($config) ? $config : $config->toArray();
 
         $tools = $config['tools'] ?? [];
         $toolsForRequest = array_map(fn ($tool) => [
@@ -222,12 +227,12 @@ class Client implements CopilotClient
             'sessionId' => $sessionId,
             'tools' => $toolsForRequest ?: null,
             'provider' => $config['provider'] ?? null,
-            'requestPermission' => isset($config['on_permission_request']),
+            'requestPermission' => isset($config['onPermissionRequest']),
             'streaming' => $config['streaming'] ?? null,
-            'mcpServers' => $config['mcp_servers'] ?? null,
-            'customAgents' => $config['custom_agents'] ?? null,
-            'skillDirectories' => $config['skill_directories'] ?? null,
-            'disabledSkills' => $config['disabled_skills'] ?? null,
+            'mcpServers' => $config['mcpServers'] ?? null,
+            'customAgents' => $config['customAgents'] ?? null,
+            'skillDirectories' => $config['skillDirectories'] ?? null,
+            'disabledSkills' => $config['disabledSkills'] ?? null,
         ], fn ($v) => $v !== null));
 
         $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');
@@ -238,8 +243,8 @@ class Client implements CopilotClient
         ]);
         $session->registerTools($tools);
 
-        if (isset($config['on_permission_request'])) {
-            $session->registerPermissionHandler($config['on_permission_request']);
+        if (isset($config['onPermissionRequest'])) {
+            $session->registerPermissionHandler($config['onPermissionRequest']);
         }
 
         $this->sessions[$resumedSessionId] = $session;

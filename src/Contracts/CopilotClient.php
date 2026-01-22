@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Contracts;
 
 use Revolution\Copilot\Exceptions\JsonRpcException;
+use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\SessionConfig;
 use RuntimeException;
 
 /**
@@ -24,14 +26,14 @@ interface CopilotClient
      *
      * @throws RuntimeException
      */
-    public function createSession(array $config = []): CopilotSession;
+    public function createSession(SessionConfig|array $config = []): CopilotSession;
 
     /**
      * Resume an existing session.
      *
      * @throws RuntimeException
      */
-    public function resumeSession(string $sessionId, array $config = []): CopilotSession;
+    public function resumeSession(string $sessionId, ResumeSessionConfig|array $config = []): CopilotSession;
 
     /**
      * Send a ping to verify connectivity.

@@ -8,6 +8,8 @@ use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
 use Revolution\Copilot\Testing\WithFake;
+use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
@@ -56,7 +58,7 @@ class CopilotManager implements Factory
      * @param  callable(CopilotSession): mixed  $callback
      * @param  ?string  $resume  Session ID to resume
      */
-    public function start(callable $callback, array $config = [], ?string $resume = null): mixed
+    public function start(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null): mixed
     {
         if ($this->isFake()) {
             return $this->fake->start($callback, $config);
@@ -65,15 +67,23 @@ class CopilotManager implements Factory
         $client = $this->getClient();
 
         if (empty($resume)) {
-            $session = $client->createSession(array_merge(
-                ['model' => $this->config['model'] ?? null],
-                $config,
-            ));
+            if (is_array($config)) {
+                $config = SessionConfig::fromArray(array_merge(
+                    ['model' => $this->config['model'] ?? null],
+                    $config,
+                ));
+            }
+
+            $session = $client->createSession($config);
         } else {
-            $session = $client->resumeSession($resume, array_merge(
-                ['model' => $this->config['model'] ?? null],
-                $config,
-            ));
+            if (is_array($config)) {
+                $config = ResumeSessionConfig::fromArray(array_merge(
+                    ['model' => $this->config['model'] ?? null],
+                    $config,
+                ));
+            }
+
+            $session = $client->resumeSession($resume, $config);
         }
 
         try {
@@ -86,16 +96,20 @@ class CopilotManager implements Factory
     /**
      * Create a new session (caller is responsible for destroying it).
      */
-    public function createSession(array $config = []): CopilotSession
+    public function createSession(SessionConfig|array $config = []): CopilotSession
     {
         if ($this->isFake()) {
             return $this->fake->createSession($config);
         }
 
-        return $this->getClient()->createSession(array_merge(
-            ['model' => $this->config['model'] ?? null],
-            $config,
-        ));
+        if (is_array($config)) {
+            $config = SessionConfig::fromArray(array_merge(
+                ['model' => $this->config['model'] ?? null],
+                $config,
+            ));
+        }
+
+        return $this->getClient()->createSession($config);
     }
 
     /**

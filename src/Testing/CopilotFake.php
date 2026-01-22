@@ -7,6 +7,8 @@ namespace Revolution\Copilot\Testing;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use RuntimeException;
 
@@ -105,7 +107,7 @@ class CopilotFake implements Factory
      *
      * @param  callable(CopilotSession): mixed  $callback
      */
-    public function start(callable $callback, array $config = [], ?string $resume = null): mixed
+    public function start(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null): mixed
     {
         $sequence = $this->getSequenceFor('*');
         $session = new FakeSession('fake-session-'.++$this->sessionCounter, $sequence);
@@ -127,7 +129,7 @@ class CopilotFake implements Factory
     /**
      * Create a new session (caller is responsible for destroying it).
      */
-    public function createSession(array $config = []): CopilotSession
+    public function createSession(SessionConfig|array $config = []): CopilotSession
     {
         $sequence = $this->getSequenceFor('*');
 

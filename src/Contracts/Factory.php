@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Contracts;
 
+use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 
 interface Factory
@@ -19,10 +21,10 @@ interface Factory
      * @param  callable(CopilotSession): mixed  $callback
      * @param  ?string  $resume  Session ID to resume
      */
-    public function start(callable $callback, array $config = [], ?string $resume = null): mixed;
+    public function start(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null): mixed;
 
     /**
      * Create a new session.
      */
-    public function createSession(array $config = []): CopilotSession;
+    public function createSession(SessionConfig|array $config = []): CopilotSession;
 }
