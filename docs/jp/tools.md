@@ -63,7 +63,7 @@ Artisan::command('copilot:tools', function () {
             message: 'Copilot thinking...',
         );
 
-        note($response->getContent());
+        note($response->content());
     }, config: $config);
 });
 ```
