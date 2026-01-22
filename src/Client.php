@@ -18,6 +18,7 @@ use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use RuntimeException;
+use Throwable;
 
 /**
  * Main client for interacting with the Copilot CLI.
@@ -63,12 +64,12 @@ class Client implements CopilotClient
     /**
      * Start the CLI server and establish connection.
      *
-     * @throws RuntimeException
+     * @throws Throwable
      */
-    public function start(): void
+    public function start(): static
     {
         if ($this->state === ConnectionState::CONNECTED) {
-            return;
+            return $this;
         }
 
         $this->state = ConnectionState::CONNECTING;
@@ -107,7 +108,9 @@ class Client implements CopilotClient
             $this->verifyProtocolVersion();
 
             ClientStarted::dispatch($this);
-        } catch (\Throwable $e) {
+
+            return $this;
+        } catch (Throwable $e) {
             $this->state = ConnectionState::ERROR;
             throw $e;
         }
@@ -116,7 +119,7 @@ class Client implements CopilotClient
     /**
      * Stop the CLI server and close all sessions.
      *
-     * @return array<\Throwable> Errors encountered during cleanup
+     * @return array<Throwable> Errors encountered during cleanup
      */
     public function stop(): array
     {
@@ -126,7 +129,7 @@ class Client implements CopilotClient
         foreach ($this->sessions as $session) {
             try {
                 $session->destroy();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $errors[] = $e;
             }
         }
@@ -152,7 +155,7 @@ class Client implements CopilotClient
      *
      * @param  SessionConfig|array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
      *
-     * @throws RuntimeException
+     * @throws JsonRpcException
      */
     public function createSession(SessionConfig|array $config = []): Session
     {
@@ -208,7 +211,7 @@ class Client implements CopilotClient
      *
      * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
      *
-     * @throws RuntimeException
+     * @throws JsonRpcException
      */
     public function resumeSession(string $sessionId, ResumeSessionConfig|array $config = []): CopilotSession
     {
@@ -267,7 +270,7 @@ class Client implements CopilotClient
      *
      * @return array{message: string, timestamp: int, protocolVersion?: int}
      *
-     * @throws RuntimeException|JsonRpcException
+     * @throws JsonRpcException
      */
     public function ping(?string $message = null): array
     {
@@ -284,7 +287,7 @@ class Client implements CopilotClient
     /**
      * Get the last session ID.
      *
-     * @throws RuntimeException
+     * @throws JsonRpcException
      */
     public function getLastSessionId(): ?string
     {
@@ -298,7 +301,7 @@ class Client implements CopilotClient
     /**
      * Delete a session.
      *
-     * @throws RuntimeException
+     * @throws JsonRpcException
      */
     public function deleteSession(string $sessionId): void
     {
@@ -320,7 +323,7 @@ class Client implements CopilotClient
      *
      * @return array<array{sessionId: string, startTime: string, modifiedTime: string, summary?: string, isRemote: bool}>
      *
-     * @throws RuntimeException
+     * @throws JsonRpcException
      */
     public function listSessions(): array
     {
@@ -451,7 +454,7 @@ class Client implements CopilotClient
                 'textResultForLlm' => is_array($result) ? json_encode($result) : (string) $result,
                 'resultType' => 'success',
             ]];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return ['result' => [
                 'textResultForLlm' => "Tool execution failed: {$e->getMessage()}",
                 'resultType' => 'failure',
