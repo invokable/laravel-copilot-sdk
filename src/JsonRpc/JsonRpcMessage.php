@@ -58,8 +58,11 @@ readonly class JsonRpcMessage
      */
     public static function fromArray(array $data): self
     {
+        // JSON-RPC 2.0 allows id to be string, number, or null
+        $id = $data['id'] ?? null;
+
         return new self(
-            id: $data['id'] ?? null,
+            id: $id !== null ? (string) $id : null,
             method: $data['method'] ?? null,
             params: $data['params'] ?? [],
             result: $data['result'] ?? null,
