@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Types\SessionEvent;
-use Revolution\Copilot\Types\SessionEventType;
 
 describe('SessionEvent', function () {
     it('can be created from array', function () {

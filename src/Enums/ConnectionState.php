@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Revolution\Copilot\Types;
+namespace Revolution\Copilot\Enums;
 
 /**
  * Connection state for the Copilot client.

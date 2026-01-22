@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\SessionEventType;
 
 /**
  * Represents a session event from the Copilot CLI.

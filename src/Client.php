@@ -6,6 +6,7 @@ namespace Revolution\Copilot;
 
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Events\Client\ClientStarted;
 use Revolution\Copilot\Events\Client\PingPong;
 use Revolution\Copilot\Events\Session\CreateSession;
@@ -13,7 +14,6 @@ use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
-use Revolution\Copilot\Types\ConnectionState;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;

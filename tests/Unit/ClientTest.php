@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Client;
+use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Session;
-use Revolution\Copilot\Types\ConnectionState;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();

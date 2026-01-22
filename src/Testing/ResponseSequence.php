@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Testing;
 
+use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Types\SessionEvent;
-use Revolution\Copilot\Types\SessionEventType;
 
 /**
  * Sequence of fake responses for testing.
