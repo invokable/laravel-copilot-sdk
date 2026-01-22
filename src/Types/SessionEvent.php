@@ -44,6 +44,14 @@ readonly class SessionEvent implements Arrayable
     }
 
     /**
+     * Check if this is a user message event.
+     */
+    public function isUserMessage(): bool
+    {
+        return $this->type === SessionEventType::USER_MESSAGE;
+    }
+
+    /**
      * Check if this is a session idle event.
      */
     public function isIdle(): bool

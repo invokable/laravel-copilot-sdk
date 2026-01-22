@@ -63,6 +63,14 @@ class FakeSession implements CopilotSession
     }
 
     /**
+     * @return array<SessionEvent>
+     */
+    public function getMessages(): array
+    {
+        return $this->sequence->all();
+    }
+
+    /**
      * Get recorded prompts.
      *
      * @return array<array{prompt: string, attachments: ?array, mode: ?string}>

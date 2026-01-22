@@ -71,6 +71,14 @@ class ResponseSequence
     }
 
     /**
+     * @return SessionEvent[]
+     */
+    public function all(): array
+    {
+        return $this->responses;
+    }
+
+    /**
      * Create a response from a content string.
      */
     public static function responseFromContent(string $content): SessionEvent

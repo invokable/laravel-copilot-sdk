@@ -57,6 +57,8 @@ Artisan::command('copilot:chat {--resume}', function () {
             foreach ($messages as $message) {
                 if ($message->isAssistantMessage()) {
                     note($message->getContent());
+                } elseif ($message->isUserMessage()) {
+                    info($message->getContent());
                 }
             }
 

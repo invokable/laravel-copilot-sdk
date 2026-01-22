@@ -44,4 +44,11 @@ interface CopilotSession
      * @param  Closure(SessionEvent): void  $handler
      */
     public function off(Closure $handler): void;
+
+    /**
+     * Get all messages from this session's history.
+     *
+     * @return array<SessionEvent>
+     */
+    public function getMessages(): array;
 }
