@@ -79,7 +79,7 @@ Artisan::command('copilot:chat {--resume}', function () {
                 if ($message->isAssistantMessage()) {
                     note($message->getContent());
                 } elseif ($message->isUserMessage()) {
-                    info($message->getContent());
+                    warning($message->getContent());
                 }
             }
 
