@@ -35,6 +35,7 @@ Artisan::command('copilot:ping', function () {
 // vendor/bin/testbench copilot:chat --resume
 Artisan::command('copilot:chat {--resume}', function () {
     $config = new SessionConfig(
+        availableTools: [],
         onPermissionRequest: function (array $request, array $invocation) {
             dump($request, $invocation);
             $confirm = confirm(
@@ -87,6 +88,8 @@ Artisan::command('copilot:chat {--resume}', function () {
                 note($event->getContent());
             } elseif ($event->isError()) {
                 error($event->getErrorMessage() ?? 'Unknown error');
+            } else {
+                info('Event: '.$event->type->value);
             }
         });
 
