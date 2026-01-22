@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Support;
 
 /**
- * 他言語版も文字列でしか定義してない。
- * staticメソッドで使いやすくしておく。
- *
  * The other language versions are only defined as strings.
  * Make it easy to use with static methods.
  */
@@ -34,8 +31,6 @@ class PermissionRequestKind
     }
 
     /**
-     * Laravel\Prompts\select で使う用の配列。
-     *
      * Array for Laravel\Prompts\select.
      */
     public static function select(): array
