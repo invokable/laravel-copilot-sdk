@@ -7,7 +7,6 @@ namespace Revolution\Copilot\Contracts;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
-use RuntimeException;
 
 /**
  * Main client for interacting with the Copilot CLI.
@@ -16,22 +15,20 @@ interface CopilotClient
 {
     /**
      * Start the CLI server and establish connection.
-     *
-     * @throws RuntimeException
      */
-    public function start(): void;
+    public function start(): static;
 
     /**
      * Create a new conversation session.
      *
-     * @throws RuntimeException
+     * @throws JsonRpcException
      */
     public function createSession(SessionConfig|array $config = []): CopilotSession;
 
     /**
      * Resume an existing session.
      *
-     * @throws RuntimeException
+     * @throws JsonRpcException
      */
     public function resumeSession(string $sessionId, ResumeSessionConfig|array $config = []): CopilotSession;
 
@@ -40,7 +37,7 @@ interface CopilotClient
      *
      * @return array{message: string, timestamp: int, protocolVersion?: int}
      *
-     * @throws RuntimeException|JsonRpcException
+     * @throws JsonRpcException
      */
     public function ping(?string $message = null): array;
 }
