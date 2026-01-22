@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Support\Str;
 use Revolution\Copilot\Events\JsonRpc\MessageReceived;
 use Revolution\Copilot\Events\JsonRpc\MessageSending;
-use Revolution\Copilot\Events\JsonRpc\ResponseResultReceived;
+use Revolution\Copilot\Events\JsonRpc\ResponseReceived;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
@@ -195,6 +195,7 @@ class JsonRpcClient
     protected function waitForResponse(string $requestId, float $timeout): mixed
     {
         $endTime = microtime(true) + $timeout;
+        $message = null;
         $result = null;
         $error = null;
         $received = false;
@@ -231,7 +232,7 @@ class JsonRpcClient
             );
         }
 
-        ResponseResultReceived::dispatch($requestId, $result);
+        ResponseReceived::dispatch($requestId, $message);
 
         return $result;
     }
