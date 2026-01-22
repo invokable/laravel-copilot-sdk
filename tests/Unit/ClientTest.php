@@ -59,7 +59,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('ping', Mockery::any(), Mockery::any())
             ->once()
-            ->andReturn(['protocolVersion' => 1, 'message' => 'pong', 'timestamp' => time()]);
+            ->andReturn(['protocolVersion' => 2, 'message' => 'pong', 'timestamp' => time()]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -89,7 +89,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('ping', Mockery::any(), Mockery::any())
             ->once()
-            ->andReturn(['protocolVersion' => 1, 'message' => 'pong', 'timestamp' => time()]);
+            ->andReturn(['protocolVersion' => 2, 'message' => 'pong', 'timestamp' => time()]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -152,7 +152,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('ping', Mockery::any(), Mockery::any())
             ->once()
-            ->andReturn(['protocolVersion' => 1, 'message' => 'pong', 'timestamp' => time()]);
+            ->andReturn(['protocolVersion' => 2, 'message' => 'pong', 'timestamp' => time()]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -184,7 +184,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('ping', Mockery::any(), Mockery::any())
             ->once()
-            ->andReturn(['protocolVersion' => 1, 'message' => 'pong', 'timestamp' => time()]);
+            ->andReturn(['protocolVersion' => 2, 'message' => 'pong', 'timestamp' => time()]);
         $mockRpcClient->shouldReceive('request')
             ->with('session.create', Mockery::any())
             ->once()
@@ -228,7 +228,7 @@ describe('Client', function () {
         $mockProcessManager->shouldReceive('getStdin')->andReturn($stdin);
         $mockProcessManager->shouldReceive('getStdout')->andReturn($stdout);
 
-        $expectedResponse = ['message' => 'hello', 'timestamp' => 1234567890, 'protocolVersion' => 1];
+        $expectedResponse = ['message' => 'hello', 'timestamp' => 1234567890, 'protocolVersion' => 2];
 
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
