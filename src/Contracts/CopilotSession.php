@@ -51,4 +51,9 @@ interface CopilotSession
      * @return array<SessionEvent>
      */
     public function getMessages(): array;
+
+    /**
+     * Destroy this session.
+     */
+    public function destroy(): void;
 }
