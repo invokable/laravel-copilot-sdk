@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Artisan;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Session;
+use Revolution\Copilot\Types\SessionEvent;
 
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\note;
@@ -61,6 +63,16 @@ Artisan::command('copilot:chat {--resume}', function () {
             outro('You can continue the conversation below.');
         }
 
+        // sendAndWaitは最後のアシスタントメッセージのみ返す。
+        // 途中のメッセージも表示したい場合はハンドラを追加。
+        $session->on(function (SessionEvent $event): void {
+            if ($event->isAssistantMessage()) {
+                note($event->getContent());
+            } elseif ($event->isError()) {
+                error($event->getErrorMessage() ?? 'Unknown error');
+            }
+        });
+
         while (true) {
             $prompt = text(
                 label: 'Enter your prompt',
@@ -74,7 +86,9 @@ Artisan::command('copilot:chat {--resume}', function () {
                 message: 'Waiting for Copilot response...',
             );
 
-            note($response->getContent());
+            // 上のonハンドラで表示してるのでsendAndWaitからの最終メッセージの表示は不要。
+            // 追加のハンドラを使わず最後のメッセージのみ使う場合はここで表示する。
+            // note($response->getContent());
         }
     });
 })->purpose('Interactive chat session with Copilot CLI SDK');
