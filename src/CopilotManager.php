@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
+use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Support\Traits\Macroable;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
@@ -17,6 +19,8 @@ use Revolution\Copilot\Types\SessionEvent;
  */
 class CopilotManager implements Factory
 {
+    use Conditionable;
+    use Macroable;
     use WithFake;
 
     protected ?CopilotClient $client = null;
