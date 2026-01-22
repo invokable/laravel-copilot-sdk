@@ -23,16 +23,16 @@ readonly class ResumeSessionConfig implements Arrayable
          */
         public ProviderConfig|array|null $provider = null,
         /**
+         * Handler for permission requests from the server.
+         * When provided, the server will call this handler to request permission for operations.
+         */
+        public ?Closure $onPermissionRequest = null,
+        /**
          * Enable streaming of assistant message and reasoning chunks.
          * When true, ephemeral assistant.message_delta and assistant.reasoning_delta
          * events are sent as the response is generated.
          */
         public ?bool $streaming = null,
-        /**
-         * Handler for permission requests from the server.
-         * When provided, the server will call this handler to request permission for operations.
-         */
-        public ?Closure $onPermissionRequest = null,
         /**
          * MCP server configurations for the session.
          * Keys are server names, values are server configurations.
@@ -67,8 +67,8 @@ readonly class ResumeSessionConfig implements Arrayable
         return new self(
             tools: $data['tools'] ?? null,
             provider: $provider,
-            streaming: $data['streaming'] ?? null,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
+            streaming: $data['streaming'] ?? null,
             mcpServers: $data['mcpServers'] ?? null,
             customAgents: $data['customAgents'] ?? null,
             skillDirectories: $data['skillDirectories'] ?? null,
@@ -88,8 +88,8 @@ readonly class ResumeSessionConfig implements Arrayable
         return array_filter([
             'tools' => $this->tools,
             'provider' => $provider,
-            'streaming' => $this->streaming,
             'onPermissionRequest' => $this->onPermissionRequest,
+            'streaming' => $this->streaming,
             'mcpServers' => $this->mcpServers,
             'customAgents' => $this->customAgents,
             'skillDirectories' => $this->skillDirectories,
