@@ -143,8 +143,6 @@ class Client implements CopilotClient
 
         $this->state = ConnectionState::DISCONNECTED;
 
-        ClientStopped::dispatch($this);
-
         return $errors;
     }
 
