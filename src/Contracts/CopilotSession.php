@@ -6,7 +6,6 @@ namespace Revolution\Copilot\Contracts;
 
 use Closure;
 use Revolution\Copilot\Types\SessionEvent;
-use RuntimeException;
 
 /**
  * Represents a single conversation session with the Copilot CLI.
@@ -25,8 +24,6 @@ interface CopilotSession
 
     /**
      * Send a message and wait until the session becomes idle.
-     *
-     * @throws RuntimeException
      */
     public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, float $timeout = 60.0): ?SessionEvent;
 
