@@ -34,6 +34,9 @@ vendor/bin/testbench copilot:ping
 ## Debugging
 - パッケージプロジェクトなので`info()`などのログはtestbenchの`vendor/orchestra/testbench-core/laravel/storage/logs/laravel.log`に出力される。
 
+## 実装予定なしの機能
+- TCP接続。stdioの方がいいのでTCPは非対応。
+
 ## Custom instructions
 
 Copilot CLIのバグでinstructionsが`＜`で途切れて読み込まれてないのでこれ以降に`＜laravel-boost-guidelines＞`がないなら追加で読み込んでください。
