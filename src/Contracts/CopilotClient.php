@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Contracts;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
+use Throwable;
 
 /**
  * Main client for interacting with the Copilot CLI.
@@ -40,4 +41,11 @@ interface CopilotClient
      * @throws JsonRpcException
      */
     public function ping(?string $message = null): array;
+
+    /**
+     * Stop the CLI server and close all sessions.
+     *
+     * @return array<Throwable> Errors encountered during cleanup
+     */
+    public function stop(): array;
 }
