@@ -6,6 +6,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -49,7 +50,7 @@ Artisan::command('copilot:chat {--resume}', function () {
         },
     );
 
-    Copilot::start(function (CopilotSession $session) {
+    Copilot::start(function (CopilotSession $session) use ($config) {
         info('Starting Copilot chat session: '.$session->id());
 
         if ($this->option('resume')) {
@@ -65,7 +66,9 @@ Artisan::command('copilot:chat {--resume}', function () {
             );
 
             $session->destroy();
-            $session = Copilot::getClient()->resumeSession($session_id);
+
+            $config = ResumeSessionConfig::fromArray($config->toArray());
+            $session = Copilot::getClient()->resumeSession($session_id, $config);
 
             intro("Resumed previous session: $session_id. Here are the past assistant messages");
 
