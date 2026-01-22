@@ -186,7 +186,7 @@ describe('CopilotManager', function () {
         $result = $manager->run('test prompt');
 
         expect($result)->toBe($mockEvent)
-            ->and($result->getContent())->toBe('Test response');
+            ->and($result->content())->toBe('Test response');
 
         $manager->stop();
     });

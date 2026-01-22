@@ -170,7 +170,7 @@ use Revolution\Copilot\Facades\Copilot;
 
 Copilot::fake('2'); // 常に'2'を返すモック
 $response = Copilot::run(prompt: '1 + 1'); // ここで実際にはCopilot CLIは呼ばれない
-$this->assertEquals('2', $response->getContent());
+$this->assertEquals('2', $response->content());
 ```
 
 Copilot::startで複数呼び出した場合。
@@ -190,7 +190,7 @@ Copilot::start(function (CopilotSession $session) use (&$response1, &$response2)
     $response2 = $session->sendAndWait(prompt: '2 + 2'); // '4'を返す
 });
 
-$this->assertEquals('2', $response1->getContent());
+$this->assertEquals('2', $response1->content());
 ```
 
 アサーション。

@@ -70,7 +70,7 @@ readonly class SessionEvent implements Arrayable
     /**
      * Get the content from assistant message data.
      */
-    public function getContent(): ?string
+    public function content(): ?string
     {
         return $this->data['content'] ?? null;
     }

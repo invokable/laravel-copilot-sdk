@@ -73,7 +73,7 @@ describe('SessionEvent', function () {
             'data' => ['content' => 'Hello World'],
         ]);
 
-        expect($event->getContent())->toBe('Hello World');
+        expect($event->content())->toBe('Hello World');
     });
 
     it('returns null for content when not present', function () {
@@ -82,7 +82,7 @@ describe('SessionEvent', function () {
             'data' => [],
         ]);
 
-        expect($event->getContent())->toBeNull();
+        expect($event->content())->toBeNull();
     });
 
     it('can get error message', function () {

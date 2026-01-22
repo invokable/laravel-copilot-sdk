@@ -20,7 +20,7 @@ describe('Copilot::fake()', function () {
         $response = Copilot::run('Hi');
 
         expect($response)->not->toBeNull()
-            ->and($response->getContent())->toBe('Hello World');
+            ->and($response->content())->toBe('Hello World');
     });
 
     it('can be faked with array responses', function () {
@@ -30,7 +30,7 @@ describe('Copilot::fake()', function () {
 
         $response = Copilot::run('What is 6 * 7?');
 
-        expect($response->getContent())->toBe('42');
+        expect($response->content())->toBe('42');
     });
 
     it('returns CopilotManager instance', function () {
@@ -54,9 +54,9 @@ describe('Copilot::sequence()', function () {
         $second = Copilot::run('2');
         $third = Copilot::run('3');
 
-        expect($first->getContent())->toBe('First')
-            ->and($second->getContent())->toBe('Second')
-            ->and($third->getContent())->toBe('Third');
+        expect($first->content())->toBe('First')
+            ->and($second->content())->toBe('Second')
+            ->and($third->content())->toBe('Third');
     });
 
     it('returns null when sequence is exhausted without fallback', function () {
@@ -70,7 +70,7 @@ describe('Copilot::sequence()', function () {
         $first = Copilot::run('1');
         $second = Copilot::run('2');
 
-        expect($first->getContent())->toBe('Only One')
+        expect($first->content())->toBe('Only One')
             ->and($second)->toBeNull();
     });
 
@@ -85,9 +85,9 @@ describe('Copilot::sequence()', function () {
         $second = Copilot::run('2');
         $third = Copilot::run('3');
 
-        expect($first->getContent())->toBe('First')
-            ->and($second->getContent())->toBe('Fallback')
-            ->and($third->getContent())->toBe('Fallback');
+        expect($first->content())->toBe('First')
+            ->and($second->content())->toBe('Fallback')
+            ->and($third->content())->toBe('Fallback');
     });
 });
 
@@ -102,8 +102,8 @@ describe('Copilot::start()', function () {
         $results = [];
 
         Copilot::start(function (CopilotSession $session) use (&$results) {
-            $results[] = $session->sendAndWait('1 + 1')?->getContent();
-            $results[] = $session->sendAndWait('2 + 2')?->getContent();
+            $results[] = $session->sendAndWait('1 + 1')?->content();
+            $results[] = $session->sendAndWait('2 + 2')?->content();
         });
 
         expect($results)->toBe(['2', '4']);
@@ -183,7 +183,7 @@ describe('preventStrayRequests()', function () {
 
         $response = Copilot::run('Any prompt');
 
-        expect($response->getContent())->toBe('response');
+        expect($response->content())->toBe('response');
     });
 });
 

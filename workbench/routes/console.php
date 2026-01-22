@@ -77,9 +77,9 @@ Artisan::command('copilot:chat {--resume}', function () {
             $messages = $session->getMessages();
             foreach ($messages as $message) {
                 if ($message->isAssistantMessage()) {
-                    note($message->getContent());
+                    note($message->content());
                 } elseif ($message->isUserMessage()) {
-                    warning($message->getContent());
+                    warning($message->content());
                 }
             }
 
@@ -90,7 +90,7 @@ Artisan::command('copilot:chat {--resume}', function () {
         // 途中のメッセージも表示したい場合はハンドラを追加。
         $session->on(function (SessionEvent $event): void {
             if ($event->isAssistantMessage()) {
-                note($event->getContent());
+                note($event->content());
             } elseif ($event->isError()) {
                 error($event->getErrorMessage() ?? 'Unknown error');
             } else {
@@ -113,7 +113,7 @@ Artisan::command('copilot:chat {--resume}', function () {
 
             // 上のonハンドラで表示してるのでsendAndWaitからの最終メッセージの表示は不要。
             // 追加のハンドラを使わず最後のメッセージのみ使う場合はここで表示する。
-            // note($response->getContent());
+            // note($response->content());
         }
     }, config: $config);
 })->purpose('Interactive chat session with Copilot CLI SDK');
