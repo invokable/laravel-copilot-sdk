@@ -29,7 +29,7 @@ use function Laravel\Prompts\warning;
 Artisan::command('copilot:ping', function () {
     Copilot::start(function (CopilotSession $session) {
         $this->info('Session ID: '.$session->id());
-        $this->info(json_encode(Copilot::getClient()->ping()));
+        $this->info(json_encode(Copilot::client()->ping()));
     });
 });
 
@@ -56,7 +56,7 @@ Artisan::command('copilot:chat {--resume}', function () {
         info('Starting Copilot chat session: '.$session->id());
 
         if ($this->option('resume')) {
-            $sessions = collect(Copilot::getClient()->listSessions())
+            $sessions = collect(Copilot::client()->listSessions())
                 ->mapWithKeys(function ($session) {
                     return [$session['sessionId'] => $session['summary'] ?? ''];
                 })
@@ -70,7 +70,7 @@ Artisan::command('copilot:chat {--resume}', function () {
             $session->destroy();
 
             $config = ResumeSessionConfig::fromArray($config->toArray());
-            $session = Copilot::getClient()->resumeSession($session_id, $config);
+            $session = Copilot::client()->resumeSession($session_id, $config);
 
             intro("Resumed previous session: $session_id. Here are the past assistant messages");
 

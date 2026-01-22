@@ -13,7 +13,7 @@ beforeEach(function () {
 
 test('ping() returns pong', function () {
     $response = Copilot::start(function (CopilotSession $session) {
-        return Copilot::getClient()->ping();
+        return Copilot::client()->ping();
     });
 
     expect($response)->toContain('pong');

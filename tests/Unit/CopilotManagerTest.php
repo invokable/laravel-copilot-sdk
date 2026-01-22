@@ -23,7 +23,7 @@ describe('CopilotManager', function () {
         expect($manager)->toBeInstanceOf(CopilotManager::class);
     });
 
-    it('returns null client before getClient is called', function () {
+    it('returns null client before client is called', function () {
         $manager = new CopilotManager;
 
         // Use reflection to check internal state
@@ -43,7 +43,7 @@ describe('CopilotManager', function () {
         $this->app->bind(Client::class, fn () => $mockClient);
 
         $manager = new CopilotManager(['cli_path' => '/test/path']);
-        $client = $manager->getClient();
+        $client = $manager->client();
 
         expect($client)->toBe($mockClient);
 
@@ -51,7 +51,7 @@ describe('CopilotManager', function () {
         $manager->stop();
     });
 
-    it('reuses existing client on subsequent getClient calls', function () {
+    it('reuses existing client on subsequent client calls', function () {
         $mockClient = Mockery::mock(CopilotClient::class);
         $mockClient->shouldReceive('start')->once(); // Should only be called once
         $mockClient->shouldReceive('stop')->andReturn([]); // For destructor
@@ -60,8 +60,8 @@ describe('CopilotManager', function () {
 
         $manager = new CopilotManager;
 
-        $client1 = $manager->getClient();
-        $client2 = $manager->getClient();
+        $client1 = $manager->client();
+        $client2 = $manager->client();
 
         expect($client1)->toBe($client2);
 
@@ -77,7 +77,7 @@ describe('CopilotManager', function () {
         $this->app->bind(Client::class, fn () => $mockClient);
 
         $manager = new CopilotManager;
-        $manager->getClient();
+        $manager->client();
         $manager->stop();
 
         // Use reflection to verify client is null

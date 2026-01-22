@@ -68,7 +68,7 @@ class CopilotManager implements Factory
             return $this->fake->start($callback, $config);
         }
 
-        $client = $this->getClient();
+        $client = $this->client();
 
         $config = is_array($config) ? $config : $config->toArray();
 
@@ -115,13 +115,13 @@ class CopilotManager implements Factory
             ));
         }
 
-        return $this->getClient()->createSession($config);
+        return $this->client()->createSession($config);
     }
 
     /**
      * Get or create the CopilotClient instance.
      */
-    public function getClient(): CopilotClient
+    public function client(): CopilotClient
     {
         if ($this->client === null) {
             $this->client = app(Client::class, [
