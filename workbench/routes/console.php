@@ -6,7 +6,6 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Session;
 use Revolution\Copilot\Types\SessionEvent;
 
 use function Laravel\Prompts\error;
@@ -33,7 +32,7 @@ Artisan::command('copilot:ping', function () {
 // vendor/bin/testbench copilot:chat
 // vendor/bin/testbench copilot:chat --resume
 Artisan::command('copilot:chat {--resume}', function () {
-    Copilot::start(function (Session $session) {
+    Copilot::start(function (CopilotSession $session) {
         info('Starting Copilot chat session: '.$session->id());
 
         if ($this->option('resume')) {
