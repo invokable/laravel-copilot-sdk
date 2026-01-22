@@ -1,5 +1,7 @@
 # Tools
 
+Copilot CLIのビルトインツールはデフォルトで有効。ここで指定できるのはカスタムツール。
+
 ## 基本的な使い方
 
 SessionConfigの `tools` にツールの定義を指定。
