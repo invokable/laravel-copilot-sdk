@@ -13,12 +13,9 @@ class CopilotSdkServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/copilot.php', 'copilot');
 
-        $this->app->singleton(Factory::class, function ($app) {
+        $this->app->scoped(Factory::class, function ($app) {
             return new CopilotManager($app['config']['copilot'] ?? []);
         });
-
-        $this->app->alias(Factory::class, 'copilot');
-        $this->app->alias(Factory::class, CopilotManager::class);
     }
 
     public function boot(): void
