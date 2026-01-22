@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
 
 beforeEach(function () {
@@ -12,8 +11,7 @@ beforeEach(function () {
 });
 
 test('ping() returns pong', function () {
-    Copilot::client()->start();
-    $response = Copilot::client()->ping();
+    $response = Copilot::client()->start()->ping();
 
     expect($response)->toContain('pong');
 });
