@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types;
 
+use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
@@ -27,6 +28,11 @@ readonly class ResumeSessionConfig implements Arrayable
          * events are sent as the response is generated.
          */
         public ?bool $streaming = null,
+        /**
+         * Handler for permission requests from the server.
+         * When provided, the server will call this handler to request permission for operations.
+         */
+        public ?Closure $onPermissionRequest = null,
         /**
          * MCP server configurations for the session.
          * Keys are server names, values are server configurations.
@@ -62,6 +68,7 @@ readonly class ResumeSessionConfig implements Arrayable
             tools: $data['tools'] ?? null,
             provider: $provider,
             streaming: $data['streaming'] ?? null,
+            onPermissionRequest: $data['onPermissionRequest'] ?? null,
             mcpServers: $data['mcpServers'] ?? null,
             customAgents: $data['customAgents'] ?? null,
             skillDirectories: $data['skillDirectories'] ?? null,
@@ -82,6 +89,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'tools' => $this->tools,
             'provider' => $provider,
             'streaming' => $this->streaming,
+            'onPermissionRequest' => $this->onPermissionRequest,
             'mcpServers' => $this->mcpServers,
             'customAgents' => $this->customAgents,
             'skillDirectories' => $this->skillDirectories,
