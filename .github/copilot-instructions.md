@@ -31,6 +31,21 @@ composer run lint        # Run Laravel Pint for code style checks
 vendor/bin/testbench copilot:ping
 ```
 
+## Architecture
+
+`copilot --server`でCopilot CLI自身がサーバーとして起動。
+すべての SDK は JSON-RPC を介して Copilot CLI サーバーと通信。
+
+```
+Your Application
+       ↓
+  SDK Client
+       ↓ JSON-RPC
+  Copilot CLI (server mode)
+```
+
+ClientやSessionは公式SDKを再現しつつLaravel流にCopilot Facadeを中心にした使い方。
+
 ## Directory Structure
 
 - 公式SDKのアップデートに合わせて更新する時は、Clientなどの実装とContractsのinterface、Testingのテスト用クラスが正しく更新されていることを確認。
