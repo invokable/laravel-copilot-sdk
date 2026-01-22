@@ -6,8 +6,10 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
@@ -32,6 +34,20 @@ Artisan::command('copilot:ping', function () {
 // vendor/bin/testbench copilot:chat
 // vendor/bin/testbench copilot:chat --resume
 Artisan::command('copilot:chat {--resume}', function () {
+    $config = new SessionConfig(
+        onPermissionRequest: function (array $request, array $invocation) {
+            dump($request, $invocation);
+            $confirm = confirm(
+                label: 'Do you accept the requested permissions?',
+            );
+            if ($confirm) {
+                return ['kind' => 'approved'];
+            } else {
+                return ['kind' => 'denied-interactively-by-user'];
+            }
+        },
+    );
+
     Copilot::start(function (CopilotSession $session) {
         info('Starting Copilot chat session: '.$session->id());
 
@@ -91,5 +107,5 @@ Artisan::command('copilot:chat {--resume}', function () {
             // 追加のハンドラを使わず最後のメッセージのみ使う場合はここで表示する。
             // note($response->getContent());
         }
-    });
+    }, config: $config);
 })->purpose('Interactive chat session with Copilot CLI SDK');
