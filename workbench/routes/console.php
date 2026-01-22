@@ -36,9 +36,8 @@ Artisan::command('copilot:ping', function () {
 // vendor/bin/testbench copilot:chat --resume
 Artisan::command('copilot:chat {--resume}', function () {
     $config = new SessionConfig(
-        availableTools: [],
+        // availableTools: [],
         onPermissionRequest: function (array $request, array $invocation) {
-            dump($request, $invocation);
             $confirm = confirm(
                 label: 'Do you accept the requested permissions?',
             );
