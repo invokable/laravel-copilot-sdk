@@ -192,7 +192,7 @@ class Client implements CopilotClient
         ]);
         $session->registerTools($tools);
 
-        if (isset($config['onPermissionRequest'])) {
+        if (isset($config['onPermissionRequest']) && is_callable($config['onPermissionRequest'])) {
             $session->registerPermissionHandler($config['onPermissionRequest']);
         }
 
@@ -243,7 +243,7 @@ class Client implements CopilotClient
         ]);
         $session->registerTools($tools);
 
-        if (isset($config['onPermissionRequest'])) {
+        if (isset($config['onPermissionRequest']) && is_callable($config['onPermissionRequest'])) {
             $session->registerPermissionHandler($config['onPermissionRequest']);
         }
 
