@@ -6,6 +6,8 @@ namespace Revolution\Copilot;
 
 use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Events\Session\MessageSend;
+use Revolution\Copilot\Events\Session\MessageSendAndWait;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\SessionEvent;
 use RuntimeException;
@@ -61,12 +63,13 @@ class Session implements CopilotSession
             'mode' => $mode,
         ]);
 
+        MessageSend::dispatch($this->sessionId, $response['messageId'] ?? '', $prompt, $attachments, $mode);
+
         return $response['messageId'] ?? '';
     }
 
     /**
      * Send a message and wait until the session becomes idle.
-
      *
      * @throws RuntimeException
      */
@@ -107,6 +110,8 @@ class Session implements CopilotSession
             if (! $idle) {
                 throw new RuntimeException("Timeout after {$timeout}s waiting for session.idle");
             }
+
+            MessageSendAndWait::dispatch($this->sessionId, $lastAssistantMessage, $prompt, $attachments, $mode);
 
             return $lastAssistantMessage;
         } finally {

@@ -6,6 +6,9 @@ namespace Revolution\Copilot\JsonRpc;
 
 use Closure;
 use Illuminate\Support\Str;
+use Revolution\Copilot\Events\JsonRpc\MessageReceived;
+use Revolution\Copilot\Events\JsonRpc\MessageSending;
+use Revolution\Copilot\Events\JsonRpc\ResponseResultReceived;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
@@ -159,6 +162,8 @@ class JsonRpcClient
      */
     protected function sendMessage(JsonRpcMessage $message): void
     {
+        MessageSending::dispatch($message);
+
         $encoded = $message->encode();
         fwrite($this->stdin, $encoded);
         fflush($this->stdin);
@@ -225,6 +230,8 @@ class JsonRpcClient
                 $error['data'] ?? null,
             );
         }
+
+        ResponseResultReceived::dispatch($requestId, $result);
 
         return $result;
     }
@@ -307,6 +314,8 @@ class JsonRpcClient
      */
     protected function handleMessage(JsonRpcMessage $message): void
     {
+        MessageReceived::dispatch($message);
+
         if ($message->isNotification()) {
             $this->handleNotification($message);
         } elseif ($message->isRequest()) {

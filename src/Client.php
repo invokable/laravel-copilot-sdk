@@ -6,6 +6,11 @@ namespace Revolution\Copilot;
 
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Events\Client\ClientStarted;
+use Revolution\Copilot\Events\Client\ClientStopped;
+use Revolution\Copilot\Events\Client\PingPong;
+use Revolution\Copilot\Events\Session\CreateSession;
+use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
@@ -99,6 +104,8 @@ class Client implements CopilotClient
 
             // Verify protocol version
             $this->verifyProtocolVersion();
+
+            ClientStarted::dispatch($this);
         } catch (\Throwable $e) {
             $this->state = ConnectionState::ERROR;
             throw $e;
@@ -135,6 +142,8 @@ class Client implements CopilotClient
         $this->processManager->stop();
 
         $this->state = ConnectionState::DISCONNECTED;
+
+        ClientStopped::dispatch($this);
 
         return $errors;
     }
@@ -188,6 +197,8 @@ class Client implements CopilotClient
 
         $this->sessions[$sessionId] = $session;
 
+        CreateSession::dispatch($session);
+
         return $session;
     }
 
@@ -235,6 +246,8 @@ class Client implements CopilotClient
 
         $this->sessions[$resumedSessionId] = $session;
 
+        ResumeSession::dispatch($session);
+
         return $session;
     }
 
@@ -257,9 +270,12 @@ class Client implements CopilotClient
     {
         $this->ensureConnected();
 
-        return $this->rpcClient->request('ping', array_filter([
-            'message' => $message,
-        ], fn ($v) => $v !== null), timeout: 10.0);
+        return tap(
+            $this->rpcClient->request('ping', array_filter([
+                'message' => $message,
+            ], fn ($v) => $v !== null), timeout: 10.0),
+            fn (array $response) => PingPong::dispatch($response),
+        );
     }
 
     /**
