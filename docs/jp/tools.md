@@ -26,7 +26,7 @@ Artisan::command('copilot:tools', function () {
     ];
 
     $parameters = JsonSchema::object(
-        [
+        properties: [
             'topic' => JsonSchema::string()
                 ->description('Topic to look up (e.g., "PHP", "Laravel")')
                 ->required(),
