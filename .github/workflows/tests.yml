@@ -41,3 +41,9 @@ jobs:
         run: composer run test
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+      - name: Code Coverage
+        uses: qltysh/qlty-action/coverage@v1
+        with:
+          oidc: true
+          files: build/logs/clover.xml
