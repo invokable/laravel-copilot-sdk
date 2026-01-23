@@ -75,7 +75,7 @@ Copilot::start(function (CopilotSession $session) {
 ## Directory Structure
 
 - 公式SDKのアップデートに合わせて更新する時は、Clientなどの実装とContractsのinterface、Testingのテスト用クラスが正しく更新されていることを確認。
-- Node.jsのtypes.tsで定義されている型はTypesディレクトリにreadonly classとして作成。
+- Node.jsのtypes.tsで定義されている型はTypesディレクトリにreadonly classとして作成。`Illuminate\Contracts\Support\Arrayable`インターフェイスを実装し`fromArray()`と`toArray()`を持つ共通仕様。
 - `copilot-sdk/nodejs/src/generated/session-events.ts`のtypeは`src/Enums/SessionEventType.php`のEnumで定義。
 
 ```
@@ -83,7 +83,7 @@ src/
 ├── Client.php                  # CopilotClient実装
 ├── Session.php                 # CopilotSession実装
 ├── CopilotManager.php          # Factory実装
-├── Protocol.php
+├── Protocol.php                # SDK_PROTOCOL_VERSIONを定義。copilot cli側が更新されたらここを更新。
 ├── CopilotSdkServiceProvider.php
 ├── Contracts/
 │   ├── CopilotClient.php       # クライアントインターフェース
