@@ -7,6 +7,12 @@ Copilot CLIのビルトインツールはデフォルトで有効。ここで指
 SessionConfigの `tools` にツールの定義を指定。
 
 ```php
+use Illuminate\Support\Facades\Artisan;
+use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\Tool;
+
 Artisan::command('copilot:tools', function () {
     $facts = [
         'PHP' => 'A popular general-purpose scripting language that is especially suited to web development.',
