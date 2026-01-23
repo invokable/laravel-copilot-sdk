@@ -15,7 +15,7 @@ This package is Laravel version of [GitHub Copilot CLI SDK](https://github.com/g
 ## Installation
 
 ```shell
-composer require revolution/revolution/laravel-copilot-sdk
+composer require revolution/laravel-copilot-sdk
 ```
 
 <details>
