@@ -39,3 +39,5 @@ jobs:
 
       - name: Execute tests
         run: composer run test
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
