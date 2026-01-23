@@ -87,7 +87,7 @@ class Session implements CopilotSession
                 $lastAssistantMessage = $event;
             } elseif ($event->isIdle()) {
                 $idle = true;
-            } elseif ($event->isError()) {
+            } elseif ($event->failed()) {
                 $error = $event->errorMessage() ?? 'Unknown error';
             }
         };

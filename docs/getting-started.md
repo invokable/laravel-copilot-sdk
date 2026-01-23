@@ -129,7 +129,7 @@ public function handle()
         $session->on(function (SessionEvent $event): void {
             if ($event->isAssistantMessage()) {
                 $this->info($event->content());
-            } elseif ($event->isError()) {
+            } elseif ($event->failed()) {
                 $this->error($event->errorMessage() ?? 'Unknown error');
             } else {
                 $this->line('Event: ' . $event->type->value);
@@ -283,7 +283,7 @@ class CopilotAssistant extends Command
             $session->on(function (SessionEvent $event): void {
                 if ($event->isAssistantMessage()) {
                     note($event->content());
-                } elseif ($event->isError()) {
+                } elseif ($event->failed()) {
                     error($event->errorMessage() ?? 'Unknown error');
                 }
             });

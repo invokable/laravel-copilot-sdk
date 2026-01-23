@@ -93,7 +93,7 @@ Artisan::command('copilot:chat {--resume}', function () {
         $session->on(function (SessionEvent $event): void {
             if ($event->isAssistantMessage()) {
                 note($event->content());
-            } elseif ($event->isError()) {
+            } elseif ($event->failed()) {
                 error($event->errorMessage() ?? 'Unknown error');
             } else {
                 info('Event: '.$event->type->value);

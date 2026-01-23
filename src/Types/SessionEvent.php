@@ -19,7 +19,8 @@ readonly class SessionEvent implements Arrayable
         public SessionEventType $type,
         public array $data,
         public bool $ephemeral = false,
-    ) {}
+    ) {
+    }
 
     /**
      * Create from array data.
@@ -63,7 +64,7 @@ readonly class SessionEvent implements Arrayable
     /**
      * Check if this is an error event.
      */
-    public function isError(): bool
+    public function failed(): bool
     {
         return $this->type === SessionEventType::SESSION_ERROR;
     }
@@ -97,5 +98,10 @@ readonly class SessionEvent implements Arrayable
             'data' => $this->data,
             'ephemeral' => $this->ephemeral,
         ];
+    }
+
+    public function __toString(): string
+    {
+        return $this->content() ?? '';
     }
 }

@@ -43,7 +43,7 @@ describe('SessionEvent', function () {
 
         expect($event->isAssistantMessage())->toBeTrue()
             ->and($event->isIdle())->toBeFalse()
-            ->and($event->isError())->toBeFalse();
+            ->and($event->failed())->toBeFalse();
     });
 
     it('can check if is idle', function () {
@@ -53,7 +53,7 @@ describe('SessionEvent', function () {
 
         expect($event->isIdle())->toBeTrue()
             ->and($event->isAssistantMessage())->toBeFalse()
-            ->and($event->isError())->toBeFalse();
+            ->and($event->failed())->toBeFalse();
     });
 
     it('can check if is error', function () {
@@ -62,7 +62,7 @@ describe('SessionEvent', function () {
             'data' => ['message' => 'Something went wrong'],
         ]);
 
-        expect($event->isError())->toBeTrue()
+        expect($event->failed())->toBeTrue()
             ->and($event->isAssistantMessage())->toBeFalse()
             ->and($event->isIdle())->toBeFalse();
     });
