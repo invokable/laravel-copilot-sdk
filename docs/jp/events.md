@@ -20,3 +20,9 @@ src/
 │       ├── MessageSendAndWait.php
 │       └── ResumeSession.php
 ```
+
+例えば少し時間のかかる処理をキューに投げる。この`Copilot::run()`の結果は直接受け取れないけど代わりにMessageSendAndWaitイベントのリスナーで受け取ることができる。
+
+```php
+dispatch(fn() => Copilot::run(''));
+```
