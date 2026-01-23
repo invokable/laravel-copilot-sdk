@@ -11,16 +11,7 @@ use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\Tool;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
-use function Laravel\Prompts\info;
-use function Laravel\Prompts\intro;
-use function Laravel\Prompts\note;
-use function Laravel\Prompts\outro;
-use function Laravel\Prompts\select;
-use function Laravel\Prompts\spin;
-use function Laravel\Prompts\text;
-use function Laravel\Prompts\warning;
+use function Laravel\Prompts\{confirm, error, info, intro, note, outro, select, spin, text, warning};
 
 // Artisan::command('inspire', function () {
 //     $this->comment(Inspiring::quote());
