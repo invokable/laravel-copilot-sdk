@@ -85,6 +85,14 @@ readonly class SessionEvent implements Arrayable
     }
 
     /**
+     * Get the event type as string.
+     */
+    public function type(): string
+    {
+        return $this->type->value;
+    }
+
+    /**
      * Convert to array.
      */
     public function toArray(): array

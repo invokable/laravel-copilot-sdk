@@ -172,7 +172,7 @@ describe('Session', function () {
         expect($messages)->toHaveCount(2)
             ->and($messages[0])->toBeInstanceOf(SessionEvent::class)
             ->and($messages[0]->type->value)->toBe('user.message')
-            ->and($messages[1]->type->value)->toBe('assistant.message');
+            ->and($messages[1]->type())->toBe('assistant.message');
     });
 
     it('destroy sends destroy request and clears handlers', function () {

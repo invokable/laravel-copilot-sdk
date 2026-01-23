@@ -96,7 +96,7 @@ Artisan::command('copilot:chat {--resume}', function () {
             } elseif ($event->failed()) {
                 error($event->errorMessage() ?? 'Unknown error');
             } else {
-                info('Event: '.$event->type->value);
+                info('Event: '.$event->type());
             }
         });
 

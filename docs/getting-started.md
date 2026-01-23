@@ -132,7 +132,7 @@ public function handle()
             } elseif ($event->failed()) {
                 $this->error($event->errorMessage() ?? 'Unknown error');
             } else {
-                $this->line('Event: ' . $event->type->value);
+                $this->line('Event: ' . $event->type());
             }
         });
 
