@@ -14,5 +14,5 @@ pint.json export-ignore
 boost.json export-ignore
 testbench.yaml export-ignore
 /workbench export-ignore
-.gitmodule export-ignore
+.gitmodules export-ignore
 copilot-sdk export-ignore
