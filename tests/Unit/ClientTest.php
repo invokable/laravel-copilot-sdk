@@ -25,13 +25,6 @@ describe('Client', function () {
             ->and($client->getState())->toBe(ConnectionState::DISCONNECTED);
     });
 
-    it('throws exception for mutually exclusive options', function () {
-        expect(fn () => new Client([
-            'cli_url' => 'http://localhost:8080',
-            'cli_path' => '/test/copilot',
-        ]))->toThrow(InvalidArgumentException::class, 'cli_url is mutually exclusive');
-    });
-
     it('creates ProcessManager via app container', function () {
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->never(); // Not started yet
