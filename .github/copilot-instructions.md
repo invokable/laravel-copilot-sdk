@@ -188,6 +188,18 @@ Copilot::assertPrompt('1 + *');
 Copilot::assertNotPrompt('1 + *');
 ```
 
+Assert the number of prompts called.
+
+```php
+Copilot::assertPromptCount(3);
+```
+
+Assert that no prompts were called.
+
+```php
+Copilot::assertNothingSent();
+```
+
 ### Prevent stray requests
 
 JSON-RPCリクエストを全て防止。呼び出した場合は例外`Revolution\Copilot\Exceptions\StrayRequestException`が発生。
