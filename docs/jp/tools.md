@@ -13,6 +13,8 @@ use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\Tool;
 
+use function Laravel\Prompts\{info, note, spin, warning};
+
 Artisan::command('copilot:tools', function () {
     $facts = [
         'PHP' => 'A popular general-purpose scripting language that is especially suited to web development.',
