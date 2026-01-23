@@ -49,7 +49,7 @@ class Copilot extends Facade
     /**
      * Indicate that an exception should be thrown if any request is not faked.
      */
-    public static function preventStrayRequests(array $allow = []): Factory
+    public static function preventStrayRequests(false|array $allow = []): Factory
     {
         return tap(static::getFacadeRoot(), function ($fake) use ($allow) {
             static::swap($fake->preventStrayRequests($allow));

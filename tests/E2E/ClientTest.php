@@ -6,6 +6,7 @@ use Revolution\Copilot\Facades\Copilot;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
+    Copilot::preventStrayRequests(false);
     Copilot::preventStrayRequests(allow: [
         'ping',
         'status.get',

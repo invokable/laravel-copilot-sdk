@@ -50,10 +50,17 @@ trait WithFake
     /**
      * Prevent stray requests.
      *
-     * @param  array<string>  $allow
+     * @param  false|array<string>  $allow
      */
-    public function preventStrayRequests(array $allow = []): self
+    public function preventStrayRequests(false|array $allow = []): self
     {
+        if ($allow === false) {
+            $this->preventStrayRequests = false;
+            $this->allowedMethods = [];
+
+            return $this;
+        }
+
         $this->preventStrayRequests = true;
         $this->allowedMethods = $allow;
 
@@ -70,7 +77,7 @@ trait WithFake
 
     public function isAllowedMethod(string $method): bool
     {
-        if (! $this->preventStrayRequests) {
+        if (! $this->preventingStrayRequests()) {
             return true;
         }
 
