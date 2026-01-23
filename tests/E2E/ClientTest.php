@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Protocol;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
@@ -24,7 +25,8 @@ afterAll(function () {
 test('client getStatus', function () {
     $response = Copilot::client()->getStatus();
 
-    expect($response->protocolVersion)->toBeInt();
+    expect($response->protocolVersion)->toBeInt()
+        ->and($response->protocolVersion)->toBe(Protocol::version());
 });
 
 test('client getAuthStatus', function () {
