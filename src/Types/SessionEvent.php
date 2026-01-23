@@ -19,8 +19,7 @@ readonly class SessionEvent implements Arrayable
         public SessionEventType $type,
         public array $data,
         public bool $ephemeral = false,
-    ) {
-    }
+    ) {}
 
     /**
      * Create from array data.
