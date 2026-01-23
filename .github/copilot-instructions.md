@@ -52,7 +52,7 @@ ClientやSessionは公式SDKを再現しつつLaravel流にCopilot Facadeを中�
 ```php
 use Revolution\Copilot\Facades\Copilot;
 
-$response = Copilot::run('Tell me something about Laravel.');
+$response = Copilot::run(prompt: 'Tell me something about Laravel.');
 dump($response->content());
 ```
 
@@ -64,10 +64,10 @@ use Revolution\Copilot\Facades\Copilot;
 Copilot::start(function (CopilotSession $session) {
     dump('Starting Copilot session: '.$session->id());
 
-    $response = $session->sendAndWait('Tell me something about PHP.');
+    $response = $session->sendAndWait(prompt: 'Tell me something about PHP.');
     dump($response->content());
 
-    $response = $session->sendAndWait('Tell me something about Laravel.');
+    $response = $session->sendAndWait(prompt: 'Tell me something about Laravel.');
     dump($response->content());
 });
 ```
