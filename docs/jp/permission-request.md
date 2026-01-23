@@ -5,8 +5,14 @@
 SessionConfigの `onPermissionRequest` にクロージャを指定するとCopilotから権限を要求された時に呼び出される。`$request`と`$invocation`は下記のような内容の配列。
 
 ```php
-use function Laravel\Prompts\confirm;
+use Illuminate\Support\Facades\Artisan;
+use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\SessionConfig;
 
+use function Laravel\Prompts\{confirm, note, spin, text};
+
+Artisan::command('copilot:chat', function () {
     $config = new SessionConfig(
         onPermissionRequest: function (array $request, array $invocation) {
             $confirm = confirm(
@@ -37,6 +43,7 @@ use function Laravel\Prompts\confirm;
             note($response->content());
         }
     }, config: $config);
+});
 ```
 
 ### $request
