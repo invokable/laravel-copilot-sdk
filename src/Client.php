@@ -14,6 +14,9 @@ use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
+use Revolution\Copilot\Types\GetAuthStatusResponse;
+use Revolution\Copilot\Types\GetStatusResponse;
+use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -281,6 +284,53 @@ class Client implements CopilotClient
                 'message' => $message,
             ], fn ($v) => $v !== null), timeout: 10.0),
             fn (array $response) => PingPong::dispatch($response),
+        );
+    }
+
+    /**
+     * Get CLI status including version and protocol information.
+     *
+     * @throws JsonRpcException
+     */
+    public function getStatus(): GetStatusResponse
+    {
+        $this->ensureConnected();
+
+        $response = $this->rpcClient->request('status.get', []);
+
+        return GetStatusResponse::fromArray($response);
+    }
+
+    /**
+     * Get current authentication status.
+     *
+     * @throws JsonRpcException
+     */
+    public function getAuthStatus(): GetAuthStatusResponse
+    {
+        $this->ensureConnected();
+
+        $response = $this->rpcClient->request('auth.getStatus', []);
+
+        return GetAuthStatusResponse::fromArray($response);
+    }
+
+    /**
+     * List available models with their metadata.
+     *
+     * @return array<ModelInfo>
+     *
+     * @throws JsonRpcException
+     */
+    public function listModels(): array
+    {
+        $this->ensureConnected();
+
+        $response = $this->rpcClient->request('models.list', []);
+
+        return array_map(
+            fn (array $model) => ModelInfo::fromArray($model),
+            $response['models'] ?? [],
         );
     }
 

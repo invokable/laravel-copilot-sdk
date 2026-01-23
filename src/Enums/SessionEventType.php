@@ -43,6 +43,7 @@ enum SessionEventType: string
     case TOOL_USER_REQUESTED = 'tool.user_requested';
     case TOOL_EXECUTION_START = 'tool.execution_start';
     case TOOL_EXECUTION_PARTIAL_RESULT = 'tool.execution_partial_result';
+    case TOOL_EXECUTION_PROGRESS = 'tool.execution_progress';
     case TOOL_EXECUTION_COMPLETE = 'tool.execution_complete';
 
     // Subagent events
