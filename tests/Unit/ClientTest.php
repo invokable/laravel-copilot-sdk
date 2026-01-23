@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Event;
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Enums\ConnectionState;
+use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
@@ -210,6 +212,49 @@ describe('Client', function () {
 
         expect(fn () => $client->createSession())
             ->toThrow(RuntimeException::class, 'Client not connected');
+    });
+
+    it('resumeSession resume and returns session', function () {
+        Event::fake();
+
+        $stdin = fopen('php://memory', 'r+');
+        $stdout = fopen('php://memory', 'r+');
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdin')->andReturn($stdin);
+        $mockProcessManager->shouldReceive('getStdout')->andReturn($stdout);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->twice();
+        $mockRpcClient->shouldReceive('request')
+            ->with('ping', Mockery::any(), Mockery::any())
+            ->once()
+            ->andReturn(['protocolVersion' => 2, 'message' => 'pong', 'timestamp' => time()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.resume', Mockery::any())
+            ->once()
+            ->andReturn(['sessionId' => 'test-session-123']);
+
+        $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('registerTools')->once()->with([]);
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+        $this->app->bind(Session::class, fn () => $mockSession);
+
+        $client = new Client;
+        $client->start();
+        $session = $client->resumeSession('test-session-123');
+
+        expect($session)->toBe($mockSession);
+
+        Event::assertDispatched(ResumeSession::class);
+
+        fclose($stdin);
+        fclose($stdout);
     });
 
     it('ping returns server response', function () {
