@@ -1,5 +1,9 @@
 # GitHub Copilot CLI SDK for Laravel
 
+[![tests](https://github.com/invokable/laravel-copilot-sdk/actions/workflows/tests.yml/badge.svg)](https://github.com/invokable/laravel-copilot-sdk/actions/workflows/tests.yml)
+[![Maintainability](https://qlty.sh/badges/ef9130cf-a953-4d14-ac02-9eafb4c40a0c/maintainability.svg)](https://qlty.sh/gh/invokable/projects/laravel-copilot-sdk)
+[![Code Coverage](https://qlty.sh/badges/ef9130cf-a953-4d14-ac02-9eafb4c40a0c/coverage.svg)](https://qlty.sh/gh/invokable/projects/laravel-copilot-sdk)
+
 This package is Laravel version of [GitHub Copilot CLI SDK](https://github.com/github/copilot-sdk), which allows you to interact with GitHub Copilot CLI programmatically from your Laravel applications.
 
 ## Requirements
