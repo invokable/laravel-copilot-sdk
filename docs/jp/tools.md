@@ -15,10 +15,10 @@ Artisan::command('copilot:tools', function () {
 
     $config = new SessionConfig(
         tools: [
-            [
-                'name' => 'lookup_fact',
-                'description' => 'Returns a fun fact about a given topic.',
-                'parameters' => [
+            Tool::define(
+                name: 'lookup_fact',
+                description: 'Returns a fun fact about a given topic.',
+                parameters: [
                     'type' => 'object',
                     'properties' => [
                         'topic' => [
@@ -28,7 +28,7 @@ Artisan::command('copilot:tools', function () {
                     ],
                     'required' => ['topic'],
                 ],
-                'handler' => function (array $params) use ($facts): array {
+                handler: function (array $params) use ($facts): array {
                     $topic = $params['topic'] ?? '';
 
                     $fact = $facts[$topic] ?? "Sorry, I don't have a fact about {$topic}.";
@@ -49,7 +49,7 @@ Artisan::command('copilot:tools', function () {
                         'toolTelemetry' => [],
                     ];
                 },
-            ],
+            ),
         ],
     );
 
