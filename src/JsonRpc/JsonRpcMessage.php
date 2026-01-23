@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\JsonRpc;
 
+use Illuminate\Contracts\Support\Arrayable;
+
 /**
  * Represents a JSON-RPC 2.0 message.
  */
-readonly class JsonRpcMessage
+readonly class JsonRpcMessage implements Arrayable
 {
     public function __construct(
         public string|int|null $id = null,
