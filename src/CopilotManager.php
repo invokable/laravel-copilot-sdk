@@ -40,10 +40,10 @@ class CopilotManager implements Factory
     /**
      * Run a single prompt and return the response.
      */
-    public function run(string $prompt, ?array $attachments = null, ?string $mode = null): ?SessionEvent
+    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, SessionConfig|array $config = []): ?SessionEvent
     {
         if ($this->isFake()) {
-            return $this->fake->run($prompt, $attachments, $mode);
+            return $this->fake->run($prompt, $attachments, $mode, $config);
         }
 
         return $this->start(
@@ -53,6 +53,7 @@ class CopilotManager implements Factory
                 mode: $mode,
                 timeout: $this->config['timeout'] ?? 60.0,
             ),
+            config: $config
         );
     }
 

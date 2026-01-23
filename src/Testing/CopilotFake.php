@@ -91,7 +91,7 @@ class CopilotFake implements Factory
     /**
      * Run a single prompt and return the response.
      */
-    public function run(string $prompt, ?array $attachments = null, ?string $mode = null): ?SessionEvent
+    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, SessionConfig|array $config = []): ?SessionEvent
     {
         return $this->start(
             fn (CopilotSession $session) => $session->sendAndWait(
@@ -99,6 +99,7 @@ class CopilotFake implements Factory
                 attachments: $attachments,
                 mode: $mode,
             ),
+            config: $config,
         );
     }
 
