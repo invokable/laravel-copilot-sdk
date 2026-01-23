@@ -11,7 +11,7 @@ final readonly class Protocol
     /**
      * Get the SDK protocol version.
      */
-    public function version(): int
+    public static function version(): int
     {
         return self::SDK_PROTOCOL_VERSION;
     }
