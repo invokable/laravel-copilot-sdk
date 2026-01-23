@@ -207,6 +207,7 @@ Copilot::preventStrayRequests(false);
 
 ## ドキュメント
 - README.md: パッケージの概要と基本的な使い方。英語。`Copilot::run` `Copilot::start` Testing機能はLaravel版特有なのでこれをメインに説明。
+- `docs/getting-started.md` 公式SDKのgetting-started.mdと同様のLaravel版。英語。
 - `docs/jp/`以下に日本語ドキュメントを配置。英語の詳細なドキュメントは公式SDKにあるので日本語を中心に用意する。
 
 ## Debugging
