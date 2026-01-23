@@ -35,7 +35,9 @@ jobs:
         run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
 
       - name: Install Copilot CLI
-        run: curl -fsSL https://gh.io/copilot-install | bash
+        run: |
+          curl -fsSL https://gh.io/copilot-install | bash
+          copilot --version
 
       - name: Execute tests
         run: composer run test:coverage
