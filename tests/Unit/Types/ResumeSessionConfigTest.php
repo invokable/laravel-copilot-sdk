@@ -79,7 +79,7 @@ describe('ResumeSessionConfig', function () {
     });
 
     it('filters null values in toArray', function () {
-        $config = new ResumeSessionConfig();
+        $config = new ResumeSessionConfig;
 
         expect($config->toArray())->toBe([]);
     });
@@ -96,7 +96,7 @@ describe('ResumeSessionConfig', function () {
     });
 
     it('implements Arrayable interface', function () {
-        $config = new ResumeSessionConfig();
+        $config = new ResumeSessionConfig;
 
         expect($config)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
     });

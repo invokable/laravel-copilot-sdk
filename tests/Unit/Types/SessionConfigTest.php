@@ -119,7 +119,7 @@ describe('SessionConfig', function () {
     });
 
     it('filters null values in toArray', function () {
-        $config = new SessionConfig();
+        $config = new SessionConfig;
 
         expect($config->toArray())->toBe([]);
     });
@@ -147,7 +147,7 @@ describe('SessionConfig', function () {
     });
 
     it('implements Arrayable interface', function () {
-        $config = new SessionConfig();
+        $config = new SessionConfig;
 
         expect($config)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
     });

@@ -45,7 +45,7 @@ describe('SystemMessageConfig', function () {
     });
 
     it('filters null values in toArray', function () {
-        $config = new SystemMessageConfig();
+        $config = new SystemMessageConfig;
 
         expect($config->toArray())->toBe([]);
     });
@@ -63,7 +63,7 @@ describe('SystemMessageConfig', function () {
     });
 
     it('implements Arrayable interface', function () {
-        $config = new SystemMessageConfig();
+        $config = new SystemMessageConfig;
 
         expect($config)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
     });
