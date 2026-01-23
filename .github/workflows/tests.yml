@@ -38,7 +38,7 @@ jobs:
         run: curl -fsSL https://gh.io/copilot-install | bash
 
       - name: Execute tests
-        run: composer run test
+        run: composer run test:coverage
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
