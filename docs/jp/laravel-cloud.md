@@ -1,5 +1,6 @@
 # Laravel Cloudでの使い方
 
+## インストール
 Settings > Deployments > Build commandsに以下を追加してデプロイ。
 
 ```shell
@@ -17,6 +18,6 @@ COPILOT_GITHUB_TOKEN=
 
 `COPILOT_GITHUB_TOKEN`は`GH_TOKEN`や`GITHUB_TOKEN`などCopilot CLIがサポートしている認証方法ならなんでもいい。
 
-### 注意点
+## 注意点
 - 安いサーバーではメモリ不足になりやすい。
 - デフォルトのHTTPタイムアウトは20秒なのでよく失敗する場合は最大の60秒まで伸ばす。
