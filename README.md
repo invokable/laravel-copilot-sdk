@@ -169,7 +169,7 @@ Only JSON-RPC requests are prevented, so starting a client is not prevented.
 
 Most of the English documentation is included in the official SDK, so we won't provide much here. README and [Getting Started Guide](./docs/getting-started.md) are provided in English.
 
-Only Japanese documentation is available under `docs/ja`.
+Only Japanese documentation is available in [docs/jp](./docs/jp). **Ask Copilot!!**
 
 ## No plans to implement
 - TCP connection mode. Only stdio mode is supported.
