@@ -83,6 +83,7 @@ src/
 ├── Client.php                  # CopilotClient実装
 ├── Session.php                 # CopilotSession実装
 ├── CopilotManager.php          # Factory実装
+├── Protocol.php
 ├── CopilotSdkServiceProvider.php
 ├── Contracts/
 │   ├── CopilotClient.php       # クライアントインターフェース
