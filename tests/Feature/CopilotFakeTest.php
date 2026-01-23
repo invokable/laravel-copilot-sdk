@@ -30,7 +30,7 @@ describe('Copilot::fake()', function () {
 
         $response = Copilot::run('What is 6 * 7?');
 
-        expect($response->content())->toBe('42');
+        expect((string) $response)->toBe('42');
     });
 
     it('returns CopilotManager instance', function () {
