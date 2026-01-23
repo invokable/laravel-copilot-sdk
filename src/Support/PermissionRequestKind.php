@@ -8,7 +8,7 @@ namespace Revolution\Copilot\Support;
  * The other language versions are only defined as strings.
  * Make it easy to use with static methods.
  */
-class PermissionRequestKind
+final readonly class PermissionRequestKind
 {
     public static function approved(): array
     {
