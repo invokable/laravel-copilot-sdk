@@ -167,7 +167,8 @@ Only JSON-RPC requests are prevented, so starting a client is not prevented.
 
 ## Documentation
 
-Most of the English documentation is included in the official SDK, so we won't provide much here.  
+Most of the English documentation is included in the official SDK, so we won't provide much here. README and [Getting Started Guide](./docs/getting-started.md) are provided in English.
+
 Only Japanese documentation is available under `docs/ja`.
 
 ## No plans to implement
