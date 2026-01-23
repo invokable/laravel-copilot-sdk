@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Support\Facades\Artisan;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
@@ -11,7 +12,16 @@ use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\Tool;
 
-use function Laravel\Prompts\{confirm, error, info, intro, note, outro, select, spin, text, warning};
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\error;
+use function Laravel\Prompts\info;
+use function Laravel\Prompts\intro;
+use function Laravel\Prompts\note;
+use function Laravel\Prompts\outro;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\spin;
+use function Laravel\Prompts\text;
+use function Laravel\Prompts\warning;
 
 // Artisan::command('inspire', function () {
 //     $this->comment(Inspiring::quote());
@@ -118,21 +128,20 @@ Artisan::command('copilot:tools', function () {
         'Laravel' => 'A web application framework with expressive, elegant syntax.',
     ];
 
+    $parameters = JsonSchema::object(
+        [
+            'topic' => JsonSchema::string()
+                ->description('Topic to look up (e.g., "PHP", "Laravel")')
+                ->required(),
+        ],
+    )->toArray();
+
     $config = new SessionConfig(
         tools: [
             Tool::define(
                 name: 'lookup_fact',
                 description: 'Returns a fun fact about a given topic.',
-                parameters: [
-                    'type' => 'object',
-                    'properties' => [
-                        'topic' => [
-                            'type' => 'string',
-                            'description' => 'Topic to look up (e.g., "PHP", "Laravel")',
-                        ],
-                    ],
-                    'required' => ['topic'],
-                ],
+                parameters: $parameters,
                 handler: function (array $params) use ($facts): array {
                     $topic = $params['topic'] ?? '';
 
