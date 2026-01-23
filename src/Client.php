@@ -48,11 +48,6 @@ class Client implements CopilotClient
      */
     public function __construct(array $options = [])
     {
-        // Validate mutually exclusive options
-        if (isset($options['cli_url']) && (isset($options['cli_path']) || isset($options['use_stdio']))) {
-            throw new \InvalidArgumentException('cli_url is mutually exclusive with cli_path and use_stdio');
-        }
-
         $this->processManager = app(ProcessManager::class, [
             'cliPath' => $options['cli_path'] ?? null,
             'cliArgs' => $options['cli_args'] ?? [],
