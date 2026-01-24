@@ -11,8 +11,11 @@ namespace Revolution\Copilot\Support;
 final readonly class PermissionRequestKind
 {
     public const string APPROVED = 'approved';
+
     public const string DENIED_BY_RULES = 'denied-by-rules';
+
     public const string DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER = 'denied-no-approval-rule-and-could-not-request-from-user';
+
     public const string DENIED_INTERACTIVELY_BY_USER = 'denied-interactively-by-user';
 
     public static function approved(): array
