@@ -8,6 +8,7 @@ use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Events\Session\MessageSend;
 use Revolution\Copilot\Events\Session\MessageSendAndWait;
+use Revolution\Copilot\Events\Session\SessionEventReceived;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\SessionEvent;
@@ -154,6 +155,8 @@ class Session implements CopilotSession
      */
     public function dispatchEvent(SessionEvent $event): void
     {
+        SessionEventReceived::dispatch($this->sessionId, $event);
+
         foreach ($this->eventHandlers as $handler) {
             try {
                 $handler($event);
