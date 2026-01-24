@@ -228,9 +228,7 @@ Copilot::preventStrayRequests(false);
 ## TODO
 
 - ProcessManagerやJsonRpcClientはPHPの機能を直接使っていて効率は最も良いけどテストしにくい。LaravelやSymfonyのProcessはstdioに直接アクセスする方法が用意されてないのでこの辺りはいずれ検討。
-
-## 実装予定なしの機能
-- TCP接続。stdioの方がいいのでTCPは非対応。
+  - JsonRpcClientはテストが難しい箇所をStdioTransportに分けて解決。
 
 ## Custom instructions
 
