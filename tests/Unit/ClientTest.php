@@ -54,9 +54,9 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('ping', Mockery::any(), Mockery::any())
+            ->with('status.get', Mockery::any())
             ->once()
-            ->andReturn(['protocolVersion' => 2, 'message' => 'pong', 'timestamp' => time()]);
+            ->andReturn(['version' => '', 'protocolVersion' => 2]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -85,9 +85,9 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('ping', Mockery::any(), Mockery::any())
+            ->with('status.get', Mockery::any())
             ->once()
-            ->andReturn(['protocolVersion' => 2, 'message' => 'pong', 'timestamp' => time()]);
+            ->andReturn(['version' => '', 'protocolVersion' => 2]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -117,9 +117,9 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('ping', Mockery::any(), Mockery::any())
+            ->with('status.get', Mockery::any())
             ->once()
-            ->andReturn(['protocolVersion' => 999, 'message' => 'pong', 'timestamp' => time()]);
+            ->andReturn(['version' => '', 'protocolVersion' => 1]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -150,9 +150,9 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('ping', Mockery::any(), Mockery::any())
+            ->with('status.get', Mockery::any())
             ->once()
-            ->andReturn(['protocolVersion' => 2, 'message' => 'pong', 'timestamp' => time()]);
+            ->andReturn(['version' => '', 'protocolVersion' => 2]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -183,9 +183,9 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('ping', Mockery::any(), Mockery::any())
+            ->with('status.get', Mockery::any())
             ->once()
-            ->andReturn(['protocolVersion' => 2, 'message' => 'pong', 'timestamp' => time()]);
+            ->andReturn(['version' => '', 'protocolVersion' => 2]);
         $mockRpcClient->shouldReceive('request')
             ->with('session.create', Mockery::any())
             ->once()
@@ -237,9 +237,9 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('ping', Mockery::any(), Mockery::any())
+            ->with('status.get', Mockery::any())
             ->once()
-            ->andReturn(['protocolVersion' => 2, 'message' => 'pong', 'timestamp' => time()]);
+            ->andReturn(['version' => '', 'protocolVersion' => 2]);
         $mockRpcClient->shouldReceive('request')
             ->with('session.resume', Mockery::any())
             ->once()
@@ -259,40 +259,6 @@ describe('Client', function () {
         expect($session)->toBe($mockSession);
 
         Event::assertDispatched(ResumeSession::class);
-
-        fclose($stdin);
-        fclose($stdout);
-    });
-
-    it('ping returns server response', function () {
-        $stdin = fopen('php://memory', 'r+');
-        $stdout = fopen('php://memory', 'r+');
-
-        $mockStdioTransport = Mockery::mock(StdioTransport::class);
-
-        $mockProcessManager = Mockery::mock(ProcessManager::class);
-        $mockProcessManager->shouldReceive('start')->once();
-        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
-
-        $expectedResponse = ['message' => 'hello', 'timestamp' => 1234567890, 'protocolVersion' => 2];
-
-        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
-        $mockRpcClient->shouldReceive('start')->once();
-        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->twice();
-        $mockRpcClient->shouldReceive('request')
-            ->with('ping', Mockery::any(), Mockery::any())
-            ->andReturn($expectedResponse);
-
-        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
-        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
-
-        $client = new Client;
-        $client->start();
-
-        $result = $client->ping('hello');
-
-        expect($result)->toBe($expectedResponse);
 
         fclose($stdin);
         fclose($stdout);

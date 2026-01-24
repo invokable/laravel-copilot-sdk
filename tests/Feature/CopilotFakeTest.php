@@ -172,7 +172,7 @@ describe('preventStrayRequests()', function () {
         Copilot::preventStrayRequests();
 
         expect(fn () => Copilot::run('Unexpected prompt'))
-            ->toThrow(StrayRequestException::class, 'Attempted request to [ping] without a matching fake.');
+            ->toThrow(StrayRequestException::class, 'Attempted request to [status.get] without a matching fake.');
     });
 
     it('allows requests that have matching responses', function () {
