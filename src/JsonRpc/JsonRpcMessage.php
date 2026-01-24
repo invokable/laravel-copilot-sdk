@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Revolution\Copilot\JsonRpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
 
 /**
  * Represents a JSON-RPC 2.0 message.
  */
-readonly class JsonRpcMessage implements Arrayable
+readonly class JsonRpcMessage implements Arrayable, Jsonable
 {
     public function __construct(
         public string|int|null $id = null,
@@ -135,9 +136,9 @@ readonly class JsonRpcMessage implements Arrayable
     /**
      * Convert to JSON string.
      */
-    public function toJson(): string
+    public function toJson($options = 0): string
     {
-        return json_encode($this->toArray(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return json_encode($this->toArray(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | $options);
     }
 
     /**
