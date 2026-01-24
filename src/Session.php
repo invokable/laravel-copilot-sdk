@@ -57,6 +57,10 @@ class Session implements CopilotSession
     /**
      * Send a message to this session.
      *
+     * @param  string  $prompt  The prompt/message to send
+     * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments. type: "file" | "directory"
+     * @param  ?string  $mode  Message delivery mode. "enqueue": Add to queue (default), "immediate": Send immediately
+     *
      * @throws JsonRpcException
      */
     public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string
@@ -75,6 +79,13 @@ class Session implements CopilotSession
 
     /**
      * Send a message and wait until the session becomes idle.
+     *
+     * @param  string  $prompt  The prompt/message to send
+     * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments. type: "file" | "directory"
+     * @param  ?string  $mode  Message delivery mode. "enqueue": Add to queue (default), "immediate": Send immediately
+     * @param  float  $timeout  Maximum time to wait for idle state, in seconds
+     *
+     * @throws RuntimeException
      */
     public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, float $timeout = 60.0): ?SessionEvent
     {
