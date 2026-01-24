@@ -35,6 +35,11 @@ Artisan::command('copilot:ping', function () {
     });
 });
 
+// vendor/bin/testbench copilot:version
+Artisan::command('copilot:version', function () {
+    $this->info(json_encode(Copilot::client()->getStatus()->toArray()));
+})->purpose('Show Copilot CLI and protocol version');
+
 // vendor/bin/testbench copilot:chat
 // vendor/bin/testbench copilot:chat --resume
 Artisan::command('copilot:chat {--resume}', function () {
