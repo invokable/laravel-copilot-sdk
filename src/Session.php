@@ -11,6 +11,7 @@ use Revolution\Copilot\Events\Session\MessageSendAndWait;
 use Revolution\Copilot\Events\Session\SessionEventReceived;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Support\PermissionRequestKind;
 use Revolution\Copilot\Types\SessionEvent;
 use RuntimeException;
 use Throwable;
@@ -225,13 +226,13 @@ class Session implements CopilotSession
     public function handlePermissionRequest(array $request): array
     {
         if ($this->permissionHandler === null) {
-            return ['kind' => 'denied-no-approval-rule-and-could-not-request-from-user'];
+            return PermissionRequestKind::deniedNoApprovalRuleAndCouldNotRequestFromUser();
         }
 
         try {
             return ($this->permissionHandler)($request, ['sessionId' => $this->sessionId]);
         } catch (Throwable) {
-            return ['kind' => 'denied-no-approval-rule-and-could-not-request-from-user'];
+            return PermissionRequestKind::deniedNoApprovalRuleAndCouldNotRequestFromUser();
         }
     }
 
