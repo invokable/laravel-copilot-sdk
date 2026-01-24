@@ -171,9 +171,6 @@ Most of the English documentation is included in the official SDK, so we won't p
 
 Only Japanese documentation is available in [docs/jp](./docs/jp). **Ask Copilot!!**
 
-## No plans to implement
-- TCP connection mode. Only stdio mode is supported.
-
 ## Our other packages
 - [laravel-boost-copilot-cli](https://github.com/invokable/laravel-boost-copilot-cli)
 - [laravel-boost-phpstorm-copilot](https://github.com/invokable/laravel-boost-phpstorm-copilot)
