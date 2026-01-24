@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Transport;
 
+use Closure;
 use Revolution\Copilot\Contracts\Transport;
 
 class StdioTransport implements Transport
@@ -92,5 +93,10 @@ class StdioTransport implements Transport
             // Restore non-blocking mode
             stream_set_blocking($this->stdout, false);
         }
+    }
+
+    public function stream(Closure $stream): void
+    {
+        $stream();
     }
 }
