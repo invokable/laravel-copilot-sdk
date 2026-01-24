@@ -7,15 +7,12 @@ use Revolution\Copilot\Protocol;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
-    Copilot::preventStrayRequests(false);
     Copilot::preventStrayRequests(allow: [
         'ping',
         'status.get',
         'auth.getStatus',
         'models.list',
     ]);
-
-    Copilot::client()->start();
 });
 
 afterAll(function () {
