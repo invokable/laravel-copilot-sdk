@@ -9,7 +9,16 @@
 $sessions = Copilot::client()->listSessions();
 
 // Laravel\Prompts\selectなどで再開するセッションIDを選択
-$session_id = select();
+$sessions = collect(Copilot::client()->listSessions())
+    ->mapWithKeys(function (SessionMetadata $session) {
+        return [$session->sessionId => $session->summary ?? ''];
+    })
+    ->toArray();
+
+$session_id = select(
+    label: 'What session do you want to resume?',
+    options: $sessions,
+);
 
 // 選択されたIDでセッションを再開
 $session = Copilot::client()->resumeSession($session_id);
