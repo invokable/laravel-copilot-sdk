@@ -14,6 +14,7 @@ use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
+use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\ModelInfo;
@@ -76,8 +77,7 @@ class Client implements CopilotClient
 
             // Create JSON-RPC client
             $this->rpcClient = app(JsonRpcClient::class, [
-                'stdin' => $this->processManager->getStdin(),
-                'stdout' => $this->processManager->getStdout(),
+                'transport' => $this->processManager->getStdioTransport(),
             ]);
 
             $this->rpcClient->start();
@@ -153,7 +153,7 @@ class Client implements CopilotClient
      *
      * @throws JsonRpcException
      */
-    public function createSession(SessionConfig|array $config = []): Session
+    public function createSession(SessionConfig|array $config = []): CopilotSession
     {
         $this->ensureConnected();
 

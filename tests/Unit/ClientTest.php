@@ -10,6 +10,7 @@ use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Session;
+use Revolution\Copilot\Transport\StdioTransport;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
@@ -42,10 +43,11 @@ describe('Client', function () {
         $stdin = fopen('php://memory', 'r+');
         $stdout = fopen('php://memory', 'r+');
 
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->once();
-        $mockProcessManager->shouldReceive('getStdin')->andReturn($stdin);
-        $mockProcessManager->shouldReceive('getStdout')->andReturn($stdout);
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
 
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
@@ -72,10 +74,11 @@ describe('Client', function () {
         $stdin = fopen('php://memory', 'r+');
         $stdout = fopen('php://memory', 'r+');
 
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
         $mockProcessManager = Mockery::mock(ProcessManager::class);
-        $mockProcessManager->shouldReceive('start')->once(); // Only once
-        $mockProcessManager->shouldReceive('getStdin')->andReturn($stdin);
-        $mockProcessManager->shouldReceive('getStdout')->andReturn($stdout);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
 
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
@@ -103,10 +106,11 @@ describe('Client', function () {
         $stdin = fopen('php://memory', 'r+');
         $stdout = fopen('php://memory', 'r+');
 
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->once();
-        $mockProcessManager->shouldReceive('getStdin')->andReturn($stdin);
-        $mockProcessManager->shouldReceive('getStdout')->andReturn($stdout);
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
 
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
@@ -133,11 +137,12 @@ describe('Client', function () {
         $stdin = fopen('php://memory', 'r+');
         $stdout = fopen('php://memory', 'r+');
 
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->once();
         $mockProcessManager->shouldReceive('stop')->once();
-        $mockProcessManager->shouldReceive('getStdin')->andReturn($stdin);
-        $mockProcessManager->shouldReceive('getStdout')->andReturn($stdout);
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
 
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
@@ -167,10 +172,11 @@ describe('Client', function () {
         $stdin = fopen('php://memory', 'r+');
         $stdout = fopen('php://memory', 'r+');
 
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->once();
-        $mockProcessManager->shouldReceive('getStdin')->andReturn($stdin);
-        $mockProcessManager->shouldReceive('getStdout')->andReturn($stdout);
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
 
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
@@ -220,10 +226,11 @@ describe('Client', function () {
         $stdin = fopen('php://memory', 'r+');
         $stdout = fopen('php://memory', 'r+');
 
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->once();
-        $mockProcessManager->shouldReceive('getStdin')->andReturn($stdin);
-        $mockProcessManager->shouldReceive('getStdout')->andReturn($stdout);
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
 
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
@@ -261,10 +268,11 @@ describe('Client', function () {
         $stdin = fopen('php://memory', 'r+');
         $stdout = fopen('php://memory', 'r+');
 
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->once();
-        $mockProcessManager->shouldReceive('getStdin')->andReturn($stdin);
-        $mockProcessManager->shouldReceive('getStdout')->andReturn($stdout);
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
 
         $expectedResponse = ['message' => 'hello', 'timestamp' => 1234567890, 'protocolVersion' => 2];
 

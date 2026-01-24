@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Process;
 
 use Revolution\Copilot\Events\Process\ProcessStarted;
+use Revolution\Copilot\Transport\StdioTransport;
 use RuntimeException;
 use Symfony\Component\Process\ExecutableFinder;
 
@@ -120,6 +121,17 @@ class ProcessManager
         }
 
         return $this->stdout;
+    }
+
+    /**
+     * Get the transport for reading and writing to the server.
+     */
+    public function getStdioTransport(): StdioTransport
+    {
+        return app(StdioTransport::class, [
+            'stdin' => $this->getStdin(),
+            'stdout' => $this->getStdout(),
+        ]);
     }
 
     /**

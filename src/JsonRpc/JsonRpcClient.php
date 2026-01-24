@@ -6,6 +6,7 @@ namespace Revolution\Copilot\JsonRpc;
 
 use Closure;
 use Illuminate\Support\Str;
+use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Events\JsonRpc\MessageReceived;
 use Revolution\Copilot\Events\JsonRpc\MessageSending;
 use Revolution\Copilot\Events\JsonRpc\ResponseReceived;
@@ -46,14 +47,11 @@ class JsonRpcClient
      */
     protected bool $running = false;
 
-    /**
-     * @param  resource  $stdin  Input stream (write to server)
-     * @param  resource  $stdout  Output stream (read from server)
-     */
     public function __construct(
-        protected mixed $stdin,
-        protected mixed $stdout,
-    ) {}
+        protected Transport $transport,
+    ) {
+        //
+    }
 
     /**
      * Start the client.
@@ -61,7 +59,7 @@ class JsonRpcClient
     public function start(): void
     {
         $this->running = true;
-        stream_set_blocking($this->stdout, false);
+        $this->transport->start();
     }
 
     /**
@@ -165,8 +163,8 @@ class JsonRpcClient
         MessageSending::dispatch($message);
 
         $encoded = $message->encode();
-        fwrite($this->stdin, $encoded);
-        fflush($this->stdin);
+
+        $this->transport->send($encoded);
     }
 
     /**
@@ -242,72 +240,15 @@ class JsonRpcClient
      */
     protected function readMessage(float $timeout = 0.1): ?JsonRpcMessage
     {
-        // Use stream_select for non-blocking read with timeout
-        $read = [$this->stdout];
-        $write = null;
-        $except = null;
-        $tvSec = (int) $timeout;
-        $tvUsec = (int) (($timeout - $tvSec) * 1000000);
+        $content = $this->transport->read($timeout);
 
-        $ready = @stream_select($read, $write, $except, $tvSec, $tvUsec);
+        $data = json_decode($content, true);
 
-        if ($ready === false || $ready === 0) {
+        if (! is_array($data)) {
             return null;
         }
 
-        // Switch to blocking mode for reliable reads
-        stream_set_blocking($this->stdout, true);
-
-        try {
-            // Read header line
-            $headerLine = fgets($this->stdout);
-
-            if ($headerLine === false || $headerLine === '') {
-                return null;
-            }
-
-            // Parse Content-Length
-            $headerLine = trim($headerLine);
-
-            if (! str_starts_with($headerLine, 'Content-Length:')) {
-                return null;
-            }
-
-            $contentLength = (int) trim(substr($headerLine, 15));
-
-            if ($contentLength <= 0) {
-                return null;
-            }
-
-            // Read empty line (header/body separator)
-            fgets($this->stdout);
-
-            // Read exact content length
-            $content = '';
-            $remaining = $contentLength;
-
-            while ($remaining > 0) {
-                $chunk = fread($this->stdout, $remaining);
-
-                if ($chunk === false || $chunk === '') {
-                    return null;
-                }
-
-                $content .= $chunk;
-                $remaining -= strlen($chunk);
-            }
-
-            $data = json_decode($content, true);
-
-            if (! is_array($data)) {
-                return null;
-            }
-
-            return JsonRpcMessage::fromArray($data);
-        } finally {
-            // Restore non-blocking mode
-            stream_set_blocking($this->stdout, false);
-        }
+        return JsonRpcMessage::fromArray($data);
     }
 
     /**
