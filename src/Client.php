@@ -9,6 +9,7 @@ use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Events\Client\ClientStarted;
 use Revolution\Copilot\Events\Client\PingPong;
+use Revolution\Copilot\Events\Client\ToolCall;
 use Revolution\Copilot\Events\Session\CreateSession;
 use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
@@ -474,6 +475,8 @@ class Client implements CopilotClient
             ];
 
             $result = $handler($arguments, $invocation);
+
+            ToolCall::dispatch($arguments, $invocation, $result);
 
             // Normalize result
             if (is_string($result)) {
