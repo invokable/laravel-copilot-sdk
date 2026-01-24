@@ -7,6 +7,7 @@ src/
 ├── Events/
 │   ├── Client/
 │   │   ├── ClientStarted.php
+│   │   ├── ToolCall.php
 │   │   └── PingPong.php
 │   ├── JsonRpc/
 │   │   ├── MessageReceived.php
@@ -18,6 +19,7 @@ src/
 │       ├── CreateSession.php
 │       ├── MessageSend.php
 │       ├── MessageSendAndWait.php
+│       ├── SessionEventReceived.php
 │       └── ResumeSession.php
 ```
 
