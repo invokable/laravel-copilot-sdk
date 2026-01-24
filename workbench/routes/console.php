@@ -10,6 +10,7 @@ use Revolution\Copilot\Support\PermissionRequestKind;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\SessionMetadata;
 use Revolution\Copilot\Types\Tool;
 
 use function Laravel\Prompts\confirm;
@@ -64,8 +65,8 @@ Artisan::command('copilot:chat {--resume}', function () {
 
         if ($this->option('resume')) {
             $sessions = collect(Copilot::client()->listSessions())
-                ->mapWithKeys(function ($session) {
-                    return [$session['sessionId'] => $session['summary'] ?? ''];
+                ->mapWithKeys(function (SessionMetadata $session) {
+                    return [$session->sessionId => $session->summary ?? ''];
                 })
                 ->toArray();
 
