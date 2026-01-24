@@ -10,24 +10,29 @@ namespace Revolution\Copilot\Support;
  */
 final readonly class PermissionRequestKind
 {
+    public const string APPROVED = 'approved';
+    public const string DENIED_BY_RULES = 'denied-by-rules';
+    public const string DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER = 'denied-no-approval-rule-and-could-not-request-from-user';
+    public const string DENIED_INTERACTIVELY_BY_USER = 'denied-interactively-by-user';
+
     public static function approved(): array
     {
-        return ['kind' => 'approved'];
+        return ['kind' => self::APPROVED];
     }
 
     public static function deniedByRules(): array
     {
-        return ['kind' => 'denied-by-rules'];
+        return ['kind' => self::DENIED_BY_RULES];
     }
 
     public static function deniedNoApprovalRuleAndCouldNotRequestFromUser(): array
     {
-        return ['kind' => 'denied-no-approval-rule-and-could-not-request-from-user'];
+        return ['kind' => self::DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER];
     }
 
     public static function deniedInteractivelyByUser(): array
     {
-        return ['kind' => 'denied-interactively-by-user'];
+        return ['kind' => self::DENIED_INTERACTIVELY_BY_USER];
     }
 
     /**
@@ -36,10 +41,10 @@ final readonly class PermissionRequestKind
     public static function select(): array
     {
         return [
-            'approved' => __('Approved'),
-            'denied-by-rules' => __('Denied by Rules'),
-            'denied-no-approval-rule-and-could-not-request-from-user' => __('Denied No Approval Rule and Could Not Request from User'),
-            'denied-interactively-by-user' => __('Denied Interactively by User'),
+            self::APPROVED => __('Approved'),
+            self::DENIED_BY_RULES => __('Denied by Rules'),
+            self::DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER => __('Denied No Approval Rule and Could Not Request from User'),
+            self::DENIED_INTERACTIVELY_BY_USER => __('Denied Interactively by User'),
         ];
     }
 }
