@@ -45,7 +45,10 @@ class Session implements CopilotSession
     public function __construct(
         public readonly string $sessionId,
         protected JsonRpcClient $client,
-    ) {}
+        public readonly ?string $workspacePath = null,
+    ) {
+        //
+    }
 
     /**
      * Get the session ID.
@@ -53,6 +56,16 @@ class Session implements CopilotSession
     public function id(): string
     {
         return $this->sessionId;
+    }
+
+    /**
+     * Path to the session workspace directory when infinite sessions are enabled.
+     * Contains checkpoints/, plan.md, and files/ subdirectories.
+     * Null if infinite sessions are disabled.
+     */
+    public function workspacePath(): ?string
+    {
+        return $this->workspacePath;
     }
 
     /**

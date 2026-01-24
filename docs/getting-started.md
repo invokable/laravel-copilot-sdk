@@ -356,28 +356,29 @@ The `SessionConfig` class supports many options:
 ```php
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SystemMessageConfig;
+use Revolution\Copilot\Types\InfiniteSessionConfig;
 
 $config = new SessionConfig(
     // Specify a model
     model: 'gpt-4.1',
-    
+
     // Custom tools
     tools: [...],
-    
+
     // System message configuration
     systemMessage: new SystemMessageConfig(
         content: 'You are a helpful assistant for Laravel developers.',
     ),
-    
+
     // Enable streaming
     streaming: true,
-    
+
     // Limit available built-in tools
     availableTools: ['read_file', 'write_file'],
-    
+
     // Or exclude specific tools
     excludedTools: ['shell'],
-    
+
     // MCP server configurations
     mcpServers: [
         'github' => [
@@ -385,7 +386,7 @@ $config = new SessionConfig(
             'url' => 'https://api.githubcopilot.com/mcp/',
         ],
     ],
-    
+
     // Custom agents
     customAgents: [
         [
@@ -395,6 +396,26 @@ $config = new SessionConfig(
             'prompt' => 'You are an expert code reviewer.',
         ],
     ],
+
+    /**
+     * Directories to load skills from.
+     */
+    skillDirectories: [],
+
+    /**
+     * List of skill names to disable.
+     */
+    disabledSkills: [],
+
+    // Infinite session configuration (enabled by default)
+    infiniteSessions: new InfiniteSessionConfig(
+        enabled: true,
+        backgroundCompactionThreshold: 0.80, // Start compacting at 80% context usage
+        bufferExhaustionThreshold: 0.95,     // Block at 95% until compaction completes
+    ),
+
+    // Disable infinite sessions
+    // infiniteSessions: new InfiniteSessionConfig(enabled: false),
 );
 ```
 

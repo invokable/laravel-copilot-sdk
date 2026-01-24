@@ -79,6 +79,12 @@ readonly class SessionConfig implements Arrayable
          * List of skill names to disable.
          */
         public ?array $disabledSkills = null,
+        /**
+         * Infinite session configuration for persistent workspaces and automatic compaction.
+         * When enabled (default), sessions automatically manage context limits and persist state.
+         * Set to `new InfiniteSessionConfig(enabled: false)` to disable.
+         */
+        public InfiniteSessionConfig|array|null $infiniteSessions = null,
     ) {}
 
     /**
@@ -100,6 +106,13 @@ readonly class SessionConfig implements Arrayable
                 : ProviderConfig::fromArray($data['provider']);
         }
 
+        $infiniteSessions = null;
+        if (isset($data['infiniteSessions'])) {
+            $infiniteSessions = $data['infiniteSessions'] instanceof InfiniteSessionConfig
+                ? $data['infiniteSessions']
+                : InfiniteSessionConfig::fromArray($data['infiniteSessions']);
+        }
+
         return new self(
             sessionId: $data['sessionId'] ?? null,
             model: $data['model'] ?? null,
@@ -115,6 +128,7 @@ readonly class SessionConfig implements Arrayable
             customAgents: $data['customAgents'] ?? null,
             skillDirectories: $data['skillDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
+            infiniteSessions: $infiniteSessions,
         );
     }
 
@@ -131,6 +145,10 @@ readonly class SessionConfig implements Arrayable
             ? $this->provider->toArray()
             : $this->provider;
 
+        $infiniteSessions = $this->infiniteSessions instanceof InfiniteSessionConfig
+            ? $this->infiniteSessions->toArray()
+            : $this->infiniteSessions;
+
         return array_filter([
             'sessionId' => $this->sessionId,
             'model' => $this->model,
@@ -146,6 +164,7 @@ readonly class SessionConfig implements Arrayable
             'customAgents' => $this->customAgents,
             'skillDirectories' => $this->skillDirectories,
             'disabledSkills' => $this->disabledSkills,
+            'infiniteSessions' => $infiniteSessions,
         ], fn ($value) => $value !== null);
     }
 }

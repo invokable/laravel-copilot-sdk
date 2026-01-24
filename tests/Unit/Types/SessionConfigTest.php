@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SystemMessageConfig;
@@ -25,6 +26,7 @@ describe('SessionConfig', function () {
             'customAgents' => [['name' => 'agent1']],
             'skillDirectories' => ['/path/to/skills'],
             'disabledSkills' => ['skill1'],
+            'infiniteSessions' => ['enabled' => true, 'backgroundCompactionThreshold' => 0.80],
         ]);
 
         expect($config->sessionId)->toBe('test-session-id')
@@ -40,7 +42,10 @@ describe('SessionConfig', function () {
             ->and($config->mcpServers)->toBe(['server1' => ['command' => 'npx']])
             ->and($config->customAgents)->toBe([['name' => 'agent1']])
             ->and($config->skillDirectories)->toBe(['/path/to/skills'])
-            ->and($config->disabledSkills)->toBe(['skill1']);
+            ->and($config->disabledSkills)->toBe(['skill1'])
+            ->and($config->infiniteSessions)->toBeInstanceOf(InfiniteSessionConfig::class)
+            ->and($config->infiniteSessions->enabled)->toBeTrue()
+            ->and($config->infiniteSessions->backgroundCompactionThreshold)->toBe(0.80);
     });
 
     it('can be created from array with minimal fields', function () {
@@ -59,7 +64,8 @@ describe('SessionConfig', function () {
             ->and($config->mcpServers)->toBeNull()
             ->and($config->customAgents)->toBeNull()
             ->and($config->skillDirectories)->toBeNull()
-            ->and($config->disabledSkills)->toBeNull();
+            ->and($config->disabledSkills)->toBeNull()
+            ->and($config->infiniteSessions)->toBeNull();
     });
 
     it('preserves SystemMessageConfig instance when passed directly', function () {
@@ -98,6 +104,7 @@ describe('SessionConfig', function () {
             customAgents: [['name' => 'agent1']],
             skillDirectories: ['/skills'],
             disabledSkills: ['skill1'],
+            infiniteSessions: new InfiniteSessionConfig(enabled: false),
         );
 
         $array = $config->toArray();
@@ -115,7 +122,8 @@ describe('SessionConfig', function () {
             ->and($array['mcpServers'])->toBe(['server1' => ['command' => 'test']])
             ->and($array['customAgents'])->toBe([['name' => 'agent1']])
             ->and($array['skillDirectories'])->toBe(['/skills'])
-            ->and($array['disabledSkills'])->toBe(['skill1']);
+            ->and($array['disabledSkills'])->toBe(['skill1'])
+            ->and($array['infiniteSessions'])->toBe(['enabled' => false]);
     });
 
     it('filters null values in toArray', function () {
@@ -143,6 +151,26 @@ describe('SessionConfig', function () {
         expect($config->toArray()['provider'])->toBe([
             'baseUrl' => 'https://api.example.com',
             'type' => 'openai',
+        ]);
+    });
+
+    it('preserves InfiniteSessionConfig instance when passed directly', function () {
+        $infiniteSessions = new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.75);
+        $config = SessionConfig::fromArray([
+            'infiniteSessions' => $infiniteSessions,
+        ]);
+
+        expect($config->infiniteSessions)->toBe($infiniteSessions);
+    });
+
+    it('handles infiniteSessions as array in toArray', function () {
+        $config = new SessionConfig(
+            infiniteSessions: ['enabled' => true, 'bufferExhaustionThreshold' => 0.90],
+        );
+
+        expect($config->toArray()['infiniteSessions'])->toBe([
+            'enabled' => true,
+            'bufferExhaustionThreshold' => 0.90,
         ]);
     });
 
