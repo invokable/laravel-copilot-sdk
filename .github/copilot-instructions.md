@@ -144,7 +144,7 @@ $message_id = $session->send(prompt: '');
 
 // こういう使い方にはしない
 Copilot::run(['prompt' => '']);
-Copilot::run(new MessageConfig(prompt: ''));
+Copilot::run(new MessageOptions(prompt: ''));
 ```
 
 名前付き引数のほうがJavaScriptの使い勝手を再現できる。
