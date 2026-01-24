@@ -397,10 +397,10 @@ class Client implements CopilotClient
     protected function verifyProtocolVersion(): void
     {
         $expectedVersion = Protocol::version();
-        $pingResult = $this->ping();
-        $serverVersion = $pingResult['protocolVersion'] ?? null;
 
-        if ($serverVersion === null) {
+        try {
+            $serverVersion = $this->getStatus()->protocolVersion;
+        } catch (JsonRpcException) {
             throw new RuntimeException(
                 "SDK protocol version mismatch: SDK expects version {$expectedVersion}, ".
                 'but server does not report a protocol version.',
