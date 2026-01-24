@@ -21,6 +21,7 @@ use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\SessionMetadata;
 use RuntimeException;
 use Throwable;
 
@@ -364,7 +365,7 @@ class Client implements CopilotClient
     /**
      * List all available sessions.
      *
-     * @return array<array{sessionId: string, startTime: string, modifiedTime: string, summary?: string, isRemote: bool}>
+     * @return array<SessionMetadata>
      *
      * @throws JsonRpcException
      */
@@ -374,7 +375,10 @@ class Client implements CopilotClient
 
         $response = $this->rpcClient->request('session.list', []);
 
-        return $response['sessions'] ?? [];
+        return array_map(
+            fn (array $session) => SessionMetadata::fromArray($session),
+            $response['sessions'] ?? []
+        );
     }
 
     /**
