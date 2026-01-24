@@ -133,6 +133,25 @@ src/
     └── SystemMessageConfig.php
 ```
 
+### Types
+基本的には公式SDKに合わせてクラスを作成して使う方式。  
+ただし頻繁に使う箇所は利便性を優先して名前付き引数を使う。
+
+```php
+$response = Copilot::run(prompt: '');
+$response = $session->sendAndWait(prompt: '');
+$message_id = $session->send(prompt: '');
+
+// こういう使い方にはしない
+Copilot::run(['prompt' => '']);
+Copilot::run(new MessageConfig(prompt: ''));
+```
+
+名前付き引数のほうがJavaScriptの使い勝手を再現できる。
+```javascript
+const response = await session.sendAndWait({ prompt: "What is 2 + 2?" });
+```
+
 ## Testing
 - `tests`以下にPestでテストコードを配置。
 - `tests/Unit`にユニットテスト、`tests/Feature`に機能テストを配置。
