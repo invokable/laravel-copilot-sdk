@@ -15,3 +15,10 @@ echo $response->content();
 
 別のファイルに書き出すのも有効だったけどファイルIOの手間が増える。
 大体ではなく確実さが必要ならファイルに書き出した方がいい。ファイル書き出し方式なら100%成功している。SDK経由でもファイルを生成する権限は最初からある。
+
+他には切り取る用のタグを指定しておくのもいいかも。
+
+```php
+$response = Copilot::run('次の文章を英語に翻訳してください。翻訳結果を<translated>タグで囲んで一番最後のアシスタントメッセージとして送ってください。<translated>AIの応答を含まない翻訳結果</translated>');
+$content = Str::of($response->content())->between('<translated>','</translated>')->trim()->toString();
+```
