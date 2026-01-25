@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
-use InvalidArgumentException;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Transport;
