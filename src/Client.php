@@ -6,6 +6,7 @@ namespace Revolution\Copilot;
 
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Events\Client\ClientStarted;
 use Revolution\Copilot\Events\Client\PingPong;
@@ -15,6 +16,7 @@ use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
+use Revolution\Copilot\Transport\TcpTransport;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\ModelInfo;
@@ -30,11 +32,18 @@ use Throwable;
  */
 class Client implements CopilotClient
 {
-    protected ProcessManager $processManager;
+    protected ?ProcessManager $processManager = null;
+
+    protected ?Transport $transport = null;
 
     protected ?JsonRpcClient $rpcClient = null;
 
     protected ConnectionState $state = ConnectionState::DISCONNECTED;
+
+    /**
+     * Whether using TCP mode (connecting to existing server).
+     */
+    protected bool $tcpMode = false;
 
     /**
      * Active sessions.
@@ -55,6 +64,15 @@ class Client implements CopilotClient
             throw new \InvalidArgumentException('cli_url is mutually exclusive with cli_path and use_stdio');
         }
 
+        // TCP mode: connect to existing server
+        if (isset($options['cli_url'])) {
+            $this->tcpMode = true;
+            $this->transport = TcpTransport::fromUrl($options['cli_url']);
+
+            return;
+        }
+
+        // Stdio mode: start CLI process
         $this->processManager = app(ProcessManager::class, [
             'cliPath' => $options['cli_path'] ?? null,
             'cliArgs' => $options['cli_args'] ?? [],
@@ -78,12 +96,18 @@ class Client implements CopilotClient
         $this->state = ConnectionState::CONNECTING;
 
         try {
-            // Start the CLI process
-            $this->processManager->start();
+            if ($this->tcpMode) {
+                // TCP mode: connect to existing server
+                $this->transport->start();
+            } else {
+                // Stdio mode: start the CLI process
+                $this->processManager->start();
+                $this->transport = $this->processManager->getStdioTransport();
+            }
 
             // Create JSON-RPC client
             $this->rpcClient = app(JsonRpcClient::class, [
-                'transport' => $this->processManager->getStdioTransport(),
+                'transport' => $this->transport,
             ]);
 
             $this->rpcClient->start();
@@ -144,12 +168,24 @@ class Client implements CopilotClient
             $this->rpcClient = null;
         }
 
-        // Stop process
-        $this->processManager->stop();
+        // Stop transport/process
+        if ($this->tcpMode) {
+            $this->transport?->stop();
+        } else {
+            $this->processManager?->stop();
+        }
 
         $this->state = ConnectionState::DISCONNECTED;
 
         return $errors;
+    }
+
+    /**
+     * Check if the client is using TCP mode.
+     */
+    public function isTcpMode(): bool
+    {
+        return $this->tcpMode;
     }
 
     /**

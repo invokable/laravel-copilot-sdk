@@ -129,13 +129,20 @@ class CopilotManager implements Factory
     public function client(): CopilotClient
     {
         if ($this->client === null) {
+            $options = [
+                'cli_path' => $this->config['cli_path'] ?? null,
+                'cli_args' => $this->config['cli_args'] ?? [],
+                'cwd' => $this->config['cwd'] ?? base_path(),
+                'log_level' => $this->config['log_level'] ?? 'info',
+            ];
+
+            // TCP mode: connect to existing server
+            if (! empty($this->config['url'])) {
+                $options['cli_url'] = $this->config['url'];
+            }
+
             $this->client = app(Client::class, [
-                'options' => [
-                    'cli_path' => $this->config['cli_path'] ?? null,
-                    'cli_args' => $this->config['cli_args'] ?? [],
-                    'cwd' => $this->config['cwd'] ?? base_path(),
-                    'log_level' => $this->config['log_level'] ?? 'info',
-                ],
+                'options' => $options,
             ]);
 
             $this->client->start();

@@ -25,6 +25,11 @@ class StdioTransport implements Transport
         stream_set_blocking($this->stdout, false);
     }
 
+    public function stop(): void
+    {
+        // Stdio streams are managed by ProcessManager
+    }
+
     public function send(string $message): void
     {
         fwrite($this->stdin, $message);

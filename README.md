@@ -27,6 +27,28 @@ composer require revolution/laravel-copilot-sdk
 COPILOT_CLI_PATH=copilot
 ```
 
+### TCP Mode (Optional)
+
+Instead of starting a new CLI process for each request, you can connect to an existing Copilot CLI server running in TCP mode. This is useful for:
+
+- Laravel Forge/Cloud deployments with background process management
+- Sharing a single CLI instance across multiple Laravel processes
+- Better performance with persistent connections
+
+Start the Copilot CLI server:
+
+```shell
+copilot --server --port 12345
+```
+
+Configure your `.env`:
+
+```dotenv
+COPILOT_URL=tcp://127.0.0.1:12345
+```
+
+When `COPILOT_URL` is set, the SDK will connect to the existing server instead of starting a new CLI process.
+
 ### Publish config (Optional)
 
 ```shell
