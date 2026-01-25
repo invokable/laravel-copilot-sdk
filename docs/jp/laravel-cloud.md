@@ -29,6 +29,7 @@ portの設定は自由。
 Custom environment variablesでCOPILOT_URLを設定。
 ```dotenv
 COPILOT_URL=tcp://127.0.0.1:12345
+#COPILOT_CLI_PATH=TCPモードでは不要。残したままではエラーになるので消しましょう。
 ```
 
 上位プランで使えるWorker clusterでも使えるはず。App clusterがメモリ不足で落ちるのを防ぎたいならWorker clusterを使うのも有効。
