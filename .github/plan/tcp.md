@@ -1,10 +1,10 @@
 # TCPモードへの対応
 
-最初の計画でstdioのみ対応にしてTCPは非対応の予定だったけどstdio部分をStdioTransportクラス`src/Transport/StdioTransport.php`に分離したのでTCP用もTcpTransportかHttpTransportクラスを作って切り替えられるようにすれば対応できそう。
+最初の計画でstdioのみ対応にしてTCPは非対応の予定だったけどstdio部分をStdioTransportクラス`src/Transport/StdioTransport.php`に分離したのでTCP用もTcpTransportクラスを作って切り替えられるようにすれば対応できそう。
 
 Laravel ForgeやLaravel Cloudはバックグランドプロセスの管理がしやすいのでartisanコマンドで`copilot --server --port xxxxx`を起動したままにしておき、SDKから接続する使い方ができる。
 
-LaravelはServer-Sent Eventsにも対応してるのでストリーミングも可能。
+LaravelはServer-Sent Eventsにも対応してるけどTCPではあまり関係なさそう。
 
 TCPの場合のClientは
 - ProcessManagerは起動しない。
