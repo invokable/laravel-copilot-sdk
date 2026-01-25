@@ -17,5 +17,5 @@ Laravel MCPのJsonRpcサーバー機能がStdioTransportとHttpTransportで切�
 `vendor/laravel/mcp/src/Server/Transport/StdioTransport.php`
 `vendor/laravel/mcp/src/Server/Transport/HttpTransport.php`
 
-`vendor/laravel/mcp/src/Server.php
+`vendor/laravel/mcp/src/Server.php`
 `vendor/laravel/mcp/src/Server/Registrar.php`
