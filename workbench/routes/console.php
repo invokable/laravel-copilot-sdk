@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Concurrency;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Support\PermissionRequestKind;
@@ -188,3 +189,16 @@ Artisan::command('copilot:tools', function () {
         note($response->content());
     }, config: $config);
 })->purpose('Copilot Tools testing command');
+
+// vendor/bin/testbench copilot:concurrency
+Artisan::command('copilot:concurrency', function () {
+    $prompt = 'Tell me something about Copilot.';
+
+    [$gpt5_response, $sonnet_response] = Concurrency::driver('fork')->run([
+        fn () => Copilot::run($prompt, config: ['model' => 'gpt-5.2'])->content(),
+        fn () => Copilot::run($prompt, config: ['model' => 'claude-sonnet-4.5'])->content(),
+    ]);
+
+    info('GPT-5 Response: '.$gpt5_response);
+    note('Claude Sonnet Response: '.$sonnet_response);
+})->purpose('Multiple Copilot sessions with Laravel concurrency');
