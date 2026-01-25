@@ -13,7 +13,7 @@ use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
- * @method static SessionEvent|null run(string $prompt, ?array $attachments = null, ?string $mode = null)
+ * @method static SessionEvent|null run(string $prompt, ?array $attachments = null, ?string $mode = null, SessionConfig|array $config = [])
  * @method static mixed start(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null)
  * @method static CopilotSession createSession(SessionConfig|array $config = [])
  * @method static SessionEvent response(string $content)
