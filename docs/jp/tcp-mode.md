@@ -46,6 +46,35 @@ return [
 ];
 ```
 
+COPILOT_URLとCOPILOT_CLI_PATHを両方設定した場合はTCPモードが優先。
+
+## 実行時のモード切り替え
+
+通常は設定ファイルに従ってTCPモードかstdioモードかが自動で切り替わります。コード内で明示的に指定することも可能です。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+// TCPモードに切り替え
+$response = Copilot::useTcp(url: 'tcp://127.0.0.1:12345')->run(prompt: 'Hello, TCP mode!');
+// 何も指定しなければ設定ファイルの値が使われる。
+$response = Copilot::useTcp()->run(prompt: 'Hello, TCP mode!');
+
+// stdioモードに切り替え
+$stdio_config = [
+    'cli_path' => 'copilot',
+    'cli_args' => [],
+    'cwd' => base_path(),
+    'log_level' => 'info',
+];
+$response = Copilot::useStdio($stdio_config)->run(prompt: 'Hello, stdio mode!');
+
+// 何も指定しなければ設定ファイルの値が使われる。両方設定している場合はTCPが優先なので通常はTCPを使い一時的に切り替える場合はこの方法で使える。
+$response = Copilot::useStdio()->run(prompt: 'Hello, stdio mode!');
+```
+
+サーバーによってはTCPモードでは正常に動作しないのでキューで動かす処理はTCPモードで使用し、Httpリクエスト内での処理だけstdioモードで使用するなどの使い分けも可能です。
+
 ## Laravel Forge/Cloudでの運用
 
 ### Laravel Forge

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use Revolution\Copilot\Contracts\CopilotClient;
@@ -125,10 +126,12 @@ class CopilotManager implements Factory
 
     /**
      * Get or create the CopilotClient instance.
+     *
+     * @param  ?array  $config  Override configuration options.
      */
-    public function client(): CopilotClient
+    public function client(?array $config = null): CopilotClient
     {
-        if ($this->client === null) {
+        if ($this->client === null && $config === null) {
             if (filled(data_get($this->config, 'url'))) {
                 // TCP mode: connect to existing server
                 $options['cli_url'] = $this->config['url'];
@@ -150,7 +153,63 @@ class CopilotManager implements Factory
             $this->client->start();
         }
 
+        /**
+         * Reconfigure the client if a new config is provided.
+         * This allows switching stdio <-> tcp modes or changing options at runtime.
+         */
+        if ($config !== null) {
+            rescue(fn () => $this->client?->stop());
+
+            $this->client = app(Client::class, [
+                'options' => $config,
+            ]);
+
+            $this->client->start();
+        }
+
         return $this->client;
+    }
+
+    /**
+     * Configure the client to use stdio transport with given options.
+     *
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array}  $config  Configuration options for stdio transport.
+     */
+    public function useStdio(?array $config = null): static
+    {
+        if ($config === null) {
+            $config = config('copilot');
+        }
+
+        $this->client(Arr::only($config, [
+            'cli_path',
+            'cli_args',
+            'cwd',
+            'log_level',
+            'env',
+        ]));
+
+        return $this;
+    }
+
+    /**
+     * Configure the client to use TCP transport with given URL.
+     *
+     * @param  ?string  $url  e.g., "tcp://127.0.0.1:12345"
+     */
+    public function useTcp(?string $url = null): static
+    {
+        if ($url === null) {
+            $url = config('copilot.url');
+        }
+
+        if ($url === null) {
+            return $this;
+        }
+
+        $this->client(['cli_url' => $url]);
+
+        return $this;
     }
 
     /**
