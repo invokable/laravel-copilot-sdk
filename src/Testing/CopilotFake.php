@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Testing;
 
+use Illuminate\Support\Str;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
 use Revolution\Copilot\Facades\Copilot;
@@ -175,12 +176,9 @@ class CopilotFake implements Factory
     /**
      * Check if a prompt matches a pattern.
      */
-    public function matchesPattern(string $prompt, string $pattern): bool
+    public function matchesPattern(string|iterable $prompt, string $pattern, bool $ignoreCase = true): bool
     {
-        // Convert pattern to regex (simple wildcard matching)
-        $regex = '/^'.str_replace(['\*'], ['.*'], preg_quote($pattern, '/')).'$/';
-
-        return preg_match($regex, $prompt) === 1;
+        return Str::is($pattern, $prompt, $ignoreCase);
     }
 
     /**
