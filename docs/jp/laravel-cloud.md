@@ -18,6 +18,21 @@ COPILOT_GITHUB_TOKEN=
 
 `COPILOT_GITHUB_TOKEN`は`GH_TOKEN`や`GITHUB_TOKEN`などCopilot CLIがサポートしている認証方法ならなんでもいい。
 
+デフォルトのstdioモードで使う場合はこのインストールのみで完了。
+
+## TCPモードでの運用
+
+App cluster > Background processes > Custom worker で`copilot --server --port 12345`を設定。バッググラウンドプロセスとして常に稼働し続ける。デプロイ時には自動で再起動する。
+
+portの設定は自由。
+
+Custom environment variablesでCOPILOT_URLを設定。
+```dotenv
+COPILOT_URL=tcp://127.0.0.1:12345
+```
+
+上位プランで使えるWorker clusterでも使えるはず。App clusterがメモリ不足で落ちるのを防ぎたいならWorker clusterを使うのも有効。
+
 ## 注意点
 - 安いサーバーではメモリ不足になりやすい。
 - デフォルトのHTTPタイムアウトは20秒なのでよく失敗する場合は最大の60秒まで伸ばす。
