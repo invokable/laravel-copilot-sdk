@@ -2,7 +2,7 @@
 
 Pure PHPっぽい使い方ができるようにした上でLaravelらしい使い心地を提供している。
 
-この範囲でLaravelの機能はほとんど使ってなくどこでも使える`illuminate/support`程度なのでLaravel以外でも使えるかもしれないけどサポート対象外。
+この範囲でLaravelの機能はほとんど使ってなくどこでも使える`illuminate/support`程度なのでLaravel以外でも使えるかもしれないけどサポート対象外。Eventなどを含めているのでそのままでは使えない。
 
 ```php
 use Revolution\Copilot\Client;
