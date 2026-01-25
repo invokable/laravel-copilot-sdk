@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
+use InvalidArgumentException;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Transport;
@@ -54,31 +55,29 @@ class Client implements CopilotClient
 
     /**
      * Create a new CopilotClient.
-     *
-     * @param  array{cli_path?: string, cli_args?: array, cwd?: string, log_level?: string, cli_url?: string, auto_start?: bool, auto_restart?: bool, env?: array}  $options
      */
     public function __construct(array $options = [])
     {
         // Validate mutually exclusive options
-        if (isset($options['cli_url']) && (isset($options['cli_path']) || isset($options['use_stdio']))) {
-            throw new \InvalidArgumentException('cli_url is mutually exclusive with cli_path and use_stdio');
+        if (filled(data_get($options, 'cli_url')) && (filled(data_get($options, 'cli_path')) || filled(data_get($options, 'use_stdio')))) {
+            throw new InvalidArgumentException('cli_url is mutually exclusive with cli_path and use_stdio');
         }
 
         // TCP mode: connect to existing server
-        if (isset($options['cli_url'])) {
+        if (filled(data_get($options, 'cli_url'))) {
             $this->tcpMode = true;
-            $this->transport = TcpTransport::fromUrl($options['cli_url']);
+            $this->transport = TcpTransport::fromUrl(data_get($options, 'cli_url'));
 
             return;
         }
 
         // Stdio mode: start CLI process
         $this->processManager = app(ProcessManager::class, [
-            'cliPath' => $options['cli_path'] ?? null,
-            'cliArgs' => $options['cli_args'] ?? [],
-            'cwd' => $options['cwd'] ?? null,
-            'logLevel' => $options['log_level'] ?? 'info',
-            'env' => $options['env'] ?? null,
+            'cliPath' => data_get($options, 'cli_path'),
+            'cliArgs' => data_get($options, 'cli_args', []),
+            'cwd' => data_get($options, 'cwd'),
+            'logLevel' => data_get($options, 'log_level', 'info'),
+            'env' => data_get($options, 'env'),
         ]);
     }
 
@@ -418,7 +417,7 @@ class Client implements CopilotClient
 
         return array_map(
             fn (array $session) => SessionMetadata::fromArray($session),
-            $response['sessions'] ?? []
+            $response['sessions'] ?? [],
         );
     }
 
