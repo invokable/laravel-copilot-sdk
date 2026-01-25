@@ -22,7 +22,7 @@ COPILOT_GITHUB_TOKEN=
 
 ## TCPモードでの運用
 
-App cluster > Background processes > Custom worker で`copilot --server --port 12345`を設定。バッググラウンドプロセスとして常に稼働し続ける。デプロイ時には自動で再起動する。
+App cluster > Background processes > Custom worker で`/var/www/.local/bin/copilot --server --port 12345`を設定。バッググラウンドプロセスとして常に稼働し続ける。デプロイ時には自動で再起動する。
 
 portの設定は自由。
 
