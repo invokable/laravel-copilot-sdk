@@ -24,13 +24,6 @@ describe('Client TCP Mode', function () {
             ->and($client->isTcpMode())->toBeTrue();
     });
 
-    it('throws when cli_url and cli_path are both set', function () {
-        new Client([
-            'cli_url' => 'tcp://127.0.0.1:12345',
-            'cli_path' => '/test/copilot',
-        ]);
-    })->throws(InvalidArgumentException::class, 'cli_url is mutually exclusive');
-
     it('is not tcp mode when cli_url is not set', function () {
         $client = new Client([
             'cli_path' => '/test/copilot',

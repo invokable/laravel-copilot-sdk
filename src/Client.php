@@ -58,11 +58,6 @@ class Client implements CopilotClient
      */
     public function __construct(array $options = [])
     {
-        // Validate mutually exclusive options
-        if (filled(data_get($options, 'cli_url')) && (filled(data_get($options, 'cli_path')) || filled(data_get($options, 'use_stdio')))) {
-            throw new InvalidArgumentException('cli_url is mutually exclusive with cli_path and use_stdio');
-        }
-
         // TCP mode: connect to existing server
         if (filled(data_get($options, 'cli_url'))) {
             $this->tcpMode = true;

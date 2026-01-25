@@ -57,7 +57,7 @@ class CopilotManager implements Factory
                 mode: $mode,
                 timeout: $this->config['timeout'] ?? 60.0,
             ),
-            config: $config
+            config: $config,
         );
     }
 
@@ -129,16 +129,18 @@ class CopilotManager implements Factory
     public function client(): CopilotClient
     {
         if ($this->client === null) {
-            $options = [
-                'cli_path' => $this->config['cli_path'] ?? null,
-                'cli_args' => $this->config['cli_args'] ?? [],
-                'cwd' => $this->config['cwd'] ?? base_path(),
-                'log_level' => $this->config['log_level'] ?? 'info',
-            ];
-
-            // TCP mode: connect to existing server
-            if (! empty($this->config['url'])) {
+            if (filled(data_get($this->config, 'url'))) {
+                // TCP mode: connect to existing server
                 $options['cli_url'] = $this->config['url'];
+            } else {
+                // Stdio mode: start new process
+                $options = [
+                    'cli_path' => $this->config['cli_path'] ?? null,
+                    'cli_args' => $this->config['cli_args'] ?? [],
+                    'cwd' => $this->config['cwd'] ?? base_path(),
+                    'log_level' => $this->config['log_level'] ?? 'info',
+                    'env' => $this->config['env'] ?? null,
+                ];
             }
 
             $this->client = app(Client::class, [
