@@ -29,8 +29,10 @@ portの設定は自由。
 Custom environment variablesでCOPILOT_URLを設定。
 ```dotenv
 COPILOT_URL=tcp://127.0.0.1:12345
-#COPILOT_CLI_PATH=TCPモードでは不要。残したままではエラーになるので消しましょう。
+#COPILOT_CLI_PATH=TCPモードでは不要。両方設定している場合はTCPモードが優先される。
 ```
+
+「常に稼働し続ける」ということはメモリ使用量も多いので2GiB RAM以上のサーバーが必要かも。stdioモードで使うほうが推奨。
 
 上位プランで使えるWorker clusterでも使えるはず。App clusterがメモリ不足で落ちるのを防ぎたいならWorker clusterを使うのも有効。
 
