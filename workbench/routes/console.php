@@ -23,9 +23,9 @@ use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
-use function Laravel\Prompts\table;
 
 // Artisan::command('inspire', function () {
 //     $this->comment(Inspiring::quote());
@@ -208,9 +208,9 @@ Artisan::command('copilot:concurrency', function () {
 // vendor/bin/testbench copilot:models
 Artisan::command('copilot:models', function () {
     $models = collect(Copilot::client()->listModels())
-    ->map(function (ModelInfo $model) {
-        return ['name' => $model->name, 'id' => $model->id];
-    })->toArray();
+        ->map(function (ModelInfo $model) {
+            return ['name' => $model->name, 'id' => $model->id];
+        })->toArray();
 
     // config: ['model' => ''] でモデルを指定する時はIDを使う。
     table(
