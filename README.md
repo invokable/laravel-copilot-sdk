@@ -83,7 +83,7 @@ dump($response->content());
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
 
-Copilot::start(function (CopilotSession $session) use(&$content) {
+$content = Copilot::start(function (CopilotSession $session) {
     dump('Starting Copilot session: '.$session->id());
 
     $response = $session->sendAndWait(prompt: 'Tell me something about PHP.');
@@ -92,7 +92,7 @@ Copilot::start(function (CopilotSession $session) use(&$content) {
     $response = $session->sendAndWait(prompt: 'Tell me something about Laravel.');
     dump($response->content());
 
-    $content = $response->content();
+    return $response->content();
 });
 
 dump($content);
