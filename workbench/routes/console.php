@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Concurrency;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -24,6 +25,7 @@ use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
+use function Laravel\Prompts\table;
 
 // Artisan::command('inspire', function () {
 //     $this->comment(Inspiring::quote());
@@ -202,3 +204,17 @@ Artisan::command('copilot:concurrency', function () {
     info('GPT-5 Response: '.$gpt5_response);
     note('Claude Sonnet Response: '.$sonnet_response);
 })->purpose('Multiple Copilot sessions with Laravel concurrency');
+
+// vendor/bin/testbench copilot:models
+Artisan::command('copilot:models', function () {
+    $models = collect(Copilot::client()->listModels())
+    ->map(function (ModelInfo $model) {
+        return ['name' => $model->name, 'id' => $model->id];
+    })->toArray();
+
+    // config: ['model' => ''] でモデルを指定する時はIDを使う。
+    table(
+        headers: ['Display Name', 'ID'],
+        rows: $models,
+    );
+})->purpose('List available Copilot models');
