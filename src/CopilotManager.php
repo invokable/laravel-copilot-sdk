@@ -14,6 +14,7 @@ use Revolution\Copilot\Testing\WithFake;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
+use RuntimeException;
 
 /**
  * Copilot Manager - Laravel-friendly wrapper for CopilotClient.
@@ -199,12 +200,12 @@ class CopilotManager implements Factory
      */
     public function useTcp(?string $url = null): static
     {
-        if ($url === null) {
+        if (empty($url)) {
             $url = config('copilot.url');
         }
 
-        if ($url === null) {
-            return $this;
+        if (empty($url)) {
+            throw new RuntimeException('No TCP URL provided for Copilot client.');
         }
 
         $this->client(['cli_url' => $url]);
