@@ -17,7 +17,7 @@
         "pestphp/pest": "^4.1",
         "mockery/mockery": "^1.6",
         "pestphp/pest-plugin-laravel": "^4.0",
-        "revolution/laravel-boost-copilot-cli": "^1.1",
+        "revolution/laravel-boost-copilot-cli": "^2.0",
         "spatie/fork": "^1.2"
     },
     "autoload": {
