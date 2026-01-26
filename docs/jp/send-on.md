@@ -30,6 +30,7 @@ Copilot::start(function (CopilotSession $session) {
     $message_id = $session->send(prompt: 'Tell me something about Laravel.');
 
     // whileループでメッセージの受信を待つ
+    $session->wait(timeout: 60.0);
 });
 ```
 

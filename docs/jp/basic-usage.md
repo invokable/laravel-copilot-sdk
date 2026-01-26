@@ -24,10 +24,16 @@ $session = $client->createSession([
     'model' => 'gpt-5',
 ]);
 
-/** @var SessionEvent $response */
-$response = $session->sendAndWait(prompt: 'PHPではasync-awaitがまだ綺麗に書きにくい。');
+$done = $session->on(function (SessionEvent $event) {
+    if($event->isAssistantMessage()) {
+        echo $event->content();
+    }
+});
 
-echo $response->content();
+$session->send(prompt: 'PHPではasync-awaitがまだ綺麗に書きにくい。');
+$session->wait(timeout: 60.0);// True Asyncが正式に実装されるまではwaitで強制的に待ち。
+
+$done();
 
 $session->destroy();
 $client->stop();
