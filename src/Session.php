@@ -42,6 +42,26 @@ class Session implements CopilotSession
      */
     protected ?Closure $permissionHandler = null;
 
+    /**
+     * Wait state: idle flag.
+     */
+    protected bool $waitIdle = false;
+
+    /**
+     * Wait state: error message.
+     */
+    protected ?string $waitError = null;
+
+    /**
+     * Wait state: last assistant message.
+     */
+    protected ?SessionEvent $waitLastAssistantMessage = null;
+
+    /**
+     * Wait state: event handler.
+     */
+    protected ?Closure $waitHandler = null;
+
     public function __construct(
         public readonly string $sessionId,
         protected JsonRpcClient $client,
@@ -103,47 +123,74 @@ class Session implements CopilotSession
      */
     public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, float $timeout = 60.0): ?SessionEvent
     {
-        $lastAssistantMessage = null;
-        $idle = false;
-        $error = null;
+        $this->prepareWait();
 
-        // Register temporary event handler
-        $handler = function (SessionEvent $event) use (&$lastAssistantMessage, &$idle, &$error): void {
+        try {
+            $this->send($prompt, $attachments, $mode);
+            $this->wait($timeout);
+
+            MessageSendAndWait::dispatch($this->sessionId, $this->waitLastAssistantMessage, $prompt, $attachments, $mode);
+
+            return $this->waitLastAssistantMessage;
+        } finally {
+            $this->cleanupWait();
+        }
+    }
+
+    /**
+     * Prepare wait state and register event handler.
+     */
+    protected function prepareWait(): void
+    {
+        $this->waitIdle = false;
+        $this->waitError = null;
+        $this->waitLastAssistantMessage = null;
+
+        $this->waitHandler = function (SessionEvent $event): void {
             if ($event->isAssistantMessage()) {
-                $lastAssistantMessage = $event;
+                $this->waitLastAssistantMessage = $event;
             } elseif ($event->isIdle()) {
-                $idle = true;
+                $this->waitIdle = true;
             } elseif ($event->failed()) {
-                $error = $event->errorMessage() ?? 'Unknown error';
+                $this->waitError = $event->errorMessage() ?? 'Unknown error';
             }
         };
 
-        $this->on($handler);
+        $this->on($this->waitHandler);
+    }
 
-        try {
-            // Send the message
-            $this->send($prompt, $attachments, $mode);
+    /**
+     * Wait until the session becomes idle or an error occurs.
+     *
+     * @param  float  $timeout  Maximum time to wait, in seconds
+     *
+     * @throws RuntimeException
+     */
+    public function wait(float $timeout = 60.0): void
+    {
+        $endTime = microtime(true) + $timeout;
 
-            // Wait for idle or error
-            $endTime = microtime(true) + $timeout;
+        while (! $this->waitIdle && $this->waitError === null && microtime(true) < $endTime) {
+            $this->client->processMessages(0.1);
+        }
 
-            while (! $idle && $error === null && microtime(true) < $endTime) {
-                $this->client->processMessages(0.1);
-            }
+        if ($this->waitError !== null) {
+            throw new RuntimeException("Session error: {$this->waitError}");
+        }
 
-            if ($error !== null) {
-                throw new RuntimeException("Session error: {$error}");
-            }
+        if (! $this->waitIdle) {
+            throw new RuntimeException("Timeout after {$timeout}s waiting for session.idle");
+        }
+    }
 
-            if (! $idle) {
-                throw new RuntimeException("Timeout after {$timeout}s waiting for session.idle");
-            }
-
-            MessageSendAndWait::dispatch($this->sessionId, $lastAssistantMessage, $prompt, $attachments, $mode);
-
-            return $lastAssistantMessage;
-        } finally {
-            $this->off($handler);
+    /**
+     * Cleanup wait state and unregister event handler.
+     */
+    protected function cleanupWait(): void
+    {
+        if ($this->waitHandler !== null) {
+            $this->off($this->waitHandler);
+            $this->waitHandler = null;
         }
     }
 
