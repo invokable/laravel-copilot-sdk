@@ -52,6 +52,8 @@ $content = $response->throw()->content();
 
 `SESSION_ERROR`イベントなら`Revolution\Copilot\Exceptions\SessionErrorException`, タイムアウト時は`Revolution\Copilot\Exceptions\SessionTimeoutException`がスローされる。
 
+JSON-RPCのエラーでは`Revolution\Copilot\Exceptions\JsonRpcException`。
+
 ## Conditionable
 
 `when()`や`unless()`メソッドが使える。

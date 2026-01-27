@@ -425,9 +425,6 @@ $config = new SessionConfig(
 
 Now that you've got the basics, explore more features:
 
-- **[Tools Documentation](./jp/tools.md)** - Advanced tool definitions
-- **[Event Handling](./jp/send-on.md)** - Deep dive into `send()` and `on()`
-- **[Permission Requests](./jp/permission-request.md)** - Handle permission callbacks
 - **[Official SDK Documentation](https://github.com/github/copilot-sdk)** - Full reference
 
 ---

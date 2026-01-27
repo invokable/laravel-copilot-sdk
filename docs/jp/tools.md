@@ -42,7 +42,7 @@ Artisan::command('copilot:tools', function () {
                 handler: function (array $params) use ($facts): array {
                     $topic = $params['topic'] ?? '';
 
-                    $fact = $facts[$topic] ?? "Sorry, I don't have a fact about {$topic}.";
+                    $fact = $facts[$topic] ?? null;
 
                     if (! $fact) {
                         return [
