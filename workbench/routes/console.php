@@ -47,10 +47,12 @@ Artisan::command('copilot:version', function () {
 // vendor/bin/testbench copilot:chat
 // vendor/bin/testbench copilot:chat --resume
 Artisan::command('copilot:chat {--resume}', function () {
+    $mcp = json_decode(file_get_contents(__DIR__.'/../../.github/mcp-config.json'), true)['mcpServers'] ?? [];
+
     $config = new SessionConfig(
         // availableTools: [],
         onPermissionRequest: function (array $request, array $invocation) {
-            // dump($request);
+            dump($request);
             $confirm = confirm(
                 label: 'Do you accept the requested permissions?',
             );
@@ -61,6 +63,7 @@ Artisan::command('copilot:chat {--resume}', function () {
                 return PermissionRequestKind::deniedInteractivelyByUser();
             }
         },
+        mcpServers: $mcp,
     );
 
     Copilot::start(function (CopilotSession $session) use ($config) {
@@ -218,3 +221,35 @@ Artisan::command('copilot:models', function () {
         rows: $models,
     );
 })->purpose('List available Copilot models');
+
+// vendor/bin/testbench copilot:mcp
+Artisan::command('copilot:mcp', function () {
+    //    $mcp = json_decode(file_get_contents(__DIR__.'/../../.github/mcp-config.json'), true)['mcpServers'] ?? [];
+    //    dump($mcp);
+
+    $config = new SessionConfig(
+        mcpServers: [
+            'laravel-boost' => [
+                'type' => 'local',
+                'command' => './vendor/bin/testbench',
+                'args' => ['boost:mcp'],
+                'tools' => ['*'],
+            ],
+        ],
+    );
+
+    Copilot::start(function (CopilotSession $session) {
+        info('Starting Copilot with Laravel Boost MCP: '.$session->id());
+
+        $prompt = 'Copilot SDKからのMCP動作テスト。どのMCPが読み込まれている？ laravel-boostが使える場合はapplication-infoでアプリ情報を取得して。';
+
+        warning($prompt);
+
+        $response = spin(
+            callback: fn () => $session->sendAndWait($prompt),
+            message: 'Thinking...',
+        );
+
+        note($response->content());
+    }, config: $config);
+})->purpose('Copilot MCP testing command');
