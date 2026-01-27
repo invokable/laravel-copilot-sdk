@@ -41,7 +41,16 @@ echo $response->type()// 'assistant.message'
 
 `SESSION_ERROR`イベントタイプの場合にfailed。successfulは反対。  
 元は`isError()`だったけどLaravel流に変更。  
-LaravelのHttpやProcessとは違いSessionEventが届く前に例外が発生した場合は例外がスローされる。
+
+## throw()
+
+LaravelのHttpやProcess同様に例外が発生するエラーでも保留しておき`throw()`メソッドで例外をスローする。エラーではない時は何もしないので以下のように書ける。
+
+```php
+$content = $response->throw()->content();
+```
+
+`SESSION_ERROR`イベントなら`Revolution\Copilot\Exceptions\SessionErrorException`, タイムアウト時は`Revolution\Copilot\Exceptions\SessionTimeoutException`がスローされる。
 
 ## Conditionable
 

@@ -6,10 +6,13 @@ namespace Revolution\Copilot;
 
 use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Events\Session\MessageSend;
 use Revolution\Copilot\Events\Session\MessageSendAndWait;
 use Revolution\Copilot\Events\Session\SessionEventReceived;
 use Revolution\Copilot\Exceptions\JsonRpcException;
+use Revolution\Copilot\Exceptions\SessionErrorException;
+use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Support\PermissionRequestKind;
 use Revolution\Copilot\Types\SessionEvent;
@@ -175,11 +178,33 @@ class Session implements CopilotSession
         }
 
         if ($this->waitError !== null) {
-            throw new RuntimeException("Session error: {$this->waitError}");
+            $event = new SessionEvent(
+                id: '',
+                timestamp: now()->toDateTimeString(),
+                parentId: $this->sessionId,
+                type: SessionEventType::SESSION_ERROR,
+                data: [
+                    'message' => $this->waitError,
+                ],
+                exception: new SessionErrorException($this->waitError),
+            );
+
+            $this->dispatchEvent($event);
         }
 
         if (! $this->waitIdle) {
-            throw new RuntimeException("Timeout after {$timeout}s waiting for session.idle");
+            $event = new SessionEvent(
+                id: '',
+                timestamp: now()->toDateTimeString(),
+                parentId: $this->sessionId,
+                type: SessionEventType::SESSION_ERROR,
+                data: [
+                    'message' => 'Session wait timed out after '.$timeout.' seconds',
+                ],
+                exception: new SessionTimeoutException($timeout),
+            );
+
+            $this->dispatchEvent($event);
         }
     }
 

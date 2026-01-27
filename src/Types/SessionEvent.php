@@ -11,6 +11,7 @@ use Illuminate\Support\Traits\Dumpable;
 use Illuminate\Support\Traits\InteractsWithData;
 use Illuminate\Support\Traits\Tappable;
 use Revolution\Copilot\Enums\SessionEventType;
+use Throwable;
 
 /**
  * Represents a session event from the Copilot CLI.
@@ -29,6 +30,7 @@ readonly class SessionEvent implements Arrayable, Jsonable
         public SessionEventType $type,
         public array $data,
         public bool $ephemeral = false,
+        protected ?Throwable $exception = null,
     ) {
         //
     }
@@ -86,6 +88,18 @@ readonly class SessionEvent implements Arrayable, Jsonable
     public function failed(): bool
     {
         return $this->type === SessionEventType::SESSION_ERROR;
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function throw(): static
+    {
+        if ($this->exception !== null) {
+            throw $this->exception;
+        }
+
+        return $this;
     }
 
     /**

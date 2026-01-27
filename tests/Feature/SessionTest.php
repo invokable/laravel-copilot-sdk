@@ -241,4 +241,81 @@ describe('Session', function () {
 
         expect($result)->toBe(['kind' => 'denied-no-approval-rule-and-could-not-request-from-user']);
     });
+
+    it('sendAndWait returns event with exception on session error', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', Mockery::any())
+            ->andReturn(['messageId' => 'msg-123']);
+
+        $mockClient->shouldReceive('processMessages')
+            ->andReturnUsing(function () use (&$session) {
+                // Simulate error event
+                $errorEvent = SessionEvent::fromArray([
+                    'type' => 'session.error',
+                    'data' => ['message' => 'Test error'],
+                ]);
+                $session->dispatchEvent($errorEvent);
+            });
+
+        $session = new Session('test-session', $mockClient);
+
+        $receivedEvent = null;
+        $session->on(function (SessionEvent $event) use (&$receivedEvent) {
+            if ($event->failed() && $event->errorMessage() === 'Test error') {
+                $receivedEvent = $event;
+            }
+        });
+
+        $result = $session->sendAndWait('Hello', timeout: 0.1);
+
+        expect($receivedEvent)->not->toBeNull()
+            ->and($receivedEvent->failed())->toBeTrue()
+            ->and($receivedEvent->errorMessage())->toBe('Test error');
+
+        // throw() should throw the stored exception
+        expect(fn () => $receivedEvent->throw())
+            ->toThrow(Revolution\Copilot\Exceptions\SessionErrorException::class, 'Session error: Test error');
+    });
+
+    it('sendAndWait returns event with exception on timeout', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', Mockery::any())
+            ->andReturn(['messageId' => 'msg-123']);
+
+        // processMessages does nothing - no idle event will be received
+        $mockClient->shouldReceive('processMessages')
+            ->andReturn(null);
+
+        $session = new Session('test-session', $mockClient);
+
+        $receivedEvent = null;
+        $session->on(function (SessionEvent $event) use (&$receivedEvent) {
+            if ($event->failed()) {
+                $receivedEvent = $event;
+            }
+        });
+
+        $result = $session->sendAndWait('Hello', timeout: 0.1);
+
+        expect($receivedEvent)->not->toBeNull()
+            ->and($receivedEvent->failed())->toBeTrue()
+            ->and($receivedEvent->errorMessage())->toContain('timed out');
+
+        // throw() should throw the stored exception
+        expect(fn () => $receivedEvent->throw())
+            ->toThrow(Revolution\Copilot\Exceptions\SessionTimeoutException::class);
+    });
+
+    it('successful event throw() returns self', function () {
+        $event = SessionEvent::fromArray([
+            'type' => 'assistant.message',
+            'data' => ['content' => 'Hello'],
+        ]);
+
+        $result = $event->throw();
+
+        expect($result)->toBe($event);
+    });
 });
