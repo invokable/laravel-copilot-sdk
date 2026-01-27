@@ -16,7 +16,6 @@ use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Support\PermissionRequestKind;
 use Revolution\Copilot\Types\SessionEvent;
-use RuntimeException;
 use Throwable;
 
 /**
