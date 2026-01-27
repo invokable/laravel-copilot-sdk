@@ -2,6 +2,9 @@
 
 SessionConfigの`mcpServers`にMCPサーバーを指定すれば使うことができる。
 
+Copilot CLIでLaravel Boostを使う場合は [laravel-boost-copilot-cli](https://github.com/invokable/laravel-boost-copilot-cli) も使いましょう。
+laravel-boost-copilot-cliを作った知見から`'type' => 'local'`と`'tools' => ['*']`が必須なことが分かっている。これがないとMCPサーバーとして認識されない。
+
 ```php
 Artisan::command('copilot:mcp', function () {
     $config = new SessionConfig(
