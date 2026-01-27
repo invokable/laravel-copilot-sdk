@@ -121,8 +121,6 @@ class Session implements CopilotSession
      * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments. type: "file" | "directory"
      * @param  ?string  $mode  Message delivery mode. "enqueue": Add to queue (default), "immediate": Send immediately
      * @param  float  $timeout  Maximum time to wait for idle state, in seconds
-     *
-     * @throws RuntimeException
      */
     public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, float $timeout = 60.0): ?SessionEvent
     {
@@ -135,6 +133,20 @@ class Session implements CopilotSession
             MessageSendAndWait::dispatch($this->sessionId, $this->waitLastAssistantMessage, $prompt, $attachments, $mode);
 
             return $this->waitLastAssistantMessage;
+        } catch (JsonRpcException $e) {
+            $event = new SessionEvent(
+                id: '',
+                timestamp: now()->toDateTimeString(),
+                parentId: $this->sessionId,
+                type: SessionEventType::SESSION_ERROR,
+                data: [
+                    'message' => $e->getMessage(),
+                ],
+                exception: $e,
+            );
+            $this->dispatchEvent($event);
+
+            return $event;
         } finally {
             $this->cleanupWait();
         }
@@ -166,8 +178,6 @@ class Session implements CopilotSession
      * Wait until the session becomes idle or an error occurs.
      *
      * @param  float  $timeout  Maximum time to wait, in seconds
-     *
-     * @throws RuntimeException
      */
     public function wait(float $timeout = 60.0): void
     {
