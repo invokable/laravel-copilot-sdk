@@ -134,9 +134,4 @@ class StdioTransport implements Transport
     {
         return $this->stdout;
     }
-
-    public function stream(Closure $stream): void
-    {
-        $stream();
-    }
 }

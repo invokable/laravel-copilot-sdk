@@ -27,6 +27,4 @@ interface Transport
      * @return resource|null
      */
     public function getReadableStream(): mixed;
-
-    public function stream(Closure $stream): void;
 }

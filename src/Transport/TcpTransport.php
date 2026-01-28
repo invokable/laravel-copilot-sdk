@@ -215,11 +215,6 @@ class TcpTransport implements Transport
         return $this->socket;
     }
 
-    public function stream(Closure $stream): void
-    {
-        $stream();
-    }
-
     /**
      * Check if the connection is established.
      */

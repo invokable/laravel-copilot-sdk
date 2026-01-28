@@ -101,15 +101,4 @@ describe('TcpTransport', function () {
 
         expect($transport->isConnected())->toBeFalse();
     });
-
-    it('executes stream callback', function () {
-        $transport = new TcpTransport;
-        $called = false;
-
-        $transport->stream(function () use (&$called) {
-            $called = true;
-        });
-
-        expect($called)->toBeTrue();
-    });
 });
