@@ -21,6 +21,10 @@ copilot --server --port 12345
 
 ```dotenv
 COPILOT_URL=tcp://127.0.0.1:12345
+# COPILOT_URL=http://127.0.0.1:12345
+# COPILOT_URL=127.0.0.1:12345        tcp://部分は実際には全く使われてないのでhttpで指定してもいいし省略も可能
+# COPILOT_URL=12345                  ポートのみも可能。ホストは自動的に127.0.0.1に設定される
+# COPILOT_URL=127.0.0.1 or localhost ホストのみ指定は127.0.0.1とlocalhostのみ可能。ポートはデフォルトの12345になる。
 ```
 
 これだけで、SDKはstdioモードからTCPモードに切り替わります。

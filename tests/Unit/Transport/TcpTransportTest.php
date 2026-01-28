@@ -32,7 +32,7 @@ describe('TcpTransport', function () {
             ->and($transport->port())->toBe(12345);
     });
 
-    it('can parse URL with only host', function () {
+    it('can parse URL with protocol://host', function () {
         $transport = TcpTransport::fromUrl('tcp://localhost');
 
         expect($transport)->toBeInstanceOf(TcpTransport::class)
@@ -53,6 +53,22 @@ describe('TcpTransport', function () {
 
         expect($transport)->toBeInstanceOf(TcpTransport::class)
             ->and($transport->host())->toBe('localhost')
+            ->and($transport->port())->toBe(12345);
+    });
+
+    it('can parse URL with only localhost', function () {
+        $transport = TcpTransport::fromUrl('localhost');
+
+        expect($transport)->toBeInstanceOf(TcpTransport::class)
+            ->and($transport->host())->toBe('localhost')
+            ->and($transport->port())->toBe(12345);
+    });
+
+    it('can parse URL with only local ip', function () {
+        $transport = TcpTransport::fromUrl('127.0.0.1');
+
+        expect($transport)->toBeInstanceOf(TcpTransport::class)
+            ->and($transport->host())->toBe('127.0.0.1')
             ->and($transport->port())->toBe(12345);
     });
 

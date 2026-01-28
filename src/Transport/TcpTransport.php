@@ -26,7 +26,7 @@ class TcpTransport implements Transport
     /**
      * Create a TcpTransport from a URL string.
      *
-     * @param  string  $url  e.g., "tcp://127.0.0.1:12345"
+     * @param  string  $url  e.g., "tcp://127.0.0.1:12345", "127.0.0.1:12345", "12345"
      */
     public static function fromUrl(string $url): static
     {
@@ -35,6 +35,14 @@ class TcpTransport implements Transport
             return new static(
                 host: '127.0.0.1',
                 port: (int) $url,
+            );
+        }
+
+        // Check if it's localhost or IP without protocol and port
+        if (in_array($url, ['localhost', '127.0.0.1'], true)) {
+            return new static(
+                host: $url,
+                port: 12345,
             );
         }
 

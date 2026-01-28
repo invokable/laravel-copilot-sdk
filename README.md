@@ -44,7 +44,7 @@ copilot --server --port 12345
 Configure your `.env`:
 
 ```dotenv
-COPILOT_URL=tcp://127.0.0.1:12345
+COPILOT_URL=127.0.0.1:12345
 ```
 
 When `COPILOT_URL` is set, the SDK will connect to the existing server instead of starting a new CLI process.
@@ -61,6 +61,10 @@ composer remove revolution/laravel-copilot-sdk
 ```
 
 </details>
+
+## Getting Started
+
+[Getting Started Guide](./docs/getting-started.md)
 
 ## Usage
 
