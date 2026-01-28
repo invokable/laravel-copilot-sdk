@@ -80,7 +80,7 @@ return [
     | The default timeout in seconds for sendAndWait operations.
     |
     */
-    'timeout' => env('COPILOT_TIMEOUT', 60),
+    'timeout' => (float) env('COPILOT_TIMEOUT', 60.0),
 
     /*
     |--------------------------------------------------------------------------

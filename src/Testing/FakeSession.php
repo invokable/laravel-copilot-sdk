@@ -41,7 +41,7 @@ class FakeSession implements CopilotSession
         return 'fake-message-id';
     }
 
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, float $timeout = 60.0): ?SessionEvent
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): ?SessionEvent
     {
         $this->recorded[] = [
             'prompt' => $prompt,

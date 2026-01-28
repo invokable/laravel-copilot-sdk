@@ -127,8 +127,10 @@ class Session implements CopilotSession
      * @param  ?string  $mode  Message delivery mode. "enqueue": Add to queue (default), "immediate": Send immediately
      * @param  float  $timeout  Maximum time to wait for idle state, in seconds
      */
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, float $timeout = 60.0): ?SessionEvent
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): ?SessionEvent
     {
+        $timeout = $timeout ?? config('copilot.timeout', 60.0);
+
         $this->prepareWait();
 
         try {

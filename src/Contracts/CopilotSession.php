@@ -25,7 +25,7 @@ interface CopilotSession
     /**
      * Send a message and wait until the session becomes idle.
      */
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, float $timeout = 60.0): ?SessionEvent;
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): ?SessionEvent;
 
     /**
      * Subscribe to events from this session.

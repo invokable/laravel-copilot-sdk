@@ -12,7 +12,7 @@ $client = new Client([
     'cli_args' => [],
     'cwd' => base_path(),
     'log_level' => 'info',
-    'env' => [],
+    'env' => null,
 ]);
 
 $client->start();
