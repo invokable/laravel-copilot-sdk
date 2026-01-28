@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot;
 
 use Closure;
+use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Support\Traits\Macroable;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\SessionEventType;
@@ -24,6 +26,9 @@ use Throwable;
  */
 class Session implements CopilotSession
 {
+    use Conditionable;
+    use Macroable;
+
     /**
      * Event handlers.
      *
