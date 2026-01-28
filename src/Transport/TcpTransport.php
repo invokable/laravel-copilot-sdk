@@ -143,6 +143,12 @@ class TcpTransport implements Transport
 
     /**
      * Read content from the socket using Content-Length header protocol.
+     *
+     * Note: If using EventLoop::onReadable() callback in the future, fread() should
+     * always read a multiple of 8192 bytes to work correctly with loop backends
+     * other than stream_select (e.g., ext-uv, ext-ev).
+     *
+     * @see https://revolt.run/streams
      */
     protected function readContent(): string
     {
