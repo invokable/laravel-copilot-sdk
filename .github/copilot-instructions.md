@@ -29,6 +29,7 @@ composer run lint        # Run Laravel Pint for code style checks
 実際にCopilot CLIを起動する動作確認コマンド。
 ```shell
 vendor/bin/testbench copilot:ping
+vendor/bin/testbench copilot:version
 ```
 
 ## Architecture
