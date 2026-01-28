@@ -98,6 +98,28 @@ $content = Copilot::start(function (CopilotSession $session) {
 dump($content);
 ```
 
+### `copilot()` helper
+
+Alternatively, you can use the `copilot()` helper function.
+
+```php
+// Don't forget to import the function
+use function Revolution\Copilot\copilot;
+
+// If you specify a prompt as a string, it is the same as Copilot::run(). 
+$response = copilot('Tell me something about Laravel.');
+
+// If you pass a closure, it is the same as Copilot::start().
+copilot(function (CopilotSession $session) {
+    $response = $session->sendAndWait(prompt: 'Tell me something about PHP.');
+});
+
+// If you don't pass anything, it's the same as Facade.
+dump(copilot()->client()->ping());
+```
+
+For more than simple use, use the Copilot Facade above.
+
 ## Testing
 
 Provide Laravel way testing support with `Copilot::fake()`.

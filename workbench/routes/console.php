@@ -26,6 +26,7 @@ use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
+use function Revolution\Copilot\copilot;
 
 // Artisan::command('inspire', function () {
 //     $this->comment(Inspiring::quote());
@@ -33,10 +34,7 @@ use function Laravel\Prompts\warning;
 
 // vendor/bin/testbench copilot:ping
 Artisan::command('copilot:ping', function () {
-    Copilot::start(function (CopilotSession $session) {
-        $this->info('Session ID: '.$session->id());
-        $this->info(json_encode(Copilot::client()->ping()));
-    });
+    $this->info(json_encode(copilot()->client()->ping()));
 });
 
 // vendor/bin/testbench copilot:version
