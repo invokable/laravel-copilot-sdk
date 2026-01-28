@@ -72,6 +72,8 @@ We provide a high-level API that uses a Laravel Facade on top of a layer that re
 
 This should be sufficient for general use.
 
+Artisan commands, controllers, jobs... the SDK can be used anywhere in Laravel where you can invoke the Copilot CLI.
+
 ### Run single prompt
 
 ```php
