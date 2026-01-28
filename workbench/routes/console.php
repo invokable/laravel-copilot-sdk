@@ -212,12 +212,15 @@ Artisan::command('copilot:concurrency', function () {
 Artisan::command('copilot:models', function () {
     $models = collect(Copilot::client()->listModels())
         ->map(function (ModelInfo $model) {
-            return ['name' => $model->name, 'id' => $model->id];
+            return [
+                'id' => $model->id,
+                'name' => $model->name,
+            ];
         })->toArray();
 
     // config: ['model' => ''] でモデルを指定する時はIDを使う。
     table(
-        headers: ['Display Name', 'ID'],
+        headers: ['ID', 'Display Name'],
         rows: $models,
     );
 })->purpose('List available Copilot models');
