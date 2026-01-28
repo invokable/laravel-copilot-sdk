@@ -38,7 +38,7 @@ class StdioTransport implements Transport
 
     public function read(float $timeout = 0.1): string
     {
-        // Use stream_select for non-blocking read with timeout
+        // Check if data is available using stream_select
         $read = [$this->stdout];
         $write = null;
         $except = null;
@@ -51,53 +51,82 @@ class StdioTransport implements Transport
             return '';
         }
 
-        // Switch to blocking mode for reliable reads
-        stream_set_blocking($this->stdout, true);
+        return $this->readContent();
+    }
 
-        try {
-            // Read header line
-            $headerLine = fgets($this->stdout);
+    /**
+     * Try to read content without waiting (non-blocking).
+     */
+    public function tryRead(): string
+    {
+        // Check if data is available immediately
+        $read = [$this->stdout];
+        $write = null;
+        $except = null;
 
-            if ($headerLine === false || $headerLine === '') {
-                return '';
-            }
+        $ready = @stream_select($read, $write, $except, 0, 0);
 
-            // Parse Content-Length
-            $headerLine = trim($headerLine);
-
-            if (! str_starts_with($headerLine, 'Content-Length:')) {
-                return '';
-            }
-
-            $contentLength = (int) trim(substr($headerLine, 15));
-
-            if ($contentLength <= 0) {
-                return '';
-            }
-
-            // Read empty line (header/body separator)
-            fgets($this->stdout);
-
-            // Read exact content length
-            $content = '';
-            $remaining = $contentLength;
-
-            while ($remaining > 0) {
-                $chunk = fread($this->stdout, $remaining);
-
-                if ($chunk === false || $chunk === '') {
-                    return '';
-                }
-
-                $content .= $chunk;
-                $remaining -= strlen($chunk);
-            }
-
-            return $content;
-        } finally {
-            // Restore non-blocking mode
-            stream_set_blocking($this->stdout, false);
+        if ($ready === false || $ready === 0) {
+            return '';
         }
+
+        return $this->readContent();
+    }
+
+    /**
+     * Read content from the stream using Content-Length header protocol.
+     */
+    protected function readContent(): string
+    {
+        // Read header line
+        $headerLine = fgets($this->stdout);
+
+        if ($headerLine === false || $headerLine === '') {
+            return '';
+        }
+
+        // Parse Content-Length
+        $headerLine = trim($headerLine);
+
+        if (! str_starts_with($headerLine, 'Content-Length:')) {
+            return '';
+        }
+
+        $contentLength = (int) trim(substr($headerLine, 15));
+
+        if ($contentLength <= 0) {
+            return '';
+        }
+
+        // Read empty line (header/body separator)
+        fgets($this->stdout);
+
+        // Read exact content length
+        $content = '';
+        $remaining = $contentLength;
+
+        while ($remaining > 0) {
+            $chunk = fread($this->stdout, $remaining);
+
+            if ($chunk === false || $chunk === '') {
+                return '';
+            }
+
+            $content .= $chunk;
+            $remaining -= strlen($chunk);
+        }
+
+        return $content;
+    }
+
+    /**
+     * Get the readable stream resource for EventLoop integration.
+     *
+     * @return resource
+     */
+    public function getReadableStream(): mixed
+    {
+        return $this->stdout;
     }
 
     public function stream(Closure $stream): void

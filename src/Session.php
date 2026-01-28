@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot;
 
 use Closure;
+use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Events\Session\MessageSend;
@@ -180,11 +181,24 @@ class Session implements CopilotSession
      */
     public function wait(float $timeout = 60.0): void
     {
-        $endTime = microtime(true) + $timeout;
+        $suspension = EventLoop::getSuspension();
 
-        while (! $this->waitIdle && $this->waitError === null && microtime(true) < $endTime) {
+        $timeoutId = EventLoop::delay($timeout, function () use ($suspension): void {
+            $suspension->resume();
+        });
+
+        $checkId = EventLoop::repeat(0.01, function () use ($suspension, &$checkId): void {
             $this->client->processMessages(0.1);
-        }
+
+            if ($this->waitIdle || $this->waitError !== null) {
+                $suspension->resume();
+            }
+        });
+
+        $suspension->suspend();
+
+        EventLoop::cancel($timeoutId);
+        EventLoop::cancel($checkId);
 
         if ($this->waitError !== null) {
             $event = new SessionEvent(

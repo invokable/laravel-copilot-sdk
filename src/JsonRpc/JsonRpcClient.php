@@ -6,6 +6,7 @@ namespace Revolution\Copilot\JsonRpc;
 
 use Closure;
 use Illuminate\Support\Str;
+use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Events\JsonRpc\MessageReceived;
 use Revolution\Copilot\Events\JsonRpc\MessageSending;
@@ -140,19 +141,24 @@ class JsonRpcClient
      */
     public function processMessages(float $timeout = 0.1): void
     {
-        $endTime = microtime(true) + $timeout;
+        $suspension = EventLoop::getSuspension();
 
-        while (microtime(true) < $endTime) {
-            $message = $this->readMessage(0.01);
+        $timeoutId = EventLoop::delay($timeout, function () use ($suspension): void {
+            $suspension->resume();
+        });
 
-            if ($message === null) {
-                usleep(1000); // 1ms
+        $checkId = EventLoop::repeat(0.01, function (): void {
+            $message = $this->tryReadMessage();
 
-                continue;
+            if ($message !== null) {
+                $this->handleMessage($message);
             }
+        });
 
-            $this->handleMessage($message);
-        }
+        $suspension->suspend();
+
+        EventLoop::cancel($timeoutId);
+        EventLoop::cancel($checkId);
     }
 
     /**
@@ -192,17 +198,23 @@ class JsonRpcClient
      */
     protected function waitForResponse(string $requestId, float $timeout): mixed
     {
-        $endTime = microtime(true) + $timeout;
         $message = null;
         $result = null;
         $error = null;
-        $received = false;
+        $timeout_error = false;
 
-        while (microtime(true) < $endTime && ! $received) {
-            $message = $this->readMessage(0.1);
+        $suspension = EventLoop::getSuspension();
+
+        $timeoutId = EventLoop::delay($timeout, function () use ($suspension, &$timeout_error): void {
+            $timeout_error = true;
+            $suspension->resume();
+        });
+
+        $checkId = EventLoop::repeat(0.01, function () use ($suspension, $requestId, &$message, &$result, &$error, &$received): void {
+            $message = $this->tryReadMessage();
 
             if ($message === null) {
-                continue;
+                return;
             }
 
             if ($message->isResponse() && $message->id === $requestId) {
@@ -211,14 +223,19 @@ class JsonRpcClient
                 } else {
                     $result = $message->result;
                 }
-                $received = true;
+                $suspension->resume();
             } else {
                 // Handle other messages (notifications, other requests)
                 $this->handleMessage($message);
             }
-        }
+        });
 
-        if (! $received) {
+        $suspension->suspend();
+
+        EventLoop::cancel($timeoutId);
+        EventLoop::cancel($checkId);
+
+        if ($timeout_error) {
             throw new JsonRpcException(-32000, "Timeout waiting for response to request {$requestId}");
         }
 
@@ -241,6 +258,22 @@ class JsonRpcClient
     protected function readMessage(float $timeout = 0.1): ?JsonRpcMessage
     {
         $content = $this->transport->read($timeout);
+
+        $data = json_decode($content, true);
+
+        if (! is_array($data)) {
+            return null;
+        }
+
+        return JsonRpcMessage::fromArray($data);
+    }
+
+    /**
+     * Try to read a message without waiting (non-blocking).
+     */
+    protected function tryReadMessage(): ?JsonRpcMessage
+    {
+        $content = $this->transport->tryRead();
 
         $data = json_decode($content, true);
 

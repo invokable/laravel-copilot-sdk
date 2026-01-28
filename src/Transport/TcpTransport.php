@@ -102,7 +102,7 @@ class TcpTransport implements Transport
             return '';
         }
 
-        // Use stream_select for non-blocking read with timeout
+        // Check if data is available using stream_select
         $read = [$this->socket];
         $write = null;
         $except = null;
@@ -115,53 +115,90 @@ class TcpTransport implements Transport
             return '';
         }
 
-        // Switch to blocking mode for reliable reads
-        stream_set_blocking($this->socket, true);
+        return $this->readContent();
+    }
 
-        try {
-            // Read header line
-            $headerLine = fgets($this->socket);
-
-            if ($headerLine === false || $headerLine === '') {
-                return '';
-            }
-
-            // Parse Content-Length
-            $headerLine = trim($headerLine);
-
-            if (! str_starts_with($headerLine, 'Content-Length:')) {
-                return '';
-            }
-
-            $contentLength = (int) trim(substr($headerLine, 15));
-
-            if ($contentLength <= 0) {
-                return '';
-            }
-
-            // Read empty line (header/body separator)
-            fgets($this->socket);
-
-            // Read exact content length
-            $content = '';
-            $remaining = $contentLength;
-
-            while ($remaining > 0) {
-                $chunk = fread($this->socket, $remaining);
-
-                if ($chunk === false || $chunk === '') {
-                    return '';
-                }
-
-                $content .= $chunk;
-                $remaining -= strlen($chunk);
-            }
-
-            return $content;
-        } finally {
-            // Restore non-blocking mode
-            stream_set_blocking($this->socket, false);
+    /**
+     * Try to read content without waiting (non-blocking).
+     */
+    public function tryRead(): string
+    {
+        if (! is_resource($this->socket)) {
+            return '';
         }
+
+        // Check if data is available immediately
+        $read = [$this->socket];
+        $write = null;
+        $except = null;
+
+        $ready = @stream_select($read, $write, $except, 0, 0);
+
+        if ($ready === false || $ready === 0) {
+            return '';
+        }
+
+        return $this->readContent();
+    }
+
+    /**
+     * Read content from the socket using Content-Length header protocol.
+     */
+    protected function readContent(): string
+    {
+        if (! is_resource($this->socket)) {
+            return '';
+        }
+
+        // Read header line
+        $headerLine = fgets($this->socket);
+
+        if ($headerLine === false || $headerLine === '') {
+            return '';
+        }
+
+        // Parse Content-Length
+        $headerLine = trim($headerLine);
+
+        if (! str_starts_with($headerLine, 'Content-Length:')) {
+            return '';
+        }
+
+        $contentLength = (int) trim(substr($headerLine, 15));
+
+        if ($contentLength <= 0) {
+            return '';
+        }
+
+        // Read empty line (header/body separator)
+        fgets($this->socket);
+
+        // Read exact content length
+        $content = '';
+        $remaining = $contentLength;
+
+        while ($remaining > 0) {
+            $chunk = fread($this->socket, $remaining);
+
+            if ($chunk === false || $chunk === '') {
+                return '';
+            }
+
+            $content .= $chunk;
+            $remaining -= strlen($chunk);
+        }
+
+        return $content;
+    }
+
+    /**
+     * Get the readable stream resource for EventLoop integration.
+     *
+     * @return resource|null
+     */
+    public function getReadableStream(): mixed
+    {
+        return $this->socket;
     }
 
     public function stream(Closure $stream): void

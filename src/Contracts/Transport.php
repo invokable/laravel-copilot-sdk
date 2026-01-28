@@ -16,5 +16,17 @@ interface Transport
 
     public function read(float $timeout = 0.1): string;
 
+    /**
+     * Try to read content without waiting (non-blocking).
+     */
+    public function tryRead(): string;
+
+    /**
+     * Get the readable stream resource for EventLoop integration.
+     *
+     * @return resource|null
+     */
+    public function getReadableStream(): mixed;
+
     public function stream(Closure $stream): void;
 }
