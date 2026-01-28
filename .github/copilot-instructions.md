@@ -88,7 +88,8 @@ src/
 ├── Contracts/
 │   ├── CopilotClient.php       # クライアントインターフェース
 │   ├── CopilotSession.php      # セッションインターフェース
-│   └── Factory.php
+│   ├── Transport.php
+│   └── Factory.php             # CopilotManagerのインターフェース
 ├── Enums/
 │   ├── ConnectionState.php
 │   └── SessionEventType.php
@@ -115,6 +116,9 @@ src/
 ├── JsonRpc/
 │   ├── JsonRpcClient.php       # JSON-RPC 2.0クライアント
 │   └── JsonRpcMessage.php
+├── Transport/
+│   ├── StdioTransport.php
+│   └── TcpTransport.php
 ├── Process/
 │   ├── ProcessManager.php      # CLIプロセス管理
 │   └── ProcessWrapper.php
@@ -150,6 +154,13 @@ Copilot::run(new MessageOptions(prompt: ''));
 名前付き引数のほうがJavaScriptの使い勝手を再現できる。
 ```javascript
 const response = await session.sendAndWait({ prompt: "What is 2 + 2?" });
+```
+
+よく使うけど項目が多い箇所はクラスでも配列でも受け入れる。
+
+```php
+Copilot::run(prompt: 'What is 2 + 2?', config: new SessionConfig(model: 'gpt-5'));
+Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 ```
 
 ## Testing
@@ -239,7 +250,7 @@ Copilot::preventStrayRequests(false);
 ## ドキュメント
 - README.md: パッケージの概要と基本的な使い方。英語。`Copilot::run` `Copilot::start` Testing機能はLaravel版特有なのでこれをメインに説明。
 - `docs/getting-started.md` 公式SDKのgetting-started.mdと同様のLaravel版。英語。
-- `docs/jp/`以下に日本語ドキュメントを配置。英語の詳細なドキュメントは公式SDKにあるので日本語を中心に用意する。読めない言語でもCopilotに聞けばいいんだから。公式SDKのドキュメントとは関係なく細かい機能のドキュメントを書いていく。
+- `docs/jp/`以下に日本語ドキュメントを配置。英語の詳細なドキュメントは公式SDKにあるので日本語を中心に用意する。読めない言語でもCopilotに聞けばいいんだから。公式SDKのドキュメントとは関係なく細かい機能のドキュメントを書いていく。いずれまとめて英訳。
 
 ## Debugging
 - パッケージプロジェクトなので`info()`などのログはtestbenchの`vendor/orchestra/testbench-core/laravel/storage/logs/laravel.log`に出力される。
