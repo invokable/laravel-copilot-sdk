@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
+use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Support\Traits\Macroable;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Transport;
@@ -32,6 +34,9 @@ use Throwable;
  */
 class Client implements CopilotClient
 {
+    use Conditionable;
+    use Macroable;
+
     protected ?ProcessManager $processManager = null;
 
     protected ?Transport $transport = null;
