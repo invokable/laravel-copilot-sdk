@@ -151,7 +151,7 @@ class ProcessManager
             2 => ['pipe', 'w'],  // stderr
         ];
 
-        $env = $this->env ?? getenv();
+        $env = array_merge(getenv(), $this->env ?? []);
         unset($env['NODE_DEBUG']);
 
         $command = array_merge(
