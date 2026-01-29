@@ -29,7 +29,7 @@ Copilot::start(function (CopilotSession $session) {
 
     $message_id = $session->send(prompt: 'Tell me something about Laravel.');
 
-    // whileループでメッセージの受信を待つ
+    // ループでメッセージの受信を待つ
     $session->wait(timeout: 60.0);
 });
 ```
@@ -51,7 +51,7 @@ Copilot::start(function (CopilotSession $session) {
 
     $response = $session->sendAndWait(prompt: 'Tell me something about Laravel.');
 
-    // whileループで待つ部分はsendAndWait()内で処理されているのでこの時点で最後のメッセージまで届いている。
+    // ループで待つ部分はsendAndWait()内で処理されているのでこの時点で最後のメッセージまで届いている。
     // 途中のメッセージは上のon()で受け取っている。
 
     // sendAndWaitからの最後のメッセージは不要。
