@@ -180,7 +180,7 @@ class TcpTransport implements Transport
         $remaining = $contentLength;
 
         while ($remaining > 0) {
-            $chunk = fread($this->socket, 8192);
+            $chunk = fread($this->socket, $remaining);
 
             if ($chunk === false || $chunk === '') {
                 return '';

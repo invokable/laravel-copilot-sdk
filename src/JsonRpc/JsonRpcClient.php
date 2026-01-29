@@ -213,7 +213,7 @@ class JsonRpcClient
         unset($this->pendingRequests[$requestId]);
 
         if ($timeoutError) {
-            throw new JsonRpcException(-32000, "Timeout waiting for response to request {$requestId}");
+            throw new JsonRpcException(-32000, "Timeout {$timeout}s waiting for response to request {$requestId}");
         }
 
         if ($pending !== null && $pending['error'] !== null) {

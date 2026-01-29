@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Transport;
 
 use Closure;
 use Illuminate\Support\Sleep;
+use Illuminate\Support\Str;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 
@@ -106,7 +107,7 @@ class StdioTransport implements Transport
         $remaining = $contentLength;
 
         while ($remaining > 0) {
-            $chunk = fread($this->stdout, 8192);
+            $chunk = fread($this->stdout, $remaining);
 
             if ($chunk === false || $chunk === '') {
                 return '';
