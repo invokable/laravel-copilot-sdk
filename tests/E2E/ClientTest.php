@@ -15,7 +15,7 @@ beforeEach(function () {
     ]);
 });
 
-afterEach(function () {
+afterAll(function () {
     Copilot::client()->stop();
 });
 
