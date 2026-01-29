@@ -248,16 +248,6 @@ describe('Session', function () {
             ->with('session.send', Mockery::any())
             ->andReturn(['messageId' => 'msg-123']);
 
-        $mockClient->shouldReceive('processMessages')
-            ->andReturnUsing(function () use (&$session) {
-                // Simulate error event
-                $errorEvent = SessionEvent::fromArray([
-                    'type' => 'session.error',
-                    'data' => ['message' => 'Test error'],
-                ]);
-                $session->dispatchEvent($errorEvent);
-            });
-
         $session = new Session('test-session', $mockClient);
 
         $receivedEvent = null;
@@ -267,7 +257,16 @@ describe('Session', function () {
             }
         });
 
-        $result = $session->sendAndWait('Hello', timeout: 0.1);
+        // Simulate error event after a short delay
+        Revolt\EventLoop::delay(0.02, function () use ($session) {
+            $errorEvent = SessionEvent::fromArray([
+                'type' => 'session.error',
+                'data' => ['message' => 'Test error'],
+            ]);
+            $session->dispatchEvent($errorEvent);
+        });
+
+        $result = $session->sendAndWait('Hello', timeout: 0.2);
 
         expect($receivedEvent)->not->toBeNull()
             ->and($receivedEvent->failed())->toBeTrue()
@@ -284,10 +283,7 @@ describe('Session', function () {
             ->with('session.send', Mockery::any())
             ->andReturn(['messageId' => 'msg-123']);
 
-        // processMessages does nothing - no idle event will be received
-        $mockClient->shouldReceive('processMessages')
-            ->andReturn(null);
-
+        // No events dispatched - timeout will occur
         $session = new Session('test-session', $mockClient);
 
         $receivedEvent = null;

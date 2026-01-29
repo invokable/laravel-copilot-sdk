@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Exceptions\StrayRequestException;
@@ -14,6 +15,30 @@ beforeEach(function () {
     Copilot::preventStrayRequests(false);
 });
 
+/**
+ * Create a mock transport that captures the onReceive handler.
+ *
+ * @return array{transport: \Mockery\MockInterface, simulateReceive: Closure}
+ */
+function createMockTransport(): array
+{
+    $handler = null;
+    $transport = Mockery::mock(Transport::class);
+    $transport->shouldReceive('onReceive')->andReturnUsing(function ($callback) use (&$handler) {
+        $handler = $callback;
+    });
+
+    $simulateReceive = function (string $content) use (&$handler) {
+        if ($handler !== null) {
+            EventLoop::queue(function () use ($handler, $content) {
+                $handler($content);
+            });
+        }
+    };
+
+    return ['transport' => $transport, 'simulateReceive' => $simulateReceive];
+}
+
 describe('JsonRpcClient', function () {
     it('can be instantiated with transport', function () {
         $transport = Mockery::mock(Transport::class);
@@ -25,7 +50,7 @@ describe('JsonRpcClient', function () {
     });
 
     it('start method calls transport start', function () {
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport] = createMockTransport();
         $transport->shouldReceive('start')->once();
 
         $client = new JsonRpcClient($transport);
@@ -35,8 +60,9 @@ describe('JsonRpcClient', function () {
     });
 
     it('stop method stops client', function () {
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport] = createMockTransport();
         $transport->shouldReceive('start')->once();
+        $transport->shouldReceive('stop')->once();
 
         $client = new JsonRpcClient($transport);
         $client->start();
@@ -46,25 +72,18 @@ describe('JsonRpcClient', function () {
     });
 
     it('request sends message and waits for response', function () {
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
 
         $sentMessage = null;
-        $transport->shouldReceive('send')->once()->andReturnUsing(function ($message) use (&$sentMessage) {
+        $transport->shouldReceive('send')->once()->andReturnUsing(function ($message) use (&$sentMessage, $simulateReceive) {
             $sentMessage = $message;
-        });
-
-        // Return a response matching the request id
-        $transport->shouldReceive('tryRead')->andReturnUsing(function () use (&$sentMessage) {
-            // Extract request id from sent message
-            if (preg_match('/\{.*\}/s', $sentMessage, $matches)) {
+            // Simulate response after sending
+            if (preg_match('/\{.*\}/s', $message, $matches)) {
                 $request = json_decode($matches[0], true);
                 $response = JsonRpcMessage::response($request['id'], ['status' => 'ok']);
-
-                return $response->toJson();
+                $simulateReceive($response->toJson());
             }
-
-            return '';
         });
 
         $client = new JsonRpcClient($transport);
@@ -76,23 +95,15 @@ describe('JsonRpcClient', function () {
     });
 
     it('request throws JsonRpcException on error response', function () {
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
 
-        $sentMessage = null;
-        $transport->shouldReceive('send')->once()->andReturnUsing(function ($message) use (&$sentMessage) {
-            $sentMessage = $message;
-        });
-
-        $transport->shouldReceive('tryRead')->andReturnUsing(function () use (&$sentMessage) {
-            if (preg_match('/\{.*\}/s', $sentMessage, $matches)) {
+        $transport->shouldReceive('send')->once()->andReturnUsing(function ($message) use ($simulateReceive) {
+            if (preg_match('/\{.*\}/s', $message, $matches)) {
                 $request = json_decode($matches[0], true);
                 $response = JsonRpcMessage::errorResponse($request['id'], -32600, 'Invalid Request');
-
-                return $response->toJson();
+                $simulateReceive($response->toJson());
             }
-
-            return '';
         });
 
         $client = new JsonRpcClient($transport);
@@ -103,10 +114,9 @@ describe('JsonRpcClient', function () {
     });
 
     it('request throws JsonRpcException on timeout', function () {
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport] = createMockTransport();
         $transport->shouldReceive('start')->once();
         $transport->shouldReceive('send')->once();
-        $transport->shouldReceive('tryRead')->andReturn('');
 
         $client = new JsonRpcClient($transport);
         $client->start();
@@ -132,16 +142,11 @@ describe('JsonRpcClient', function () {
     });
 
     it('setNotificationHandler registers handler', function () {
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
 
         $receivedMethod = null;
         $receivedParams = null;
-
-        $transport->shouldReceive('tryRead')->andReturn(
-            JsonRpcMessage::notification('test.notification', ['key' => 'value'])->toJson(),
-            '',
-        );
 
         $client = new JsonRpcClient($transport);
         $client->setNotificationHandler(function ($method, $params) use (&$receivedMethod, &$receivedParams) {
@@ -150,21 +155,21 @@ describe('JsonRpcClient', function () {
         });
 
         $client->start();
-        $client->processMessages(0.15);
+
+        // Simulate notification from server
+        $simulateReceive(JsonRpcMessage::notification('test.notification', ['key' => 'value'])->toJson());
+
+        // Run the event loop briefly to process the queued callback
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
 
         expect($receivedMethod)->toBe('test.notification')
             ->and($receivedParams)->toBe(['key' => 'value']);
     });
 
     it('setRequestHandler handles incoming requests', function () {
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
-
-        // Mock incoming request from server
-        $transport->shouldReceive('tryRead')->andReturn(
-            JsonRpcMessage::request('server-req-1', 'client.getInfo', ['type' => 'version'])->toJson(),
-            '',
-        );
 
         $sentResponses = [];
         $transport->shouldReceive('send')->andReturnUsing(function ($message) use (&$sentResponses) {
@@ -177,7 +182,12 @@ describe('JsonRpcClient', function () {
         });
 
         $client->start();
-        $client->processMessages(0.15);
+
+        // Simulate request from server
+        $simulateReceive(JsonRpcMessage::request('server-req-1', 'client.getInfo', ['type' => 'version'])->toJson());
+
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
 
         expect($sentResponses)->toHaveCount(1)
             ->and($sentResponses[0])->toContain('"id":"server-req-1"')
@@ -185,14 +195,8 @@ describe('JsonRpcClient', function () {
     });
 
     it('removeRequestHandler removes handler', function () {
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
-
-        // Mock incoming request from server
-        $transport->shouldReceive('tryRead')->andReturn(
-            JsonRpcMessage::request('server-req-1', 'client.getInfo', [])->toJson(),
-            '',
-        );
 
         $sentResponses = [];
         $transport->shouldReceive('send')->andReturnUsing(function ($message) use (&$sentResponses) {
@@ -204,7 +208,12 @@ describe('JsonRpcClient', function () {
         $client->removeRequestHandler('client.getInfo');
 
         $client->start();
-        $client->processMessages(0.15);
+
+        // Simulate request from server
+        $simulateReceive(JsonRpcMessage::request('server-req-1', 'client.getInfo', [])->toJson());
+
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
 
         // Should return error since handler was removed
         expect($sentResponses)->toHaveCount(1)
@@ -213,13 +222,8 @@ describe('JsonRpcClient', function () {
     });
 
     it('handles request handler exception as error response', function () {
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
-
-        $transport->shouldReceive('tryRead')->andReturn(
-            JsonRpcMessage::request('server-req-1', 'client.failing', [])->toJson(),
-            '',
-        );
 
         $sentResponses = [];
         $transport->shouldReceive('send')->andReturnUsing(function ($message) use (&$sentResponses) {
@@ -232,7 +236,12 @@ describe('JsonRpcClient', function () {
         });
 
         $client->start();
-        $client->processMessages(0.15);
+
+        // Simulate request from server
+        $simulateReceive(JsonRpcMessage::request('server-req-1', 'client.failing', [])->toJson());
+
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
 
         expect($sentResponses)->toHaveCount(1)
             ->and($sentResponses[0])->toContain('"error"')
@@ -240,13 +249,8 @@ describe('JsonRpcClient', function () {
     });
 
     it('handles JsonRpcException from handler with specific code', function () {
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
-
-        $transport->shouldReceive('tryRead')->andReturn(
-            JsonRpcMessage::request('server-req-1', 'client.custom', [])->toJson(),
-            '',
-        );
 
         $sentResponses = [];
         $transport->shouldReceive('send')->andReturnUsing(function ($message) use (&$sentResponses) {
@@ -259,23 +263,23 @@ describe('JsonRpcClient', function () {
         });
 
         $client->start();
-        $client->processMessages(0.15);
+
+        // Simulate request from server
+        $simulateReceive(JsonRpcMessage::request('server-req-1', 'client.custom', [])->toJson());
+
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
 
         expect($sentResponses)->toHaveCount(1)
             ->and($sentResponses[0])->toContain('"code":-32001')
             ->and($sentResponses[0])->toContain('Custom error');
     });
 
-    it('processMessages handles notifications while waiting', function () {
-        $transport = Mockery::mock(Transport::class);
+    it('handles multiple notifications', function () {
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
 
         $notifications = [];
-        $transport->shouldReceive('tryRead')->andReturn(
-            JsonRpcMessage::notification('event.first', ['seq' => 1])->toJson(),
-            JsonRpcMessage::notification('event.second', ['seq' => 2])->toJson(),
-            '',
-        );
 
         $client = new JsonRpcClient($transport);
         $client->setNotificationHandler(function ($method, $params) use (&$notifications) {
@@ -283,7 +287,13 @@ describe('JsonRpcClient', function () {
         });
 
         $client->start();
-        $client->processMessages(0.15);
+
+        // Simulate multiple notifications from server
+        $simulateReceive(JsonRpcMessage::notification('event.first', ['seq' => 1])->toJson());
+        $simulateReceive(JsonRpcMessage::notification('event.second', ['seq' => 2])->toJson());
+
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
 
         expect($notifications)->toHaveCount(2)
             ->and($notifications[0]['method'])->toBe('event.first')
@@ -295,10 +305,9 @@ describe('JsonRpcClient with preventStrayRequests', function () {
     it('throws StrayRequestException when requests are prevented', function () {
         Copilot::preventStrayRequests();
 
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport] = createMockTransport();
         $transport->shouldReceive('start')->once();
         $transport->shouldReceive('send')->never();
-        $transport->shouldReceive('tryRead')->never();
 
         $client = new JsonRpcClient($transport);
         $client->start();
@@ -310,23 +319,15 @@ describe('JsonRpcClient with preventStrayRequests', function () {
     it('allows specific methods when configured', function () {
         Copilot::preventStrayRequests(allow: ['ping']);
 
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
 
-        $sentMessage = null;
-        $transport->shouldReceive('send')->once()->andReturnUsing(function ($message) use (&$sentMessage) {
-            $sentMessage = $message;
-        });
-
-        $transport->shouldReceive('tryRead')->andReturnUsing(function () use (&$sentMessage) {
-            if (preg_match('/\{.*\}/s', $sentMessage, $matches)) {
+        $transport->shouldReceive('send')->once()->andReturnUsing(function ($message) use ($simulateReceive) {
+            if (preg_match('/\{.*\}/s', $message, $matches)) {
                 $request = json_decode($matches[0], true);
                 $response = JsonRpcMessage::response($request['id'], ['message' => 'pong']);
-
-                return $response->toJson();
+                $simulateReceive($response->toJson());
             }
-
-            return '';
         });
 
         $client = new JsonRpcClient($transport);
@@ -340,10 +341,9 @@ describe('JsonRpcClient with preventStrayRequests', function () {
     it('still throws for non-allowed methods', function () {
         Copilot::preventStrayRequests(allow: ['ping']);
 
-        $transport = Mockery::mock(Transport::class);
+        ['transport' => $transport] = createMockTransport();
         $transport->shouldReceive('start')->once();
         $transport->shouldReceive('send')->never();
-        $transport->shouldReceive('tryRead')->never();
 
         $client = new JsonRpcClient($transport);
         $client->start();

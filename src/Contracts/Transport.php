@@ -14,12 +14,12 @@ interface Transport
 
     public function send(string $message): void;
 
-    public function read(float $timeout = 0.1): string;
-
     /**
-     * Try to read content without waiting (non-blocking).
+     * Set handler for incoming data.
+     *
+     * @param  Closure(string): void  $handler
      */
-    public function tryRead(): string;
+    public function onReceive(Closure $handler): void;
 
     /**
      * Get the readable stream resource for EventLoop integration.

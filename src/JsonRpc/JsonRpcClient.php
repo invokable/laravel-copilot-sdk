@@ -16,7 +16,7 @@ use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
 
 /**
- * JSON-RPC 2.0 client for stdio transport.
+ * JSON-RPC 2.0 client.
  *
  * Handles bidirectional communication with Content-Length headers.
  */
@@ -25,7 +25,7 @@ class JsonRpcClient
     /**
      * Pending requests waiting for responses.
      *
-     * @var array<string, array{resolve: Closure, reject: Closure}>
+     * @var array<string, array{suspension: \Revolt\EventLoop\Suspension, result: mixed, error: array|null}>
      */
     protected array $pendingRequests = [];
 
@@ -60,6 +60,8 @@ class JsonRpcClient
     public function start(): void
     {
         $this->running = true;
+
+        $this->transport->onReceive($this->handleReceived(...));
         $this->transport->start();
     }
 
@@ -69,6 +71,7 @@ class JsonRpcClient
     public function stop(): void
     {
         $this->running = false;
+        $this->transport->stop();
         $this->pendingRequests = [];
     }
 
@@ -137,28 +140,18 @@ class JsonRpcClient
     }
 
     /**
-     * Process incoming messages (call this in a loop or after sending requests).
+     * Handle received data from transport.
      */
-    public function processMessages(float $timeout = 0.1): void
+    protected function handleReceived(string $content): void
     {
-        $suspension = EventLoop::getSuspension();
+        $data = json_decode($content, true);
 
-        $timeoutId = EventLoop::delay($timeout, function () use ($suspension): void {
-            $suspension->resume();
-        });
+        if (! is_array($data)) {
+            return;
+        }
 
-        $checkId = EventLoop::repeat(0.01, function (): void {
-            $message = $this->tryReadMessage();
-
-            if ($message !== null) {
-                $this->handleMessage($message);
-            }
-        });
-
-        $suspension->suspend();
-
-        EventLoop::cancel($timeoutId);
-        EventLoop::cancel($checkId);
+        $message = JsonRpcMessage::fromArray($data);
+        $this->handleMessage($message);
     }
 
     /**
@@ -198,48 +191,33 @@ class JsonRpcClient
      */
     protected function waitForResponse(string $requestId, float $timeout): mixed
     {
-        $message = null;
-        $result = null;
-        $error = null;
-        $timeout_error = false;
-
         $suspension = EventLoop::getSuspension();
 
-        $timeoutId = EventLoop::delay($timeout, function () use ($suspension, &$timeout_error): void {
-            $timeout_error = true;
-            $suspension->resume();
-        });
+        $this->pendingRequests[$requestId] = [
+            'suspension' => $suspension,
+            'result' => null,
+            'error' => null,
+        ];
 
-        $checkId = EventLoop::repeat(0.01, function () use ($suspension, $requestId, &$message, &$result, &$error, &$received): void {
-            $message = $this->tryReadMessage();
-
-            if ($message === null) {
-                return;
-            }
-
-            if ($message->isResponse() && $message->id === $requestId) {
-                if ($message->isError()) {
-                    $error = $message->error;
-                } else {
-                    $result = $message->result;
-                }
-                $suspension->resume();
-            } else {
-                // Handle other messages (notifications, other requests)
-                $this->handleMessage($message);
-            }
+        $timeoutError = false;
+        $timeoutId = EventLoop::delay($timeout, function () use ($requestId, &$timeoutError): void {
+            $timeoutError = true;
+            $this->resumePendingRequest($requestId);
         });
 
         $suspension->suspend();
 
         EventLoop::cancel($timeoutId);
-        EventLoop::cancel($checkId);
 
-        if ($timeout_error) {
+        $pending = $this->pendingRequests[$requestId] ?? null;
+        unset($this->pendingRequests[$requestId]);
+
+        if ($timeoutError) {
             throw new JsonRpcException(-32000, "Timeout waiting for response to request {$requestId}");
         }
 
-        if ($error !== null) {
+        if ($pending !== null && $pending['error'] !== null) {
+            $error = $pending['error'];
             throw new JsonRpcException(
                 $error['code'] ?? -1,
                 $error['message'] ?? 'Unknown error',
@@ -247,41 +225,17 @@ class JsonRpcClient
             );
         }
 
-        ResponseReceived::dispatch($requestId, $message);
-
-        return $result;
+        return $pending['result'] ?? null;
     }
 
     /**
-     * Read a single message from the stream.
+     * Resume a pending request's suspension.
      */
-    protected function readMessage(float $timeout = 0.1): ?JsonRpcMessage
+    protected function resumePendingRequest(string $requestId): void
     {
-        $content = $this->transport->read($timeout);
-
-        $data = json_decode($content, true);
-
-        if (! is_array($data)) {
-            return null;
+        if (isset($this->pendingRequests[$requestId])) {
+            $this->pendingRequests[$requestId]['suspension']->resume();
         }
-
-        return JsonRpcMessage::fromArray($data);
-    }
-
-    /**
-     * Try to read a message without waiting (non-blocking).
-     */
-    protected function tryReadMessage(): ?JsonRpcMessage
-    {
-        $content = $this->transport->tryRead();
-
-        $data = json_decode($content, true);
-
-        if (! is_array($data)) {
-            return null;
-        }
-
-        return JsonRpcMessage::fromArray($data);
     }
 
     /**
@@ -291,12 +245,35 @@ class JsonRpcClient
     {
         MessageReceived::dispatch($message);
 
-        if ($message->isNotification()) {
+        if ($message->isResponse()) {
+            $this->handleResponse($message);
+        } elseif ($message->isNotification()) {
             $this->handleNotification($message);
         } elseif ($message->isRequest()) {
             $this->handleRequest($message);
         }
-        // Responses are handled in waitForResponse
+    }
+
+    /**
+     * Handle an incoming response.
+     */
+    protected function handleResponse(JsonRpcMessage $message): void
+    {
+        $requestId = $message->id;
+
+        if (! isset($this->pendingRequests[$requestId])) {
+            return;
+        }
+
+        ResponseReceived::dispatch($requestId, $message);
+
+        if ($message->isError()) {
+            $this->pendingRequests[$requestId]['error'] = $message->error;
+        } else {
+            $this->pendingRequests[$requestId]['result'] = $message->result;
+        }
+
+        $this->resumePendingRequest($requestId);
     }
 
     /**

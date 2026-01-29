@@ -89,16 +89,22 @@ describe('TcpTransport', function () {
         $transport->send('test');
     })->throws(RuntimeException::class, 'TCP connection not established');
 
-    it('returns empty string when reading without connection', function () {
-        $transport = new TcpTransport;
-
-        expect($transport->read())->toBe('');
-    });
-
     it('can stop without being started', function () {
         $transport = new TcpTransport;
         $transport->stop();
 
         expect($transport->isConnected())->toBeFalse();
+    });
+
+    it('can set onReceive handler', function () {
+        $transport = new TcpTransport;
+        $called = false;
+
+        $transport->onReceive(function (string $content) use (&$called) {
+            $called = true;
+        });
+
+        // Handler should be set but not called yet (no connection)
+        expect($called)->toBeFalse();
     });
 });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Transport;
 
 use Closure;
+use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 use RuntimeException;
 
@@ -14,6 +15,18 @@ class TcpTransport implements Transport
      * @var resource|null
      */
     protected mixed $socket = null;
+
+    /**
+     * Handler for received data.
+     *
+     * @var Closure(string): void|null
+     */
+    protected ?Closure $handler = null;
+
+    /**
+     * EventLoop callback ID for readable event.
+     */
+    protected ?string $callbackId = null;
 
     public function __construct(
         protected string $host = '127.0.0.1',
@@ -84,10 +97,23 @@ class TcpTransport implements Transport
         }
 
         stream_set_blocking($this->socket, false);
+
+        $this->callbackId = EventLoop::onReadable($this->socket, function (): void {
+            $content = $this->readContent();
+
+            if ($content !== '' && $this->handler !== null) {
+                ($this->handler)($content);
+            }
+        });
     }
 
     public function stop(): void
     {
+        if ($this->callbackId !== null) {
+            EventLoop::cancel($this->callbackId);
+            $this->callbackId = null;
+        }
+
         if (is_resource($this->socket)) {
             fclose($this->socket);
             $this->socket = null;
@@ -104,57 +130,16 @@ class TcpTransport implements Transport
         fflush($this->socket);
     }
 
-    public function read(float $timeout = 0.1): string
+    public function onReceive(Closure $handler): void
     {
-        if (! is_resource($this->socket)) {
-            return '';
-        }
-
-        // Check if data is available using stream_select
-        $read = [$this->socket];
-        $write = null;
-        $except = null;
-        $tvSec = (int) $timeout;
-        $tvUsec = (int) (($timeout - $tvSec) * 1000000);
-
-        $ready = @stream_select($read, $write, $except, $tvSec, $tvUsec);
-
-        if ($ready === false || $ready === 0) {
-            return '';
-        }
-
-        return $this->readContent();
-    }
-
-    /**
-     * Try to read content without waiting (non-blocking).
-     */
-    public function tryRead(): string
-    {
-        if (! is_resource($this->socket)) {
-            return '';
-        }
-
-        // Check if data is available immediately
-        $read = [$this->socket];
-        $write = null;
-        $except = null;
-
-        $ready = @stream_select($read, $write, $except, 0, 0);
-
-        if ($ready === false || $ready === 0) {
-            return '';
-        }
-
-        return $this->readContent();
+        $this->handler = $handler;
     }
 
     /**
      * Read content from the socket using Content-Length header protocol.
      *
-     * Note: If using EventLoop::onReadable() callback in the future, fread() should
-     * always read a multiple of 8192 bytes to work correctly with loop backends
-     * other than stream_select (e.g., ext-uv, ext-ev).
+     * Note: fread() should always read a multiple of 8192 bytes to work correctly
+     * with loop backends other than stream_select (e.g., ext-uv, ext-ev).
      *
      * @see https://revolt.run/streams
      */

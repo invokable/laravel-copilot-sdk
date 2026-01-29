@@ -5,10 +5,23 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Transport;
 
 use Closure;
+use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 
 class StdioTransport implements Transport
 {
+    /**
+     * Handler for received data.
+     *
+     * @var Closure(string): void|null
+     */
+    protected ?Closure $handler = null;
+
+    /**
+     * EventLoop callback ID for readable event.
+     */
+    protected ?string $callbackId = null;
+
     /**
      * @param  resource  $stdin  Input stream (write to server)
      * @param  resource  $stdout  Output stream (read from server)
@@ -23,11 +36,22 @@ class StdioTransport implements Transport
     public function start(): void
     {
         stream_set_blocking($this->stdout, false);
+
+        $this->callbackId = EventLoop::onReadable($this->stdout, function (): void {
+            $content = $this->readContent();
+
+            if ($content !== '' && $this->handler !== null) {
+                ($this->handler)($content);
+            }
+        });
     }
 
     public function stop(): void
     {
-        // Stdio streams are managed by ProcessManager
+        if ($this->callbackId !== null) {
+            EventLoop::cancel($this->callbackId);
+            $this->callbackId = null;
+        }
     }
 
     public function send(string $message): void
@@ -36,49 +60,16 @@ class StdioTransport implements Transport
         fflush($this->stdin);
     }
 
-    public function read(float $timeout = 0.1): string
+    public function onReceive(Closure $handler): void
     {
-        // Check if data is available using stream_select
-        $read = [$this->stdout];
-        $write = null;
-        $except = null;
-        $tvSec = (int) $timeout;
-        $tvUsec = (int) (($timeout - $tvSec) * 1000000);
-
-        $ready = @stream_select($read, $write, $except, $tvSec, $tvUsec);
-
-        if ($ready === false || $ready === 0) {
-            return '';
-        }
-
-        return $this->readContent();
-    }
-
-    /**
-     * Try to read content without waiting (non-blocking).
-     */
-    public function tryRead(): string
-    {
-        // Check if data is available immediately
-        $read = [$this->stdout];
-        $write = null;
-        $except = null;
-
-        $ready = @stream_select($read, $write, $except, 0, 0);
-
-        if ($ready === false || $ready === 0) {
-            return '';
-        }
-
-        return $this->readContent();
+        $this->handler = $handler;
     }
 
     /**
      * Read content from the stream using Content-Length header protocol.
      *
-     * Note: If using EventLoop::onReadable() callback in the future, fread() should
-     * always read a multiple of 8192 bytes to work correctly with loop backends
-     * other than stream_select (e.g., ext-uv, ext-ev).
+     * Note: fread() should always read a multiple of 8192 bytes to work correctly
+     * with loop backends other than stream_select (e.g., ext-uv, ext-ev).
      *
      * @see https://revolt.run/streams
      */
@@ -112,7 +103,7 @@ class StdioTransport implements Transport
         $remaining = $contentLength;
 
         while ($remaining > 0) {
-            $chunk = fread($this->stdout, $remaining);
+            $chunk = fread($this->stdout, 8192);
 
             if ($chunk === false || $chunk === '') {
                 return '';

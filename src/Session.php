@@ -194,9 +194,7 @@ class Session implements CopilotSession
             $suspension->resume();
         });
 
-        $checkId = EventLoop::repeat(0.01, function () use ($suspension, &$checkId): void {
-            $this->client->processMessages(0.1);
-
+        $checkId = EventLoop::repeat(0.01, function () use ($suspension): void {
             if ($this->waitIdle || $this->waitError !== null) {
                 $suspension->resume();
             }
