@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+use Mockery\MockInterface;
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\CopilotManager;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionEvent;
+
+use function Pest\Laravel\mock;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
@@ -208,6 +211,63 @@ describe('CopilotManager', function () {
 
         $manager = new CopilotManager(['timeout' => 120.0]);
         $manager->run('prompt');
+
+        $manager->stop();
+    });
+
+    it('resume session', function () {
+        $mockClient = mock(CopilotClient::class, function (MockInterface $mock) {
+            $mockSession = mock(CopilotSession::class);
+            $mockSession->expects('destroy')->once();
+
+            $mock->expects('start')->once();
+            $mock->expects('resumeSession')->once()->andReturn($mockSession);
+            $mock->expects('stop')->andReturn([]);
+        });
+        $this->app->bind(Client::class, fn () => $mockClient);
+
+        $manager = new CopilotManager;
+        $manager->start(function () {}, resume: 'resume-id');
+
+        $manager->stop();
+    });
+
+    it('use stdio', function () {
+        $mockClient = mock(CopilotClient::class, function (MockInterface $mock) {
+            $mock->expects('start')->once();
+            $mock->expects('stop')->andReturn([]);
+        });
+        $this->app->bind(Client::class, fn () => $mockClient);
+
+        $manager = new CopilotManager;
+        $manager->useStdio();
+
+        $manager->stop();
+    });
+
+    it('use tcp', function () {
+        $mockClient = mock(CopilotClient::class, function (MockInterface $mock) {
+            $mock->expects('start')->once();
+            $mock->expects('stop')->andReturn([]);
+        });
+        $this->app->bind(Client::class, fn () => $mockClient);
+
+        $manager = new CopilotManager;
+        $manager->useTcp(url: '127.0.0.1:12345');
+
+        $manager->stop();
+    });
+
+    it('use tcp exception', function () {
+        $this->expectException(RuntimeException::class);
+
+        $mockClient = mock(CopilotClient::class, function (MockInterface $mock) {
+            $mock->expects('start')->never();
+        });
+        $this->app->bind(Client::class, fn () => $mockClient);
+
+        $manager = new CopilotManager;
+        $manager->useTcp();
 
         $manager->stop();
     });
