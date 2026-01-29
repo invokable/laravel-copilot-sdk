@@ -118,14 +118,4 @@ class StdioTransport implements Transport
 
         return $content;
     }
-
-    /**
-     * Get the readable stream resource for EventLoop integration.
-     *
-     * @return resource
-     */
-    public function getReadableStream(): mixed
-    {
-        return $this->stdout;
-    }
 }

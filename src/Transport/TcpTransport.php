@@ -194,16 +194,6 @@ class TcpTransport implements Transport
     }
 
     /**
-     * Get the readable stream resource for EventLoop integration.
-     *
-     * @return resource|null
-     */
-    public function getReadableStream(): mixed
-    {
-        return $this->socket;
-    }
-
-    /**
      * Check if the connection is established.
      */
     public function isConnected(): bool

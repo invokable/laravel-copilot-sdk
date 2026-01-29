@@ -20,11 +20,4 @@ interface Transport
      * @param  Closure(string): void  $handler
      */
     public function onReceive(Closure $handler): void;
-
-    /**
-     * Get the readable stream resource for EventLoop integration.
-     *
-     * @return resource|null
-     */
-    public function getReadableStream(): mixed;
 }
