@@ -57,7 +57,7 @@ class CopilotManager implements Factory
                 prompt: $prompt,
                 attachments: $attachments,
                 mode: $mode,
-                timeout: $this->config['timeout'] ?? 60.0,
+                timeout: $this->config['timeout'] ?? null,
             ),
             config: $config,
         );
