@@ -76,10 +76,11 @@ class StdioTransport implements Transport
      */
     protected function readContent(): string
     {
+        // Temporarily set blocking mode for reading
+        stream_set_blocking($this->stdout, true);
+
         // Read header line
         $headerLine = fgets($this->stdout);
-
-        Sleep::for(1)->microsecond();
 
         if ($headerLine === false || $headerLine === '') {
             return '';
@@ -115,6 +116,8 @@ class StdioTransport implements Transport
             $content .= $chunk;
             $remaining -= strlen($chunk);
         }
+
+        stream_set_blocking($this->stdout, false);
 
         return $content;
     }

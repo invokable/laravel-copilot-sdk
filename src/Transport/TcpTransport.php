@@ -150,10 +150,11 @@ class TcpTransport implements Transport
             return '';
         }
 
+        // Temporarily set blocking mode for reading
+        stream_set_blocking($this->socket, true);
+
         // Read header line
         $headerLine = fgets($this->socket);
-
-        Sleep::for(1)->microsecond();
 
         if ($headerLine === false || $headerLine === '') {
             return '';
@@ -189,6 +190,8 @@ class TcpTransport implements Transport
             $content .= $chunk;
             $remaining -= strlen($chunk);
         }
+
+        stream_set_blocking($this->socket, false);
 
         return $content;
     }
