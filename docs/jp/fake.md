@@ -52,13 +52,13 @@ Copilot::assertPrompt('1 + *');
 Copilot::assertNotPrompt('1 + *');
 ```
 
-Assert the number of prompts called.
+プロンプトが呼び出された回数を確認。
 
 ```php
 Copilot::assertPromptCount(3);
 ```
 
-Assert that no prompts were called.
+プロンプトが一度も呼び出されなかったことを確認。
 
 ```php
 Copilot::assertNothingSent();
