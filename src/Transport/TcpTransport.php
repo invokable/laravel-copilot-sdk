@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Transport;
 
 use Closure;
+use Illuminate\Support\Sleep;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 use RuntimeException;
@@ -152,6 +153,8 @@ class TcpTransport implements Transport
         // Read header line
         $headerLine = fgets($this->socket);
 
+        Sleep::for(1)->microsecond();
+
         if ($headerLine === false || $headerLine === '') {
             return '';
         }
@@ -177,7 +180,7 @@ class TcpTransport implements Transport
         $remaining = $contentLength;
 
         while ($remaining > 0) {
-            $chunk = fread($this->socket, $remaining);
+            $chunk = fread($this->socket, 8192);
 
             if ($chunk === false || $chunk === '') {
                 return '';

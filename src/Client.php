@@ -329,7 +329,7 @@ class Client implements CopilotClient
     {
         $this->ensureConnected();
 
-        $response = $this->rpcClient->request('status.get', [], timeout: 10.0);
+        $response = $this->rpcClient->request('status.get');
 
         return GetStatusResponse::fromArray($response);
     }

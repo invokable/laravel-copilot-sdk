@@ -41,7 +41,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get', Mockery::any())
+            ->with('status.get')
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 2]);
 
@@ -70,7 +70,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get', Mockery::any())
+            ->with('status.get')
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 2]);
 

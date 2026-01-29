@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Transport;
 
 use Closure;
+use Illuminate\Support\Sleep;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 
@@ -77,6 +78,8 @@ class StdioTransport implements Transport
     {
         // Read header line
         $headerLine = fgets($this->stdout);
+
+        Sleep::for(1)->microsecond();
 
         if ($headerLine === false || $headerLine === '') {
             return '';

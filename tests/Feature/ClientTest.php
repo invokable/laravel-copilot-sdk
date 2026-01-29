@@ -54,7 +54,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get', Mockery::any())
+            ->with('status.get')
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 2]);
 
@@ -85,7 +85,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get', Mockery::any())
+            ->with('status.get')
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 2]);
 
@@ -117,7 +117,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get', Mockery::any())
+            ->with('status.get')
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 1]);
 
@@ -150,7 +150,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get', Mockery::any())
+            ->with('status.get')
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 2]);
 
@@ -183,7 +183,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get', Mockery::any())
+            ->with('status.get')
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 2]);
         $mockRpcClient->shouldReceive('request')
@@ -237,7 +237,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->twice();
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get', Mockery::any())
+            ->with('status.get')
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 2]);
         $mockRpcClient->shouldReceive('request')
