@@ -18,7 +18,7 @@ beforeEach(function () {
 /**
  * Create a mock transport that captures the onReceive handler.
  *
- * @return array{transport: \Mockery\MockInterface, simulateReceive: Closure}
+ * @return array{transport: \Mockery\MockInterface|Transport, simulateReceive: Closure}
  */
 function createMockTransport(): array
 {
