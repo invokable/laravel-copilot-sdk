@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Transport;
 
 use Closure;
-use Illuminate\Support\Sleep;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 
