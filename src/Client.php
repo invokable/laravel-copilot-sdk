@@ -315,7 +315,7 @@ class Client implements CopilotClient
         return tap(
             $this->rpcClient->request('ping', array_filter([
                 'message' => $message,
-            ], fn ($v) => $v !== null), timeout: 10.0),
+            ]), timeout: 10.0),
             fn (array $response) => PingPong::dispatch($response),
         );
     }
@@ -329,7 +329,7 @@ class Client implements CopilotClient
     {
         $this->ensureConnected();
 
-        $response = $this->rpcClient->request('status.get', []);
+        $response = $this->rpcClient->request('status.get', [], timeout: 10.0);
 
         return GetStatusResponse::fromArray($response);
     }
