@@ -6,7 +6,6 @@ namespace Revolution\Copilot\Transport;
 
 use Closure;
 use Illuminate\Support\Sleep;
-use Illuminate\Support\Str;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 

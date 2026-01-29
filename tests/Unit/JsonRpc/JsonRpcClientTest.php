@@ -122,7 +122,7 @@ describe('JsonRpcClient', function () {
         $client->start();
 
         expect(fn () => $client->request('test.method', [], 0.2))
-            ->toThrow(JsonRpcException::class, 'Timeout waiting for response');
+            ->toThrow(JsonRpcException::class, 'Timeout 0.2s waiting for response');
     });
 
     it('notify sends message without waiting for response', function () {
