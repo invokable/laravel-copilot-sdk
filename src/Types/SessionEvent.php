@@ -59,6 +59,14 @@ readonly class SessionEvent implements Arrayable, Jsonable
     }
 
     /**
+     * Check if this is an assistant message delta event.
+     */
+    public function isAssistantMessageDelta(): bool
+    {
+        return $this->type === SessionEventType::ASSISTANT_MESSAGE_DELTA;
+    }
+
+    /**
      * Check if this is a user message event.
      */
     public function isUserMessage(): bool
@@ -150,6 +158,11 @@ readonly class SessionEvent implements Arrayable, Jsonable
     public function content(?string $default = null): ?string
     {
         return $this->data('content', $default);
+    }
+
+    public function deltaContent(?string $default = null): ?string
+    {
+        return $this->data('deltaContent', $default);
     }
 
     /**
