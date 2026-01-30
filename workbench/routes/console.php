@@ -8,12 +8,16 @@ use Illuminate\Support\Facades\Concurrency;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Types\Hooks\PreToolUseHookOutput;
 use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SessionMetadata;
 use Revolution\Copilot\Types\Tool;
+use Revolution\Copilot\Types\UserInputRequest;
+use Revolution\Copilot\Types\UserInputResponse;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -258,7 +262,7 @@ Artisan::command('copilot:mcp', function () {
 // vendor/bin/testbench copilot:ask-user
 Artisan::command('copilot:ask-user', function () {
     $config = new SessionConfig(
-        onUserInputRequest: function (\Revolution\Copilot\Types\UserInputRequest $request, array $invocation) {
+        onUserInputRequest: function (UserInputRequest $request, array $invocation) {
             dump('User input requested:', $request->toArray());
 
             if (! empty($request->choices)) {
@@ -273,7 +277,7 @@ Artisan::command('copilot:ask-user', function () {
                 );
             }
 
-            return new \Revolution\Copilot\Types\UserInputResponse(
+            return new UserInputResponse(
                 answer: $answer,
                 wasFreeform: empty($request->choices),
             );
@@ -302,13 +306,13 @@ Artisan::command('copilot:ask-user', function () {
 // vendor/bin/testbench copilot:hooks
 Artisan::command('copilot:hooks', function () {
     $config = new SessionConfig(
-        hooks: new \Revolution\Copilot\Types\SessionHooks(
+        hooks: new SessionHooks(
             onPreToolUse: function (mixed $input, array $invocation) {
                 info('[Hook] Pre-tool-use: '.($input['toolName'] ?? 'unknown'));
                 dump('Input:', $input);
 
                 // ツール実行を許可
-                return new \Revolution\Copilot\Types\Hooks\PreToolUseHookOutput(
+                return new PreToolUseHookOutput(
                     permissionDecision: 'allow',
                 );
             },
