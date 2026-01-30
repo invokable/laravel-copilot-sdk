@@ -16,6 +16,7 @@ use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\Tool;
+use Revolution\Copilot\Types\ToolResultObject;
 
 use function Laravel\Prompts\{info, note, spin, warning};
 
@@ -45,20 +46,20 @@ Artisan::command('copilot:tools', function () {
                     $fact = $facts[$topic] ?? null;
 
                     if (! $fact) {
-                        return [
-                            'textResultForLlm' => "No fact stored for {$topic}.",
-                            'resultType' => 'failure',
-                            'sessionLog' => "lookup_fact: missing topic {$topic}",
-                            'toolTelemetry' => [],
-                        ];
+                        return new ToolResultObject(
+                            textResultForLlm: "No fact stored for {$topic}.",
+                            resultType: 'failure',
+                            sessionLog: "lookup_fact: missing topic {$topic}",
+                            toolTelemetry: [],
+                        );
                     }
 
-                    return [
-                        'textResultForLlm' => $fact,
-                        'resultType' => 'success',
-                        'sessionLog' => "lookup_fact: served {$topic}",
-                        'toolTelemetry' => [],
-                    ];
+                    return new ToolResultObject(
+                        textResultForLlm: $fact,
+                        resultType: 'success',
+                        sessionLog: "lookup_fact: served {$topic}",
+                        toolTelemetry: [],
+                    );
                 },
             ),
         ],

@@ -26,6 +26,7 @@ use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\SessionMetadata;
+use Revolution\Copilot\Types\ToolResultObject;
 use Revolution\Copilot\Types\UserInputRequest;
 use RuntimeException;
 use Throwable;
@@ -575,7 +576,10 @@ class Client implements CopilotClient
                 'arguments' => $arguments,
             ];
 
+            /** @var ToolResultObject|array|mixed $result */
             $result = $handler($arguments, $invocation);
+
+            $result = $result instanceof ToolResultObject ? $result->toArray() : $result;
 
             ToolCall::dispatch($arguments, $invocation, $result);
 
