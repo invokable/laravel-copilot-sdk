@@ -32,6 +32,8 @@ vendor/bin/testbench copilot:ping
 vendor/bin/testbench copilot:version
 ```
 
+開発時用の動作確認コマンドは`workbench/routes/console.php`で定義。
+
 ## Architecture
 
 `copilot --server`でCopilot CLI自身がサーバーとして起動。
