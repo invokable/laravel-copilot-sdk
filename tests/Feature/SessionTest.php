@@ -65,7 +65,7 @@ describe('Session', function () {
         $handlerCalled = false;
         $receivedEvent = null;
 
-        $unsubscribe = $session->on(function (SessionEvent $event) use (&$handlerCalled, &$receivedEvent) {
+        $unsubscribe = $session->on(handler: function (SessionEvent $event) use (&$handlerCalled, &$receivedEvent) {
             $handlerCalled = true;
             $receivedEvent = $event;
         });

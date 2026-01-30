@@ -7,6 +7,7 @@ namespace Revolution\Copilot;
 use Closure;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use InvalidArgumentException;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\SessionEventType;
@@ -275,7 +276,7 @@ class Session implements CopilotSession
      * When called with a single Closure argument, subscribes to all events.
      * When called with an event type and Closure, subscribes only to that specific event type.
      *
-     * @param  string|SessionEventType|Closure  $type  Event type to filter, or handler for all events
+     * @param  string|SessionEventType|Closure|null  $type  Event type to filter, or handler for all events
      * @param  Closure(SessionEvent): void|null  $handler  Handler when type is specified
      * @return Closure(): void Unsubscribe function
      *
@@ -294,12 +295,16 @@ class Session implements CopilotSession
      * $session->on(function (SessionEvent $event) {
      *     echo $event->type();
      * });
+     *
+     * $session->on(handler: function (SessionEvent $event) {
+     *      echo $event->type();
+     *  });
      * ```
      */
-    public function on(string|SessionEventType|Closure $type, ?Closure $handler = null): Closure
+    public function on(string|SessionEventType|Closure|null $type = null, ?Closure $handler = null): Closure
     {
         // Overload 1: on(type, handler) - typed event subscription
-        if ($handler !== null) {
+        if ($type !== null && $handler !== null) {
             $eventType = $type instanceof SessionEventType ? $type->value : (string) $type;
 
             $this->typedEventHandlers[$eventType] ??= [];
@@ -320,8 +325,15 @@ class Session implements CopilotSession
             return fn () => $this->off($type);
         }
 
+        // Overload 3: on(handler: handler) - Named Parameters
+        if ($type === null && $handler instanceof Closure) {
+            $this->eventHandlers[] = $handler;
+
+            return fn () => $this->off($handler);
+        }
+
         // Invalid call: type without handler
-        throw new \InvalidArgumentException('Handler must be provided when specifying an event type');
+        throw new InvalidArgumentException('Handler must be provided when specifying an event type');
     }
 
     /**

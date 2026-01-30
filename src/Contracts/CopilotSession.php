@@ -34,11 +34,11 @@ interface CopilotSession
      * When called with a single Closure argument, subscribes to all events.
      * When called with an event type and Closure, subscribes only to that specific event type.
      *
-     * @param  string|SessionEventType|Closure  $type  Event type to filter, or handler for all events
+     * @param  string|SessionEventType|Closure|null  $type  Event type to filter, or handler for all events
      * @param  Closure(SessionEvent): void|null  $handler  Handler when type is specified
      * @return Closure(): void Unsubscribe function
      */
-    public function on(string|SessionEventType|Closure $type, ?Closure $handler = null): Closure;
+    public function on(string|SessionEventType|Closure|null $type = null, ?Closure $handler = null): Closure;
 
     /**
      * Unsubscribe from events.

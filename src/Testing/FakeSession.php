@@ -53,7 +53,7 @@ class FakeSession implements CopilotSession
         return $this->sequence->pop();
     }
 
-    public function on(string|SessionEventType|Closure $type, ?Closure $handler = null): Closure
+    public function on(string|SessionEventType|Closure|null $type = null, ?Closure $handler = null): Closure
     {
         return fn () => null;
     }

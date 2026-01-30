@@ -75,3 +75,24 @@ $session->on('assistant.message', function (SessionEvent $event): void {
     dump($event->content());
 });
 ```
+
+## すべてのイベントタイプを購読
+
+イベントタイプを指定しなければすべて購読。
+
+```php
+use Revolution\Copilot\Enums\SessionEventType;
+use Revolution\Copilot\Types\SessionEvent;
+
+$session->on(function (SessionEvent $event): void {
+});
+
+// 名前付き引数で指定もできるので
+$session->on(handler: function (SessionEvent $event): void {
+});
+
+// nullを許容する動的なタイプ指定も可能。
+$type = null;
+$session->on(type: $type, handler: function (SessionEvent $event): void {
+});
+```
