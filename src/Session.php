@@ -389,6 +389,7 @@ class Session implements CopilotSession
             throw new \RuntimeException('User input requested but no handler registered');
         }
 
+        /** @var UserInputResponse|array $result */
         $result = ($this->userInputHandler)($request, ['sessionId' => $this->sessionId]);
 
         return $result instanceof UserInputResponse
