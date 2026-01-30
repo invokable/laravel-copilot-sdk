@@ -196,16 +196,16 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `docs/jp/`以下に日本語ドキュメントを配置。英語の詳細なドキュメントは公式SDKにあるので日本語を中心に用意する。読めない言語でもCopilotに聞けばいいんだから。公式SDKのドキュメントとは関係なく細かい機能のドキュメントを書いていく。いずれまとめて英訳。
 
 ### docs/jp/
-- `ask-user.md`: User Input Requests。公式から翻訳。
-- `attachments.md`: File Attachments
+- `ask-user.md`(AI): User Input Requests。公式から翻訳。
+- `attachments.md`: File Attachments用のヘルパー。
 - `basic-usage.md`: Laravel流ではない公式SDKに沿った使い方
 - `currency.md`: Laravel の Concurrency を使った並行実行
-- `custom-provider.md`: カスタムプロバイダー（BYOK - Bring Your Own Key）の使い方。公式から翻訳。
+- `custom-provider.md`(AI): カスタムプロバイダー（BYOK - Bring Your Own Key）の使い方。公式から翻訳。
 - `events.md`: Laravel Event
 - `fake.md`: テスト用機能の使い方
 - `github-actions.md`: GitHub Actionsでの使い方
 - `github-token.md`: GitHubトークンの実行時切り替え
-- `hooks.md`: Session Hooks。公式から翻訳。
+- `hooks.md`(AI): Session Hooks。公式から翻訳。
 - `laravel-cloud.md`: Laravel Cloudでの使い方
 - `mcp.md`: MCPサーバーの使い方
 - `models.md`: 利用可能なモデル一覧
@@ -214,7 +214,7 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `resume.md`: セッションの再開方法
 - `send-on.md`: Session `on()`で途中のメッセージを受け取る
 - `session-event.md`: Laravel用に強化したSessionEventクラスの詳細
-- `tcp-mode.md`: TCPモードの使い方
+- `tcp-mode.md`(AI): TCPモードの使い方
 - `tools.md`: ツールの使い方
 
 ## Debugging
