@@ -64,6 +64,13 @@ class Client implements CopilotClient
     {
         // TCP mode: connect to existing server
         if (filled(data_get($options, 'cli_url'))) {
+            // Validate auth options with external server
+            if (filled(data_get($options, 'github_token')) || data_get($options, 'use_logged_in_user') !== null) {
+                throw new \InvalidArgumentException(
+                    'github_token and use_logged_in_user cannot be used with cli_url (external server manages its own auth)',
+                );
+            }
+
             $this->tcpMode = true;
             $this->transport = TcpTransport::fromUrl(data_get($options, 'cli_url'));
 
@@ -77,6 +84,8 @@ class Client implements CopilotClient
             'cwd' => data_get($options, 'cwd'),
             'logLevel' => data_get($options, 'log_level', 'info'),
             'env' => data_get($options, 'env'),
+            'githubToken' => data_get($options, 'github_token'),
+            'useLoggedInUser' => data_get($options, 'use_logged_in_user'),
         ]);
     }
 

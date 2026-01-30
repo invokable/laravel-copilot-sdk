@@ -3,11 +3,15 @@
 Socialiteなどを使って認証したユーザーごとのGitHubトークンを使ってCopilot CLIを実行する方法。
 
 > [!NOTE]
-> 実際に試せてない段階での情報。
 > Personal Access Tokenでは`Copilot Requests`の権限が必要なのでSocialiteでも同じはず。
 > Socialiteからトークンを取得できない場合はPersonal Access Tokenを直接入力してもらう方式にする。
 
 これが可能なのはstdioモードのみ。TCPモードはCopilot CLIが起動したままなので変更できない。
+TCPモード（cli_url）で`github_token`や`use_logged_in_user`を指定するとエラーになる。
+
+## github_token オプション
+
+SDKの公式オプション。トークンは環境変数`COPILOT_SDK_AUTH_TOKEN`経由でCLIに渡される。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -15,9 +19,7 @@ use Revolution\Copilot\Facades\Copilot;
 $config = array_merge(
     config('copilot'),
     [
-        'env' => [
-            'COPILOT_GITHUB_TOKEN' => $user->github_token,
-        ],
+        'github_token' => $user->github_token,
     ]
 );
 
@@ -26,4 +28,18 @@ $response = Copilot::useStdio($config)->run(prompt: '...');
 Copilot::stop();
 ```
 
-`COPILOT_GITHUB_TOKEN`は`GH_TOKEN`や`GITHUB_TOKEN`などすでに使っている環境変数を上書きする形で指定する。
+## use_logged_in_user オプション
+
+`github_token`を指定すると自動的に`use_logged_in_user`は`false`になる。
+これにより、CLIは保存されたOAuthトークンやgh CLI認証を使わず、明示的に渡されたトークンのみを使用する。
+
+明示的に`use_logged_in_user`を`true`にすることもできる。
+
+```php
+$config = [
+    'github_token' => $user->github_token,
+    'use_logged_in_user' => true, // 明示的に有効化
+];
+```
+
+`github_token`なしで`use_logged_in_user`を`false`にすると、`--no-auto-login`フラグが追加され、CLIは自動ログインを行わない。

@@ -87,4 +87,18 @@ describe('Client TCP Mode', function () {
         expect($errors)->toBe([])
             ->and($client->getState())->toBe(ConnectionState::DISCONNECTED);
     });
+
+    it('throws when github_token is used with cli_url', function () {
+        expect(fn () => new Client([
+            'cli_url' => 'tcp://127.0.0.1:12345',
+            'github_token' => 'gho_test_token',
+        ]))->toThrow(InvalidArgumentException::class, 'github_token and use_logged_in_user cannot be used with cli_url');
+    });
+
+    it('throws when use_logged_in_user is used with cli_url', function () {
+        expect(fn () => new Client([
+            'cli_url' => 'tcp://127.0.0.1:12345',
+            'use_logged_in_user' => false,
+        ]))->toThrow(InvalidArgumentException::class, 'github_token and use_logged_in_user cannot be used with cli_url');
+    });
 });

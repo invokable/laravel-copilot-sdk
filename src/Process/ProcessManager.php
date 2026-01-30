@@ -42,6 +42,8 @@ class ProcessManager
         protected ?string $cwd = null,
         protected string $logLevel = 'info',
         protected ?array $env = null,
+        protected ?string $githubToken = null,
+        protected ?bool $useLoggedInUser = null,
     ) {
         $this->cwd ??= getcwd() ?: null;
     }
@@ -154,10 +156,29 @@ class ProcessManager
         $env = array_merge(getenv(), $this->env ?? []);
         unset($env['NODE_DEBUG']);
 
+        // Set auth token in environment if provided
+        if (filled($this->githubToken)) {
+            $env['COPILOT_SDK_AUTH_TOKEN'] = $this->githubToken;
+        }
+
+        $args = ['--server', '--stdio', '--log-level', $this->logLevel];
+
+        // Add auth-related flags
+        if (filled($this->githubToken)) {
+            $args[] = '--auth-token-env';
+            $args[] = 'COPILOT_SDK_AUTH_TOKEN';
+        }
+
+        // Default useLoggedInUser to false when githubToken is provided
+        $useLoggedInUser = $this->useLoggedInUser ?? ($this->githubToken === null);
+        if (! $useLoggedInUser) {
+            $args[] = '--no-auto-login';
+        }
+
         $command = array_merge(
             [$this->cliPath],
             $this->cliArgs,
-            ['--server', '--stdio', '--log-level', $this->logLevel],
+            $args,
         );
 
         $rawProcess = proc_open(

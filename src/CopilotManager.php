@@ -144,6 +144,8 @@ class CopilotManager implements Factory
                     'cwd' => $this->config['cwd'] ?? base_path(),
                     'log_level' => $this->config['log_level'] ?? 'info',
                     'env' => $this->config['env'] ?? null,
+                    'github_token' => $this->config['github_token'] ?? null,
+                    'use_logged_in_user' => $this->config['use_logged_in_user'] ?? null,
                 ];
             }
 
@@ -174,7 +176,7 @@ class CopilotManager implements Factory
     /**
      * Configure the client to use stdio transport with given options.
      *
-     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array}  $config  Configuration options for stdio transport.
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool}  $config  Configuration options for stdio transport.
      */
     public function useStdio(?array $config = null): static
     {
@@ -188,6 +190,8 @@ class CopilotManager implements Factory
             'cwd',
             'log_level',
             'env',
+            'github_token',
+            'use_logged_in_user',
         ]));
 
         return $this;
