@@ -47,6 +47,32 @@ Your Application
 
 ClientやSessionは公式SDKを再現しつつLaravel流にCopilot Facadeを中心にした使い方。
 
+### JSON-RPC
+
+stdioやTCPを使ってJSON-RPC 2.0で通信。
+
+実際の生データはContent-Length付きの以下のようなフォーマット。
+
+リクエスト
+```
+Content-Length: {length}\r\n\r\n{"jsonrpc":"2.0","id":"uuid","method":"method.name","params":{}}
+```
+
+レスポンス
+```
+Content-Length: {length}\r\n\r\n{"jsonrpc":"2.0","id":"uuid","result":{}}
+```
+
+`StdioTransport`で一時的にブロッキングモードに切り替えてヘッダーを読み取っているのはこうしないと正常に読み取れないから。「fgets()を使う時はブロッキングモードにする」と覚えて今後の実装時にも注意する。
+
+```php
+// Temporarily set blocking mode for reading
+stream_set_blocking($this->stdout, true);
+
+// Read header line
+$headerLine = fgets($this->stdout);
+```
+
 ## 基本的な使い方
 
 一つのプロンプトを実行してすぐに結果を取得する。
