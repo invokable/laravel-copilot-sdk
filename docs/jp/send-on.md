@@ -58,3 +58,20 @@ Copilot::start(function (CopilotSession $session) {
     // dump($response->content());
 });
 ```
+
+## `on()`で特定のイベントタイプを指定
+
+SessionEventType enumか文字列でイベントタイプを指定すればそのイベントのみ購読できる。
+
+```php
+use Revolution\Copilot\Enums\SessionEventType;
+use Revolution\Copilot\Types\SessionEvent;
+
+$session->on(SessionEventType::ASSISTANT_MESSAGE, function (SessionEvent $event): void {
+    dump($event->content());
+});
+
+$session->on('assistant.message', function (SessionEvent $event): void {
+    dump($event->content());
+});
+```

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Contracts;
 
 use Closure;
+use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
@@ -30,10 +31,14 @@ interface CopilotSession
     /**
      * Subscribe to events from this session.
      *
-     * @param  Closure(SessionEvent): void  $handler
+     * When called with a single Closure argument, subscribes to all events.
+     * When called with an event type and Closure, subscribes only to that specific event type.
+     *
+     * @param  string|SessionEventType|Closure  $type  Event type to filter, or handler for all events
+     * @param  Closure(SessionEvent): void|null  $handler  Handler when type is specified
      * @return Closure(): void Unsubscribe function
      */
-    public function on(Closure $handler): Closure;
+    public function on(string|SessionEventType|Closure $type, ?Closure $handler = null): Closure;
 
     /**
      * Unsubscribe from events.

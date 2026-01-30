@@ -33,11 +33,18 @@ class Session implements CopilotSession
     use Macroable;
 
     /**
-     * Event handlers.
+     * Event handlers (wildcard).
      *
      * @var array<Closure(SessionEvent): void>
      */
     protected array $eventHandlers = [];
+
+    /**
+     * Typed event handlers.
+     *
+     * @var array<string, array<Closure(SessionEvent): void>>
+     */
+    protected array $typedEventHandlers = [];
 
     /**
      * Tool handlers.
@@ -265,14 +272,56 @@ class Session implements CopilotSession
     /**
      * Subscribe to events from this session.
      *
-     * @param  Closure(SessionEvent): void  $handler
+     * When called with a single Closure argument, subscribes to all events.
+     * When called with an event type and Closure, subscribes only to that specific event type.
+     *
+     * @param  string|SessionEventType|Closure  $type  Event type to filter, or handler for all events
+     * @param  Closure(SessionEvent): void|null  $handler  Handler when type is specified
      * @return Closure(): void Unsubscribe function
+     *
+     * @example Typed event subscription
+     * ```php
+     * $session->on(SessionEventType::ASSISTANT_MESSAGE, function (SessionEvent $event) {
+     *     echo $event->content();
+     * });
+     *
+     * $session->on('assistant.message_delta', function (SessionEvent $event) {
+     *     echo $event->data['deltaContent'] ?? '';
+     * });
+     * ```
+     * @example Wildcard subscription (all events)
+     * ```php
+     * $session->on(function (SessionEvent $event) {
+     *     echo $event->type();
+     * });
+     * ```
      */
-    public function on(Closure $handler): Closure
+    public function on(string|SessionEventType|Closure $type, ?Closure $handler = null): Closure
     {
-        $this->eventHandlers[] = $handler;
+        // Overload 1: on(type, handler) - typed event subscription
+        if ($handler !== null) {
+            $eventType = $type instanceof SessionEventType ? $type->value : (string) $type;
 
-        return fn () => $this->off($handler);
+            $this->typedEventHandlers[$eventType] ??= [];
+            $this->typedEventHandlers[$eventType][] = $handler;
+
+            return function () use ($eventType, $handler): void {
+                $this->typedEventHandlers[$eventType] = array_filter(
+                    $this->typedEventHandlers[$eventType] ?? [],
+                    fn ($h) => $h !== $handler,
+                );
+            };
+        }
+
+        // Overload 2: on(handler) - wildcard subscription
+        if ($type instanceof Closure) {
+            $this->eventHandlers[] = $type;
+
+            return fn () => $this->off($type);
+        }
+
+        // Invalid call: type without handler
+        throw new \InvalidArgumentException('Handler must be provided when specifying an event type');
     }
 
     /**
@@ -297,6 +346,19 @@ class Session implements CopilotSession
     {
         SessionEventReceived::dispatch($this->sessionId, $event);
 
+        // Dispatch to typed handlers for this specific event type
+        $eventType = $event->type();
+        if (isset($this->typedEventHandlers[$eventType])) {
+            foreach ($this->typedEventHandlers[$eventType] as $handler) {
+                try {
+                    $handler($event);
+                } catch (Throwable) {
+                    // Ignore handler errors
+                }
+            }
+        }
+
+        // Dispatch to wildcard handlers
         foreach ($this->eventHandlers as $handler) {
             try {
                 $handler($event);
@@ -475,6 +537,7 @@ class Session implements CopilotSession
         ]);
 
         $this->eventHandlers = [];
+        $this->typedEventHandlers = [];
         $this->toolHandlers = [];
         $this->permissionHandler = null;
         $this->userInputHandler = null;

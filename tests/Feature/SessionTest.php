@@ -117,6 +117,99 @@ describe('Session', function () {
         expect($callCount)->toBe(1); // Should not increase
     });
 
+    it('on with event type string filters events', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient);
+
+        $messageCallCount = 0;
+        $idleCallCount = 0;
+
+        $session->on('assistant.message', function () use (&$messageCallCount) {
+            $messageCallCount++;
+        });
+
+        $session->on('session.idle', function () use (&$idleCallCount) {
+            $idleCallCount++;
+        });
+
+        // Dispatch different event types
+        $session->dispatchEvent(SessionEvent::fromArray(['type' => 'assistant.message', 'data' => ['content' => 'Hi']]));
+        $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
+        $session->dispatchEvent(SessionEvent::fromArray(['type' => 'assistant.message_delta', 'data' => ['deltaContent' => 'partial']]));
+
+        expect($messageCallCount)->toBe(1)
+            ->and($idleCallCount)->toBe(1);
+    });
+
+    it('on with SessionEventType enum filters events', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient);
+
+        $messageCallCount = 0;
+        $receivedEvent = null;
+
+        $session->on(Revolution\Copilot\Enums\SessionEventType::ASSISTANT_MESSAGE, function (SessionEvent $event) use (&$messageCallCount, &$receivedEvent) {
+            $messageCallCount++;
+            $receivedEvent = $event;
+        });
+
+        $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
+        $session->dispatchEvent(SessionEvent::fromArray(['type' => 'assistant.message', 'data' => ['content' => 'Hello']]));
+
+        expect($messageCallCount)->toBe(1)
+            ->and($receivedEvent)->not->toBeNull()
+            ->and($receivedEvent->content())->toBe('Hello');
+    });
+
+    it('typed on unsubscribe removes handler', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient);
+
+        $callCount = 0;
+        $unsubscribe = $session->on('assistant.message', function () use (&$callCount) {
+            $callCount++;
+        });
+
+        $session->dispatchEvent(SessionEvent::fromArray(['type' => 'assistant.message', 'data' => ['content' => 'Hi']]));
+        expect($callCount)->toBe(1);
+
+        $unsubscribe();
+        $session->dispatchEvent(SessionEvent::fromArray(['type' => 'assistant.message', 'data' => ['content' => 'Hi again']]));
+        expect($callCount)->toBe(1); // Should not increase
+    });
+
+    it('typed and wildcard handlers both receive events', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient);
+
+        $typedCallCount = 0;
+        $wildcardCallCount = 0;
+
+        $session->on('assistant.message', function () use (&$typedCallCount) {
+            $typedCallCount++;
+        });
+
+        $session->on(function () use (&$wildcardCallCount) {
+            $wildcardCallCount++;
+        });
+
+        $session->dispatchEvent(SessionEvent::fromArray(['type' => 'assistant.message', 'data' => ['content' => 'Hi']]));
+        $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
+
+        // Typed handler only receives matching events
+        expect($typedCallCount)->toBe(1);
+        // Wildcard handler receives all events
+        expect($wildcardCallCount)->toBe(2);
+    });
+
+    it('on throws exception when type without handler', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient);
+
+        expect(fn () => $session->on('assistant.message'))
+            ->toThrow(InvalidArgumentException::class, 'Handler must be provided when specifying an event type');
+    });
+
     it('dispatchEvent ignores handler errors', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $session = new Session('test-session', $mockClient);

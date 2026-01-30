@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Testing;
 
 use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
@@ -52,7 +53,7 @@ class FakeSession implements CopilotSession
         return $this->sequence->pop();
     }
 
-    public function on(Closure $handler): Closure
+    public function on(string|SessionEventType|Closure $type, ?Closure $handler = null): Closure
     {
         return fn () => null;
     }
