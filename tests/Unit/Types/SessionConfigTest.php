@@ -5,11 +5,14 @@ declare(strict_types=1);
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
 
 describe('SessionConfig', function () {
     it('can be created from array with all fields', function () {
         $handler = fn () => true;
+        $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];
+        $preToolUseHook = fn () => null;
 
         $config = SessionConfig::fromArray([
             'sessionId' => 'test-session-id',
@@ -21,6 +24,9 @@ describe('SessionConfig', function () {
             'excludedTools' => ['edit'],
             'provider' => ['baseUrl' => 'https://api.example.com'],
             'onPermissionRequest' => $handler,
+            'onUserInputRequest' => $userInputHandler,
+            'hooks' => ['onPreToolUse' => $preToolUseHook],
+            'workingDirectory' => '/home/user/project',
             'streaming' => true,
             'mcpServers' => ['server1' => ['command' => 'npx']],
             'customAgents' => [['name' => 'agent1']],
@@ -38,6 +44,10 @@ describe('SessionConfig', function () {
             ->and($config->excludedTools)->toBe(['edit'])
             ->and($config->provider)->toBeInstanceOf(ProviderConfig::class)
             ->and($config->onPermissionRequest)->toBe($handler)
+            ->and($config->onUserInputRequest)->toBe($userInputHandler)
+            ->and($config->hooks)->toBeInstanceOf(SessionHooks::class)
+            ->and($config->hooks->onPreToolUse)->toBe($preToolUseHook)
+            ->and($config->workingDirectory)->toBe('/home/user/project')
             ->and($config->streaming)->toBeTrue()
             ->and($config->mcpServers)->toBe(['server1' => ['command' => 'npx']])
             ->and($config->customAgents)->toBe([['name' => 'agent1']])
@@ -60,6 +70,9 @@ describe('SessionConfig', function () {
             ->and($config->excludedTools)->toBeNull()
             ->and($config->provider)->toBeNull()
             ->and($config->onPermissionRequest)->toBeNull()
+            ->and($config->onUserInputRequest)->toBeNull()
+            ->and($config->hooks)->toBeNull()
+            ->and($config->workingDirectory)->toBeNull()
             ->and($config->streaming)->toBeNull()
             ->and($config->mcpServers)->toBeNull()
             ->and($config->customAgents)->toBeNull()
@@ -88,6 +101,8 @@ describe('SessionConfig', function () {
 
     it('can convert to array with all fields', function () {
         $handler = fn () => true;
+        $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];
+        $preToolUseHook = fn () => null;
 
         $config = new SessionConfig(
             sessionId: 'session-123',
@@ -99,6 +114,9 @@ describe('SessionConfig', function () {
             excludedTools: ['view'],
             provider: new ProviderConfig(baseUrl: 'https://api.test.com'),
             onPermissionRequest: $handler,
+            onUserInputRequest: $userInputHandler,
+            hooks: new SessionHooks(onPreToolUse: $preToolUseHook),
+            workingDirectory: '/home/user',
             streaming: false,
             mcpServers: ['server1' => ['command' => 'test']],
             customAgents: [['name' => 'agent1']],
@@ -118,6 +136,9 @@ describe('SessionConfig', function () {
             ->and($array['excludedTools'])->toBe(['view'])
             ->and($array['provider'])->toBe(['baseUrl' => 'https://api.test.com'])
             ->and($array['onPermissionRequest'])->toBe($handler)
+            ->and($array['onUserInputRequest'])->toBe($userInputHandler)
+            ->and($array['hooks'])->toBe(['onPreToolUse' => $preToolUseHook])
+            ->and($array['workingDirectory'])->toBe('/home/user')
             ->and($array['streaming'])->toBeFalse()
             ->and($array['mcpServers'])->toBe(['server1' => ['command' => 'test']])
             ->and($array['customAgents'])->toBe([['name' => 'agent1']])

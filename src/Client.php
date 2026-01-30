@@ -26,6 +26,7 @@ use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\SessionMetadata;
+use Revolution\Copilot\Types\UserInputRequest;
 use RuntimeException;
 use Throwable;
 
@@ -135,6 +136,16 @@ class Client implements CopilotClient
                 fn (array $params) => $this->handlePermissionRequest($params),
             );
 
+            $this->rpcClient->setRequestHandler(
+                'userInput.request',
+                fn (array $params) => $this->handleUserInputRequest($params),
+            );
+
+            $this->rpcClient->setRequestHandler(
+                'hooks.invoke',
+                fn (array $params) => $this->handleHooksInvoke($params),
+            );
+
             $this->state = ConnectionState::CONNECTED;
 
             // Verify protocol version
@@ -198,7 +209,7 @@ class Client implements CopilotClient
     /**
      * Create a new conversation session.
      *
-     * @param  SessionConfig|array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  SessionConfig|array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request?: callable, on_user_input_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws JsonRpcException
      */
@@ -215,6 +226,11 @@ class Client implements CopilotClient
             'parameters' => $tool['parameters'] ?? null,
         ], $tools);
 
+        $hooks = $config['hooks'] ?? null;
+        $hasHooks = $hooks !== null && ! empty(array_filter(
+            is_array($hooks) ? $hooks : $hooks->toArray(),
+        ));
+
         $response = $this->rpcClient->request('session.create', array_filter([
             'sessionId' => $config['sessionId'] ?? null,
             'model' => $config['model'] ?? null,
@@ -224,24 +240,38 @@ class Client implements CopilotClient
             'excludedTools' => $config['excludedTools'] ?? null,
             'provider' => $config['provider'] ?? null,
             'requestPermission' => isset($config['onPermissionRequest']),
+            'requestUserInput' => isset($config['onUserInputRequest']),
+            'hooks' => $hasHooks,
+            'workingDirectory' => $config['workingDirectory'] ?? null,
             'streaming' => $config['streaming'] ?? null,
             'mcpServers' => $config['mcpServers'] ?? null,
             'customAgents' => $config['customAgents'] ?? null,
             'configDir' => $config['configDir'] ?? null,
             'skillDirectories' => $config['skillDirectories'] ?? null,
             'disabledSkills' => $config['disabledSkills'] ?? null,
+            'infiniteSessions' => $config['infiniteSessions'] ?? null,
         ], fn ($v) => $v !== null));
 
         $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
+        $workspacePath = $response['workspacePath'] ?? null;
 
         $session = app(Session::class, [
             'sessionId' => $sessionId,
             'client' => $this->rpcClient,
+            'workspacePath' => $workspacePath,
         ]);
         $session->registerTools($tools);
 
         if (isset($config['onPermissionRequest']) && is_callable($config['onPermissionRequest'])) {
             $session->registerPermissionHandler($config['onPermissionRequest']);
+        }
+
+        if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
+            $session->registerUserInputHandler($config['onUserInputRequest']);
+        }
+
+        if ($hooks !== null) {
+            $session->registerHooks($hooks);
         }
 
         $this->sessions[$sessionId] = $session;
@@ -254,7 +284,7 @@ class Client implements CopilotClient
     /**
      * Resume an existing session.
      *
-     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request?: callable, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request?: callable, on_user_input_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws JsonRpcException
      */
@@ -271,28 +301,47 @@ class Client implements CopilotClient
             'parameters' => $tool['parameters'] ?? null,
         ], $tools);
 
+        $hooks = $config['hooks'] ?? null;
+        $hasHooks = $hooks !== null && ! empty(array_filter(
+            is_array($hooks) ? $hooks : $hooks->toArray(),
+        ));
+
         $response = $this->rpcClient->request('session.resume', array_filter([
             'sessionId' => $sessionId,
             'tools' => $toolsForRequest ?: null,
             'provider' => $config['provider'] ?? null,
             'requestPermission' => isset($config['onPermissionRequest']),
+            'requestUserInput' => isset($config['onUserInputRequest']),
+            'hooks' => $hasHooks,
+            'workingDirectory' => $config['workingDirectory'] ?? null,
             'streaming' => $config['streaming'] ?? null,
             'mcpServers' => $config['mcpServers'] ?? null,
             'customAgents' => $config['customAgents'] ?? null,
             'skillDirectories' => $config['skillDirectories'] ?? null,
             'disabledSkills' => $config['disabledSkills'] ?? null,
+            'disableResume' => $config['disableResume'] ?? null,
         ], fn ($v) => $v !== null));
 
         $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');
+        $workspacePath = $response['workspacePath'] ?? null;
 
         $session = app(Session::class, [
             'sessionId' => $resumedSessionId,
             'client' => $this->rpcClient,
+            'workspacePath' => $workspacePath,
         ]);
         $session->registerTools($tools);
 
         if (isset($config['onPermissionRequest']) && is_callable($config['onPermissionRequest'])) {
             $session->registerPermissionHandler($config['onPermissionRequest']);
+        }
+
+        if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
+            $session->registerUserInputHandler($config['onUserInputRequest']);
+        }
+
+        if ($hooks !== null) {
+            $session->registerHooks($hooks);
         }
 
         $this->sessions[$resumedSessionId] = $session;
@@ -571,5 +620,60 @@ class Client implements CopilotClient
         }
 
         return ['result' => $session->handlePermissionRequest($request)];
+    }
+
+    /**
+     * Handle user input requests from the server.
+     */
+    protected function handleUserInputRequest(array $params): array
+    {
+        $sessionId = $params['sessionId'] ?? null;
+        $question = $params['question'] ?? '';
+        $choices = $params['choices'] ?? null;
+        $allowFreeform = $params['allowFreeform'] ?? null;
+
+        if ($sessionId === null || $question === '') {
+            throw new \InvalidArgumentException('Invalid user input request payload');
+        }
+
+        $session = $this->sessions[$sessionId] ?? null;
+
+        if ($session === null) {
+            throw new RuntimeException("Session not found: {$sessionId}");
+        }
+
+        $request = new UserInputRequest(
+            question: $question,
+            choices: $choices,
+            allowFreeform: $allowFreeform,
+        );
+
+        $response = $session->handleUserInputRequest($request);
+
+        return $response->toArray();
+    }
+
+    /**
+     * Handle hooks invocation from the server.
+     */
+    protected function handleHooksInvoke(array $params): array
+    {
+        $sessionId = $params['sessionId'] ?? null;
+        $hookType = $params['hookType'] ?? '';
+        $input = $params['input'] ?? null;
+
+        if ($sessionId === null || $hookType === '') {
+            throw new \InvalidArgumentException('Invalid hooks invoke payload');
+        }
+
+        $session = $this->sessions[$sessionId] ?? null;
+
+        if ($session === null) {
+            throw new RuntimeException("Session not found: {$sessionId}");
+        }
+
+        $output = $session->handleHooksInvoke($hookType, $input);
+
+        return ['output' => $output];
     }
 }

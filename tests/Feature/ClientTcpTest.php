@@ -39,7 +39,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->twice();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()
@@ -68,7 +68,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('stop')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->twice();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()

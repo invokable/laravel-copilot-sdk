@@ -19,6 +19,9 @@ use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Support\PermissionRequestKind;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\SessionHooks;
+use Revolution\Copilot\Types\UserInputRequest;
+use Revolution\Copilot\Types\UserInputResponse;
 use Throwable;
 
 /**
@@ -49,6 +52,18 @@ class Session implements CopilotSession
      * @var Closure(array, array): array|null
      */
     protected ?Closure $permissionHandler = null;
+
+    /**
+     * User input handler.
+     *
+     * @var Closure(UserInputRequest, array): UserInputResponse|null
+     */
+    protected ?Closure $userInputHandler = null;
+
+    /**
+     * Session hooks.
+     */
+    protected ?SessionHooks $hooks = null;
 
     /**
      * Wait state: idle flag.
@@ -350,6 +365,83 @@ class Session implements CopilotSession
     }
 
     /**
+     * Register a user input handler.
+     *
+     * @param  Closure(UserInputRequest, array): UserInputResponse|null  $handler
+     *
+     * @internal
+     */
+    public function registerUserInputHandler(?Closure $handler): void
+    {
+        $this->userInputHandler = $handler;
+    }
+
+    /**
+     * Handle a user input request.
+     *
+     * @throws \RuntimeException
+     *
+     * @internal
+     */
+    public function handleUserInputRequest(UserInputRequest $request): UserInputResponse
+    {
+        if ($this->userInputHandler === null) {
+            throw new \RuntimeException('User input requested but no handler registered');
+        }
+
+        $result = ($this->userInputHandler)($request, ['sessionId' => $this->sessionId]);
+
+        return $result instanceof UserInputResponse
+            ? $result
+            : UserInputResponse::fromArray($result);
+    }
+
+    /**
+     * Register session hooks.
+     *
+     * @internal
+     */
+    public function registerHooks(SessionHooks|array|null $hooks): void
+    {
+        $this->hooks = $hooks instanceof SessionHooks
+            ? $hooks
+            : ($hooks !== null ? SessionHooks::fromArray($hooks) : null);
+    }
+
+    /**
+     * Handle a hooks invocation.
+     *
+     * @internal
+     */
+    public function handleHooksInvoke(string $hookType, mixed $input): mixed
+    {
+        if ($this->hooks === null) {
+            return null;
+        }
+
+        $handlerMap = [
+            'preToolUse' => $this->hooks->onPreToolUse,
+            'postToolUse' => $this->hooks->onPostToolUse,
+            'userPromptSubmitted' => $this->hooks->onUserPromptSubmitted,
+            'sessionStart' => $this->hooks->onSessionStart,
+            'sessionEnd' => $this->hooks->onSessionEnd,
+            'errorOccurred' => $this->hooks->onErrorOccurred,
+        ];
+
+        $handler = $handlerMap[$hookType] ?? null;
+
+        if ($handler === null) {
+            return null;
+        }
+
+        try {
+            return $handler($input, ['sessionId' => $this->sessionId]);
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
      * Get all messages from this session's history.
      *
      * @return array<SessionEvent>
@@ -384,6 +476,8 @@ class Session implements CopilotSession
         $this->eventHandlers = [];
         $this->toolHandlers = [];
         $this->permissionHandler = null;
+        $this->userInputHandler = null;
+        $this->hooks = null;
     }
 
     /**

@@ -57,6 +57,21 @@ readonly class SessionConfig implements Arrayable
          */
         public ?Closure $onPermissionRequest = null,
         /**
+         * Handler for user input requests from the agent.
+         * When provided, enables the ask_user tool allowing the agent to ask questions.
+         */
+        public ?Closure $onUserInputRequest = null,
+        /**
+         * Hook handlers for intercepting session lifecycle events.
+         * When provided, enables hooks callback allowing custom logic at various points.
+         */
+        public SessionHooks|array|null $hooks = null,
+        /**
+         * Working directory for the session.
+         * Tool operations will be relative to this directory.
+         */
+        public ?string $workingDirectory = null,
+        /**
          * Enable streaming of assistant message and reasoning chunks.
          * When true, ephemeral assistant.message_delta and assistant.reasoning_delta
          * events are sent as the response is generated.
@@ -113,6 +128,13 @@ readonly class SessionConfig implements Arrayable
                 : InfiniteSessionConfig::fromArray($data['infiniteSessions']);
         }
 
+        $hooks = null;
+        if (isset($data['hooks'])) {
+            $hooks = $data['hooks'] instanceof SessionHooks
+                ? $data['hooks']
+                : SessionHooks::fromArray($data['hooks']);
+        }
+
         return new self(
             sessionId: $data['sessionId'] ?? null,
             model: $data['model'] ?? null,
@@ -123,6 +145,9 @@ readonly class SessionConfig implements Arrayable
             excludedTools: $data['excludedTools'] ?? null,
             provider: $provider,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
+            onUserInputRequest: $data['onUserInputRequest'] ?? null,
+            hooks: $hooks,
+            workingDirectory: $data['workingDirectory'] ?? null,
             streaming: $data['streaming'] ?? null,
             mcpServers: $data['mcpServers'] ?? null,
             customAgents: $data['customAgents'] ?? null,
@@ -149,6 +174,10 @@ readonly class SessionConfig implements Arrayable
             ? $this->infiniteSessions->toArray()
             : $this->infiniteSessions;
 
+        $hooks = $this->hooks instanceof SessionHooks
+            ? $this->hooks->toArray()
+            : $this->hooks;
+
         return array_filter([
             'sessionId' => $this->sessionId,
             'model' => $this->model,
@@ -159,6 +188,9 @@ readonly class SessionConfig implements Arrayable
             'excludedTools' => $this->excludedTools,
             'provider' => $provider,
             'onPermissionRequest' => $this->onPermissionRequest,
+            'onUserInputRequest' => $this->onUserInputRequest,
+            'hooks' => $hooks,
+            'workingDirectory' => $this->workingDirectory,
             'streaming' => $this->streaming,
             'mcpServers' => $this->mcpServers,
             'customAgents' => $this->customAgents,

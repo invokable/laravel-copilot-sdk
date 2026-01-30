@@ -28,6 +28,21 @@ readonly class ResumeSessionConfig implements Arrayable
          */
         public ?Closure $onPermissionRequest = null,
         /**
+         * Handler for user input requests from the agent.
+         * When provided, enables the ask_user tool allowing the agent to ask questions.
+         */
+        public ?Closure $onUserInputRequest = null,
+        /**
+         * Hook handlers for intercepting session lifecycle events.
+         * When provided, enables hooks callback allowing custom logic at various points.
+         */
+        public SessionHooks|array|null $hooks = null,
+        /**
+         * Working directory for the session.
+         * Tool operations will be relative to this directory.
+         */
+        public ?string $workingDirectory = null,
+        /**
          * Enable streaming of assistant message and reasoning chunks.
          * When true, ephemeral assistant.message_delta and assistant.reasoning_delta
          * events are sent as the response is generated.
@@ -50,6 +65,13 @@ readonly class ResumeSessionConfig implements Arrayable
          * List of skill names to disable.
          */
         public ?array $disabledSkills = null,
+        /**
+         * When true, skips emitting the session.resume event.
+         * Useful for reconnecting to a session without triggering resume-related side effects.
+         *
+         * @default false
+         */
+        public ?bool $disableResume = null,
     ) {}
 
     /**
@@ -64,15 +86,26 @@ readonly class ResumeSessionConfig implements Arrayable
                 : ProviderConfig::fromArray($data['provider']);
         }
 
+        $hooks = null;
+        if (isset($data['hooks'])) {
+            $hooks = $data['hooks'] instanceof SessionHooks
+                ? $data['hooks']
+                : SessionHooks::fromArray($data['hooks']);
+        }
+
         return new self(
             tools: $data['tools'] ?? null,
             provider: $provider,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
+            onUserInputRequest: $data['onUserInputRequest'] ?? null,
+            hooks: $hooks,
+            workingDirectory: $data['workingDirectory'] ?? null,
             streaming: $data['streaming'] ?? null,
             mcpServers: $data['mcpServers'] ?? null,
             customAgents: $data['customAgents'] ?? null,
             skillDirectories: $data['skillDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
+            disableResume: $data['disableResume'] ?? null,
         );
     }
 
@@ -85,15 +118,23 @@ readonly class ResumeSessionConfig implements Arrayable
             ? $this->provider->toArray()
             : $this->provider;
 
+        $hooks = $this->hooks instanceof SessionHooks
+            ? $this->hooks->toArray()
+            : $this->hooks;
+
         return array_filter([
             'tools' => $this->tools,
             'provider' => $provider,
             'onPermissionRequest' => $this->onPermissionRequest,
+            'onUserInputRequest' => $this->onUserInputRequest,
+            'hooks' => $hooks,
+            'workingDirectory' => $this->workingDirectory,
             'streaming' => $this->streaming,
             'mcpServers' => $this->mcpServers,
             'customAgents' => $this->customAgents,
             'skillDirectories' => $this->skillDirectories,
             'disabledSkills' => $this->disabledSkills,
+            'disableResume' => $this->disableResume,
         ], fn ($value) => $value !== null);
     }
 }

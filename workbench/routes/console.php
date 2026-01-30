@@ -254,3 +254,105 @@ Artisan::command('copilot:mcp', function () {
         note($response->content());
     }, config: $config);
 })->purpose('Copilot MCP testing command');
+
+// vendor/bin/testbench copilot:ask-user
+Artisan::command('copilot:ask-user', function () {
+    $config = new SessionConfig(
+        onUserInputRequest: function (\Revolution\Copilot\Types\UserInputRequest $request, array $invocation) {
+            dump('User input requested:', $request->toArray());
+
+            if (! empty($request->choices)) {
+                $answer = select(
+                    label: $request->question,
+                    options: $request->choices,
+                );
+            } else {
+                $answer = text(
+                    label: $request->question,
+                    required: true,
+                );
+            }
+
+            return new \Revolution\Copilot\Types\UserInputResponse(
+                answer: $answer,
+                wasFreeform: empty($request->choices),
+            );
+        },
+    );
+
+    Copilot::start(function (CopilotSession $session) {
+        info('Starting Copilot with ask_user: '.$session->id());
+
+        // ask_userツールを使うようにプロンプトで指示
+        $prompt = 'Use the ask_user tool to ask me what programming language I prefer. '.
+            'Provide choices: PHP, Python, JavaScript, Go. '.
+            'Then tell me something interesting about the language I choose.';
+
+        warning($prompt);
+
+        $response = spin(
+            callback: fn () => $session->sendAndWait($prompt),
+            message: 'Thinking...',
+        );
+
+        note($response->content());
+    }, config: $config);
+})->purpose('Copilot ask_user (user input) testing command');
+
+// vendor/bin/testbench copilot:hooks
+Artisan::command('copilot:hooks', function () {
+    $config = new SessionConfig(
+        hooks: new \Revolution\Copilot\Types\SessionHooks(
+            onPreToolUse: function (mixed $input, array $invocation) {
+                info('[Hook] Pre-tool-use: '.($input['toolName'] ?? 'unknown'));
+                dump('Input:', $input);
+
+                // ツール実行を許可
+                return new \Revolution\Copilot\Types\Hooks\PreToolUseHookOutput(
+                    permissionDecision: 'allow',
+                );
+            },
+            onPostToolUse: function (mixed $input, array $invocation) {
+                info('[Hook] Post-tool-use: '.($input['toolName'] ?? 'unknown'));
+
+                return null; // 変更なし
+            },
+            onUserPromptSubmitted: function (mixed $input, array $invocation) {
+                info('[Hook] User prompt submitted');
+                dump('Prompt:', $input['prompt'] ?? '');
+
+                return null;
+            },
+            onSessionStart: function (mixed $input, array $invocation) {
+                info('[Hook] Session started: '.($input['source'] ?? 'unknown'));
+
+                return null;
+            },
+            onSessionEnd: function (mixed $input, array $invocation) {
+                info('[Hook] Session ended: '.($input['reason'] ?? 'unknown'));
+
+                return null;
+            },
+            onErrorOccurred: function (mixed $input, array $invocation) {
+                error('[Hook] Error occurred: '.($input['error'] ?? 'unknown'));
+
+                return null;
+            },
+        ),
+    );
+
+    Copilot::start(function (CopilotSession $session) {
+        info('Starting Copilot with hooks: '.$session->id());
+
+        $prompt = 'What is 2 + 2? Just give me the number.';
+
+        warning($prompt);
+
+        $response = spin(
+            callback: fn () => $session->sendAndWait($prompt),
+            message: 'Thinking...',
+        );
+
+        note($response->content());
+    }, config: $config);
+})->purpose('Copilot hooks testing command');
