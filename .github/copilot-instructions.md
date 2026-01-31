@@ -164,8 +164,9 @@ src/
     ├── ProviderConfig.php
     ├── ResumeSessionConfig.php
     ├── SessionConfig.php
-    ├── SessionEvent.php
-    └── SystemMessageConfig.php
+    ├── SessionEvent.php        # Laravel用に強化したSessionEventクラス
+    ├── SystemMessageConfig.php
+    └── ...other types...
 ```
 
 ### Types
