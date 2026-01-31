@@ -60,6 +60,13 @@ class Client implements CopilotClient
     protected array $sessions = [];
 
     /**
+     * Cached models list.
+     *
+     * @var array<ModelInfo>|null
+     */
+    protected ?array $modelsCache = null;
+
+    /**
      * Create a new CopilotClient.
      */
     public function __construct(array $options = [])
@@ -193,6 +200,9 @@ class Client implements CopilotClient
         } else {
             $this->processManager?->stop();
         }
+
+        // Clear models cache
+        $this->modelsCache = null;
 
         $this->state = ConnectionState::DISCONNECTED;
 
@@ -412,6 +422,9 @@ class Client implements CopilotClient
     /**
      * List available models with their metadata.
      *
+     * Results are cached after the first successful call to avoid rate limiting.
+     * The cache is cleared when the client disconnects.
+     *
      * @return array<ModelInfo>
      *
      * @throws JsonRpcException
@@ -420,11 +433,29 @@ class Client implements CopilotClient
     {
         $this->ensureConnected();
 
-        $response = $this->rpcClient->request('models.list', []);
+        // Check if models are already cached
+        if ($this->modelsCache !== null) {
+            // Return a defensive copy to prevent external mutation
+            return array_map(
+                fn (ModelInfo $model) => ModelInfo::fromArray($model->toArray()),
+                $this->modelsCache,
+            );
+        }
 
-        return array_map(
+        // Cache miss - fetch from backend
+        $response = $this->rpcClient->request('models.list', []);
+        $modelsData = $response['models'] ?? [];
+
+        // Store as ModelInfo objects in cache
+        $this->modelsCache = array_map(
             fn (array $model) => ModelInfo::fromArray($model),
-            $response['models'] ?? [],
+            $modelsData,
+        );
+
+        // Return a defensive copy to prevent external mutation
+        return array_map(
+            fn (ModelInfo $model) => ModelInfo::fromArray($model->toArray()),
+            $this->modelsCache,
         );
     }
 
