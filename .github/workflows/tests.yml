@@ -46,7 +46,7 @@ jobs:
         run: composer run test:coverage
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          COPILOT_CLI_PATH: "null"
+          COPILOT_CLI_PATH: "gh copilot"
 
       - name: Code Coverage
         uses: qltysh/qlty-action/coverage@v1
