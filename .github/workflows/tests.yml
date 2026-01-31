@@ -36,7 +36,7 @@ jobs:
 
       - name: Install Copilot CLI
         run: |
-          curl -fsSL https://gh.io/copilot-install | bash
+          #curl -fsSL https://gh.io/copilot-install | bash
           gh --version
           gh copilot version
           copilot version
