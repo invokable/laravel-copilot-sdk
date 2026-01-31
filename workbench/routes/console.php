@@ -233,9 +233,6 @@ Artisan::command('copilot:models', function () {
 
 // vendor/bin/testbench copilot:mcp
 Artisan::command('copilot:mcp', function () {
-    //    $mcp = json_decode(file_get_contents(__DIR__.'/../../.github/mcp-config.json'), true)['mcpServers'] ?? [];
-    //    dump($mcp);
-
     $config = new SessionConfig(
         mcpServers: [
             'laravel-boost' => [
