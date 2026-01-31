@@ -357,10 +357,15 @@ The `SessionConfig` class supports many options:
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SystemMessageConfig;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
+use Revolution\Copilot\Types\UserInputRequest;
+use Revolution\Copilot\Enums\ReasoningEffort;
 
 $config = new SessionConfig(
     // Specify a model
-    model: 'gpt-4.1',
+    model: 'claude-opus-4.5',
+
+    // Reasoning effort level for models that support it.
+    reasoningEffort: ReasoningEffort::HIGH,
 
     // Custom tools
     tools: [...],
@@ -369,6 +374,17 @@ $config = new SessionConfig(
     systemMessage: new SystemMessageConfig(
         content: 'You are a helpful assistant for Laravel developers.',
     ),
+
+    onPermissionRequest: function (array $request) {
+        // Handle permission requests
+    },
+
+    onUserInputRequest: function (UserInputRequest $request) {
+        // Handle user input requests
+    },
+
+    // Session Hooks
+    hooks: [],
 
     // Enable streaming
     streaming: true,
