@@ -52,9 +52,8 @@ Artisan::command('copilot:chat {--resume}', function () {
     $mcp = json_decode(file_get_contents(__DIR__.'/../../.github/mcp-config.json'), true)['mcpServers'] ?? [];
 
     $config = new SessionConfig(
-        // availableTools: [],
         onPermissionRequest: function (array $request, array $invocation) {
-            dump($request);
+            info($request['intention'] ?? 'Permission requested');
             $confirm = confirm(
                 label: 'Do you accept the requested permissions?',
             );
@@ -361,3 +360,34 @@ Artisan::command('copilot:hooks', function () {
         note($response->content());
     }, config: $config);
 })->purpose('Copilot hooks testing command');
+
+// vendor/bin/testbench copilot:streaming
+// vendor/bin/testbench copilot:streaming --resume=
+Artisan::command('copilot:streaming {--resume=}', function () {
+    $config = new SessionConfig(
+        streaming: true,
+    );
+
+    Copilot::start(function (CopilotSession $session) {
+        info('Starting Copilot with streaming: '.$session->id());
+
+        $session->on(function (SessionEvent $event): void {
+            if ($event->isAssistantMessageDelta()) {
+                // deltaで小分けにされたメッセージが届くので改行など何も追加せずにそのまま表示。流暢な表示が実現できる。
+                echo $event->deltaContent();
+            }
+        });
+
+        while (true) {
+            $prompt = text(
+                label: 'Enter your prompt',
+                placeholder: 'Ask me anything...',
+                required: true,
+                hint: 'Ctrl+C to exit',
+            );
+
+            // streaming=trueの場合はspinは使わない。delta間で余計なスピナーやメッセージを表示してしまう。
+            $session->sendAndWait($prompt);
+        }
+    }, config: $config, resume: $this->option('resume'));
+})->purpose('Copilot streaming');
