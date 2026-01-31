@@ -38,8 +38,9 @@ jobs:
         run: |
           curl -fsSL https://gh.io/copilot-install | bash
           gh --version
-          #gh copilot
-          copilot --version
+          gh copilot
+          gh copilot version
+          copilot version
 
       - name: Execute tests
         run: composer run test:coverage
