@@ -147,6 +147,11 @@ class ProcessManager
             $this->cliPath = (new ExecutableFinder)->find(name: 'copilot', default: 'copilot');
         }
 
+        if ($this->cliPath === 'gh copilot') {
+            $this->cliPath = 'gh';
+            array_unshift($this->cliArgs, 'copilot');
+        }
+
         $descriptorSpec = [
             0 => ['pipe', 'r'],  // stdin
             1 => ['pipe', 'w'],  // stdout
