@@ -74,6 +74,16 @@ readonly class SessionEvent implements Arrayable, Jsonable
         return $this->type === SessionEventType::USER_MESSAGE;
     }
 
+    public function isAssistantReasoning(): bool
+    {
+        return $this->type === SessionEventType::ASSISTANT_REASONING;
+    }
+
+    public function isAssistantReasoningDelta(): bool
+    {
+        return $this->type === SessionEventType::ASSISTANT_REASONING_DELTA;
+    }
+
     /**
      * Check if this is a session idle event.
      */
