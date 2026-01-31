@@ -36,13 +36,6 @@ readonly class ModelInfo implements Arrayable
      */
     public static function fromArray(array $data): self
     {
-        $defaultReasoningEffort = null;
-        if (isset($data['defaultReasoningEffort'])) {
-            $defaultReasoningEffort = is_string($data['defaultReasoningEffort'])
-                ? $data['defaultReasoningEffort']
-                : $data['defaultReasoningEffort'];
-        }
-
         return new self(
             id: $data['id'],
             name: $data['name'],
@@ -50,7 +43,7 @@ readonly class ModelInfo implements Arrayable
             policy: isset($data['policy']) ? ModelPolicy::fromArray($data['policy']) : null,
             billing: isset($data['billing']) ? ModelBilling::fromArray($data['billing']) : null,
             supportedReasoningEfforts: $data['supportedReasoningEfforts'] ?? null,
-            defaultReasoningEffort: $defaultReasoningEffort,
+            defaultReasoningEffort: $data['defaultReasoningEffort'] ?? null,
         );
     }
 
