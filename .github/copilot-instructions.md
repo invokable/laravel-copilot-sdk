@@ -121,6 +121,7 @@ src/
 │   └── Factory.php             # CopilotManagerのインターフェース
 ├── Enums/
 │   ├── ConnectionState.php
+│   ├── ReasoningEffort.php
 │   └── SessionEventType.php
 ├── Events/
 │   ├── Client/
@@ -151,7 +152,8 @@ src/
 ├── Process/
 │   ├── ProcessManager.php      # CLIプロセス管理
 │   └── ProcessWrapper.php
-├── Support/
+├── Support/                     # 分類しにくいヘルパークラス
+│   ├── Attachment.php
 │   └── PermissionRequestKind.php
 ├── Testing/
 │   ├── CopilotFake.php         # テスト用モック
