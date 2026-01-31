@@ -2,6 +2,14 @@
 
 `Copilot::client()->listModels()`でCopilot CLIがサポートしているモデルの一覧を取得できる。
 
+## キャッシュ
+
+モデルリストは最初の呼び出し後にメモリ内にキャッシュされ、レート制限を回避します。キャッシュはクライアントの切断時（`stop()`メソッド呼び出し時）にクリアされます。
+
+これは公式SDKの[PR #300](https://github.com/github/copilot-sdk/pull/300)で導入された機能で、並行処理下でのレート制限エラーを防ぐために実装されています。
+
+## モデルIDの指定
+
 SessionConfigの`model`に指定するのは`ID`の方。
 
 ```php
