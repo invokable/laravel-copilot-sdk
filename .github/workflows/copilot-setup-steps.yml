@@ -38,3 +38,8 @@ jobs:
       - name: Install Composer dependencies
         run: |
           composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install Copilot CLI
+        run: |
+          curl -fsSL https://gh.io/copilot-install | bash
+          copilot version
