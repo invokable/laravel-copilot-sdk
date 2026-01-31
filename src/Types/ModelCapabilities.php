@@ -48,6 +48,14 @@ readonly class ModelCapabilities implements Arrayable
     }
 
     /**
+     * Check if structured outputs are supported.
+     */
+    public function supportsStructuredOutputs(): bool
+    {
+        return $this->supports['structured_outputs'] ?? false;
+    }
+
+    /**
      * Get max context window tokens.
      */
     public function maxContextWindowTokens(): int
