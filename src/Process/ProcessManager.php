@@ -147,6 +147,7 @@ class ProcessManager
             $this->cliPath = (new ExecutableFinder)->find(name: 'copilot', default: 'copilot');
         }
 
+        // Handle 'gh copilot' case
         if ($this->cliPath === 'gh copilot') {
             $this->cliPath = 'gh';
             array_unshift($this->cliArgs, 'copilot');
