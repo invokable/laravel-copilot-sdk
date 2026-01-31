@@ -56,6 +56,8 @@ test('client listModels should cache results', function () {
     $models1 = $client->listModels();
     expect($models1)->toBeArray();
 
+    Copilot::preventStrayRequests();
+
     // Second call should return from cache (different array but same content)
     $models2 = $client->listModels();
     expect($models2)->toBeArray()
@@ -65,6 +67,8 @@ test('client listModels should cache results', function () {
     if (count($models1) > 0) {
         expect($models1[0]->id)->toBe($models2[0]->id); // Cached models should match
     }
+
+    Copilot::preventStrayRequests(false);
 
     // After stopping, cache should be cleared
     $client->stop();

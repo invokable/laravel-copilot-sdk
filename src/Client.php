@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use Revolution\Copilot\Contracts\CopilotClient;
@@ -30,6 +32,8 @@ use Revolution\Copilot\Types\ToolResultObject;
 use Revolution\Copilot\Types\UserInputRequest;
 use RuntimeException;
 use Throwable;
+
+use function Illuminate\Support\defer;
 
 /**
  * Main client for interacting with the Copilot CLI.
@@ -60,16 +64,9 @@ class Client implements CopilotClient
     protected array $sessions = [];
 
     /**
-     * Cached models list.
-     *
-     * @var array<ModelInfo>|null
-     */
-    protected ?array $modelsCache = null;
-
-    /**
      * Create a new CopilotClient.
      */
-    public function __construct(array $options = [])
+    public function __construct(protected array $options = [])
     {
         // TCP mode: connect to existing server
         if (filled(data_get($options, 'cli_url'))) {
@@ -200,9 +197,6 @@ class Client implements CopilotClient
         } else {
             $this->processManager?->stop();
         }
-
-        // Clear models cache
-        $this->modelsCache = null;
 
         $this->state = ConnectionState::DISCONNECTED;
 
@@ -427,35 +421,28 @@ class Client implements CopilotClient
      *
      * @return array<ModelInfo>
      *
-     * @throws JsonRpcException
+     * @throws JsonRpcException|LockTimeoutException
      */
     public function listModels(): array
     {
         $this->ensureConnected();
 
-        // Check if models are already cached
-        if ($this->modelsCache !== null) {
-            // Return a defensive copy to prevent external mutation
-            return array_map(
-                fn (ModelInfo $model) => ModelInfo::fromArray($model->toArray()),
-                $this->modelsCache,
-            );
-        }
+        // Create a cache key based on options to prevent conflicts between different users' settings.
+        $cache_key = md5(json_encode($this->options));
 
-        // Cache miss - fetch from backend
-        $response = $this->rpcClient->request('models.list', []);
-        $modelsData = $response['models'] ?? [];
+        $modelsData = Cache::lock('copilot-models-lock', 10)->block(5, function () use ($cache_key) {
+            return Cache::remember('copilot-models-cache:'.$cache_key, now()->plus(minutes: 5), function () {
+                $response = $this->rpcClient->request('models.list');
 
-        // Store as ModelInfo objects in cache
-        $this->modelsCache = array_map(
+                return $response['models'] ?? [];
+            });
+        });
+
+        defer(fn () => Cache::forget('copilot-models-cache:'.$cache_key));
+
+        return array_map(
             fn (array $model) => ModelInfo::fromArray($model),
             $modelsData,
-        );
-
-        // Return a defensive copy to prevent external mutation
-        return array_map(
-            fn (ModelInfo $model) => ModelInfo::fromArray($model->toArray()),
-            $this->modelsCache,
         );
     }
 
