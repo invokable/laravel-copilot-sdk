@@ -2,6 +2,8 @@
 
 GitHub ActionsでArtisanコマンドを実行してその中でCopilot CLIを使う例。
 
+GitHub Actionsではstdioモードで使うのが一般的。
+
 ## `copilot`コマンドを直接インストールする場合
 
 ```yaml
@@ -24,9 +26,9 @@ GitHub ActionsでArtisanコマンドを実行してその中でCopilot CLIを使
 
 GitHub CLI 2.86.0 でcopilotのインストール機能が追加。普通のGitHub Actions環境では`gh`コマンドがプリインストールされているので追加のインストール不要で使える。おそらく最初に`gh copilot ...`コマンドが実行された時にcopilotが自動でインストールされるので`gh copilot version`だけ実行。
 
-> gh version 2.86.0 (2026-01-21)
-> https://github.com/cli/cli/releases/tag/v2.86.0
-> ✓ Copilot CLI installed successfully
+> gh version 2.86.0 (2026-01-21)  
+> https://github.com/cli/cli/releases/tag/v2.86.0  
+> ✓ Copilot CLI installed successfully  
 
 ```yaml
       - name: Install Copilot CLI
