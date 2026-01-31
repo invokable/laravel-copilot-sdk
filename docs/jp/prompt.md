@@ -22,3 +22,5 @@ echo $response->content();
 $response = Copilot::run('次の文章を英語に翻訳してください。翻訳結果を<translated>タグで囲んで一番最後のアシスタントメッセージとして送ってください。<translated>AIの応答を含まない翻訳結果</translated>');
 $content = Str::of($response->content())->between('<translated>','</translated>')->trim()->toString();
 ```
+
+Structured Outputsに対応してるのはOpenAIのモデルのみなので他モデルではプロンプトで指示。Copilot SDKではStructured Outputsを指定する方法がまだなさそう。
