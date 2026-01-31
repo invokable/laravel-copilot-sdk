@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Types;
 
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\ReasoningEffort;
 
 /**
  * Configuration for resuming a session.
@@ -13,6 +14,12 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class ResumeSessionConfig implements Arrayable
 {
     public function __construct(
+        /**
+         * Reasoning effort level for models that support it.
+         * Only valid for models where capabilities.supports.reasoningEffort is true.
+         * Accepts either ReasoningEffort enum or string value.
+         */
+        public ReasoningEffort|string|null $reasoningEffort = null,
         /**
          * Tools exposed to the CLI server.
          */
@@ -79,6 +86,13 @@ readonly class ResumeSessionConfig implements Arrayable
      */
     public static function fromArray(array $data): self
     {
+        $reasoningEffort = null;
+        if (isset($data['reasoningEffort'])) {
+            $reasoningEffort = $data['reasoningEffort'] instanceof ReasoningEffort
+                ? $data['reasoningEffort']
+                : $data['reasoningEffort'];
+        }
+
         $provider = null;
         if (isset($data['provider'])) {
             $provider = $data['provider'] instanceof ProviderConfig
@@ -94,6 +108,7 @@ readonly class ResumeSessionConfig implements Arrayable
         }
 
         return new self(
+            reasoningEffort: $reasoningEffort,
             tools: $data['tools'] ?? null,
             provider: $provider,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
@@ -114,6 +129,10 @@ readonly class ResumeSessionConfig implements Arrayable
      */
     public function toArray(): array
     {
+        $reasoningEffort = $this->reasoningEffort instanceof ReasoningEffort
+            ? $this->reasoningEffort->value
+            : $this->reasoningEffort;
+
         $provider = $this->provider instanceof ProviderConfig
             ? $this->provider->toArray()
             : $this->provider;
@@ -123,6 +142,7 @@ readonly class ResumeSessionConfig implements Arrayable
             : $this->hooks;
 
         return array_filter([
+            'reasoningEffort' => $reasoningEffort,
             'tools' => $this->tools,
             'provider' => $provider,
             'onPermissionRequest' => $this->onPermissionRequest,
