@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\SessionConfig;
@@ -199,5 +200,57 @@ describe('SessionConfig', function () {
         $config = new SessionConfig;
 
         expect($config)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+    });
+
+    it('accepts reasoningEffort as enum', function () {
+        $config = new SessionConfig(
+            reasoningEffort: ReasoningEffort::HIGH,
+        );
+
+        expect($config->reasoningEffort)->toBe(ReasoningEffort::HIGH);
+    });
+
+    it('accepts reasoningEffort as string', function () {
+        $config = new SessionConfig(
+            reasoningEffort: 'medium',
+        );
+
+        expect($config->reasoningEffort)->toBe('medium');
+    });
+
+    it('converts reasoningEffort enum to string in toArray', function () {
+        $config = new SessionConfig(
+            reasoningEffort: ReasoningEffort::XHIGH,
+        );
+
+        $array = $config->toArray();
+
+        expect($array['reasoningEffort'])->toBe('xhigh');
+    });
+
+    it('preserves reasoningEffort string in toArray', function () {
+        $config = new SessionConfig(
+            reasoningEffort: 'low',
+        );
+
+        $array = $config->toArray();
+
+        expect($array['reasoningEffort'])->toBe('low');
+    });
+
+    it('can be created from array with reasoningEffort as string', function () {
+        $config = SessionConfig::fromArray([
+            'reasoningEffort' => 'high',
+        ]);
+
+        expect($config->reasoningEffort)->toBe('high');
+    });
+
+    it('preserves reasoningEffort enum when passed to fromArray', function () {
+        $config = SessionConfig::fromArray([
+            'reasoningEffort' => ReasoningEffort::MEDIUM,
+        ]);
+
+        expect($config->reasoningEffort)->toBe(ReasoningEffort::MEDIUM);
     });
 });

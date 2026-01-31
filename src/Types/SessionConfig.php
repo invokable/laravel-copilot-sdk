@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Types;
 
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\ReasoningEffort;
 
 /**
  * Configuration for creating a session.
@@ -22,6 +23,13 @@ readonly class SessionConfig implements Arrayable
          * Model to use for this session.
          */
         public ?string $model = null,
+        /**
+         * Reasoning effort level for models that support it.
+         * Only valid for models where capabilities.supports.reasoningEffort is true.
+         * Use client.listModels() to check supported values for each model.
+         * Accepts either ReasoningEffort enum or string value.
+         */
+        public ReasoningEffort|string|null $reasoningEffort = null,
         /**
          * Override the default configuration directory location.
          * When specified, the session will use this directory for storing config and state.
@@ -135,9 +143,17 @@ readonly class SessionConfig implements Arrayable
                 : SessionHooks::fromArray($data['hooks']);
         }
 
+        $reasoningEffort = null;
+        if (isset($data['reasoningEffort'])) {
+            $reasoningEffort = $data['reasoningEffort'] instanceof ReasoningEffort
+                ? $data['reasoningEffort']
+                : $data['reasoningEffort'];
+        }
+
         return new self(
             sessionId: $data['sessionId'] ?? null,
             model: $data['model'] ?? null,
+            reasoningEffort: $reasoningEffort,
             configDir: $data['configDir'] ?? null,
             tools: $data['tools'] ?? null,
             systemMessage: $systemMessage,
@@ -162,6 +178,10 @@ readonly class SessionConfig implements Arrayable
      */
     public function toArray(): array
     {
+        $reasoningEffort = $this->reasoningEffort instanceof ReasoningEffort
+            ? $this->reasoningEffort->value
+            : $this->reasoningEffort;
+
         $systemMessage = $this->systemMessage instanceof SystemMessageConfig
             ? $this->systemMessage->toArray()
             : $this->systemMessage;
@@ -181,6 +201,7 @@ readonly class SessionConfig implements Arrayable
         return array_filter([
             'sessionId' => $this->sessionId,
             'model' => $this->model,
+            'reasoningEffort' => $reasoningEffort,
             'configDir' => $this->configDir,
             'tools' => $this->tools,
             'systemMessage' => $systemMessage,

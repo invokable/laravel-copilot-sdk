@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionHooks;
@@ -134,5 +135,57 @@ describe('ResumeSessionConfig', function () {
         $config = new ResumeSessionConfig;
 
         expect($config)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+    });
+
+    it('accepts reasoningEffort as enum', function () {
+        $config = new ResumeSessionConfig(
+            reasoningEffort: ReasoningEffort::HIGH,
+        );
+
+        expect($config->reasoningEffort)->toBe(ReasoningEffort::HIGH);
+    });
+
+    it('accepts reasoningEffort as string', function () {
+        $config = new ResumeSessionConfig(
+            reasoningEffort: 'medium',
+        );
+
+        expect($config->reasoningEffort)->toBe('medium');
+    });
+
+    it('converts reasoningEffort enum to string in toArray', function () {
+        $config = new ResumeSessionConfig(
+            reasoningEffort: ReasoningEffort::XHIGH,
+        );
+
+        $array = $config->toArray();
+
+        expect($array['reasoningEffort'])->toBe('xhigh');
+    });
+
+    it('preserves reasoningEffort string in toArray', function () {
+        $config = new ResumeSessionConfig(
+            reasoningEffort: 'low',
+        );
+
+        $array = $config->toArray();
+
+        expect($array['reasoningEffort'])->toBe('low');
+    });
+
+    it('can be created from array with reasoningEffort as string', function () {
+        $config = ResumeSessionConfig::fromArray([
+            'reasoningEffort' => 'high',
+        ]);
+
+        expect($config->reasoningEffort)->toBe('high');
+    });
+
+    it('preserves reasoningEffort enum when passed to fromArray', function () {
+        $config = ResumeSessionConfig::fromArray([
+            'reasoningEffort' => ReasoningEffort::MEDIUM,
+        ]);
+
+        expect($config->reasoningEffort)->toBe(ReasoningEffort::MEDIUM);
     });
 });

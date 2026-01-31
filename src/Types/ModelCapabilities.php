@@ -40,6 +40,14 @@ readonly class ModelCapabilities implements Arrayable
     }
 
     /**
+     * Check if reasoning effort is supported.
+     */
+    public function supportsReasoningEffort(): bool
+    {
+        return $this->supports['reasoningEffort'] ?? false;
+    }
+
+    /**
      * Get max context window tokens.
      */
     public function maxContextWindowTokens(): int

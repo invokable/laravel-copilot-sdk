@@ -235,6 +235,7 @@ class Client implements CopilotClient
         $response = $this->rpcClient->request('session.create', array_filter([
             'sessionId' => $config['sessionId'] ?? null,
             'model' => $config['model'] ?? null,
+            'reasoningEffort' => $config['reasoningEffort'] ?? null,
             'tools' => $toolsForRequest ?: null,
             'systemMessage' => $config['systemMessage'] ?? null,
             'availableTools' => $config['availableTools'] ?? null,
@@ -309,6 +310,7 @@ class Client implements CopilotClient
 
         $response = $this->rpcClient->request('session.resume', array_filter([
             'sessionId' => $sessionId,
+            'reasoningEffort' => $config['reasoningEffort'] ?? null,
             'tools' => $toolsForRequest ?: null,
             'provider' => $config['provider'] ?? null,
             'requestPermission' => isset($config['onPermissionRequest']),

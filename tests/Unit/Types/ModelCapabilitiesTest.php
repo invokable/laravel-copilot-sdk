@@ -68,4 +68,31 @@ describe('ModelCapabilities', function () {
 
         expect($capabilities)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
     });
+
+    it('can check if reasoning effort is supported', function () {
+        $capabilities = ModelCapabilities::fromArray([
+            'supports' => ['vision' => false, 'reasoningEffort' => true],
+            'limits' => ['max_context_window_tokens' => 100000],
+        ]);
+
+        expect($capabilities->supportsReasoningEffort())->toBeTrue();
+    });
+
+    it('returns false when reasoning effort is not supported', function () {
+        $capabilities = ModelCapabilities::fromArray([
+            'supports' => ['vision' => false, 'reasoningEffort' => false],
+            'limits' => ['max_context_window_tokens' => 100000],
+        ]);
+
+        expect($capabilities->supportsReasoningEffort())->toBeFalse();
+    });
+
+    it('returns false when reasoningEffort key is missing', function () {
+        $capabilities = ModelCapabilities::fromArray([
+            'supports' => ['vision' => true],
+            'limits' => ['max_context_window_tokens' => 100000],
+        ]);
+
+        expect($capabilities->supportsReasoningEffort())->toBeFalse();
+    });
 });
