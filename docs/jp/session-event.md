@@ -21,7 +21,7 @@ echo (string) $response; // '2'
 
 ## EventTypeの判定
 
-`isAssistantMessage()`, `isUserMessage()`, `isIdle()`は用意。他にもよく使うものがあれば追加。
+`isAssistantMessage()`, `isUserMessage()`, `isIdle()`、`isAssistantMessageDelta()`は用意。他にもよく使うものがあれば追加。
 
 `is()`で任意のEventTypeを判定できる。
 
@@ -74,7 +74,7 @@ $response->dump();
 
 ## Tappable
 
-`tap()`メソッドが使える。Laravelの中でも使い所が分かりにくいと言われる機能No.1。
+`tap()`メソッドが使える。
 
 ```php
 return $response->tap(function (SessionEvent $event) {
@@ -82,8 +82,6 @@ return $response->tap(function (SessionEvent $event) {
     info($event->content());
 });
 ```
-
-元の$responseには一切影響を与えず何かの処理を行えるのがtap()。
 
 ## InteractsWithData
 
