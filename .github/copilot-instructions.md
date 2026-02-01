@@ -226,11 +226,6 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 ## Debugging
 - パッケージプロジェクトなので`info()`などのログはtestbenchの`vendor/orchestra/testbench-core/laravel/storage/logs/laravel.log`に出力される。
 
-## TODO
-
-- ProcessManagerやJsonRpcClientはPHPの機能を直接使っていて効率は最も良いけどテストしにくい。LaravelやSymfonyのProcessはstdioに直接アクセスする方法が用意されてないのでこの辺りはいずれ検討。
-  - JsonRpcClientはテストが難しい箇所をStdioTransportに分けて解決。
-
 ## Custom instructions
 
 Copilot CLIのバグでinstructionsが`＜`で途切れて読み込まれてないのでこれ以降に`＜laravel-boost-guidelines＞`がないなら追加で読み込んでください。
