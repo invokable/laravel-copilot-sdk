@@ -77,7 +77,7 @@ Route::get('/copilot', function () {
 });
 ```
 
-`copilot.blade.php`は簡易的な表示確認用。本番用にはReactかVueを使っているならLaravel公式のnpmパッケージを使うのが推奨。
+`copilot.blade.php`は簡易的な表示確認用。本番用にはReactかVueを使っているならLaravel公式のnpmパッケージを使うのが推奨。`@laravel/stream-react`や`@laravel/stream-vue`
 
 ```html
 <html>
@@ -102,3 +102,11 @@ Route::get('/copilot', function () {
 </body>
 </html>
 ```
+
+## WebSocketでの配信
+
+Laravelの通知機能、ブロードキャスト機能、Reverbを組み合わせて`delta`をWebSocketで配信することも可能。
+
+## Livewireの`wire:stream`
+
+Livewireでも`wire:stream`ディレクティブを使ってストリーミング表示が可能。
