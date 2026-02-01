@@ -33,3 +33,72 @@ Copilot::start(function (CopilotSession $session) {
 
 - 流暢な表示のためには改行を追加せずそのまま表示する。
 - Laravel Promptsの`spin()`は表示が崩れるので一緒に使わない。
+
+## 具体的な使用パターン
+
+### Artisanコマンド
+
+上記のように`echo`もしくは`$this->output->write()`で直接出力する。Copilot CLIを直接使った場合と同じ表示なので理解しやすい。
+
+### WebページでServer-Sent Events (SSE)として配信
+
+`response()->eventStream()`での使い方は成功しなかったのでひとまず`response()->stream()`を使う方法。可能ならいずれ対応を検討。
+
+```php
+Route::get('/copilot/sse', function () {
+    return response()->stream(function () {
+        Copilot::start(function (CopilotSession $session) {
+            $session->on(function (SessionEvent $event) {
+                if ($event->isAssistantMessageDelta()) {
+                    echo "event: update\n";
+                    echo 'data: '.$event->deltaContent()."\n\n";
+                    ob_flush();
+                    flush();
+                }
+            });
+
+            $session->sendAndWait('Tell me something about Laravel.');
+        }, config: new SessionConfig(streaming: true));
+
+        echo "event: update\n";
+        echo "data: </stream>\n\n";
+        ob_flush();
+        flush();
+    }, 200, [
+        'Content-Type' => 'text/event-stream',
+        'Cache-Control' => 'no-cache',
+        'Connection' => 'keep-alive',
+        'X-Accel-Buffering' => 'no',
+    ]);
+});
+
+Route::get('/copilot', function () {
+    return view('copilot');
+});
+```
+
+`copilot.blade.php`は簡易的な表示確認用。本番用にはReactかVueを使っているならLaravel公式のnpmパッケージを使うのが推奨。
+
+```html
+<html>
+<script>
+    const source = new EventSource('/copilot/sse');
+
+    source.addEventListener('update', (event) => {
+        if (event.data === '</stream>') {
+            source.close();
+
+            return;
+        }
+
+        console.log(event.data);
+        document.getElementById("output").innerHTML += event.data;
+    });
+</script>
+
+<body>
+    <h1>Copilot SSE Test</h1>
+    <div id="output"></div>
+</body>
+</html>
+```
