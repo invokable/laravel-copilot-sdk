@@ -105,6 +105,8 @@ Route::get('/copilot', function () {
 
 ```html
 <html>
+<body>
+
 <script>
     const source = new EventSource('/copilot/sse');
 
@@ -120,9 +122,8 @@ Route::get('/copilot', function () {
     });
 </script>
 
-<body>
-    <h1>Copilot SSE Test</h1>
-    <div id="output"></div>
+<h1>Copilot SSE Test</h1>
+<div id="output"></div>
 </body>
 </html>
 ```

@@ -1,4 +1,6 @@
 <html>
+<body>
+
 <script>
     const source = new EventSource('/copilot/stream');
 
@@ -14,8 +16,7 @@
     });
 </script>
 
-<body>
-    <h1>Copilot SSE Test</h1>
-    <div id="output"></div>
+<h1>Copilot SSE Test</h1>
+<div id="output"></div>
 </body>
 </html>
