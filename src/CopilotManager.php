@@ -75,6 +75,44 @@ class CopilotManager implements Factory
             return $this->fake->start($callback, $config);
         }
 
+        $session = $this->prepareSession($config, $resume);
+
+        try {
+            return $callback($session);
+        } finally {
+            $session->destroy();
+        }
+    }
+
+    /**
+     * Start a session and stream events via a callback. Returns a generator.
+     *
+     * @param  callable(CopilotSession): iterable  $callback
+     * @param  ?string  $resume  Session ID to resume
+     * @return iterable<SessionEvent>
+     */
+    public function stream(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null): iterable
+    {
+        if ($this->isFake()) {
+            yield from $this->fake->stream($callback, $config);
+
+            return;
+        }
+
+        $session = $this->prepareSession($config, $resume);
+
+        try {
+            yield from $callback($session);
+        } finally {
+            $session->destroy();
+        }
+    }
+
+    /**
+     * Prepare a session for start/stream (create or resume).
+     */
+    protected function prepareSession(SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null): CopilotSession
+    {
         $client = $this->client();
 
         $config = is_array($config) ? $config : $config->toArray();
@@ -99,11 +137,7 @@ class CopilotManager implements Factory
             $session = $client->resumeSession($resume, $config);
         }
 
-        try {
-            return $callback($session);
-        } finally {
-            $session->destroy();
-        }
+        return $session;
     }
 
     /**

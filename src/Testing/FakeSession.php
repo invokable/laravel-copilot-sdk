@@ -63,6 +63,28 @@ class FakeSession implements CopilotSession
         // No-op in fake
     }
 
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): iterable
+    {
+        $this->recorded[] = [
+            'prompt' => $prompt,
+            'attachments' => $attachments,
+            'mode' => $mode,
+        ];
+
+        $event = $this->sequence->pop();
+        if ($event !== null) {
+            yield $event;
+        }
+    }
+
+    public function stream(?float $timeout = null): iterable
+    {
+        $event = $this->sequence->pop();
+        if ($event !== null) {
+            yield $event;
+        }
+    }
+
     /**
      * @return array<SessionEvent>
      */
