@@ -106,6 +106,45 @@ class CopilotManager implements Factory
         }
     }
 
+    public function stream(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null): iterable
+    {
+        if ($this->isFake()) {
+            yield from $this->fake->stream($callback, $config);
+
+            return;
+        }
+
+        $client = $this->client();
+
+        $config = is_array($config) ? $config : $config->toArray();
+
+        if (empty($resume)) {
+            if (is_array($config)) {
+                $config = SessionConfig::fromArray(array_merge(
+                    ['model' => $this->config['model'] ?? null],
+                    $config,
+                ));
+            }
+
+            $session = $client->createSession($config);
+        } else {
+            if (is_array($config)) {
+                $config = ResumeSessionConfig::fromArray(array_merge(
+                    ['model' => $this->config['model'] ?? null],
+                    $config,
+                ));
+            }
+
+            $session = $client->resumeSession($resume, $config);
+        }
+
+        try {
+            yield from $callback($session);
+        } finally {
+            $session->destroy();
+        }
+    }
+
     /**
      * Create a new session (caller is responsible for destroying it).
      */

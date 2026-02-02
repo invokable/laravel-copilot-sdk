@@ -350,6 +350,101 @@ class Session implements CopilotSession
     }
 
     /**
+     * Send a message and yield events as a Generator until the session becomes idle.
+     *
+     * @param  string  $prompt  The prompt/message to send
+     * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments
+     * @param  ?string  $mode  Message delivery mode
+     * @param  float|null  $timeout  Maximum time to wait for idle state, in seconds
+     * @return \Generator<SessionEvent>
+     */
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): \Generator
+    {
+        $this->send($prompt, $attachments, $mode);
+
+        yield from $this->stream($timeout);
+    }
+
+    /**
+     * Yield events as a Generator until the session becomes idle.
+     *
+     * @param  float|null  $timeout  Maximum time to wait for idle state, in seconds
+     * @return \Generator<SessionEvent>
+     */
+    public function stream(?float $timeout = null): \Generator
+    {
+        $timeout = $timeout ?? config('copilot.timeout', 60.0);
+        $queue = new \SplQueue;
+        $idle = false;
+        $error = null;
+
+        $handler = function (SessionEvent $event) use ($queue, &$idle, &$error): void {
+            $queue->enqueue($event);
+
+            if ($event->isIdle()) {
+                $idle = true;
+            } elseif ($event->failed()) {
+                $error = $event->errorMessage() ?? 'Unknown error';
+            }
+        };
+
+        $this->on($handler);
+
+        $startTime = microtime(true);
+
+        try {
+            while (! $idle && $error === null) {
+                // Check timeout
+                if ((microtime(true) - $startTime) > $timeout) {
+                    $event = new SessionEvent(
+                        id: '',
+                        timestamp: now()->toDateTimeString(),
+                        parentId: $this->sessionId,
+                        type: SessionEventType::SESSION_ERROR,
+                        data: [
+                            'message' => 'Session stream timed out after '.$timeout.' seconds',
+                        ],
+                        exception: new SessionTimeoutException($timeout),
+                    );
+                    yield $event;
+
+                    return;
+                }
+
+                // Yield all queued events
+                while (! $queue->isEmpty()) {
+                    yield $queue->dequeue();
+                }
+
+                // Small delay to prevent busy loop, allow event loop to process
+                usleep(1000); // 1ms
+            }
+
+            // Yield remaining events
+            while (! $queue->isEmpty()) {
+                yield $queue->dequeue();
+            }
+
+            // Yield error event if any
+            if ($error !== null) {
+                $event = new SessionEvent(
+                    id: '',
+                    timestamp: now()->toDateTimeString(),
+                    parentId: $this->sessionId,
+                    type: SessionEventType::SESSION_ERROR,
+                    data: [
+                        'message' => $error,
+                    ],
+                    exception: new SessionErrorException($error),
+                );
+                yield $event;
+            }
+        } finally {
+            $this->off($handler);
+        }
+    }
+
+    /**
      * Dispatch an event to all registered handlers.
      *
      * @internal

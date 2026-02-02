@@ -1,6 +1,6 @@
 <html>
 <script>
-    const source = new EventSource('/copilot/sse');
+    const source = new EventSource('/copilot/stream');
 
     source.addEventListener('update', (event) => {
         if (event.data === '</stream>') {

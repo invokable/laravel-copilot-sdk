@@ -29,7 +29,7 @@ Route::get('/copilot/sse', function () {
             });
 
             $session->sendAndWait('Tell me something about Laravel.');
-        }, config: new SessionConfig(streaming: true));
+        }, config: new SessionConfig(model: 'gpt-5-mini', streaming: true));
 
         echo "event: update\n";
         echo "data: </stream>\n\n";
@@ -41,4 +41,16 @@ Route::get('/copilot/sse', function () {
         'Connection' => 'keep-alive',
         'X-Accel-Buffering' => 'no',
     ]);
+});
+
+Route::get('/copilot/stream', function () {
+    return response()->eventStream(function () {
+        yield from Copilot::stream(function (CopilotSession $session) {
+            foreach ($session->sendAndStream('Tell me something about Laravel.') as $event) {
+                if ($event->isAssistantMessageDelta()) {
+                    yield $event->deltaContent();
+                }
+            }
+        }, config: new SessionConfig(model: 'gpt-5-mini', streaming: true));
+    });
 });

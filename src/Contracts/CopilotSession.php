@@ -48,6 +48,20 @@ interface CopilotSession
     public function off(Closure $handler): void;
 
     /**
+     * Send a message and yield events as a Generator until the session becomes idle.
+     *
+     * @return \Generator<SessionEvent>
+     */
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): \Generator;
+
+    /**
+     * Yield events as a Generator until the session becomes idle.
+     *
+     * @return \Generator<SessionEvent>
+     */
+    public function stream(?float $timeout = null): \Generator;
+
+    /**
      * Get all messages from this session's history.
      *
      * @return array<SessionEvent>
