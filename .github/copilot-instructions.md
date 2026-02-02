@@ -113,6 +113,7 @@ src/
 ├── Session.php                 # CopilotSession実装
 ├── CopilotManager.php          # Factory実装
 ├── Protocol.php                # SDK_PROTOCOL_VERSIONを定義。copilot cli側が更新されたらここを更新。
+├── helpers.php                 # copilot()ヘルパー関数。あくまでヘルパーなので複雑な機能は追加しない。
 ├── CopilotSdkServiceProvider.php
 ├── Contracts/
 │   ├── CopilotClient.php       # クライアントインターフェース
