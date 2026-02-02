@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
+use phpDocumentor\Reflection\Types\Iterable_;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\SessionEventType;
@@ -356,11 +357,12 @@ class Session implements CopilotSession
      * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments
      * @param  ?string  $mode  Message delivery mode
      * @param  float|null  $timeout  Maximum time to wait for idle state, in seconds
-     * @return \Generator<SessionEvent>
+     * @return iterable<SessionEvent>
      */
-    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): \Generator
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): iterable
     {
-        $this->send($prompt, $attachments, $mode);
+        $id = $this->send($prompt, $attachments, $mode);
+        info($id);
 
         yield from $this->stream($timeout);
     }
@@ -369,9 +371,9 @@ class Session implements CopilotSession
      * Yield events as a Generator until the session becomes idle.
      *
      * @param  float|null  $timeout  Maximum time to wait for idle state, in seconds
-     * @return \Generator<SessionEvent>
+     * @return iterable<SessionEvent>
      */
-    public function stream(?float $timeout = null): \Generator
+    public function stream(?float $timeout = null): iterable
     {
         $timeout = $timeout ?? config('copilot.timeout', 60.0);
         $queue = new \SplQueue;
@@ -379,6 +381,7 @@ class Session implements CopilotSession
         $error = null;
 
         $handler = function (SessionEvent $event) use ($queue, &$idle, &$error): void {
+            info($event->type());
             $queue->enqueue($event);
 
             if ($event->isIdle()) {

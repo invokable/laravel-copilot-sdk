@@ -50,16 +50,16 @@ interface CopilotSession
     /**
      * Send a message and yield events as a Generator until the session becomes idle.
      *
-     * @return \Generator<SessionEvent>
+     * @return iterable<SessionEvent>
      */
-    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): \Generator;
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): iterable;
 
     /**
      * Yield events as a Generator until the session becomes idle.
      *
-     * @return \Generator<SessionEvent>
+     * @return iterable<SessionEvent>
      */
-    public function stream(?float $timeout = null): \Generator;
+    public function stream(?float $timeout = null): iterable;
 
     /**
      * Get all messages from this session's history.

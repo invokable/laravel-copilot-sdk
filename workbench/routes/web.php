@@ -44,11 +44,14 @@ Route::get('/copilot/sse', function () {
 });
 
 Route::get('/copilot/stream', function () {
+    set_time_limit(0);
     return response()->eventStream(function () {
         yield from Copilot::stream(function (CopilotSession $session) {
             foreach ($session->sendAndStream('Tell me something about Laravel.') as $event) {
                 if ($event->isAssistantMessageDelta()) {
                     yield $event->deltaContent();
+                } elseif ($event->failed()) {
+                    $event->throw();
                 }
             }
         }, config: new SessionConfig(model: 'gpt-5-mini', streaming: true));
