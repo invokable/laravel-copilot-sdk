@@ -100,6 +100,7 @@ Route::get('/copilot', function () {
 ```
 
 #### フロントエンド側のコード例
+
 `copilot.blade.php`は簡易的な表示確認用。本番用にはReactかVueを使っているならLaravel公式のnpmパッケージを使うのが推奨。`@laravel/stream-react`や`@laravel/stream-vue`
 
 ```html
