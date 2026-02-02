@@ -1,9 +1,10 @@
 {
     "name": "revolution/laravel-copilot-sdk",
-    "description": "Copilot CLI SDK for Laravel",
+    "description": "GitHub Copilot CLI SDK for Laravel",
     "keywords": [
         "laravel",
-        "copilot-cli"
+        "copilot-cli",
+        "copilot-sdk"
     ],
     "type": "library",
     "license": "MIT",
@@ -39,11 +40,11 @@
     },
     "authors": [
         {
-            "name": "puklipo"
-        },
-        {
             "name": "kawax",
             "email": "kawaxbiz@gmail.com"
+        },
+        {
+            "name": "puklipo"
         }
     ],
     "extra": {
