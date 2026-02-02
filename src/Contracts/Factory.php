@@ -27,6 +27,8 @@ interface Factory
      */
     public function start(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null): mixed;
 
+    public function stream(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null): iterable;
+
     /**
      * Create a new session.
      */

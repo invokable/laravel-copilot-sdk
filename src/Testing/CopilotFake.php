@@ -128,6 +128,23 @@ class CopilotFake implements Factory
         }
     }
 
+    public function stream(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null): iterable
+    {
+        $sequence = $this->getSequenceFor('*');
+        $session = new FakeSession('fake-session-'.++$this->sessionCounter, $sequence);
+
+        try {
+            yield from $callback($session);
+
+            // Record all prompts from the session
+            foreach ($session->recorded() as $record) {
+                $this->recordPrompt($record);
+            }
+        } finally {
+            // No cleanup needed for fake session
+        }
+    }
+
     /**
      * Create a new session (caller is responsible for destroying it).
      */

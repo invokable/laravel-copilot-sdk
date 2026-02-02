@@ -42,7 +42,29 @@ Copilot::start(function (CopilotSession $session) {
 
 ### WebページでServer-Sent Events (SSE)として配信
 
-`response()->eventStream()`での使い方は成功しなかったのでひとまず`response()->stream()`を使う方法。可能ならいずれ対応を検討。
+#### `response()->eventStream()`を使う書き方
+
+`response()->eventStream()`が追加されたのはLaravel12リリース直前くらいの時期。このパッケージはLaravel12以上のみ対応なので使用可能。
+
+```php
+Route::get('/copilot/sse', function () {
+    return response()->eventStream(function () {
+        yield from Copilot::stream(function (CopilotSession $session) {
+            foreach ($session->sendAndStream('Tell me something about Laravel.') as $event) {
+                if ($event->isAssistantMessageDelta()) {
+                    yield $event->deltaContent();
+                }
+            }
+        }, config: new SessionConfig(streaming: true));
+    });
+});
+
+Route::get('/copilot', function () {
+    return view('copilot');
+});
+```
+
+#### `response()->stream()`を使う書き方
 
 ```php
 Route::get('/copilot/sse', function () {
@@ -76,6 +98,8 @@ Route::get('/copilot', function () {
     return view('copilot');
 });
 ```
+
+#### フロントエンド側のコード例
 
 `copilot.blade.php`は簡易的な表示確認用。本番用にはReactかVueを使っているならLaravel公式のnpmパッケージを使うのが推奨。`@laravel/stream-react`や`@laravel/stream-vue`
 
