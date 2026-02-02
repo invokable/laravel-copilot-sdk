@@ -135,3 +135,68 @@ Laravelの通知機能、ブロードキャスト機能、Reverbを組み合わ�
 ## Livewireの`wire:stream`
 
 Livewireでも`wire:stream`ディレクティブを使ってストリーミング表示が可能。
+
+```php
+<?php
+
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Enums\SessionEventType;
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\SessionEvent;
+
+new class extends Component
+{
+    public string $prompt = 'Tell me about Laravel Livewire.';
+    public string $question = '';
+    public string $answer = '';
+    public ?string $sessionId = null;
+
+    function submitPrompt(): void
+    {
+        $this->question = $this->prompt;
+
+        $this->prompt = '';
+
+        $this->answer = '';
+
+        $this->js('$wire.copilot()');
+    }
+
+    public function copilot(): void
+    {
+        Copilot::start(function (CopilotSession $session) {
+            $this->sessionId = $session->id();
+
+            $session->on(SessionEventType::ASSISTANT_MESSAGE_DELTA, function (SessionEvent $event): void {
+
+                $this->stream(
+                    content: $event->deltaContent(),
+                    to: 'answer',
+                );
+                $this->answer = $event->deltaContent();
+            });
+
+            $response = $session->sendAndWait(prompt: $this->question);
+            $this->answer = $response->content();
+        }, config: ['streaming' => true], resume: $this->sessionId);
+    }
+};
+?>
+
+<div>
+    <div class="border border-gray-200 rounded-lg p-4 mb-6">
+        @if ($question)
+            <h3 class="font-extrabold mb-3">{{ $question }}</h3>
+
+            <div wire:stream="answer">{{ $answer }}</div>
+        @endif
+    </div>
+
+    <flux:input.group>
+        <flux:input wire:model="prompt" placeholder="Ask Copilot"/>
+        <flux:button wire:click="submitPrompt" icon="paper-airplane" icon:variant="outline"></flux:button>
+    </flux:input.group>
+</div>
+```
