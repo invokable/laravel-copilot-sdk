@@ -8,7 +8,6 @@ use Closure;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
-use phpDocumentor\Reflection\Types\Iterable_;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\SessionEventType;
@@ -361,8 +360,7 @@ class Session implements CopilotSession
      */
     public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): iterable
     {
-        $id = $this->send($prompt, $attachments, $mode);
-        info($id);
+        $this->send($prompt, $attachments, $mode);
 
         yield from $this->stream($timeout);
     }
@@ -381,7 +379,6 @@ class Session implements CopilotSession
         $error = null;
 
         $handler = function (SessionEvent $event) use ($queue, &$idle, &$error): void {
-            info($event->type());
             $queue->enqueue($event);
 
             if ($event->isIdle()) {
@@ -420,7 +417,9 @@ class Session implements CopilotSession
                 }
 
                 // Small delay to prevent busy loop, allow event loop to process
-                usleep(1000); // 1ms
+                $suspension = EventLoop::getSuspension();
+                EventLoop::delay(0.001, fn () => $suspension->resume());
+                $suspension->suspend();
             }
 
             // Yield remaining events
