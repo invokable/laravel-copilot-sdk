@@ -125,19 +125,17 @@ class CopilotManager implements Factory
                 ));
             }
 
-            $session = $client->createSession($config);
-        } else {
-            if (is_array($config)) {
-                $config = ResumeSessionConfig::fromArray(array_merge(
-                    ['model' => $this->config['model'] ?? null],
-                    $config,
-                ));
-            }
-
-            $session = $client->resumeSession($resume, $config);
+            return $client->createSession($config);
         }
 
-        return $session;
+        if (is_array($config)) {
+            $config = ResumeSessionConfig::fromArray(array_merge(
+                ['model' => $this->config['model'] ?? null],
+                $config,
+            ));
+        }
+
+        return $client->resumeSession($resume, $config);
     }
 
     /**
