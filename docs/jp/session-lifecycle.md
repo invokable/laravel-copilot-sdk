@@ -6,11 +6,11 @@
 
 `SessionLifecycleEventType` enumで定義されている5つのイベントタイプがあります：
 
-| イベント | 説明 |
-|---------|------|
-| `session.created` | 新しいセッションが作成された |
-| `session.deleted` | セッションが削除された |
-| `session.updated` | セッションが更新された |
+| イベント                 | 説明                  |
+|----------------------|---------------------|
+| `session.created`    | 新しいセッションが作成された      |
+| `session.deleted`    | セッションが削除された         |
+| `session.updated`    | セッションが更新された         |
 | `session.foreground` | セッションがフォアグラウンドに移動した |
 | `session.background` | セッションがバックグラウンドに移動した |
 
