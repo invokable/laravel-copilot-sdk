@@ -18,6 +18,8 @@ enum SessionEventType: string
     case SESSION_MODEL_CHANGE = 'session.model_change';
     case SESSION_HANDOFF = 'session.handoff';
     case SESSION_TRUNCATION = 'session.truncation';
+    case SESSION_SNAPSHOT_REWIND = 'session.snapshot_rewind';
+    case SESSION_SHUTDOWN = 'session.shutdown';
     case SESSION_USAGE_INFO = 'session.usage_info';
     case SESSION_COMPACTION_START = 'session.compaction_start';
     case SESSION_COMPACTION_COMPLETE = 'session.compaction_complete';
@@ -45,6 +47,9 @@ enum SessionEventType: string
     case TOOL_EXECUTION_PARTIAL_RESULT = 'tool.execution_partial_result';
     case TOOL_EXECUTION_PROGRESS = 'tool.execution_progress';
     case TOOL_EXECUTION_COMPLETE = 'tool.execution_complete';
+
+    // Skill events
+    case SKILL_INVOKED = 'skill.invoked';
 
     // Subagent events
     case SUBAGENT_STARTED = 'subagent.started';
