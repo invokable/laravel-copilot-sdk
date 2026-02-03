@@ -21,12 +21,14 @@ use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Transport\TcpTransport;
+use Revolution\Copilot\Types\ForegroundSessionInfo;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\SessionLifecycleEvent;
 use Revolution\Copilot\Types\SessionMetadata;
 use Revolution\Copilot\Types\ToolResultObject;
 use Revolution\Copilot\Types\UserInputRequest;
@@ -62,6 +64,13 @@ class Client implements CopilotClient
      * @var array<string, Session>
      */
     protected array $sessions = [];
+
+    /**
+     * Session lifecycle event handlers.
+     *
+     * @var array<callable(SessionLifecycleEvent): void>
+     */
+    protected array $lifecycleHandlers = [];
 
     /**
      * Create a new CopilotClient.
@@ -500,6 +509,65 @@ class Client implements CopilotClient
     }
 
     /**
+     * Gets the foreground session ID in TUI+server mode.
+     *
+     * This returns the ID of the session currently displayed in the TUI.
+     * Only available when connecting to a server running in TUI+server mode (--ui-server).
+     *
+     * @throws JsonRpcException
+     */
+    public function getForegroundSessionId(): ?string
+    {
+        $this->ensureConnected();
+
+        $response = $this->rpcClient->request('session.getForeground', []);
+
+        return ForegroundSessionInfo::fromArray($response)->sessionId;
+    }
+
+    /**
+     * Sets the foreground session in TUI+server mode.
+     *
+     * This requests the TUI to switch to displaying the specified session.
+     * Only available when connecting to a server running in TUI+server mode (--ui-server).
+     *
+     * @throws RuntimeException|JsonRpcException
+     */
+    public function setForegroundSessionId(string $sessionId): void
+    {
+        $this->ensureConnected();
+
+        $response = $this->rpcClient->request('session.setForeground', [
+            'sessionId' => $sessionId,
+        ]);
+
+        if (! ($response['success'] ?? false)) {
+            throw new RuntimeException($response['error'] ?? 'Failed to set foreground session');
+        }
+    }
+
+    /**
+     * Subscribes to session lifecycle events.
+     *
+     * Lifecycle events are emitted when sessions are created, deleted, updated,
+     * or change foreground/background state (in TUI+server mode).
+     *
+     * @param  callable(SessionLifecycleEvent): void  $handler
+     * @return callable(): void A function that, when called, unsubscribes the handler
+     */
+    public function onLifecycle(callable $handler): callable
+    {
+        $this->lifecycleHandlers[] = $handler;
+
+        return function () use ($handler) {
+            $this->lifecycleHandlers = array_filter(
+                $this->lifecycleHandlers,
+                fn ($h) => $h !== $handler,
+            );
+        };
+    }
+
+    /**
      * Ensure the client is connected.
      *
      * @throws RuntimeException
@@ -550,6 +618,40 @@ class Client implements CopilotClient
                 $event = SessionEvent::fromArray($eventData);
                 $this->sessions[$sessionId]->dispatchEvent($event);
             }
+        }
+
+        if ($method === 'session.lifecycle') {
+            $this->handleLifecycleNotification($params);
+        }
+    }
+
+    /**
+     * Handle session lifecycle notifications.
+     */
+    protected function handleLifecycleNotification(array $params): void
+    {
+        // Validate required fields
+        if (! isset($params['type']) || ! is_string($params['type'])) {
+            return;
+        }
+
+        if (! isset($params['sessionId']) || ! is_string($params['sessionId'])) {
+            return;
+        }
+
+        try {
+            $event = SessionLifecycleEvent::fromArray($params);
+
+            // Dispatch to all registered handlers
+            foreach ($this->lifecycleHandlers as $handler) {
+                try {
+                    $handler($event);
+                } catch (Throwable) {
+                    // Ignore handler errors
+                }
+            }
+        } catch (Throwable) {
+            // Ignore parsing errors for invalid event types
         }
     }
 

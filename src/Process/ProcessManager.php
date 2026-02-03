@@ -167,7 +167,7 @@ class ProcessManager
             $env['COPILOT_SDK_AUTH_TOKEN'] = $this->githubToken;
         }
 
-        $args = ['--server', '--stdio', '--log-level', $this->logLevel];
+        $args = ['--headless', '--stdio', '--log-level', $this->logLevel];
 
         // Add auth-related flags
         if (filled($this->githubToken)) {

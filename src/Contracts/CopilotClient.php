@@ -10,6 +10,7 @@ use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\SessionLifecycleEvent;
 use Throwable;
 
 /**
@@ -67,6 +68,28 @@ interface CopilotClient
      * @throws JsonRpcException
      */
     public function listModels(): array;
+
+    /**
+     * Gets the foreground session ID in TUI+server mode.
+     *
+     * @throws JsonRpcException
+     */
+    public function getForegroundSessionId(): ?string;
+
+    /**
+     * Sets the foreground session in TUI+server mode.
+     *
+     * @throws JsonRpcException
+     */
+    public function setForegroundSessionId(string $sessionId): void;
+
+    /**
+     * Subscribes to session lifecycle events.
+     *
+     * @param  callable(SessionLifecycleEvent): void  $handler
+     * @return callable(): void A function that, when called, unsubscribes the handler
+     */
+    public function onLifecycle(callable $handler): callable;
 
     /**
      * Stop the CLI server and close all sessions.
