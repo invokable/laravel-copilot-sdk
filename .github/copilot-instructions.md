@@ -221,6 +221,7 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `send-on.md`: Session `on()`で途中のメッセージを受け取る
 - `session-config.md`: SessionConfigクラスの詳細
 - `session-event.md`: Laravel用に強化したSessionEventクラスの詳細
+- `session-lifecycle.md`: セッションライフサイクルイベント
 - `streaming.md`: Streamingの使い方
 - `tcp-mode.md`(AI): TCPモードの使い方
 - `tools.md`: ツールの使い方
