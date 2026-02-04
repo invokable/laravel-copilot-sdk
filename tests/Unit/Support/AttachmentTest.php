@@ -19,4 +19,14 @@ describe('Attachment', function () {
             'path' => '/path/to/dir',
         ]);
     });
+
+    it('selection', function () {
+        expect(Attachment::selection(filePath: '/path/to/file.php', displayName: 'My File', selection: ['start' => ['line' => 1, 'character' => 10], 'end' => ['line' => 5, 'character' => 10]], text: '...'))->toBe([
+            'type' => 'selection',
+            'filePath' => '/path/to/file.php',
+            'displayName' => 'My File',
+            'selection' => ['start' => ['line' => 1, 'character' => 10], 'end' => ['line' => 5, 'character' => 10]],
+            'text' => '...',
+        ]);
+    });
 });

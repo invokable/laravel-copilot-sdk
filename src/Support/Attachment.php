@@ -23,4 +23,15 @@ class Attachment
             'displayName' => $displayName,
         ]);
     }
+
+    public static function selection(string $filePath, string $displayName, ?array $selection = null, ?string $text = null): array
+    {
+        return array_filter([
+            'type' => 'selection',
+            'filePath' => $filePath,
+            'displayName' => $displayName,
+            'selection' => $selection,
+            'text' => $text,
+        ]);
+    }
 }
