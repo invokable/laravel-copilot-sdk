@@ -14,7 +14,7 @@
 ### 1. Copilot CLIサーバーを起動
 
 ```shell
-copilot --server --port 12345
+copilot --headless --port 12345
 ```
 
 ### 2. 環境変数を設定
@@ -86,7 +86,7 @@ $response = Copilot::useStdio()->run(prompt: 'Hello, stdio mode!');
 1. **Daemonの作成**: Forge管理画面でDaemonを作成
 
    ```
-   Command: copilot --server --port 12345
+   Command: copilot --headless --port 12345
    User: forge
    Directory: /home/forge/your-app
    ```

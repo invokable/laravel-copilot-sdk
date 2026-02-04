@@ -11,7 +11,7 @@ This package is Laravel version of [GitHub Copilot CLI SDK](https://github.com/g
 
 - PHP >= 8.4
 - Laravel >= 12.x
-- [Copilot CLI](https://github.com/github/copilot-cli)
+- [Copilot CLI](https://github.com/github/copilot-cli) Latest version
 
 ## Installation
 
@@ -39,7 +39,7 @@ Instead of starting a new CLI process for each request, you can connect to an ex
 Start the Copilot CLI server:
 
 ```shell
-copilot --server --port 12345
+copilot --headless --port 12345
 ```
 
 Configure your `.env`:

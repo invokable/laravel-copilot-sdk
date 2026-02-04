@@ -15,7 +15,7 @@ return [
     | Example: tcp://127.0.0.1:12345
     |
     | To start the server manually:
-    |   copilot --server --port 12345
+    |   copilot --headless --port 12345
     |
     */
     'url' => env('COPILOT_URL'),

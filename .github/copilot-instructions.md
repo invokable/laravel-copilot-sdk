@@ -36,7 +36,7 @@ vendor/bin/testbench copilot:version
 
 ## Architecture
 
-`copilot --server`でCopilot CLI自身がサーバーとして起動。
+`copilot --headless`でCopilot CLI自身がサーバーとして起動。
 すべての SDK は JSON-RPC を介して Copilot CLI サーバーと通信。
 
 ```
