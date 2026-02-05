@@ -17,10 +17,6 @@ BYOKは [custom-providers.md](./custom-providers.md) を参照。
 
 `copilot` もしくは `gh` CLIでログイン済みの場合は、何も指定しなければ保存済みの認証情報が使われます。
 
-```shell
-copilot login
-```
-
 ```php
 use Revolution\Copilot\Facades\Copilot;
 
