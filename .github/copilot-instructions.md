@@ -206,7 +206,7 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `attachments.md`: File Attachments用のヘルパー。
 - `basic-usage.md`: Laravel流ではない公式SDKに沿った使い方
 - `currency.md`: Laravel の Concurrency を使った並行実行
-- `custom-provider.md`(AI): カスタムプロバイダー（BYOK - Bring Your Own Key）の使い方。公式から翻訳。
+- `custom-providers.md`(AI): カスタムプロバイダー（BYOK - Bring Your Own Key）の使い方。公式から翻訳。
 - `events.md`: Laravel Event
 - `fake.md`: テスト用機能の使い方
 - `github-actions.md`: GitHub Actionsでの使い方
