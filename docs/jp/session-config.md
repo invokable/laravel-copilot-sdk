@@ -98,4 +98,4 @@ $config = new SessionConfig(
 $response = Copilot::run('...', config: $config);
 ```
 
-セッション再開時には`ResumeSessionConfig`クラスを使用する。`SessionConfig`とほとんど同じだけど少しだけ違う。`availableTools`, `excludedTools`がないのは対応してないのか公式SDKの漏れなのかは不明。
+セッション再開時には`ResumeSessionConfig`クラスを使用する。`SessionConfig`とほとんど同じだけど少しだけ違う。ResumeSessionConfigは設定を変えたい項目のみ指定。他は新規セッション開始時の設定が引き継がれる。

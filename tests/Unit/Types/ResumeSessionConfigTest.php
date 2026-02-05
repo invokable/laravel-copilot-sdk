@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionHooks;
+use Revolution\Copilot\Types\SystemMessageConfig;
 
 describe('ResumeSessionConfig', function () {
     it('can be created from array with all fields', function () {
@@ -14,21 +16,31 @@ describe('ResumeSessionConfig', function () {
         $preToolUseHook = fn () => null;
 
         $config = ResumeSessionConfig::fromArray([
+            'model' => 'claude-opus-4.6',
+            'reasoningEffort' => ReasoningEffort::XHIGH,
+            'configDir' => './src',
             'tools' => [['name' => 'test_tool']],
+            'systemMessage' => new SystemMessageConfig(mode: 'append', content: 'Instructions'),
+            'availableTools' => [],
+            'excludedTools' => [],
             'provider' => ['baseUrl' => 'https://api.example.com'],
             'onPermissionRequest' => $handler,
             'onUserInputRequest' => $userInputHandler,
             'hooks' => ['onPreToolUse' => $preToolUseHook],
             'workingDirectory' => '/home/user/project',
-            'disableResume' => true,
             'streaming' => true,
             'mcpServers' => ['server1' => ['command' => 'npx']],
             'customAgents' => [['name' => 'agent1']],
             'skillDirectories' => ['/path/to/skills'],
             'disabledSkills' => ['skill1'],
+            'infiniteSessions' => new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
+            'disableResume' => true,
         ]);
 
         expect($config->tools)->toBe([['name' => 'test_tool']])
+            ->and($config->model)->toBe('claude-opus-4.6')
+            ->and($config->reasoningEffort)->toBe(ReasoningEffort::XHIGH)
+            ->and($config->systemMessage->content)->toBe('Instructions')
             ->and($config->provider)->toBeInstanceOf(ProviderConfig::class)
             ->and($config->onPermissionRequest)->toBe($handler)
             ->and($config->onUserInputRequest)->toBe($userInputHandler)
@@ -84,18 +96,25 @@ describe('ResumeSessionConfig', function () {
         $preToolUseHook = fn () => null;
 
         $config = new ResumeSessionConfig(
+            model: 'claude-opus-4.6',
+            reasoningEffort: ReasoningEffort::XHIGH,
+            configDir: './src',
             tools: [['name' => 'tool1']],
+            systemMessage: new SystemMessageConfig(mode: 'append', content: 'Instructions'),
+            availableTools: [],
+            excludedTools: [],
             provider: new ProviderConfig(baseUrl: 'https://api.test.com'),
             onPermissionRequest: $handler,
             onUserInputRequest: $userInputHandler,
             hooks: new SessionHooks(onPreToolUse: $preToolUseHook),
             workingDirectory: '/home/user',
-            disableResume: false,
             streaming: true,
             mcpServers: ['server1' => ['command' => 'test']],
             customAgents: [['name' => 'agent1']],
             skillDirectories: ['/skills'],
             disabledSkills: ['skill1'],
+            infiniteSessions: new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
+            disableResume: false,
         );
 
         $array = $config->toArray();

@@ -143,17 +143,10 @@ readonly class SessionConfig implements Arrayable
                 : SessionHooks::fromArray($data['hooks']);
         }
 
-        $reasoningEffort = null;
-        if (isset($data['reasoningEffort'])) {
-            $reasoningEffort = $data['reasoningEffort'] instanceof ReasoningEffort
-                ? $data['reasoningEffort']
-                : $data['reasoningEffort'];
-        }
-
         return new self(
             sessionId: $data['sessionId'] ?? null,
             model: $data['model'] ?? null,
-            reasoningEffort: $reasoningEffort,
+            reasoningEffort: $data['reasoningEffort'] ?? null,
             configDir: $data['configDir'] ?? null,
             tools: $data['tools'] ?? null,
             systemMessage: $systemMessage,

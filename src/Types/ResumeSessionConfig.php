@@ -15,15 +15,40 @@ readonly class ResumeSessionConfig implements Arrayable
 {
     public function __construct(
         /**
+         * Model to use for this session.
+         */
+        public ?string $model = null,
+        /**
          * Reasoning effort level for models that support it.
          * Only valid for models where capabilities.supports.reasoningEffort is true.
+         * Use client.listModels() to check supported values for each model.
          * Accepts either ReasoningEffort enum or string value.
          */
         public ReasoningEffort|string|null $reasoningEffort = null,
         /**
+         * Override the default configuration directory location.
+         * When specified, the session will use this directory for storing config and state.
+         */
+        public ?string $configDir = null,
+        /**
          * Tools exposed to the CLI server.
          */
         public ?array $tools = null,
+        /**
+         * System message configuration.
+         * Controls how the system prompt is constructed.
+         */
+        public SystemMessageConfig|array|null $systemMessage = null,
+        /**
+         * List of tool names to allow. When specified, only these tools will be available.
+         * Takes precedence over excludedTools.
+         */
+        public ?array $availableTools = null,
+        /**
+         * List of tool names to disable. All other tools remain available.
+         * Ignored if availableTools is specified.
+         */
+        public ?array $excludedTools = null,
         /**
          * Custom provider configuration (BYOK - Bring Your Own Key).
          * When specified, uses the provided API endpoint instead of the Copilot API.
@@ -73,6 +98,12 @@ readonly class ResumeSessionConfig implements Arrayable
          */
         public ?array $disabledSkills = null,
         /**
+         * Infinite session configuration for persistent workspaces and automatic compaction.
+         * When enabled (default), sessions automatically manage context limits and persist state.
+         * Set to `new InfiniteSessionConfig(enabled: false)` to disable.
+         */
+        public InfiniteSessionConfig|array|null $infiniteSessions = null,
+        /**
          * When true, skips emitting the session.resume event.
          * Useful for reconnecting to a session without triggering resume-related side effects.
          *
@@ -86,11 +117,11 @@ readonly class ResumeSessionConfig implements Arrayable
      */
     public static function fromArray(array $data): self
     {
-        $reasoningEffort = null;
-        if (isset($data['reasoningEffort'])) {
-            $reasoningEffort = $data['reasoningEffort'] instanceof ReasoningEffort
-                ? $data['reasoningEffort']
-                : $data['reasoningEffort'];
+        $systemMessage = null;
+        if (isset($data['systemMessage'])) {
+            $systemMessage = $data['systemMessage'] instanceof SystemMessageConfig
+                ? $data['systemMessage']
+                : SystemMessageConfig::fromArray($data['systemMessage']);
         }
 
         $provider = null;
@@ -98,6 +129,13 @@ readonly class ResumeSessionConfig implements Arrayable
             $provider = $data['provider'] instanceof ProviderConfig
                 ? $data['provider']
                 : ProviderConfig::fromArray($data['provider']);
+        }
+
+        $infiniteSessions = null;
+        if (isset($data['infiniteSessions'])) {
+            $infiniteSessions = $data['infiniteSessions'] instanceof InfiniteSessionConfig
+                ? $data['infiniteSessions']
+                : InfiniteSessionConfig::fromArray($data['infiniteSessions']);
         }
 
         $hooks = null;
@@ -108,8 +146,13 @@ readonly class ResumeSessionConfig implements Arrayable
         }
 
         return new self(
-            reasoningEffort: $reasoningEffort,
+            model: $data['model'] ?? null,
+            reasoningEffort: $data['reasoningEffort'] ?? null,
+            configDir: $data['configDir'] ?? null,
             tools: $data['tools'] ?? null,
+            systemMessage: $systemMessage,
+            availableTools: $data['availableTools'] ?? null,
+            excludedTools: $data['excludedTools'] ?? null,
             provider: $provider,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
             onUserInputRequest: $data['onUserInputRequest'] ?? null,
@@ -120,6 +163,7 @@ readonly class ResumeSessionConfig implements Arrayable
             customAgents: $data['customAgents'] ?? null,
             skillDirectories: $data['skillDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
+            infiniteSessions: $infiniteSessions,
             disableResume: $data['disableResume'] ?? null,
         );
     }
@@ -133,17 +177,30 @@ readonly class ResumeSessionConfig implements Arrayable
             ? $this->reasoningEffort->value
             : $this->reasoningEffort;
 
+        $systemMessage = $this->systemMessage instanceof SystemMessageConfig
+            ? $this->systemMessage->toArray()
+            : $this->systemMessage;
+
         $provider = $this->provider instanceof ProviderConfig
             ? $this->provider->toArray()
             : $this->provider;
+
+        $infiniteSessions = $this->infiniteSessions instanceof InfiniteSessionConfig
+            ? $this->infiniteSessions->toArray()
+            : $this->infiniteSessions;
 
         $hooks = $this->hooks instanceof SessionHooks
             ? $this->hooks->toArray()
             : $this->hooks;
 
         return array_filter([
+            'model' => $this->model,
             'reasoningEffort' => $reasoningEffort,
+            'configDir' => $this->configDir,
             'tools' => $this->tools,
+            'systemMessage' => $systemMessage,
+            'availableTools' => $this->availableTools,
+            'excludedTools' => $this->excludedTools,
             'provider' => $provider,
             'onPermissionRequest' => $this->onPermissionRequest,
             'onUserInputRequest' => $this->onUserInputRequest,
@@ -154,6 +211,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'customAgents' => $this->customAgents,
             'skillDirectories' => $this->skillDirectories,
             'disabledSkills' => $this->disabledSkills,
+            'infiniteSessions' => $infiniteSessions,
             'disableResume' => $this->disableResume,
         ], fn ($value) => $value !== null);
     }
