@@ -16,6 +16,7 @@ Copilot::run($prompt, config: ['model' => 'claude-opus-4.5']);
  ├──────────────────────┼────────────────────────┼────────────────────┼────────────────┼───────────────────────────┼─────────────────────────────┤
  │ claude-sonnet-4.5    │ Claude Sonnet 4.5      │ 144000             │ Yes            │ No                        │ No                          │
  │ claude-haiku-4.5     │ Claude Haiku 4.5       │ 144000             │ Yes            │ No                        │ No                          │
+ │ claude-opus-4.6      │ Claude Opus 4.6        │ 144000             │ Yes            │ Yes                       │ Yes                         │
  │ claude-opus-4.5      │ Claude Opus 4.5        │ 160000             │ Yes            │ No                        │ No                          │
  │ claude-sonnet-4      │ Claude Sonnet 4        │ 216000             │ Yes            │ No                        │ No                          │
  │ gemini-3-pro-preview │ Gemini 3 Pro (Preview) │ 128000             │ Yes            │ No                        │ No                          │

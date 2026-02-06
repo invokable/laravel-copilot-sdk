@@ -20,7 +20,7 @@ $config = new SessionConfig(
     // 新規セッション作成時に固定のセッションIDを指定
     sessionId: 'session-123',
 
-    // 推論レベル。基本的にOpenAIの対応しているモデルのみ設定可能。
+    // 推論レベル。対応しているモデルでのみ設定可能。
     reasoningEffort: ReasoningEffort::HIGH,
 
     // configディレクトリを上書き設定

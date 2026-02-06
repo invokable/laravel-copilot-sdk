@@ -23,4 +23,4 @@ $response = Copilot::run('次の文章を英語に翻訳してください。翻
 $content = Str::of($response->content())->between('<translated>','</translated>')->trim()->toString();
 ```
 
-Structured Outputsに対応してるのはOpenAIのモデルのみなので他モデルではプロンプトで指示。Copilot SDKではStructured Outputsを指定する方法がまだなさそう。
+Structured Outputsに対応してるのはOpenAIのモデルのみなので他モデルではプロンプトで指示。ClaudeはOpus 4.6で対応した。Copilot SDKではStructured Outputsを指定する方法がまだなさそう。
