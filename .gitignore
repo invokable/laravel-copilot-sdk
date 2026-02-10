@@ -5,3 +5,4 @@ composer.lock
 build/
 .ai/mcp/mcp.json
 /workbench/storage
+workbench/.env
