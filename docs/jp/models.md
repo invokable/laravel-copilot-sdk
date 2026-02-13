@@ -21,6 +21,7 @@ Copilot::run($prompt, config: ['model' => 'claude-opus-4.5']);
  │ claude-opus-4.5      │ Claude Opus 4.5             │ 160000             │ Yes            │ No                        │ No                          │
  │ claude-sonnet-4      │ Claude Sonnet 4             │ 216000             │ Yes            │ No                        │ No                          │
  │ gemini-3-pro-preview │ Gemini 3 Pro (Preview)      │ 128000             │ Yes            │ No                        │ No                          │
+ │ gpt-5.3-codex        │ GPT-5.3-Codex               │ 400000             │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.2-codex        │ GPT-5.2-Codex               │ 400000             │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.2              │ GPT-5.2                     │ 264000             │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.1-codex-max    │ GPT-5.1-Codex-Max           │ 400000             │ Yes            │ Yes                       │ Yes                         │
