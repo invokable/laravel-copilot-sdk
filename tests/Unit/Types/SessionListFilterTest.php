@@ -20,7 +20,7 @@ describe('SessionListFilter', function () {
     });
 
     it('can be created with no fields', function () {
-        $filter = new SessionListFilter();
+        $filter = new SessionListFilter;
 
         expect($filter->cwd)->toBeNull()
             ->and($filter->gitRoot)->toBeNull()
@@ -88,7 +88,7 @@ describe('SessionListFilter', function () {
     });
 
     it('returns empty array when all fields are null', function () {
-        $filter = new SessionListFilter();
+        $filter = new SessionListFilter;
 
         $array = $filter->toArray();
 
@@ -96,7 +96,7 @@ describe('SessionListFilter', function () {
     });
 
     it('implements Arrayable interface', function () {
-        $filter = new SessionListFilter();
+        $filter = new SessionListFilter;
 
         expect($filter)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
     });

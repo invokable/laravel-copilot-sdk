@@ -441,7 +441,12 @@ $config = new SessionConfig(
 
 Now that you've got the basics, explore more features:
 
+- **Session Management**
+  - `listSessions()` - List and filter sessions by repository, branch, or working directory
+  - `resumeSession()` - Resume previous sessions
+  - Session context tracking (cwd, git info)
 - **[Official SDK Documentation](https://github.com/github/copilot-sdk)** - Full reference
+- **[Japanese Documentation](../docs/jp/)** - Detailed docs in Japanese
 
 ---
 
