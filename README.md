@@ -105,6 +105,29 @@ $content = Copilot::start(function (CopilotSession $session) {
 dump($content);
 ```
 
+### List sessions with filtering
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+// List all sessions
+$sessions = Copilot::client()->listSessions();
+
+// Filter sessions by repository
+$sessions = Copilot::client()->listSessions(['repository' => 'owner/repo']);
+
+// Filter by branch
+$sessions = Copilot::client()->listSessions(['branch' => 'main']);
+
+foreach ($sessions as $metadata) {
+    echo "Session: {$metadata->sessionId}\n";
+    if ($metadata->context !== null) {
+        echo "  Repository: {$metadata->context->repository}\n";
+        echo "  Branch: {$metadata->context->branch}\n";
+    }
+}
+```
+
 ### `copilot()` helper
 
 Alternatively, you can use the `copilot()` helper function.

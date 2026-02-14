@@ -29,6 +29,7 @@ use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\SessionLifecycleEvent;
+use Revolution\Copilot\Types\SessionListFilter;
 use Revolution\Copilot\Types\SessionMetadata;
 use Revolution\Copilot\Types\ToolResultObject;
 use Revolution\Copilot\Types\UserInputRequest;
@@ -492,15 +493,36 @@ class Client implements CopilotClient
     /**
      * List all available sessions.
      *
+     * Returns metadata about each session including ID, timestamps, summary, and context.
+     *
+     * @param  SessionListFilter|array{cwd?: string, gitRoot?: string, repository?: string, branch?: string}|null  $filter  Optional filter to limit returned sessions by context fields
      * @return array<SessionMetadata>
      *
      * @throws JsonRpcException
+     *
+     * @example
+     * // List all sessions
+     * $sessions = $client->listSessions();
+     *
+     * // List sessions for a specific repository
+     * $sessions = $client->listSessions(['repository' => 'owner/repo']);
+     *
+     * // List sessions in a specific working directory
+     * $sessions = $client->listSessions(new SessionListFilter(cwd: '/path/to/project'));
      */
-    public function listSessions(): array
+    public function listSessions(SessionListFilter|array|null $filter = null): array
     {
         $this->ensureConnected();
 
-        $response = $this->rpcClient->request('session.list', []);
+        $filterArray = match (true) {
+            $filter instanceof SessionListFilter => $filter->toArray(),
+            is_array($filter) => array_filter($filter, fn ($v) => $v !== null),
+            default => [],
+        };
+
+        $response = $this->rpcClient->request('session.list', array_filter([
+            'filter' => $filterArray ?: null,
+        ]));
 
         return array_map(
             fn (array $session) => SessionMetadata::fromArray($session),

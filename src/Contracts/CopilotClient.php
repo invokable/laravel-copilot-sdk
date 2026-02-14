@@ -11,6 +11,8 @@ use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionLifecycleEvent;
+use Revolution\Copilot\Types\SessionListFilter;
+use Revolution\Copilot\Types\SessionMetadata;
 use Throwable;
 
 /**
@@ -68,6 +70,16 @@ interface CopilotClient
      * @throws JsonRpcException
      */
     public function listModels(): array;
+
+    /**
+     * List all available sessions.
+     *
+     * @param  SessionListFilter|array{cwd?: string, gitRoot?: string, repository?: string, branch?: string}|null  $filter
+     * @return array<SessionMetadata>
+     *
+     * @throws JsonRpcException
+     */
+    public function listSessions(SessionListFilter|array|null $filter = null): array;
 
     /**
      * Gets the foreground session ID in TUI+server mode.

@@ -17,6 +17,7 @@ readonly class SessionMetadata implements Arrayable
         public string $modifiedTime,
         public ?string $summary = null,
         public bool $isRemote = false,
+        public ?SessionContext $context = null,
     ) {}
 
     /**
@@ -30,6 +31,7 @@ readonly class SessionMetadata implements Arrayable
             modifiedTime: $data['modifiedTime'],
             summary: $data['summary'] ?? null,
             isRemote: $data['isRemote'] ?? false,
+            context: isset($data['context']) ? SessionContext::fromArray($data['context']) : null,
         );
     }
 
@@ -44,6 +46,7 @@ readonly class SessionMetadata implements Arrayable
             'modifiedTime' => $this->modifiedTime,
             'summary' => $this->summary,
             'isRemote' => $this->isRemote,
+            'context' => $this->context?->toArray(),
         ], fn ($value) => $value !== null);
     }
 }

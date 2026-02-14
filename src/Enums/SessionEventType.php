@@ -23,6 +23,7 @@ enum SessionEventType: string
     case SESSION_USAGE_INFO = 'session.usage_info';
     case SESSION_COMPACTION_START = 'session.compaction_start';
     case SESSION_COMPACTION_COMPLETE = 'session.compaction_complete';
+    case SESSION_CONTEXT_CHANGED = 'session.context_changed';
 
     // User messages
     case USER_MESSAGE = 'user.message';
