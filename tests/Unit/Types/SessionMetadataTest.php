@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Types\SessionContext;
 use Revolution\Copilot\Types\SessionMetadata;
 
 describe('SessionMetadata', function () {
@@ -79,5 +80,50 @@ describe('SessionMetadata', function () {
         );
 
         expect($metadata)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+    });
+
+    it('can be created with context', function () {
+        $metadata = SessionMetadata::fromArray([
+            'sessionId' => 'session-with-context',
+            'startTime' => '2026-01-24T10:00:00Z',
+            'modifiedTime' => '2026-01-24T10:30:00Z',
+            'context' => [
+                'cwd' => '/home/user/project',
+                'gitRoot' => '/home/user/project',
+                'repository' => 'owner/repo',
+                'branch' => 'main',
+            ],
+        ]);
+
+        expect($metadata->context)->toBeInstanceOf(SessionContext::class)
+            ->and($metadata->context->cwd)->toBe('/home/user/project')
+            ->and($metadata->context->gitRoot)->toBe('/home/user/project')
+            ->and($metadata->context->repository)->toBe('owner/repo')
+            ->and($metadata->context->branch)->toBe('main');
+    });
+
+    it('can convert to array with context', function () {
+        $context = new SessionContext(
+            cwd: '/home/user/project',
+            gitRoot: '/home/user/project',
+            repository: 'owner/repo',
+            branch: 'feature-branch',
+        );
+
+        $metadata = new SessionMetadata(
+            sessionId: 'session-ctx',
+            startTime: '2026-01-24T11:00:00Z',
+            modifiedTime: '2026-01-24T11:30:00Z',
+            context: $context,
+        );
+
+        $array = $metadata->toArray();
+
+        expect($array['context'])->toBe([
+            'cwd' => '/home/user/project',
+            'gitRoot' => '/home/user/project',
+            'repository' => 'owner/repo',
+            'branch' => 'feature-branch',
+        ]);
     });
 });
