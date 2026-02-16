@@ -19,6 +19,7 @@ use Revolution\Copilot\Types\Tool;
 use Revolution\Copilot\Types\UserInputRequest;
 use Revolution\Copilot\Types\UserInputResponse;
 
+use function Laravel\Ai\agent;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
@@ -391,3 +392,12 @@ Artisan::command('copilot:streaming {--resume=}', function () {
         }
     }, config: $config, resume: $this->option('resume'));
 })->purpose('Copilot streaming');
+
+// vendor/bin/testbench copilot:ai-sdk
+Artisan::command('copilot:ai-sdk', function () {
+    $response = agent(
+        instructions: 'You are an expert at software development.',
+    )->prompt('Tell me about Laravel');
+
+    $this->info($response->text);
+});
