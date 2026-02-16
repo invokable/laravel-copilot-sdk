@@ -202,6 +202,7 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `docs/jp/`以下に日本語ドキュメントを配置。英語の詳細なドキュメントは公式SDKにあるので日本語を中心に用意する。読めない言語でもCopilotに聞けばいいんだから。公式SDKのドキュメントとは関係なく細かい機能のドキュメントを書いていく。いずれまとめて英訳。
 
 ### docs/jp/
+- `ai-sdk.md`: Laravel AI SDK Integration
 - `ask-user.md`(AI): User Input Requests。公式から翻訳。
 - `attachments.md`: File Attachments用のヘルパー。
 - `auth.md`(AI): 認証方法。公式を元に作成。
@@ -221,7 +222,7 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `resume.md`: セッションの再開方法
 - `send-on.md`: Session `on()`で途中のメッセージを受け取る
 - `session-config.md`: SessionConfigクラスの詳細
-- `session-context.md`: SessionContext
+- `session-context.md`(AI): SessionContext
 - `session-event.md`: Laravel用に強化したSessionEventクラスの詳細
 - `session-lifecycle.md`(AI): セッションライフサイクルイベント
 - `streaming.md`: Streamingの使い方
