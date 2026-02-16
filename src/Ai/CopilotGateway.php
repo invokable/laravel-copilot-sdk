@@ -65,7 +65,6 @@ class CopilotGateway implements Gateway
             systemMessage: new SystemMessageConfig(
                 content: $instructions,
             ),
-            availableTools: $tools,
         );
 
         $prompt = last($messages)->content;
