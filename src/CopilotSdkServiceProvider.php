@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace Revolution\Copilot;
 
 use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Laravel\Ai\Ai;
+use Revolution\Copilot\Ai\CopilotGateway;
+use Revolution\Copilot\Ai\CopilotProvider;
 use Revolution\Copilot\Contracts\Factory;
 
 use function Orchestra\Testbench\default_skeleton_path;
@@ -30,6 +35,14 @@ class CopilotSdkServiceProvider extends ServiceProvider
                 __DIR__.'/../config/copilot.php' => config_path('copilot.php'),
             ], 'copilot-config');
         }
+
+        Ai::extend('copilot', function (Application $app, array $config) {
+            return new CopilotProvider(
+                new CopilotGateway($this->app['events']),
+                $config,
+                $this->app->make(Dispatcher::class),
+            );
+        });
 
         if (defined('TESTBENCH_CORE')) {
             $this->testbench();
