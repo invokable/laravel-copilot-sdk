@@ -1,16 +1,16 @@
 # Laravel AI SDK Integration
 
-- Experimental implementation.
-- Support only text generation. No other features are supported.
+- 実験的な実装
+- テキスト生成のみ対応。他の機能は対応していません。
 
-This is an opt-in feature only enabled when the Laravel AI SDK is installed.
+Laravel AI SDKをインストールしている時のみ有効化されるオプトイン機能です。
 
 ```shell
 composer require laravel/ai
 php artisan vendor:publish --provider="Laravel\Ai\AiServiceProvider"
 ```
 
-Add the following configuration to `config/ai.php`.
+`config/ai.php`に設定を追加
 
 ```php
 // config/ai.php
@@ -24,7 +24,7 @@ Add the following configuration to `config/ai.php`.
     ],
 ```
 
-Usage with agent helper.
+`agent()`ヘルパーでの使い方。
 
 ```php
 use function Laravel\Ai\agent;
@@ -36,7 +36,7 @@ $response = agent(
 echo $response->text;
 ```
 
-Streaming
+ストリーミングも対応。`TextDelta`以外は未実装です。
 
 ```php
 use Laravel\Ai\Streaming\Events\TextDelta;
@@ -53,3 +53,5 @@ foreach ($stream as $event) {
     }
 }
 ```
+
+Agentクラスを作る通常のLaravel AI SDKの使い方も可能ですが一部の機能にしか対応していません。
