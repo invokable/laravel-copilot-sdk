@@ -14,6 +14,7 @@ Copilot::run($prompt, config: ['model' => 'claude-opus-4.5']);
  ┌──────────────────────┬─────────────────────────────┬────────────────────┬────────────────┬───────────────────────────┬─────────────────────────────┐
  │ ID                   │ Display Name                │ Max Context Tokens │ Vision Support │ Supports Reasoning Effort │ Supports Structured Outputs │
  ├──────────────────────┼─────────────────────────────┼────────────────────┼────────────────┼───────────────────────────┼─────────────────────────────┤
+ │ claude-sonnet-4.6    │ Claude Sonnet 4.6           │ 200000             │ Yes            │ Yes                       │ Yes                         │
  │ claude-sonnet-4.5    │ Claude Sonnet 4.5           │ 144000             │ Yes            │ No                        │ No                          │
  │ claude-haiku-4.5     │ Claude Haiku 4.5            │ 144000             │ Yes            │ No                        │ No                          │
  │ claude-opus-4.6      │ Claude Opus 4.6             │ 144000             │ Yes            │ Yes                       │ Yes                         │
