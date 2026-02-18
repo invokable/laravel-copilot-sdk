@@ -2,7 +2,9 @@ laravel: '@testbench'
 
 providers:
   # - Workbench\App\Providers\WorkbenchServiceProvider
-  - Laravel\Ai\AiServiceProvider
+
+env:
+  APP_DEBUG: true
 
 migrations:
   - workbench/database/migrations
