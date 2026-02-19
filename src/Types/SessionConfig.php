@@ -20,6 +20,11 @@ readonly class SessionConfig implements Arrayable
          */
         public ?string $sessionId = null,
         /**
+         * Client name to identify the application using the SDK.
+         * Included in the User-Agent header for API requests.
+         */
+        public ?string $clientName = null,
+        /**
          * Model to use for this session.
          */
         public ?string $model = null,
@@ -145,6 +150,7 @@ readonly class SessionConfig implements Arrayable
 
         return new self(
             sessionId: $data['sessionId'] ?? null,
+            clientName: $data['clientName'] ?? null,
             model: $data['model'] ?? null,
             reasoningEffort: $data['reasoningEffort'] ?? null,
             configDir: $data['configDir'] ?? null,
@@ -193,6 +199,7 @@ readonly class SessionConfig implements Arrayable
 
         return array_filter([
             'sessionId' => $this->sessionId,
+            'clientName' => $this->clientName,
             'model' => $this->model,
             'reasoningEffort' => $reasoningEffort,
             'configDir' => $this->configDir,

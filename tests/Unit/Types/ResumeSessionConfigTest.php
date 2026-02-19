@@ -16,6 +16,7 @@ describe('ResumeSessionConfig', function () {
         $preToolUseHook = fn () => null;
 
         $config = ResumeSessionConfig::fromArray([
+            'clientName' => 'my-app',
             'model' => 'claude-opus-4.6',
             'reasoningEffort' => ReasoningEffort::XHIGH,
             'configDir' => './src',
@@ -38,6 +39,7 @@ describe('ResumeSessionConfig', function () {
         ]);
 
         expect($config->tools)->toBe([['name' => 'test_tool']])
+            ->and($config->clientName)->toBe('my-app')
             ->and($config->model)->toBe('claude-opus-4.6')
             ->and($config->reasoningEffort)->toBe(ReasoningEffort::XHIGH)
             ->and($config->systemMessage->content)->toBe('Instructions')
@@ -96,6 +98,7 @@ describe('ResumeSessionConfig', function () {
         $preToolUseHook = fn () => null;
 
         $config = new ResumeSessionConfig(
+            clientName: 'my-app',
             model: 'claude-opus-4.6',
             reasoningEffort: ReasoningEffort::XHIGH,
             configDir: './src',
@@ -120,6 +123,7 @@ describe('ResumeSessionConfig', function () {
         $array = $config->toArray();
 
         expect($array['tools'])->toBe([['name' => 'tool1']])
+            ->and($array['clientName'])->toBe('my-app')
             ->and($array['provider'])->toBe(['baseUrl' => 'https://api.test.com'])
             ->and($array['onPermissionRequest'])->toBe($handler)
             ->and($array['onUserInputRequest'])->toBe($userInputHandler)

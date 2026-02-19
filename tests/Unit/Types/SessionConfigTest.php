@@ -17,6 +17,7 @@ describe('SessionConfig', function () {
 
         $config = SessionConfig::fromArray([
             'sessionId' => 'test-session-id',
+            'clientName' => 'my-app',
             'model' => 'claude-sonnet-4.5',
             'configDir' => '/tmp/config',
             'tools' => [['name' => 'test_tool']],
@@ -37,6 +38,7 @@ describe('SessionConfig', function () {
         ]);
 
         expect($config->sessionId)->toBe('test-session-id')
+            ->and($config->clientName)->toBe('my-app')
             ->and($config->model)->toBe('claude-sonnet-4.5')
             ->and($config->configDir)->toBe('/tmp/config')
             ->and($config->tools)->toBe([['name' => 'test_tool']])
@@ -63,6 +65,7 @@ describe('SessionConfig', function () {
         $config = SessionConfig::fromArray([]);
 
         expect($config->sessionId)->toBeNull()
+            ->and($config->clientName)->toBeNull()
             ->and($config->model)->toBeNull()
             ->and($config->configDir)->toBeNull()
             ->and($config->tools)->toBeNull()
@@ -107,6 +110,7 @@ describe('SessionConfig', function () {
 
         $config = new SessionConfig(
             sessionId: 'session-123',
+            clientName: 'my-app',
             model: 'gpt-4',
             configDir: '/config',
             tools: [['name' => 'tool1']],
@@ -129,6 +133,7 @@ describe('SessionConfig', function () {
         $array = $config->toArray();
 
         expect($array['sessionId'])->toBe('session-123')
+            ->and($array['clientName'])->toBe('my-app')
             ->and($array['model'])->toBe('gpt-4')
             ->and($array['configDir'])->toBe('/config')
             ->and($array['tools'])->toBe([['name' => 'tool1']])
