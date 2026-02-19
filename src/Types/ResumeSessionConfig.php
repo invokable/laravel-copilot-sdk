@@ -15,6 +15,11 @@ readonly class ResumeSessionConfig implements Arrayable
 {
     public function __construct(
         /**
+         * Client name to identify the application using the SDK.
+         * Included in the User-Agent header for API requests.
+         */
+        public ?string $clientName = null,
+        /**
          * Model to use for this session.
          */
         public ?string $model = null,
@@ -146,6 +151,7 @@ readonly class ResumeSessionConfig implements Arrayable
         }
 
         return new self(
+            clientName: $data['clientName'] ?? null,
             model: $data['model'] ?? null,
             reasoningEffort: $data['reasoningEffort'] ?? null,
             configDir: $data['configDir'] ?? null,
@@ -194,6 +200,7 @@ readonly class ResumeSessionConfig implements Arrayable
             : $this->hooks;
 
         return array_filter([
+            'clientName' => $this->clientName,
             'model' => $this->model,
             'reasoningEffort' => $reasoningEffort,
             'configDir' => $this->configDir,
