@@ -1,8 +1,28 @@
 # Permission Request
 
-## 基本的な使い方
+## Deny by Default
 
-SessionConfigの `onPermissionRequest` にクロージャを指定するとCopilotから権限を要求された時に呼び出される。`$request`と`$invocation`は下記のような内容の配列。
+ツールの操作（ファイル書き込み、シェルコマンド、URL取得、MCP呼び出しなど）はデフォルトで**拒否**される。許可するには `onPermissionRequest` ハンドラを指定する必要がある。
+
+## PermissionHandler::approveAll()
+
+すべてのリクエストを自動的に許可する場合は `PermissionHandler::approveAll()` を使う。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Support\PermissionHandler;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveAll(),
+);
+
+$response = Copilot::run(prompt: 'Hello', config: $config);
+```
+
+## カスタムハンドラ
+
+リクエストの種類に応じて個別に許可・拒否を制御する場合は、クロージャを指定する。`$request`と`$invocation`は下記のような内容の配列。
 
 ```php
 use Illuminate\Support\Facades\Artisan;
