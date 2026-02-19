@@ -175,7 +175,7 @@ class CopilotGateway implements Gateway
     /**
      * Generate text from the given audio.
      */
-    public function generateTranscription(TranscriptionProvider $provider, string $model, TranscribableAudio $audio, ?string $language = null, bool $diarize = false): TranscriptionResponse
+    public function generateTranscription(TranscriptionProvider $provider, string $model, TranscribableAudio $audio, ?string $language = null, bool $diarize = false, int $timeout = 30): TranscriptionResponse
     {
         throw new LogicException('Not supported.');
     }
