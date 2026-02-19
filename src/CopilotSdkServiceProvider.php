@@ -36,13 +36,15 @@ class CopilotSdkServiceProvider extends ServiceProvider
             ], 'copilot-config');
         }
 
-        Ai::extend('copilot', function (Application $app, array $config) {
-            return new CopilotProvider(
-                new CopilotGateway($this->app['events']),
-                $config,
-                $this->app->make(Dispatcher::class),
-            );
-        });
+        if (class_exists(Ai::class)) {
+            Ai::extend('copilot', function (Application $app, array $config) {
+                return new CopilotProvider(
+                    new CopilotGateway($this->app['events']),
+                    $config,
+                    $this->app->make(Dispatcher::class),
+                );
+            });
+        }
 
         if (defined('TESTBENCH_CORE')) {
             $this->testbench();
