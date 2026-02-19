@@ -394,6 +394,7 @@ Artisan::command('copilot:streaming {--resume=}', function () {
 })->purpose('Copilot streaming');
 
 // vendor/bin/testbench copilot:ai-sdk
+// 開発環境ではvendor/bin/testbench vendor:publish --provider="Laravel\Ai\AiServiceProvider"でconfig/ai.phpをtestbench-coreに公開、copilot用のprovider設定を追加
 Artisan::command('copilot:ai-sdk', function () {
     $response = agent(
         instructions: 'You are an expert at software development.',
