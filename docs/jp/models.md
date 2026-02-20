@@ -7,7 +7,7 @@
 SessionConfigの`model`に指定するのは`ID`。
 
 ```php
-Copilot::run($prompt, config: ['model' => 'claude-opus-4.5']);
+Copilot::run($prompt, config: ['model' => 'claude-opus-4.6']);
 ```
 
 ```plaintext
