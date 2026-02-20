@@ -3,7 +3,7 @@
 `SessionConfig`クラスで様々な設定が可能。
 
 `Copilot::run(prompt: '...', config: $config)`や`Copilot::start(function (CopilotSession $session) { ... }, config: $config)`のように使用する。  
-単純にモデルを指定したいだけのような`SessionConfig`クラスを使うまでもない時は配列での指定も可能。`Copilot::run(prompt: '...', config: ['model' => 'claude-opus-4.5'])`
+単純にモデルを指定したいだけのような`SessionConfig`クラスを使うまでもない時は配列での指定も可能。`Copilot::run(prompt: '...', config: ['model' => 'claude-opus-4.6'])`
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -15,10 +15,12 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 
 $config = new SessionConfig(
     // 使用するモデルの指定
-    model: 'claude-opus-4.5',
+    model: 'claude-opus-4.6',
 
     // 新規セッション作成時に固定のセッションIDを指定
     sessionId: 'session-123',
+
+    clientName: 'my-app',
 
     // 推論レベル。対応しているモデルでのみ設定可能。
     reasoningEffort: ReasoningEffort::HIGH,
