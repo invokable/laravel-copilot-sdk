@@ -10,7 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
-        "illuminate/support": "^12.45",
+        "illuminate/support": "^12.45||^13.0",
         "revolt/event-loop": "^1.0"
     },
     "require-dev": {
