@@ -139,4 +139,14 @@ describe('SessionEventType', function () {
 
         expect($type)->toBeNull();
     });
+
+    it('has new event types from latest session-events schema', function () {
+        expect(SessionEventType::SESSION_TITLE_CHANGED->value)->toBe('session.title_changed')
+            ->and(SessionEventType::SESSION_WARNING->value)->toBe('session.warning')
+            ->and(SessionEventType::SESSION_MODE_CHANGED->value)->toBe('session.mode_changed')
+            ->and(SessionEventType::SESSION_PLAN_CHANGED->value)->toBe('session.plan_changed')
+            ->and(SessionEventType::SESSION_WORKSPACE_FILE_CHANGED->value)->toBe('session.workspace_file_changed')
+            ->and(SessionEventType::SESSION_TASK_COMPLETE->value)->toBe('session.task_complete')
+            ->and(SessionEventType::ASSISTANT_STREAMING_DELTA->value)->toBe('assistant.streaming_delta');
+    });
 });
