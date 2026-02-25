@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Testing;
 use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\SessionEventType;
+use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
@@ -29,6 +30,21 @@ class FakeSession implements CopilotSession
     public function id(): string
     {
         return $this->sessionId;
+    }
+
+    public function rpc(): SessionRpc
+    {
+        // Return a SessionRpc with a mock client; methods will throw if actually called in tests
+        // Since SessionRpc requires a real JsonRpcClient, we create a minimal instance
+        return new SessionRpc(
+            new \Revolution\Copilot\JsonRpc\JsonRpcClient(
+                new \Revolution\Copilot\Transport\StdioTransport(
+                    fopen('php://memory', 'r'),
+                    fopen('php://memory', 'w'),
+                ),
+            ),
+            $this->sessionId,
+        );
     }
 
     public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string

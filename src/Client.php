@@ -20,6 +20,7 @@ use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
+use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Transport\TcpTransport;
 use Revolution\Copilot\Types\ForegroundSessionInfo;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
@@ -211,6 +212,16 @@ class Client implements CopilotClient
         $this->state = ConnectionState::DISCONNECTED;
 
         return $errors;
+    }
+
+    /**
+     * Typed server-scoped RPC methods.
+     */
+    public function rpc(): ServerRpc
+    {
+        $this->ensureConnected();
+
+        return new ServerRpc($this->rpcClient);
     }
 
     /**

@@ -14,8 +14,13 @@ enum SessionEventType: string
     case SESSION_RESUME = 'session.resume';
     case SESSION_ERROR = 'session.error';
     case SESSION_IDLE = 'session.idle';
+    case SESSION_TITLE_CHANGED = 'session.title_changed';
     case SESSION_INFO = 'session.info';
+    case SESSION_WARNING = 'session.warning';
     case SESSION_MODEL_CHANGE = 'session.model_change';
+    case SESSION_MODE_CHANGED = 'session.mode_changed';
+    case SESSION_PLAN_CHANGED = 'session.plan_changed';
+    case SESSION_WORKSPACE_FILE_CHANGED = 'session.workspace_file_changed';
     case SESSION_HANDOFF = 'session.handoff';
     case SESSION_TRUNCATION = 'session.truncation';
     case SESSION_SNAPSHOT_REWIND = 'session.snapshot_rewind';
@@ -24,6 +29,7 @@ enum SessionEventType: string
     case SESSION_COMPACTION_START = 'session.compaction_start';
     case SESSION_COMPACTION_COMPLETE = 'session.compaction_complete';
     case SESSION_CONTEXT_CHANGED = 'session.context_changed';
+    case SESSION_TASK_COMPLETE = 'session.task_complete';
 
     // User messages
     case USER_MESSAGE = 'user.message';
@@ -34,6 +40,7 @@ enum SessionEventType: string
     case ASSISTANT_INTENT = 'assistant.intent';
     case ASSISTANT_REASONING = 'assistant.reasoning';
     case ASSISTANT_REASONING_DELTA = 'assistant.reasoning_delta';
+    case ASSISTANT_STREAMING_DELTA = 'assistant.streaming_delta';
     case ASSISTANT_MESSAGE = 'assistant.message';
     case ASSISTANT_MESSAGE_DELTA = 'assistant.message_delta';
     case ASSISTANT_TURN_END = 'assistant.turn_end';

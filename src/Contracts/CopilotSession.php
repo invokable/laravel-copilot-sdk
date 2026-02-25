@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Contracts;
 
 use Closure;
 use Revolution\Copilot\Enums\SessionEventType;
+use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
@@ -17,6 +18,11 @@ interface CopilotSession
      * Get the session ID.
      */
     public function id(): string;
+
+    /**
+     * Typed session-scoped RPC methods.
+     */
+    public function rpc(): SessionRpc;
 
     /**
      * Send a message to this session.
