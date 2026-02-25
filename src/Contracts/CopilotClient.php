@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Contracts;
 
 use Revolution\Copilot\Exceptions\JsonRpcException;
+use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\ModelInfo;
@@ -24,6 +25,11 @@ interface CopilotClient
      * Start the CLI server and establish connection.
      */
     public function start(): static;
+
+    /**
+     * Typed server-scoped RPC methods.
+     */
+    public function rpc(): ServerRpc;
 
     /**
      * Create a new conversation session.

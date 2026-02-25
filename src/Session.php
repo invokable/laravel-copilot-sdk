@@ -18,6 +18,7 @@ use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Exceptions\SessionErrorException;
 use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\PermissionRequestKind;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\SessionHooks;
@@ -117,6 +118,14 @@ class Session implements CopilotSession
     public function workspacePath(): ?string
     {
         return $this->workspacePath;
+    }
+
+    /**
+     * Typed session-scoped RPC methods.
+     */
+    public function rpc(): SessionRpc
+    {
+        return new SessionRpc($this->client, $this->sessionId);
     }
 
     /**
