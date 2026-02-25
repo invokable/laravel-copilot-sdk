@@ -10,6 +10,7 @@ use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Session;
+use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Transport\StdioTransport;
 
 beforeEach(function () {
@@ -193,6 +194,7 @@ describe('Client', function () {
 
         $mockSession = Mockery::mock(Session::class);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -200,7 +202,9 @@ describe('Client', function () {
 
         $client = new Client;
         $client->start();
-        $session = $client->createSession();
+        $session = $client->createSession([
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
 
         expect($session)->toBe($mockSession);
 
@@ -216,8 +220,73 @@ describe('Client', function () {
 
         $client = new Client;
 
-        expect(fn () => $client->createSession())
-            ->toThrow(RuntimeException::class, 'Client not connected');
+        expect(fn () => $client->createSession([
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]))->toThrow(RuntimeException::class, 'Client not connected');
+    });
+
+    it('throws when createSession called without onPermissionRequest', function () {
+        $stdin = fopen('php://memory', 'r+');
+        $stdout = fopen('php://memory', 'r+');
+
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('status.get')
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client;
+        $client->start();
+
+        expect(fn () => $client->createSession([]))
+            ->toThrow(\InvalidArgumentException::class, 'onPermissionRequest handler is required');
+
+        fclose($stdin);
+        fclose($stdout);
+    });
+
+    it('throws when resumeSession called without onPermissionRequest', function () {
+        $stdin = fopen('php://memory', 'r+');
+        $stdout = fopen('php://memory', 'r+');
+
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('status.get')
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client;
+        $client->start();
+
+        expect(fn () => $client->resumeSession('test-session-123', []))
+            ->toThrow(\InvalidArgumentException::class, 'onPermissionRequest handler is required');
+
+        fclose($stdin);
+        fclose($stdout);
     });
 
     it('resumeSession resume and returns session', function () {
@@ -247,6 +316,7 @@ describe('Client', function () {
 
         $mockSession = Mockery::mock(Session::class);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -254,7 +324,9 @@ describe('Client', function () {
 
         $client = new Client;
         $client->start();
-        $session = $client->resumeSession('test-session-123');
+        $session = $client->resumeSession('test-session-123', [
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
 
         expect($session)->toBe($mockSession);
 

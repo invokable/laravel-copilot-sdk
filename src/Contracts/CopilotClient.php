@@ -28,16 +28,20 @@ interface CopilotClient
     /**
      * Create a new conversation session.
      *
+     * An onPermissionRequest handler is required in the config.
+     *
      * @throws JsonRpcException
      */
-    public function createSession(SessionConfig|array $config = []): CopilotSession;
+    public function createSession(SessionConfig|array $config): CopilotSession;
 
     /**
      * Resume an existing session.
      *
+     * An onPermissionRequest handler is required in the config.
+     *
      * @throws JsonRpcException
      */
-    public function resumeSession(string $sessionId, ResumeSessionConfig|array $config = []): CopilotSession;
+    public function resumeSession(string $sessionId, ResumeSessionConfig|array $config): CopilotSession;
 
     /**
      * Send a ping to verify connectivity.

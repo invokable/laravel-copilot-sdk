@@ -10,6 +10,7 @@ use Illuminate\Support\Traits\Macroable;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
+use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Testing\WithFake;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
@@ -117,6 +118,8 @@ class CopilotManager implements Factory
 
         $config = is_array($config) ? $config : $config->toArray();
 
+        $config = $this->ensurePermissionHandler($config);
+
         if (empty($resume)) {
             if (is_array($config)) {
                 $config = SessionConfig::fromArray(array_merge(
@@ -147,6 +150,10 @@ class CopilotManager implements Factory
             return $this->fake->createSession($config);
         }
 
+        $config = is_array($config) ? $config : $config->toArray();
+
+        $config = $this->ensurePermissionHandler($config);
+
         if (is_array($config)) {
             $config = SessionConfig::fromArray(array_merge(
                 ['model' => $this->config['model'] ?? null],
@@ -155,6 +162,23 @@ class CopilotManager implements Factory
         }
 
         return $this->client()->createSession($config);
+    }
+
+    /**
+     * Ensure the config has an onPermissionRequest handler.
+     *
+     * If no handler is provided and the `permission_approve` config is true,
+     * automatically injects PermissionHandler::approveAll().
+     */
+    protected function ensurePermissionHandler(array $config): array
+    {
+        if (! isset($config['onPermissionRequest'])) {
+            if ($this->config['permission_approve'] ?? config('copilot.permission_approve', true)) {
+                $config['onPermissionRequest'] = PermissionHandler::approveAll();
+            }
+        }
+
+        return $config;
     }
 
     /**
