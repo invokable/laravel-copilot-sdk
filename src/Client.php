@@ -224,15 +224,22 @@ class Client implements CopilotClient
     /**
      * Create a new conversation session.
      *
-     * @param  SessionConfig|array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request?: callable, on_user_input_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  SessionConfig|array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws JsonRpcException
      */
-    public function createSession(SessionConfig|array $config = []): CopilotSession
+    public function createSession(SessionConfig|array $config): CopilotSession
     {
         $this->ensureConnected();
 
         $config = is_array($config) ? $config : $config->toArray();
+
+        if (! isset($config['onPermissionRequest']) || ! is_callable($config['onPermissionRequest'])) {
+            throw new \InvalidArgumentException(
+                'An onPermissionRequest handler is required when creating a session. '
+                .'For example, to allow all permissions, use new SessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
+            );
+        }
 
         $tools = $config['tools'] ?? [];
         $toolsForRequest = array_map(fn ($tool) => [
@@ -278,10 +285,7 @@ class Client implements CopilotClient
             'workspacePath' => $workspacePath,
         ]);
         $session->registerTools($tools);
-
-        if (isset($config['onPermissionRequest']) && is_callable($config['onPermissionRequest'])) {
-            $session->registerPermissionHandler($config['onPermissionRequest']);
-        }
+        $session->registerPermissionHandler($config['onPermissionRequest']);
 
         if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
             $session->registerUserInputHandler($config['onUserInputRequest']);
@@ -301,15 +305,22 @@ class Client implements CopilotClient
     /**
      * Resume an existing session.
      *
-     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request?: callable, on_user_input_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws JsonRpcException
      */
-    public function resumeSession(string $sessionId, ResumeSessionConfig|array $config = []): CopilotSession
+    public function resumeSession(string $sessionId, ResumeSessionConfig|array $config): CopilotSession
     {
         $this->ensureConnected();
 
         $config = is_array($config) ? $config : $config->toArray();
+
+        if (! isset($config['onPermissionRequest']) || ! is_callable($config['onPermissionRequest'])) {
+            throw new \InvalidArgumentException(
+                'An onPermissionRequest handler is required when resuming a session. '
+                .'For example, to allow all permissions, use new ResumeSessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
+            );
+        }
 
         $tools = $config['tools'] ?? [];
         $toolsForRequest = array_map(fn ($tool) => [
@@ -350,10 +361,7 @@ class Client implements CopilotClient
             'workspacePath' => $workspacePath,
         ]);
         $session->registerTools($tools);
-
-        if (isset($config['onPermissionRequest']) && is_callable($config['onPermissionRequest'])) {
-            $session->registerPermissionHandler($config['onPermissionRequest']);
-        }
+        $session->registerPermissionHandler($config['onPermissionRequest']);
 
         if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
             $session->registerUserInputHandler($config['onUserInputRequest']);

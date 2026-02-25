@@ -1,8 +1,31 @@
 # Permission Request
 
-## Deny by Default
+## Auto-approve (デフォルト)
 
-ツールの操作（ファイル書き込み、シェルコマンド、URL取得、MCP呼び出しなど）はデフォルトで**拒否**される。許可するには `onPermissionRequest` ハンドラを指定する必要がある。
+`config/copilot.php`で`permission_approve`が`true`（デフォルト）の場合、`Copilot::run()`や`Copilot::start()`を使う時は自動的にすべてのPermission Requestが許可される。
+
+```php
+// config/copilot.php
+'permission_approve' => env('COPILOT_PERMISSION_APPROVE', true),
+```
+
+この設定が有効な場合、`onPermissionRequest`を明示的に指定しなくても`PermissionHandler::approveAll()`が自動的に使われる。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+// onPermissionRequestを指定しなくても自動的に全許可
+$response = Copilot::run(prompt: 'Hello');
+```
+
+公式SDKと同様にデフォルトで拒否したい場合は`false`に設定する。
+
+```php
+// config/copilot.php
+'permission_approve' => false,
+```
+
+この場合は`onPermissionRequest`の指定が必須になる。
 
 ## PermissionHandler::approveAll()
 
@@ -18,6 +41,25 @@ $config = new SessionConfig(
 );
 
 $response = Copilot::run(prompt: 'Hello', config: $config);
+```
+
+## Clientの直接使用
+
+`CopilotClient`を直接使用する場合は、公式SDK同様に`onPermissionRequest`の指定が**必須**。
+
+```php
+use Revolution\Copilot\Support\PermissionHandler;
+
+$client = app(CopilotClient::class);
+$client->start();
+
+// onPermissionRequestが必須
+$session = $client->createSession([
+    'onPermissionRequest' => PermissionHandler::approveAll(),
+]);
+
+// 指定しないとInvalidArgumentExceptionがスローされる
+// $session = $client->createSession([]); // Error!
 ```
 
 ## カスタムハンドラ
@@ -70,7 +112,7 @@ Artisan::command('copilot:chat', function () {
 
 `kind`と`toolCallId`以外はkindによって内容が異なる。
 ```
-kind: "shell" | "write" | "mcp" | "read" | "url"
+kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool"
 ```
 
 ```php

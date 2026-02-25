@@ -91,4 +91,19 @@ return [
     |
     */
     'model' => env('COPILOT_MODEL'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auto-approve Permission Requests
+    |--------------------------------------------------------------------------
+    |
+    | When true, all permission requests (file write, shell command, etc.)
+    | are automatically approved when using the Copilot facade (CopilotManager).
+    | Set to false to require explicit permission handling like the official SDK.
+    |
+    | Note: This only applies when using Copilot::run(), Copilot::start(), etc.
+    | Direct Client usage always requires an explicit onPermissionRequest handler.
+    |
+    */
+    'permission_approve' => env('COPILOT_PERMISSION_APPROVE', true),
 ];
