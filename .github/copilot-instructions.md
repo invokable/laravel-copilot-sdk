@@ -106,7 +106,7 @@ Copilot::start(function (CopilotSession $session) {
 - 公式SDKのアップデートに合わせて更新する時は、Clientなどの実装とContractsのinterface、Testingのテスト用クラスが正しく更新されていることを確認。
 - Node.jsのtypes.tsで定義されている型はTypesディレクトリにreadonly classとして作成。`Illuminate\Contracts\Support\Arrayable`インターフェイスを実装し`fromArray()`と`toArray()`を持つ共通仕様。
 - `copilot-sdk/nodejs/src/generated/session-events.ts`のtypeは`src/Enums/SessionEventType.php`のEnumで定義。
-- `Rpc/`のTyped RPC layer追加後はCLIの新機能はここにしか追加されてないので今後は重要になる。RPC用のTypesは`Types/Rpc/`に配置。
+- `Rpc/`のTyped RPC layer追加後はCLIの新機能はここにしか追加されてないので今後は重要になる。RPC用のTypesは`Types/Rpc/`に配置。node.js版より`copilot-sdk/python/copilot/generated/rpc.py`のPython版の方が参考にできる。
 
 ```
 src/
