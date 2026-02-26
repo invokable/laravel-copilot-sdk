@@ -106,6 +106,7 @@ Copilot::start(function (CopilotSession $session) {
 - 公式SDKのアップデートに合わせて更新する時は、Clientなどの実装とContractsのinterface、Testingのテスト用クラスが正しく更新されていることを確認。
 - Node.jsのtypes.tsで定義されている型はTypesディレクトリにreadonly classとして作成。`Illuminate\Contracts\Support\Arrayable`インターフェイスを実装し`fromArray()`と`toArray()`を持つ共通仕様。
 - `copilot-sdk/nodejs/src/generated/session-events.ts`のtypeは`src/Enums/SessionEventType.php`のEnumで定義。
+- `Rpc/`のTyped RPC layer追加後はCLIの新機能はここにしか追加されてないので今後は重要になる。RPC用のTypesは`Types/Rpc/`に配置。
 
 ```
 src/
@@ -115,6 +116,9 @@ src/
 ├── Protocol.php                # SDK_PROTOCOL_VERSIONを定義。copilot cli側が更新されたらここを更新。
 ├── helpers.php                 # copilot()ヘルパー関数。あくまでヘルパーなので複雑な機能は追加しない。
 ├── CopilotSdkServiceProvider.php
+├── Ai/                         # Laravel AI SDK Integration
+│   ├── CopilotGateway.php
+│   └── CopilotProvider.php
 ├── Contracts/
 │   ├── CopilotClient.php       # クライアントインターフェース
 │   ├── CopilotSession.php      # セッションインターフェース
@@ -153,6 +157,10 @@ src/
 ├── Process/
 │   ├── ProcessManager.php      # CLIプロセス管理
 │   └── ProcessWrapper.php
+├── Rpc/                         # Typed RPC layer。公式SDKはapi.schema.jsonからコード生成してるけどLaravelでは生成後の他言語版を参考にする。
+│   ├── ServerRpc.php
+│   ├── SessionRpc.php
+│   └── Pending*.php            # Python版の*Apiと同様の中間クラス
 ├── Support/                     # 分類しにくいヘルパークラス
 │   ├── Attachment.php
 │   └── PermissionRequestKind.php
@@ -162,6 +170,8 @@ src/
 │   ├── ResponseSequence.php
 │   └── WithFake.php
 └── Types/
+    ├── Hooks/
+    ├── Rpc/
     ├── ProviderConfig.php
     ├── ResumeSessionConfig.php
     ├── SessionConfig.php
