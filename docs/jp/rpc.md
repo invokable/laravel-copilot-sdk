@@ -87,7 +87,7 @@ $session->rpc()->workspace()->readFile(new SessionWorkspaceReadFileParams(path: 
 $session->rpc()->workspace()->createFile(new SessionWorkspaceCreateFileParams(path: 'file.txt', content: '...'));
 
 // fleet
-$session->rpc()->fleet()->start();
+$session->rpc()->fleet()->start(new SessionFleetStartParams(prompt: '...'));
 
 // agent
 $session->rpc()->agent()->list();
@@ -98,3 +98,15 @@ $session->rpc()->agent()->deselect();
 // compaction
 $session->rpc()->compaction()->compact();
 ```
+
+## 配列での引数指定
+
+引数も返り値も専用のクラスを使っていますが引数は配列で指定することも可能です。
+
+```php
+$session->rpc()->mode()->set(['mode' => 'plan']);
+```
+
+## Testing
+
+`Copilot::fake()`でのモックは使えないので`Copilot::expects('client')`や`Copilot::expects('start')`でモックしてください。
