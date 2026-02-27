@@ -27,7 +27,15 @@ Copilot::client()->listModels();
 
 ```php
 Copilot::client()->rpc()->ping();
+
+// models
 Copilot::client()->rpc()->models()->list();
+
+// tools
+Copilot::client()->rpc()->tools()->list();
+
+// account
+Copilot::client()->rpc()->account()->getQuota();
 ```
 
 ## SessionRpc
@@ -60,7 +68,33 @@ Copilot::start(function (CopilotSession $session) {
 ### メソッドリスト
 
 ```php
+// model
 $session->rpc()->model()->getCurrent();
-$session->rpc()->mode()->set();
+$session->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: 'gpt-4'));
+
+// mode
+$session->rpc()->mode()->get();
+$session->rpc()->mode()->set(new SessionModeSetParams(mode: 'plan'));
+
+// plan
 $session->rpc()->plan()->read();
+$session->rpc()->plan()->update(new SessionPlanUpdateParams(content: '...'));
+$session->rpc()->plan()->delete();
+
+// workspace
+$session->rpc()->workspace()->listFiles();
+$session->rpc()->workspace()->readFile(new SessionWorkspaceReadFileParams(path: 'file.txt'));
+$session->rpc()->workspace()->createFile(new SessionWorkspaceCreateFileParams(path: 'file.txt', content: '...'));
+
+// fleet
+$session->rpc()->fleet()->start();
+
+// agent
+$session->rpc()->agent()->list();
+$session->rpc()->agent()->getCurrent();
+$session->rpc()->agent()->select(new SessionAgentSelectParams(agentId: '...'));
+$session->rpc()->agent()->deselect();
+
+// compaction
+$session->rpc()->compaction()->compact();
 ```
