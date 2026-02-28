@@ -1,6 +1,6 @@
 # File Attachments
 
-以下のようにファイルかディレクトリを配列で指定。
+以下のようにファイルかディレクトリを配列で指定します。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -31,7 +31,7 @@ $attachments = [
 $response = Copilot::run(prompt: '...', attachments: $attachments);
 ```
 
-こんなフォーマットを覚えてられないのでヘルパーを用意。
+こんなフォーマットを覚えていられないのでヘルパーを用意しています。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -46,4 +46,4 @@ $attachments = [
 $response = Copilot::run(prompt: '...', attachments: $attachments);
 ```
 
-selectionは公式SDKにもまだドキュメントがないので詳細は不明。
+selectionは公式SDKにもまだドキュメントがないので詳細は不明です。

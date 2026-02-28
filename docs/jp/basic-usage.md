@@ -1,6 +1,6 @@
 # Laravel流ではない公式SDKに沿った使い方
 
-Pure PHPっぽい使い方ができるようにした上でLaravelらしい使い心地を提供している。
+Pure PHPっぽい使い方ができるようにした上でLaravelらしい使い心地を提供しています。
 
 ```php
 use Revolution\Copilot\Client;

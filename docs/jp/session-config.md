@@ -1,9 +1,9 @@
 # SessionConfig
 
-`SessionConfig`クラスで様々な設定が可能。
+`SessionConfig`クラスで様々な設定が可能です。
 
-`Copilot::run(prompt: '...', config: $config)`や`Copilot::start(function (CopilotSession $session) { ... }, config: $config)`のように使用する。  
-単純にモデルを指定したいだけのような`SessionConfig`クラスを使うまでもない時は配列での指定も可能。`Copilot::run(prompt: '...', config: ['model' => 'claude-opus-4.6'])`
+`Copilot::run(prompt: '...', config: $config)`や`Copilot::start(function (CopilotSession $session) { ... }, config: $config)`のように使用します。  
+単純にモデルを指定したいだけのような`SessionConfig`クラスを使うまでもない時は配列での指定も可能です。`Copilot::run(prompt: '...', config: ['model' => 'claude-opus-4.6'])`
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -100,4 +100,4 @@ $config = new SessionConfig(
 $response = Copilot::run('...', config: $config);
 ```
 
-セッション再開時には`ResumeSessionConfig`クラスを使用する。`SessionConfig`とほとんど同じだけど少しだけ違う。ResumeSessionConfigは設定を変えたい項目のみ指定。他は新規セッション開始時の設定が引き継がれる。
+セッション再開時には`ResumeSessionConfig`クラスを使用します。`SessionConfig`とほとんど同じですが少しだけ違います。ResumeSessionConfigは設定を変えたい項目のみ指定します。他は新規セッション開始時の設定が引き継がれます。

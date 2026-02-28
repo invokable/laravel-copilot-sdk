@@ -1,13 +1,13 @@
 # Tools
 
-Copilot CLIのビルトインツールはデフォルトで有効。ここで指定できるのはカスタムツール。
+Copilot CLIのビルトインツールはデフォルトで有効です。ここで指定できるのはカスタムツールです。
 
 ## 基本的な使い方
 
-SessionConfigの `tools` にツールの定義を指定。
+SessionConfigの `tools` にツールの定義を指定します。
 
-`Tool::define()`は他言語版の`defineTool`と同様のヘルパー。  
-parametersにはLaravel自身がLaravel MCPで使っているJsonSchemaを使用可能。JsonSchemaを使わず直接配列を指定も可能。
+`Tool::define()`は他言語版の`defineTool`と同様のヘルパーです。  
+parametersにはLaravel自身がLaravel MCPで使っているJsonSchemaを使用可能です。JsonSchemaを使わず直接配列を指定も可能です。
 
 ```php
 use Illuminate\Support\Facades\Artisan;

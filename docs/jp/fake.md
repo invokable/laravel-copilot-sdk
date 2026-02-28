@@ -1,10 +1,10 @@
 # Testing
 
-Laravelならこういうテストコードを書きたい。
+Laravelならこういうテストコードが書けます。
 
 ## Copilot::fake()
 
-`Copilot::fake()`はCopilot Facadeから使う機能のためのモック。他の機能はモックしない。
+`Copilot::fake()`はCopilot Facadeから使う機能のためのモックです。他の機能はモックしません。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -66,7 +66,7 @@ Copilot::assertNothingSent();
 
 ## Prevent stray requests
 
-JSON-RPCリクエストを全て防止。呼び出した場合は例外`Revolution\Copilot\Exceptions\StrayRequestException`が発生。
+JSON-RPCリクエストをすべて防止します。呼び出した場合は例外`Revolution\Copilot\Exceptions\StrayRequestException`が発生します。
 
 ```php
 Copilot::preventStrayRequests();
@@ -79,11 +79,11 @@ Copilot::preventStrayRequests(allow: ['ping']);
 ```php
 Copilot::preventStrayRequests(false);
 ```
-防止するのはJSON-RPCリクエストだけなのでClientのstartは防止しない。
+防止するのはJSON-RPCリクエストだけなのでClientのstartは防止しません。
 
 ## 正常に動かないかもしれない使い方
 
-Artisanコマンド内でCopilotを使っている場合、fake()でのモックは有効だけどその後のassertPrompt()などが正しく動かない場合がある。使用例が少ないので調査中。
+Artisanコマンド内でCopilotを使っている場合、fake()でのモックは有効ですが、その後のassertPrompt()などが正しく動かない場合があります。使用例が少ないので調査中です。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -97,5 +97,5 @@ Copilot::assertPrompt('Hi');
 
 ## shouldReceive() / expects()
 
-Mockeryでお馴染みの`shouldReceive()`や`expects()`も当然使える。  
-Facadeを使えば自動的に対応してる機能なので説明は省略。
+Mockeryでお馴染みの`shouldReceive()`や`expects()`も当然使えます。  
+Facadeを使えば自動的に対応している機能なので説明は省略します。

@@ -1,7 +1,7 @@
 # Streaming
 
-SessionConfigで `streaming: true`を指定すると、Copilotからの応答をストリーミングで受け取れる。  
-元からstdioモードでもTCPモードでもストリーミングのような動作。違いは`ASSISTANT_MESSAGE_DELTA`を受信するようになること。
+SessionConfigで `streaming: true`を指定すると、Copilotからの応答をストリーミングで受け取れます。  
+元からstdioモードでもTCPモードでもストリーミングのような動作です。違いは`ASSISTANT_MESSAGE_DELTA`を受信するようになることです。
 
 ```php
 use Revolution\Copilot\Contracts\CopilotSession;
@@ -31,20 +31,20 @@ Copilot::start(function (CopilotSession $session) {
 }, config: $config);
 ```
 
-- 流暢な表示のためには改行を追加せずそのまま表示する。
-- Laravel Promptsの`spin()`は表示が崩れるので一緒に使わない。
+- 流暢な表示のためには改行を追加せずそのまま表示します。
+- Laravel Promptsの`spin()`は表示が崩れるので一緒に使いません。
 
 ## 具体的な使用パターン
 
 ### Artisanコマンド
 
-上記のように`echo`もしくは`$this->output->write()`で直接出力する。Copilot CLIを直接使った場合と同じ表示なので理解しやすい。
+上記のように`echo`もしくは`$this->output->write()`で直接出力します。Copilot CLIを直接使った場合と同じ表示なので理解しやすいです。
 
 ### WebページでServer-Sent Events (SSE)として配信
 
 #### `response()->eventStream()`を使う書き方
 
-`response()->eventStream()`が追加されたのはLaravel12リリース直前くらいの時期。このパッケージはLaravel12以上のみ対応なので使用可能。
+`response()->eventStream()`が追加されたのはLaravel12リリース直前くらいの時期です。このパッケージはLaravel12以上のみ対応なので使用可能です。
 
 ```php
 Route::get('/copilot/sse', function () {
@@ -101,7 +101,7 @@ Route::get('/copilot', function () {
 
 #### フロントエンド側のコード例
 
-`copilot.blade.php`は簡易的な表示確認用。本番用にはReactかVueを使っているならLaravel公式のnpmパッケージを使うのが推奨。`@laravel/stream-react`や`@laravel/stream-vue`
+`copilot.blade.php`は簡易的な表示確認用です。本番用にはReactかVueを使っているならLaravel公式のnpmパッケージを使うのが推奨です。`@laravel/stream-react`や`@laravel/stream-vue`
 
 ```html
 <html>
@@ -130,11 +130,11 @@ Route::get('/copilot', function () {
 
 ## WebSocketでの配信
 
-Laravelの通知機能、ブロードキャスト機能、Reverbを組み合わせて`delta`をWebSocketで配信することも可能。
+Laravelの通知機能、ブロードキャスト機能、Reverbを組み合わせて`delta`をWebSocketで配信することも可能です。
 
 ## Livewireの`wire:stream`
 
-Livewireでも`wire:stream`ディレクティブを使ってストリーミング表示が可能。
+Livewireでも`wire:stream`ディレクティブを使ってストリーミング表示が可能です。
 
 ```php
 <?php
