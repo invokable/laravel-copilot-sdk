@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Support\Facades\Broadcast;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -114,6 +116,60 @@ describe('SessionEvent', function () {
             'data' => ['content' => 'Test'],
             'ephemeral' => true,
         ]);
+    });
+});
+
+describe('SessionEvent broadcast', function () {
+    it('can broadcast to a channel', function () {
+        $anonymous = Mockery::mock(\Illuminate\Broadcasting\AnonymousEvent::class);
+        $anonymous->shouldReceive('as')
+            ->once()
+            ->with('assistant.message')
+            ->andReturnSelf();
+        $anonymous->shouldReceive('with')
+            ->once()
+            ->andReturnSelf();
+        $anonymous->shouldReceive('send')
+            ->once();
+
+        Broadcast::shouldReceive('on')
+            ->once()
+            ->andReturn($anonymous);
+
+        $event = SessionEvent::fromArray([
+            'id' => 'test-id',
+            'timestamp' => '2024-01-01T00:00:00Z',
+            'type' => 'assistant.message',
+            'data' => ['content' => 'Hello'],
+        ]);
+
+        $event->broadcast(new Channel('test-channel'));
+    });
+
+    it('can broadcast now to a channel', function () {
+        $anonymous = Mockery::mock(\Illuminate\Broadcasting\AnonymousEvent::class);
+        $anonymous->shouldReceive('as')
+            ->once()
+            ->with('assistant.message_delta')
+            ->andReturnSelf();
+        $anonymous->shouldReceive('with')
+            ->once()
+            ->andReturnSelf();
+        $anonymous->shouldReceive('sendNow')
+            ->once();
+
+        Broadcast::shouldReceive('on')
+            ->once()
+            ->andReturn($anonymous);
+
+        $event = SessionEvent::fromArray([
+            'id' => 'test-id',
+            'timestamp' => '2024-01-01T00:00:00Z',
+            'type' => 'assistant.message_delta',
+            'data' => ['deltaContent' => 'Hello'],
+        ]);
+
+        $event->broadcastNow(new Channel('test-channel'));
     });
 });
 
