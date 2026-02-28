@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types;
 
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Dumpable;
 use Illuminate\Support\Traits\InteractsWithData;
@@ -212,6 +214,25 @@ readonly class SessionEvent implements Arrayable, Jsonable
     public function toJson($options = 0): string
     {
         return json_encode($this->toArray(), $options);
+    }
+
+    /**
+     * Broadcast the session event using the queue.
+     */
+    public function broadcast(Channel|array $channels, bool $now = false): void
+    {
+        Broadcast::on($channels)
+            ->as($this->type())
+            ->with($this->toArray())
+            ->{$now ? 'sendNow' : 'send'}();
+    }
+
+    /**
+     * Broadcast the session event immediately.
+     */
+    public function broadcastNow(Channel|array $channels): void
+    {
+        $this->broadcast($channels, now: true);
     }
 
     /**

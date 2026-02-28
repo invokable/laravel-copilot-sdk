@@ -113,3 +113,39 @@ $json = $response->toJson();
 ```php
 $collect = collect($response->toArray());
 ```
+
+## broadcast() / broadcastNow()
+
+Laravel AI SDKの`StreamEvent`と同じインターフェースでブロードキャストできます。AI SDKではストリーミング時の機能ですが、SessionEventではどのEventTypeでも使用可能です。
+
+```php
+use Illuminate\Broadcasting\Channel;
+
+$event->broadcast(new Channel('channel-name'));
+```
+
+`broadcastNow()`はキューを経由せず即時にブロードキャストします。
+
+```php
+$event->broadcastNow(new Channel('channel-name'));
+```
+
+ストリーミング時の使用例:
+
+```php
+use Illuminate\Broadcasting\Channel;
+use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\SessionEvent;
+
+Copilot::start(function (CopilotSession $session) {
+    $session->on(function (SessionEvent $event): void {
+        if ($event->isAssistantMessageDelta()) {
+            $event->broadcastNow(new Channel('copilot'));
+        }
+    });
+
+    $session->sendAndWait(prompt: 'Tell me something about Laravel.');
+}, config: new SessionConfig(streaming: true));
+```
