@@ -1,4 +1,4 @@
-# RPC
+# RPC(Remote Procedure Call)
 
 公式SDKでは最近の新機能は`api.schema.json`を元にした自動コード生成で対応しています。Laravel版では生成後の他言語版を参考に同じように実装しています。
 
