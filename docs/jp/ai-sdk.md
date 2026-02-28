@@ -36,7 +36,7 @@ $response = agent(
 echo $response->text;
 ```
 
-ストリーミングも対応。`TextDelta`以外は未実装です。
+ストリーミングも対応しています。`TextDelta`以外は未実装です。
 
 ```php
 use Laravel\Ai\Streaming\Events\TextDelta;

@@ -1,6 +1,6 @@
 # Session `send()` と `on()` の使い方
 
-`sendAndWait()`はレスポンスがすぐに返って来るので分かりやすいけど **最後のアシスタントメッセージ** しか受け取れない。
+`sendAndWait()`はレスポンスがすぐに返って来るので分かりやすいですが、**最後のアシスタントメッセージ** しか受け取れません。
 
 ```php
 use Revolution\Copilot\Contracts\CopilotSession;
@@ -12,7 +12,7 @@ Copilot::start(function (CopilotSession $session) {
 });
 ```
 
-途中のメッセージも受け取りたい場合は`on()`でイベントリスナーを登録する。
+途中のメッセージも受け取りたい場合は`on()`でイベントリスナーを登録します。
 
 ```php
 use Revolution\Copilot\Contracts\CopilotSession;
@@ -34,7 +34,7 @@ Copilot::start(function (CopilotSession $session) {
 });
 ```
 
-PHPでこれは分かりにくいので`on()`と`sendAndWait()`の組み合わせがおすすめ。
+PHPでこれは分かりにくいので`on()`と`sendAndWait()`の組み合わせがおすすめです。
 
 ```php
 use Revolution\Copilot\Contracts\CopilotSession;
@@ -61,7 +61,7 @@ Copilot::start(function (CopilotSession $session) {
 
 ## `on()`で特定のイベントタイプを指定
 
-SessionEventType enumか文字列でイベントタイプを指定すればそのイベントのみ購読できる。
+SessionEventType enumか文字列でイベントタイプを指定すればそのイベントのみ購読できます。
 
 ```php
 use Revolution\Copilot\Enums\SessionEventType;
@@ -78,7 +78,7 @@ $session->on('assistant.message', function (SessionEvent $event): void {
 
 ## すべてのイベントタイプを購読
 
-イベントタイプを指定しなければすべて購読。
+イベントタイプを指定しなければすべて購読します。
 
 ```php
 use Revolution\Copilot\Enums\SessionEventType;

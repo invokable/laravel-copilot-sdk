@@ -1,6 +1,6 @@
 # モデルリスト
 
-`Copilot::client()->listModels()`でCopilot CLIがサポートしているモデルの一覧を取得できる。
+`Copilot::client()->listModels()`でCopilot CLIがサポートしているモデルの一覧を取得できます。
 
 ## モデルIDの指定
 

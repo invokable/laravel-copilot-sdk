@@ -1,8 +1,8 @@
 # Laravel Event
 
-[Events](../../src/Events)のイベントクラスを各所に仕込んでいるのでログやデバッグに活用。
+[Events](../../src/Events)のイベントクラスを各所に仕込んでいるのでログやデバッグに活用できます。
 
-[Hooks](./hooks.md)でも似たことができるけどHooksがない場所にも仕込める。
+[Hooks](./hooks.md)でも似たことができますが、Hooksがない場所にも仕込めます。
 
 ```
 src/
@@ -25,7 +25,7 @@ src/
 │       └── ResumeSession.php
 ```
 
-例えば少し時間のかかる処理をキューやdeferに投げる。この`Copilot::run()`の結果は直接受け取れないけど代わりにMessageSendAndWaitイベントのリスナーで受け取ることができる。
+例えば少し時間のかかる処理をキューやdeferに投げることができます。この`Copilot::run()`の結果は直接受け取れませんが、代わりにMessageSendAndWaitイベントのリスナーで受け取ることができます。
 
 ```php
 dispatch(fn() => Copilot::run(''));

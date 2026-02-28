@@ -29,8 +29,8 @@ $messages = $session->getMessages();
 
 ## 固定のセッションIDを使う場合
 
-対話形式でない場合は選択できないので最初から固定のIDを指定する。ユーザーIDやなんらかのコンテキストに応じたIDを用意する。  
-例えばウェブサービス上でマルチユーザーで使うなら事前にIDを用意するこちらの方法を使う。
+対話形式でない場合は選択できないので最初から固定のIDを指定します。ユーザーIDやなんらかのコンテキストに応じたIDを用意します。  
+例えばウェブサービス上でマルチユーザーで使うなら事前にIDを用意するこちらの方法を使います。
 
 ```php
 use Revolution\Copilot\Types\SessionConfig;
@@ -48,7 +48,7 @@ Copilot::start(function (CopilotSession $session) {
 }, config: $config);
 ```
 
-再開時の方法は`Copilot::start`なら`resume`引数で指定することもできる。
+再開時の方法は`Copilot::start`なら`resume`引数で指定することもできます。
 
 ```php
 use Revolution\Copilot\Contracts\CopilotSession;
@@ -65,7 +65,7 @@ Copilot::start(function (CopilotSession $session) {
 }, config: $config, resume: 'user-123-conversation');
 ```
 
-`Copilot::start`のクロージャ内で今のセッションを破棄して新しく再開する方法もある。
+`Copilot::start`のクロージャ内で今のセッションを破棄して新しく再開する方法もあります。
 
 ```php
 use Revolution\Copilot\Contracts\CopilotSession;

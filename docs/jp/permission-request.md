@@ -9,7 +9,7 @@
 'permission_approve' => env('COPILOT_PERMISSION_APPROVE', true),
 ```
 
-この設定が有効な場合、`onPermissionRequest`を明示的に指定しなくても`PermissionHandler::approveAll()`が自動的に使われる。
+この設定が有効な場合、`onPermissionRequest`を明示的に指定しなくても`PermissionHandler::approveAll()`が自動的に使われます。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -18,18 +18,18 @@ use Revolution\Copilot\Facades\Copilot;
 $response = Copilot::run(prompt: 'Hello');
 ```
 
-公式SDKと同様にデフォルトで拒否したい場合は`false`に設定する。
+公式SDKと同様にデフォルトで拒否したい場合は`false`に設定します。
 
 ```php
 // config/copilot.php
 'permission_approve' => false,
 ```
 
-この場合は`onPermissionRequest`の指定が必須になる。
+この場合は`onPermissionRequest`の指定が必須になります。
 
 ## PermissionHandler::approveAll()
 
-すべてのリクエストを自動的に許可する場合は `PermissionHandler::approveAll()` を使う。
+すべてのリクエストを自動的に許可する場合は `PermissionHandler::approveAll()` を使います。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -45,7 +45,7 @@ $response = Copilot::run(prompt: 'Hello', config: $config);
 
 ## Clientの直接使用
 
-`CopilotClient`を直接使用する場合は、公式SDK同様に`onPermissionRequest`の指定が**必須**。
+`CopilotClient`を直接使用する場合は、公式SDK同様に`onPermissionRequest`の指定が**必須**です。
 
 ```php
 use Revolution\Copilot\Support\PermissionHandler;
@@ -64,7 +64,7 @@ $session = $client->createSession([
 
 ## カスタムハンドラ
 
-リクエストの種類に応じて個別に許可・拒否を制御する場合は、クロージャを指定する。`$request`と`$invocation`は下記のような内容の配列。
+リクエストの種類に応じて個別に許可・拒否を制御する場合は、クロージャを指定します。`$request`と`$invocation`は下記のような内容の配列です。
 
 ```php
 use Illuminate\Support\Facades\Artisan;
@@ -110,7 +110,7 @@ Artisan::command('copilot:chat', function () {
 
 ### $request
 
-`kind`と`toolCallId`以外はkindによって内容が異なる。
+`kind`と`toolCallId`以外はkindによって内容が異なります。
 ```
 kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool"
 ```
@@ -143,7 +143,7 @@ kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool"
 
 ## レスポンス
 
-許可した場合のJSON-RPCレスポンス例。idが0だったりresultが二重だけどこうしないと成功しなかった。
+許可した場合のJSON-RPCレスポンス例です。idが0だったりresultが二重ですがこうしないと成功しませんでした。
 
 ```json
 {"jsonrpc":"2.0","id":0,"result":{"result":{"kind":"approved"}}}
@@ -151,7 +151,7 @@ kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool"
 
 ## PermissionRequestKind
 
-`['kind' => 'approved']`の形式で返せばいいけど分かりにくいのでPermissionRequestKindクラスも用意。
+`['kind' => 'approved']`の形式で返せばよいですが分かりにくいのでPermissionRequestKindクラスも用意しています。
 
 ```php
 use Revolution\Copilot\Support\PermissionRequestKind;
@@ -167,7 +167,7 @@ if ($confirm) {
 }
 ```
 
-`Laravel\Prompts\confirm`ではなく`Laravel\Prompts\select`を使いたい場合は`PermissionRequestKind::select()`で4つの選択肢を取得できる。
+`Laravel\Prompts\confirm`ではなく`Laravel\Prompts\select`を使いたい場合は`PermissionRequestKind::select()`で4つの選択肢を取得できます。
 
 ```php
 use Revolution\Copilot\Support\PermissionRequestKind;

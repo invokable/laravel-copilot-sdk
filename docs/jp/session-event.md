@@ -1,10 +1,10 @@
 # SessionEvent
 
-Copilotからのメッセージは全て `Revolution\Copilot\Types\SessionEvent` クラス。最も使うことになるクラスなのでLaravel流の使い方ができるようにいろいろ追加している。
+Copilotからのメッセージはすべて `Revolution\Copilot\Types\SessionEvent` クラスです。最も使うことになるクラスなのでLaravel流の使い方ができるようにいろいろ追加しています。
 
 ## content()
 
-一番重要なAIからの応答メッセージを取得する。
+一番重要なAIからの応答メッセージを取得します。
 
 ```php
 $response = Copilot::run('1 + 1');
@@ -12,7 +12,7 @@ echo $response->content(); // '2'
 // content()はnullなこともある
 ```
 
-`__toString()`により強制的に型変換が行われた場合もメッセージ内容が返される。
+`__toString()`により強制的に型変換が行われた場合もメッセージ内容が返されます。
 
 ```php
 echo (string) $response; // '2'
@@ -21,9 +21,9 @@ echo (string) $response; // '2'
 
 ## EventTypeの判定
 
-`isAssistantMessage()`, `isUserMessage()`, `isIdle()`、`isAssistantMessageDelta()`は用意。他にもよく使うものがあれば追加。
+`isAssistantMessage()`, `isUserMessage()`, `isIdle()`、`isAssistantMessageDelta()`は用意しています。他にもよく使うものがあれば追加します。
 
-`is()`で任意のEventTypeを判定できる。
+`is()`で任意のEventTypeを判定できます。
 
 ```php
 if ($response->is(SessionEventType::HOOK_START)) {
@@ -31,7 +31,7 @@ if ($response->is(SessionEventType::HOOK_START)) {
 }
 ```
 
-`type()`はSessionEventType enumの値のstringを返す。
+`type()`はSessionEventType enumの値のstringを返します。
 
 ```php
 echo $response->type()// 'assistant.message'
@@ -39,12 +39,12 @@ echo $response->type()// 'assistant.message'
 
 ## failed() / successful()
 
-`SESSION_ERROR`イベントタイプの場合にfailed。successfulは反対。  
-元は`isError()`だったけどLaravel流に変更。  
+`SESSION_ERROR`イベントタイプの場合にfailedになります。successfulは反対です。  
+元は`isError()`でしたがLaravel流に変更しました。  
 
 ## throw()
 
-LaravelのHttpやProcess同様に例外が発生するエラーでも保留しておき`throw()`メソッドで例外をスローする。エラーではない時は何もしないので以下のように書ける。
+LaravelのHttpやProcess同様に例外が発生するエラーでも保留しておき`throw()`メソッドで例外をスローします。エラーではない時は何もしないので以下のように書けます。
 
 ```php
 $content = $response->throw()->content();
@@ -56,7 +56,7 @@ JSON-RPCのエラーでは`Revolution\Copilot\Exceptions\JsonRpcException`。
 
 ## Conditionable
 
-`when()`や`unless()`メソッドが使える。
+`when()`や`unless()`メソッドが使えます。
 
 ```php
 $response->when($response->isAssistantMessage(), function (SessionEvent $event) {
@@ -66,7 +66,7 @@ $response->when($response->isAssistantMessage(), function (SessionEvent $event) 
 
 ## Dumpable
 
-`dump()`や`dd()`メソッドが使える。
+`dump()`や`dd()`メソッドが使えます。
 
 ```php
 $response->dump();
@@ -74,7 +74,7 @@ $response->dump();
 
 ## Tappable
 
-`tap()`メソッドが使える。
+`tap()`メソッドが使えます。
 
 ```php
 return $response->tap(function (SessionEvent $event) {
@@ -85,14 +85,14 @@ return $response->tap(function (SessionEvent $event) {
 
 ## InteractsWithData
 
-これだけはSessionEventの`$data`プロパティに対する機能なので注意。  
+これだけはSessionEventの`$data`プロパティに対する機能なので注意してください。  
 
-`all()`, `has()`, `only()`, `collect()`などよく見るメソッドが揃っている。  
+`all()`, `has()`, `only()`, `collect()`などよく見るメソッドが揃っています。  
 https://github.com/laravel/framework/blob/12.x/src/Illuminate/Support/Traits/InteractsWithData.php
 
-SessionEventはEventTypeによって`$data`プロパティの中身が異なるので、EventTypeに応じたデータアクセスを行う場合に便利。
+SessionEventはEventTypeによって`$data`プロパティの中身が異なるので、EventTypeに応じたデータアクセスを行う場合に便利です。
 
-`content()`も実際にはInteractsWithDataのメソッドを使用している。
+`content()`も実際にはInteractsWithDataのメソッドを使用しています。
 ```php
 return $this->data('content', $default);
 
@@ -102,14 +102,14 @@ echo $response->content('');
 
 ## toArray() / toJson()
 
-SessionEvent全体を配列やJSONに変換できる。
+SessionEvent全体を配列やJSONに変換できます。
 
 ```php
 $array = $response->toArray();
 $json = $response->toJson();
 ```
 
-`collect()`も用意しようとしたけどInteractsWithDataにあるので全体版はなし。必要な場合は通常の`collect()`ヘルパーを使う。
+`collect()`も用意しようとしましたが、InteractsWithDataにあるので全体版はありません。必要な場合は通常の`collect()`ヘルパーを使います。
 ```php
 $collect = collect($response->toArray());
 ```
