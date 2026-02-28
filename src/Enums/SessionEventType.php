@@ -64,6 +64,7 @@ enum SessionEventType: string
     case SUBAGENT_COMPLETED = 'subagent.completed';
     case SUBAGENT_FAILED = 'subagent.failed';
     case SUBAGENT_SELECTED = 'subagent.selected';
+    case SUBAGENT_DESELECTED = 'subagent.deselected';
 
     // Hook events
     case HOOK_START = 'hook.start';
