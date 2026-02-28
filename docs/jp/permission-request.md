@@ -2,7 +2,7 @@
 
 ## Auto-approve (デフォルト)
 
-`config/copilot.php`で`permission_approve`が`true`（デフォルト）の場合、`Copilot::run()`や`Copilot::start()`を使う時は自動的にすべてのPermission Requestが許可される。
+`config/copilot.php`で`permission_approve`が`true`（デフォルト）の場合、`Copilot::run()`や`Copilot::start()`を使う時は自動的にすべてのPermission Requestが許可されます。
 
 ```php
 // config/copilot.php
@@ -48,6 +48,7 @@ $response = Copilot::run(prompt: 'Hello', config: $config);
 `CopilotClient`を直接使用する場合は、公式SDK同様に`onPermissionRequest`の指定が**必須**です。
 
 ```php
+use Revolution\Copilot\Client;
 use Revolution\Copilot\Support\PermissionHandler;
 
 $client = new Client([
