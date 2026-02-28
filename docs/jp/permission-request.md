@@ -50,7 +50,13 @@ $response = Copilot::run(prompt: 'Hello', config: $config);
 ```php
 use Revolution\Copilot\Support\PermissionHandler;
 
-$client = app(CopilotClient::class);
+$client = new Client([
+    'cli_path' => 'copilot',
+    'cli_args' => [],
+    'cwd' => base_path(),
+    'log_level' => 'info',
+    'env' => null,
+]);
 $client->start();
 
 // onPermissionRequestが必須
