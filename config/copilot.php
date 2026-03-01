@@ -97,7 +97,7 @@ return [
     | Auto-approve Permission Requests
     |--------------------------------------------------------------------------
     |
-    | When true, all permission requests (file write, shell command, etc.)
+    | When true, all permission requests (except for shell and write)
     | are automatically approved when using the Copilot facade (CopilotManager).
     | Set to false to require explicit permission handling like the official SDK.
     |
