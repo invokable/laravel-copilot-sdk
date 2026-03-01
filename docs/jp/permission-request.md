@@ -12,7 +12,7 @@
 'permission_approve' => env('COPILOT_PERMISSION_APPROVE', true),
 ```
 
-この設定が有効な場合、`onPermissionRequest`を明示的に指定しなくても`PermissionHandler::approveAll()`が自動的に使われます。
+この設定が有効な場合、`onPermissionRequest`を明示的に指定しなくても`PermissionHandler::approveSafety()`が自動的に使われます。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -41,6 +41,22 @@ use Revolution\Copilot\Types\SessionConfig;
 
 $config = new SessionConfig(
     onPermissionRequest: PermissionHandler::approveAll(),
+);
+
+$response = Copilot::run(prompt: 'Hello', config: $config);
+```
+
+## PermissionHandler::approveSafety()
+
+危険性の高い`shell`, `write`のみ拒否して他を自動的に許可する場合は `PermissionHandler::approveSafety()` を使います。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Support\PermissionHandler;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveSafety(),
 );
 
 $response = Copilot::run(prompt: 'Hello', config: $config);
