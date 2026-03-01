@@ -65,6 +65,7 @@ $content = Copilot::start(function (CopilotSession $session) {
 ### `copilot()` helper function
 
 ```php
+use Revolution\Copilot\Contracts\CopilotSession;
 use function Revolution\Copilot\copilot;
 
 // Same as Copilot::run()
