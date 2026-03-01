@@ -30,7 +30,7 @@ COPILOT_CLI_PATH=copilot
 COPILOT_MODEL=claude-sonnet-4.6
 COPILOT_TIMEOUT=60
 COPILOT_URL=127.0.0.1:12345       # Set this to enable TCP mode
-COPILOT_PERMISSION_APPROVE=true    # Auto-approve permission requests (default)
+COPILOT_PERMISSION_APPROVE=false   # Do not auto-approve permission requests
 ```
 
 ---
