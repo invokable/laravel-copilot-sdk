@@ -4,6 +4,9 @@
 
 `config/copilot.php`で`permission_approve`が`true`（デフォルト）の場合、`Copilot::run()`や`Copilot::start()`を使う時は自動的にすべてのPermission Requestが許可されます。
 
+> [!CAUTION]
+> ユーザーからのプロンプト入力を許可する使い方の場合は、自動許可は危険なので必ずfalseにしてください。
+
 ```php
 // config/copilot.php
 'permission_approve' => env('COPILOT_PERMISSION_APPROVE', true),
