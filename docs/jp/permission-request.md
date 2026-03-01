@@ -4,6 +4,8 @@
 
 `config/copilot.php`で`permission_approve`が`true`（デフォルト）の場合、`Copilot::run()`や`Copilot::start()`を使う時は自動的にすべてのPermission Requestが許可されます。（ただし危険性の高い`shell`, `write`は除きます）
 
+公式SDKはすべて拒否がデフォルトですがLaravel版では `Copilot::run()`, `Copilot::start()` で使う時の利便性を優先して許可にしています。
+
 > [!CAUTION]
 > ユーザーからのプロンプト入力を許可する使い方の場合は、自動許可は危険なので必ずfalseにしてください。
 > readでLaravelプロジェクトのコードを読めるだけでも危険です。
