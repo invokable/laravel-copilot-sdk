@@ -239,6 +239,9 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `tcp-mode.md`(AI): TCPモードの使い方
 - `tools.md`: ツールの使い方
 
+## 実装しないこと
+- Copilot CLIの同梱。公式SDKでは別途CLIをインストールしなくても使えるようにしているけどLaravelユーザーならデプロイ時にインストールする作業には慣れているので同梱しない。Laravel CloudでもForgeでも簡単に対応できる。
+
 ## Debugging
 - パッケージプロジェクトなので`info()`などのログはtestbenchの`vendor/orchestra/testbench-core/laravel/storage/logs/laravel.log`に出力される。
 
