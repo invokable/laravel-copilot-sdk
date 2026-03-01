@@ -361,16 +361,29 @@ RPC params also accept arrays: `$session->rpc()->mode()->set(['mode' => 'plan'])
 ## Permission Requests
 
 By default (`config/copilot.php` → `permission_approve: true`), all permission requests are auto-approved.
+In web-facing applications or when prompts can be influenced by end users, you should **not** rely on blanket auto-approval. Instead, inspect each request and gate high-risk operations behind your own authorization logic.
 
-Custom handler:
+Custom handler example:
 ```php
 use Revolution\Copilot\Support\PermissionRequestKind;
 
 $config = new SessionConfig(
     onPermissionRequest: function (array $request, array $invocation) {
         // $request['kind']: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool"
-        return PermissionRequestKind::approved();
-        // or: PermissionRequestKind::deniedInteractivelyByUser();
+        switch ($request['kind'] ?? null) {
+            case 'shell':
+            case 'write':
+                // High-risk operations: require explicit application-level authorization or deny by default.
+                return PermissionRequestKind::deniedInteractivelyByUser();
+
+            case 'read':
+            case 'url':
+            case 'mcp':
+            case 'custom-tool':
+            default:
+                // Lower-risk operations: adjust this to your own policies (per-user confirmation, permissions, etc.).
+                return PermissionRequestKind::approved();
+        }
     },
 );
 ```
