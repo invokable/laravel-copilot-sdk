@@ -2,7 +2,7 @@
 
 ## Auto-approve (デフォルト)
 
-`config/copilot.php`で`permission_approve`が`true`（デフォルト）の場合、`Copilot::run()`や`Copilot::start()`を使う時は自動的にすべてのPermission Requestが許可されます。
+`config/copilot.php`で`permission_approve`が`true`（デフォルト）の場合、`Copilot::run()`や`Copilot::start()`を使う時は自動的にすべてのPermission Requestが許可されます。（ただし危険性の高い`shell`, `write`は除きます）
 
 > [!CAUTION]
 > ユーザーからのプロンプト入力を許可する使い方の場合は、自動許可は危険なので必ずfalseにしてください。
@@ -62,6 +62,19 @@ $config = new SessionConfig(
 $response = Copilot::run(prompt: 'Hello', config: $config);
 ```
 
+これでも完全に安全とは限らないので細かく制御したい場合は`$request['kind']`を見て判定するカスタムハンドラを書いて対応してください。
+
+## すべてを拒否する
+
+```php
+use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    onPermissionRequest: fn () => PermissionRequestKind::deniedInteractivelyByUser(),
+);
+```
+
 ## Clientの直接使用
 
 `CopilotClient`を直接使用する場合は、公式SDK同様に`onPermissionRequest`の指定が**必須**です。
@@ -81,7 +94,7 @@ $client->start();
 
 // onPermissionRequestが必須
 $session = $client->createSession([
-    'onPermissionRequest' => PermissionHandler::approveAll(),
+    'onPermissionRequest' => PermissionHandler::approveSafety(),
 ]);
 
 // 指定しないとInvalidArgumentExceptionがスローされる
