@@ -31,7 +31,7 @@ $attachments = [
 $response = Copilot::run(prompt: '...', attachments: $attachments);
 ```
 
-こんなフォーマットを覚えていられないのでヘルパーを用意しています。
+こんなフォーマットを覚えるのは難しいので簡単に使えるようにヘルパーを用意しています。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -47,3 +47,5 @@ $response = Copilot::run(prompt: '...', attachments: $attachments);
 ```
 
 selectionは公式SDKにもまだドキュメントがないので詳細は不明です。
+
+github_referenceも公式に情報がないので後で対応します。
