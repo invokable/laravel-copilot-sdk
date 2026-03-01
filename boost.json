@@ -7,10 +7,12 @@
     "mcp": true,
     "nightwatch_mcp": false,
     "packages": [
-        "revolution/laravel-boost-copilot-cli"
+        "revolution/laravel-boost-copilot-cli",
+        "laravel/ai"
     ],
     "sail": false,
     "skills": [
-        "pest-testing"
+        "pest-testing",
+        "developing-with-ai-sdk"
     ]
 }
