@@ -360,7 +360,7 @@ RPC params also accept arrays: `$session->rpc()->mode()->set(['mode' => 'plan'])
 
 ## Permission Requests
 
-By default (`config/copilot.php` → `permission_approve: true`), all permission requests are auto-approved.
+By default (`config/copilot.php` → `permission_approve: true`), all permission requests are auto-approved except for shell and write.
 In web-facing applications or when prompts can be influenced by end users, you should **not** rely on blanket auto-approval. Instead, inspect each request and gate high-risk operations behind your own authorization logic.
 
 Custom handler example:

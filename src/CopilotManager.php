@@ -174,7 +174,7 @@ class CopilotManager implements Factory
     {
         if (! isset($config['onPermissionRequest'])) {
             if ($this->config['permission_approve'] ?? config('copilot.permission_approve', true)) {
-                $config['onPermissionRequest'] = PermissionHandler::approveAll();
+                $config['onPermissionRequest'] = PermissionHandler::approveSafety();
             }
         }
 
