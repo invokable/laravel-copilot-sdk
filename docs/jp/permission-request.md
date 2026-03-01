@@ -25,8 +25,8 @@ $response = Copilot::run(prompt: 'Hello');
 公式SDKと同様にデフォルトで拒否したい場合は`false`に設定します。
 
 ```php
-// config/copilot.php
-'permission_approve' => false,
+// .env
+COPILOT_PERMISSION_APPROVE=false,
 ```
 
 この場合は`onPermissionRequest`の指定が必須になります。
