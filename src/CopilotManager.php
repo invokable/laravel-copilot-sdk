@@ -121,22 +121,18 @@ class CopilotManager implements Factory
         $config = $this->ensurePermissionHandler($config);
 
         if (empty($resume)) {
-            if (is_array($config)) {
-                $config = SessionConfig::fromArray(array_merge(
-                    ['model' => $this->config['model'] ?? null],
-                    $config,
-                ));
-            }
+            $config = SessionConfig::fromArray(array_merge(
+                ['model' => $this->config['model'] ?? null],
+                $config,
+            ));
 
             return $client->createSession($config);
         }
 
-        if (is_array($config)) {
-            $config = ResumeSessionConfig::fromArray(array_merge(
-                ['model' => $this->config['model'] ?? null],
-                $config,
-            ));
-        }
+        $config = ResumeSessionConfig::fromArray(array_merge(
+            ['model' => $this->config['model'] ?? null],
+            $config,
+        ));
 
         return $client->resumeSession($resume, $config);
     }
@@ -154,12 +150,10 @@ class CopilotManager implements Factory
 
         $config = $this->ensurePermissionHandler($config);
 
-        if (is_array($config)) {
-            $config = SessionConfig::fromArray(array_merge(
-                ['model' => $this->config['model'] ?? null],
-                $config,
-            ));
-        }
+        $config = SessionConfig::fromArray(array_merge(
+            ['model' => $this->config['model'] ?? null],
+            $config,
+        ));
 
         return $this->client()->createSession($config);
     }
