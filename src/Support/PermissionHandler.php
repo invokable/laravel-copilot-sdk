@@ -35,4 +35,14 @@ final readonly class PermissionHandler
             };
         };
     }
+
+    /**
+     * Deny all permission requests.
+     *
+     * @return Closure(array, array): array
+     */
+    public static function denyAll(): Closure
+    {
+        return fn (array $request, array $invocation): array => PermissionRequestKind::deniedInteractivelyByUser();
+    }
 }

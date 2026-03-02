@@ -67,14 +67,16 @@ $response = Copilot::run(prompt: 'Hello', config: $config);
 
 これでも完全に安全とは限らないので細かく制御したい場合は`$request['kind']`を見て判定するカスタムハンドラを書いて対応してください。
 
-## すべてを拒否する
+## PermissionHandler::denyAll()
+
+すべてを拒否する場合は`PermissionHandler::denyAll()`を使います。
 
 ```php
-use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Types\SessionConfig;
 
 $config = new SessionConfig(
-    onPermissionRequest: fn () => PermissionRequestKind::deniedInteractivelyByUser(),
+    onPermissionRequest: PermissionHandler::denyAll(),
 );
 ```
 
