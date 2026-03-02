@@ -220,7 +220,7 @@ $config = new SessionConfig(
             name: 'lookup_fact',
             description: 'Returns a fun fact about a given topic.',
             parameters: $parameters,
-            handler: function (array $params): ToolResultObject {
+            handler: function (array $params, array $invocation): ToolResultObject {
                 $topic = $params['topic'] ?? '';
 
                 return new ToolResultObject(
