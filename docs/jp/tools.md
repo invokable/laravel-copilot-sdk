@@ -40,7 +40,7 @@ Artisan::command('copilot:tools', function () {
                 name: 'lookup_fact',
                 description: 'Returns a fun fact about a given topic.',
                 parameters: $parameters,
-                handler: function (array $params) use ($facts): array {
+                handler: function (array $params, array $invocation) use ($facts): array {
                     $topic = $params['topic'] ?? '';
 
                     $fact = $facts[$topic] ?? null;
