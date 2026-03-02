@@ -38,4 +38,11 @@ describe('PermissionHandler', function () {
 
         expect($result)->toBe(['kind' => 'approved']);
     });
+
+    it('denyAll', function () {
+        $handler = PermissionHandler::denyAll();
+        $result = $handler(['kind' => 'read'], ['sessionId' => 'test-session']);
+
+        expect($result)->toBe(['kind' => PermissionRequestKind::DENIED_INTERACTIVELY_BY_USER]);
+    });
 });
