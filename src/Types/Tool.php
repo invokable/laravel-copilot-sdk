@@ -17,6 +17,7 @@ readonly class Tool implements Arrayable
         public ?string $description,
         public ?array $parameters,
         public Closure $handler,
+        public bool $overridesBuiltInTool = false,
     ) {}
 
     /**
@@ -27,14 +28,15 @@ readonly class Tool implements Arrayable
         ?string $description,
         ?array $parameters,
         Closure $handler,
+        bool $overridesBuiltInTool = false,
     ): array {
-        return new self($name, $description, $parameters, $handler)->toArray();
+        return new self($name, $description, $parameters, $handler, $overridesBuiltInTool)->toArray();
     }
 
     /**
      * Create from array.
      *
-     * @param  array{name: string, description?: string, parameters?: array, handler: callable}  $data
+     * @param  array{name: string, description?: string, parameters?: array, handler: callable, overridesBuiltInTool?: bool}  $data
      */
     public static function fromArray(array $data): self
     {
@@ -43,21 +45,28 @@ readonly class Tool implements Arrayable
             description: $data['description'] ?? null,
             parameters: $data['parameters'] ?? null,
             handler: $data['handler'],
+            overridesBuiltInTool: $data['overridesBuiltInTool'] ?? false,
         );
     }
 
     /**
      * Convert to array.
      *
-     * @return array{state: string, terms: string}
+     * @return array{name: string, description: string|null, parameters: array|null, handler: Closure, overridesBuiltInTool?: bool}
      */
     public function toArray(): array
     {
-        return [
+        $array = [
             'name' => $this->name,
             'description' => $this->description,
             'parameters' => $this->parameters,
             'handler' => $this->handler,
         ];
+
+        if ($this->overridesBuiltInTool) {
+            $array['overridesBuiltInTool'] = true;
+        }
+
+        return $array;
     }
 }

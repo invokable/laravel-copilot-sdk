@@ -253,11 +253,12 @@ class Client implements CopilotClient
         }
 
         $tools = $config['tools'] ?? [];
-        $toolsForRequest = array_map(fn ($tool) => [
+        $toolsForRequest = array_map(fn ($tool) => array_filter([
             'name' => $tool['name'],
             'description' => $tool['description'] ?? null,
             'parameters' => $tool['parameters'] ?? null,
-        ], $tools);
+            'overridesBuiltInTool' => $tool['overridesBuiltInTool'] ?? null,
+        ], fn ($v) => $v !== null), $tools);
 
         $hooks = $config['hooks'] ?? null;
         $hasHooks = $hooks !== null && ! empty(array_filter(
@@ -334,11 +335,12 @@ class Client implements CopilotClient
         }
 
         $tools = $config['tools'] ?? [];
-        $toolsForRequest = array_map(fn ($tool) => [
+        $toolsForRequest = array_map(fn ($tool) => array_filter([
             'name' => $tool['name'],
             'description' => $tool['description'] ?? null,
             'parameters' => $tool['parameters'] ?? null,
-        ], $tools);
+            'overridesBuiltInTool' => $tool['overridesBuiltInTool'] ?? null,
+        ], fn ($v) => $v !== null), $tools);
 
         $hooks = $config['hooks'] ?? null;
         $hasHooks = $hooks !== null && ! empty(array_filter(
