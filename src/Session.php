@@ -20,6 +20,7 @@ use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\UserInputRequest;
@@ -660,6 +661,16 @@ class Session implements CopilotSession
         $this->permissionHandler = null;
         $this->userInputHandler = null;
         $this->hooks = null;
+    }
+
+    /**
+     * Switch the model for this session.
+     *
+     * @throws JsonRpcException
+     */
+    public function setModel(string $modelId): void
+    {
+        $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $modelId));
     }
 
     /**

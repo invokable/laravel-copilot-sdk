@@ -47,6 +47,11 @@ class FakeSession implements CopilotSession
         );
     }
 
+    public function setModel(string $modelId): void
+    {
+        // No-op in fake
+    }
+
     public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string
     {
         $this->recorded[] = [

@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Contracts;
 
 use Closure;
 use Revolution\Copilot\Enums\SessionEventType;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -23,6 +24,13 @@ interface CopilotSession
      * Typed session-scoped RPC methods.
      */
     public function rpc(): SessionRpc;
+
+    /**
+     * Switch the model for this session.
+     *
+     * @throws JsonRpcException
+     */
+    public function setModel(string $modelId): void;
 
     /**
      * Send a message to this session.
