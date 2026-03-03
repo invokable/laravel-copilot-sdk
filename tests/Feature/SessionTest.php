@@ -299,6 +299,20 @@ describe('Session', function () {
         $session->abort();
     });
 
+    it('setModel calls session.model.switchTo via rpc', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.model.switchTo', [
+                'modelId' => 'claude-sonnet-4',
+                'sessionId' => 'test-session',
+            ])
+            ->once()
+            ->andReturn(['modelId' => 'claude-sonnet-4']);
+
+        $session = new Session('test-session', $mockClient);
+        $session->setModel('claude-sonnet-4');
+    });
+
     it('handlePermissionRequest uses registered handler', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $session = new Session('test-session', $mockClient);
