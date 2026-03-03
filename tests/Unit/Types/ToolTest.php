@@ -32,7 +32,8 @@ describe('Tool', function () {
         expect($tool->name)->toBe('simple_tool')
             ->and($tool->description)->toBeNull()
             ->and($tool->parameters)->toBeNull()
-            ->and($tool->handler)->toBe($handler);
+            ->and($tool->handler)->toBe($handler)
+            ->and($tool->overridesBuiltInTool)->toBeFalse();
     });
 
     it('can define a tool statically', function () {
@@ -97,7 +98,66 @@ describe('Tool', function () {
         expect($array)->toHaveKey('description')
             ->and($array['description'])->toBeNull()
             ->and($array)->toHaveKey('parameters')
-            ->and($array['parameters'])->toBeNull();
+            ->and($array['parameters'])->toBeNull()
+            ->and($array)->not->toHaveKey('overridesBuiltInTool');
+    });
+
+    it('includes overridesBuiltInTool in toArray when true', function () {
+        $handler = fn () => null;
+
+        $tool = new Tool(
+            name: 'override_tool',
+            description: null,
+            parameters: null,
+            handler: $handler,
+            overridesBuiltInTool: true,
+        );
+
+        $array = $tool->toArray();
+
+        expect($array)->toHaveKey('overridesBuiltInTool')
+            ->and($array['overridesBuiltInTool'])->toBeTrue();
+    });
+
+    it('omits overridesBuiltInTool from toArray when false', function () {
+        $handler = fn () => null;
+
+        $tool = new Tool(
+            name: 'normal_tool',
+            description: null,
+            parameters: null,
+            handler: $handler,
+            overridesBuiltInTool: false,
+        );
+
+        expect($tool->toArray())->not->toHaveKey('overridesBuiltInTool');
+    });
+
+    it('can define a tool with overridesBuiltInTool', function () {
+        $handler = fn () => null;
+
+        $toolArray = Tool::define(
+            name: 'edit_file',
+            description: 'Custom file editor',
+            parameters: null,
+            handler: $handler,
+            overridesBuiltInTool: true,
+        );
+
+        expect($toolArray)->toHaveKey('overridesBuiltInTool')
+            ->and($toolArray['overridesBuiltInTool'])->toBeTrue();
+    });
+
+    it('can create from array with overridesBuiltInTool', function () {
+        $handler = fn () => null;
+
+        $tool = Tool::fromArray([
+            'name' => 'edit_file',
+            'handler' => $handler,
+            'overridesBuiltInTool' => true,
+        ]);
+
+        expect($tool->overridesBuiltInTool)->toBeTrue();
     });
 
     it('handler can be executed', function () {
