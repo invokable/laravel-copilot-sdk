@@ -30,7 +30,7 @@ interface CopilotSession
      *
      * @throws JsonRpcException
      */
-    public function setModel(string $modelId): void;
+    public function setModel(string $model): void;
 
     /**
      * Send a message to this session.

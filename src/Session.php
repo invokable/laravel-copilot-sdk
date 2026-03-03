@@ -668,9 +668,9 @@ class Session implements CopilotSession
      *
      * @throws JsonRpcException
      */
-    public function setModel(string $modelId): void
+    public function setModel(string $model): void
     {
-        $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $modelId));
+        $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $model));
     }
 
     /**

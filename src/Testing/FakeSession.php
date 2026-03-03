@@ -47,7 +47,7 @@ class FakeSession implements CopilotSession
         );
     }
 
-    public function setModel(string $modelId): void
+    public function setModel(string $model): void
     {
         // No-op in fake
     }
