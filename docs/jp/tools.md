@@ -61,6 +61,7 @@ Artisan::command('copilot:tools', function () {
                         toolTelemetry: [],
                     );
                 },
+                overridesBuiltInTool: false,
             ),
         ],
     );
