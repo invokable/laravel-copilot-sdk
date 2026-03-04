@@ -23,13 +23,13 @@
 #
 # Automatically tracks official github/copilot-sdk changes and creates PRs to update the Laravel implementation.
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a09e4f99a7b6d090d597919f7e468775dbe8b33fc72f4fc5c44e9be102d0b6ed","compiler_version":"v0.53.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d00a157097169472e283a329420bae642f47dc2019a1771a95c672f0178a6b05","compiler_version":"v0.53.2"}
 
 name: "SDK Sync"
 "on":
   schedule:
-  - cron: "55 5 * * 1-5"
-    # Friendly format: daily on weekdays (scattered)
+  - cron: "55 20 * * 1-5"
+    # Friendly format: daily around 5:00 utc+9 on weekdays (scattered)
   workflow_dispatch:
 
 permissions: {}
