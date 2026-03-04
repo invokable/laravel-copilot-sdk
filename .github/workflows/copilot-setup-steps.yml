@@ -28,6 +28,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Install gh-aw CLI
+        uses: github/gh-aw/actions/setup-cli@bd9c0ca491e6334a2797ef56ad6ee89958d54ab9 # v0.53.2
+        with:
+          version: v0.53.2
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
