@@ -33,6 +33,7 @@ safe-outputs:
     labels: [sdk-sync, automated]
     draft: true
     if-no-changes: ignore
+    github-token-for-extra-empty-commit: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
 
 network:
   allowed:
