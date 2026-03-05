@@ -56,6 +56,18 @@ enum SessionEventType: string
     case TOOL_EXECUTION_PROGRESS = 'tool.execution_progress';
     case TOOL_EXECUTION_COMPLETE = 'tool.execution_complete';
 
+    // Permission events
+    case PERMISSION_REQUESTED = 'permission.requested';
+    case PERMISSION_COMPLETED = 'permission.completed';
+
+    // User input events
+    case USER_INPUT_REQUESTED = 'user_input.requested';
+    case USER_INPUT_COMPLETED = 'user_input.completed';
+
+    // Elicitation events
+    case ELICITATION_REQUESTED = 'elicitation.requested';
+    case ELICITATION_COMPLETED = 'elicitation.completed';
+
     // Skill events
     case SKILL_INVOKED = 'skill.invoked';
 
