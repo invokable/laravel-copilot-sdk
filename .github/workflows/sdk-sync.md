@@ -31,7 +31,9 @@ safe-outputs:
   create-pull-request:
     title-prefix: "[sdk-sync] "
     labels: [sdk-sync, automated]
+    reviewers: [kawax]
     draft: true
+    fallback-as-issue: false
     if-no-changes: ignore
     github-token-for-extra-empty-commit: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
 
