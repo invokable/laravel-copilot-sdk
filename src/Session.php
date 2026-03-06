@@ -645,11 +645,17 @@ class Session implements CopilotSession
     }
 
     /**
-     * Destroy this session.
+     * Disconnect this session and release all in-memory resources (event handlers,
+     * tool handlers, permission handlers).
+     *
+     * Session state on disk (conversation history, planning state, artifacts) is
+     * preserved, so the conversation can be resumed later via resumeSession().
+     * To permanently remove all session data including files on disk, use
+     * deleteSession() instead.
      *
      * @throws JsonRpcException
      */
-    public function destroy(): void
+    public function disconnect(): void
     {
         $this->client->request('session.destroy', [
             'sessionId' => $this->sessionId,
@@ -661,6 +667,19 @@ class Session implements CopilotSession
         $this->permissionHandler = null;
         $this->userInputHandler = null;
         $this->hooks = null;
+    }
+
+    /**
+     * @deprecated Use disconnect() instead. This method will be removed in a future release.
+     *
+     * Disconnect this session and release all in-memory resources.
+     * Session data on disk is preserved for later resumption.
+     *
+     * @throws JsonRpcException
+     */
+    public function destroy(): void
+    {
+        $this->disconnect();
     }
 
     /**
