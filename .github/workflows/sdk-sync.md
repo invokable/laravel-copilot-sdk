@@ -112,7 +112,6 @@ Follow these conventions strictly:
 - **Enums**: Use PHP 8.4 backed enums in `src/Enums/`.
 - **Contracts**: Update interfaces in `src/Contracts/` when adding public methods to Client or Session.
 - **Testing**: Update fakes in `src/Testing/` (CopilotFake, FakeSession) when Contracts change.
-- **Named arguments**: Public APIs use named arguments for readability, not array or DTO parameters.
 
 ### What NOT to change
 
