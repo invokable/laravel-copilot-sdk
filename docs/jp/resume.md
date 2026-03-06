@@ -74,7 +74,7 @@ use Revolution\Copilot\Facades\Copilot;
 Copilot::start(function (CopilotSession $session) {
     dump('Starting Copilot session: '.$session->id());
 
-    $session->destroy();
+    $session->disconnect();
 
     $session = Copilot::client()->resumeSession(sessionId: 'user-123-conversation');
 
