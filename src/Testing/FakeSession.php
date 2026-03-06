@@ -125,10 +125,18 @@ class FakeSession implements CopilotSession
     }
 
     /**
-     * Destroy this session.
+     * Disconnect this session and release all in-memory resources.
+     */
+    public function disconnect(): void
+    {
+        // No-op in fake
+    }
+
+    /**
+     * @deprecated Use disconnect() instead.
      */
     public function destroy(): void
     {
-        // No-op in fake
+        $this->disconnect();
     }
 }

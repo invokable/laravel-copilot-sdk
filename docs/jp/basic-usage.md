@@ -33,6 +33,6 @@ $session->wait(timeout: 60.0);// True Asyncが正式に実装されるまではw
 
 $done();
 
-$session->destroy();
+$session->disconnect();
 $client->stop();
 ```

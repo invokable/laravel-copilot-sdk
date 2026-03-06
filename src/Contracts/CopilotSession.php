@@ -83,7 +83,13 @@ interface CopilotSession
     public function getMessages(): array;
 
     /**
-     * Destroy this session.
+     * Disconnect this session and release all in-memory resources.
+     * Session data on disk is preserved for later resumption.
+     */
+    public function disconnect(): void;
+
+    /**
+     * @deprecated Use disconnect() instead.
      */
     public function destroy(): void;
 }
