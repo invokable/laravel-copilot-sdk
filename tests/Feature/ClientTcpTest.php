@@ -7,6 +7,7 @@ use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Protocol;
 use Revolution\Copilot\Transport\TcpTransport;
 
 beforeEach(function () {
@@ -43,7 +44,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()
-            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
 
@@ -72,7 +73,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()
-            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
 
