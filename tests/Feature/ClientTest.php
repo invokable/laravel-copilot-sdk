@@ -9,6 +9,7 @@ use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
+use Revolution\Copilot\Protocol;
 use Revolution\Copilot\Session;
 use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Transport\StdioTransport;
@@ -57,7 +58,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()
-            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -88,7 +89,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()
-            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -153,7 +154,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()
-            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -186,7 +187,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()
-            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
             ->with('session.create', Mockery::any())
             ->once()
@@ -242,7 +243,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()
-            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -274,7 +275,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()
-            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -308,7 +309,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('request')
             ->with('status.get')
             ->once()
-            ->andReturn(['version' => '', 'protocolVersion' => 2]);
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
             ->with('session.resume', Mockery::any())
             ->once()

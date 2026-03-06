@@ -6,7 +6,7 @@ namespace Revolution\Copilot;
 
 final readonly class Protocol
 {
-    protected const int SDK_PROTOCOL_VERSION = 2;
+    protected const int SDK_PROTOCOL_VERSION = 3;
 
     /**
      * Get the SDK protocol version.
