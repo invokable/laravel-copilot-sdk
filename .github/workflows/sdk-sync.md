@@ -145,7 +145,41 @@ Follow these conventions strictly:
 4. If existing tests need updating for new behavior, update them.
 5. Add new tests for significant new functionality in the `tests/` directory.
 
-## Step 6: Save Sync State
+## Step 6: Update Documentation
+
+Review the changes implemented in Step 4 and update relevant documentation files:
+
+### docs/jp/ (Japanese documentation)
+
+Check the following files and update them if the corresponding feature changed:
+
+| Changed area | Document to update |
+|---|---|
+| New or changed RPC methods | `docs/jp/rpc.md` |
+| New or changed session events | `docs/jp/session-event.md` |
+| New client/session methods | `docs/jp/basic-usage.md` |
+| New or changed session config options | `docs/jp/session-config.md` |
+| New or changed streaming behavior | `docs/jp/streaming.md` |
+| New or changed model options | `docs/jp/models.md` |
+| New or changed MCP features | `docs/jp/mcp.md` |
+| New or changed hooks | `docs/jp/hooks.md` |
+| New or changed tools | `docs/jp/tools.md` |
+| New or changed permission requests | `docs/jp/permission-request.md` |
+| New or changed session context | `docs/jp/session-context.md` |
+| New or changed resume behavior | `docs/jp/resume.md` |
+
+### docs/getting-started.md (English)
+
+Update if the getting-started flow has changed (new required config, changed API signatures, etc.).
+
+### Documentation guidelines
+
+- Keep the Japanese tone and style consistent with existing content.
+- Only update files that are directly affected by the synced changes.
+- If a new feature has no corresponding doc file, skip (do not create new doc files in this workflow).
+- Do not rewrite sections unrelated to the synced changes.
+
+## Step 7: Save Sync State
 
 Write the sync state to cache-memory so future runs know what was processed:
 
@@ -159,7 +193,7 @@ Write the sync state to cache-memory so future runs know what was processed:
 
 Save this as `sdk-sync-state.json` in cache-memory.
 
-## Step 7: Create Pull Request
+## Step 8: Create Pull Request
 
 Create a draft PR with:
 - **Title**: A concise description of the sync (e.g., "Sync with copilot-sdk: add new RPC methods for model switching")
