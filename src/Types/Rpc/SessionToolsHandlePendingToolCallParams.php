@@ -11,8 +11,8 @@ use Illuminate\Contracts\Support\Arrayable;
  *
  * The result can be either:
  * - A plain string result
- * - An array with textResultForLlm, optionally resultType, error, toolTelemetry
- * - null (when providing error instead)
+ * - An array with textResultForLlm, optionally resultType and toolTelemetry
+ * - null (when providing $error instead)
  */
 readonly class SessionToolsHandlePendingToolCallParams implements Arrayable
 {
