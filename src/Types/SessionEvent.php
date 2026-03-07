@@ -26,11 +26,23 @@ readonly class SessionEvent implements Arrayable, Jsonable
     use Tappable;
 
     public function __construct(
+        /**
+         * Unique event identifier (UUID v4), generated when the event is emitted
+         */
         public string $id,
+        /**
+         * ISO 8601 timestamp when the event was created
+         */
         public string $timestamp,
+        /**
+         * ID of the chronologically preceding event in the session, forming a linked chain. Null for the first event.
+         */
         public ?string $parentId,
         public SessionEventType $type,
         public array $data,
+        /**
+         * When true, the event is transient and not persisted to the session event log on disk
+         */
         public bool $ephemeral = false,
         protected ?Throwable $exception = null,
     ) {
