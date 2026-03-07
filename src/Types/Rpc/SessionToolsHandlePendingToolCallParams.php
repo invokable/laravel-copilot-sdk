@@ -9,10 +9,10 @@ use Illuminate\Contracts\Support\Arrayable;
 /**
  * Parameters for handling a pending tool call.
  *
- * The result can be either:
- * - A plain string result
- * - An array with textResultForLlm, optionally resultType and toolTelemetry
- * - null (when providing $error instead)
+ * Provide either $result or $error, but not both:
+ * - $result: a plain string, or a structured array with textResultForLlm and
+ *   optionally resultType and toolTelemetry
+ * - $error: a string describing the error that occurred during tool execution
  */
 readonly class SessionToolsHandlePendingToolCallParams implements Arrayable
 {
