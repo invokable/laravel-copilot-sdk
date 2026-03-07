@@ -100,13 +100,13 @@ $session->rpc()->compaction()->compact();
 
 // tools (プロトコルv3+: external_tool.requestedイベントへの応答)
 $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToolCallParams(
-    requestId: $event->data['requestId'],
+    requestId: '...',
     result: 'ツールの実行結果',
 ));
 
 // permissions (プロトコルv3+: permission.requestedイベントへの応答)
 $session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
-    requestId: $event->data['requestId'],
+    requestId: '...',
     result: PermissionRequestKind::approved(),
 ));
 ```
