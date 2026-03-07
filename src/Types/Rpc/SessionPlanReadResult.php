@@ -12,10 +12,12 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class SessionPlanReadResult implements Arrayable
 {
     public function __construct(
-        /** Whether plan.md exists in the workspace */
+        /** Whether the plan file exists in the workspace */
         public bool $exists,
-        /** The content of plan.md, or null if it does not exist */
+        /** The content of the plan file, or null if it does not exist */
         public ?string $content = null,
+        /** Absolute file path of the plan file, or null if workspace is not enabled */
+        public ?string $path = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -23,6 +25,7 @@ readonly class SessionPlanReadResult implements Arrayable
         return new self(
             exists: $data['exists'],
             content: $data['content'] ?? null,
+            path: $data['path'] ?? null,
         );
     }
 
@@ -31,6 +34,7 @@ readonly class SessionPlanReadResult implements Arrayable
         return [
             'exists' => $this->exists,
             'content' => $this->content,
+            'path' => $this->path,
         ];
     }
 }

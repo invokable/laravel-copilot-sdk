@@ -56,6 +56,18 @@ enum SessionEventType: string
     case TOOL_EXECUTION_PROGRESS = 'tool.execution_progress';
     case TOOL_EXECUTION_COMPLETE = 'tool.execution_complete';
 
+    // External tool events (protocol v3+, broadcast via session events)
+    case EXTERNAL_TOOL_REQUESTED = 'external_tool.requested';
+    case EXTERNAL_TOOL_COMPLETED = 'external_tool.completed';
+
+    // Command events (protocol v3+)
+    case COMMAND_QUEUED = 'command.queued';
+    case COMMAND_COMPLETED = 'command.completed';
+
+    // Exit plan mode events (protocol v3+)
+    case EXIT_PLAN_MODE_REQUESTED = 'exit_plan_mode.requested';
+    case EXIT_PLAN_MODE_COMPLETED = 'exit_plan_mode.completed';
+
     // Permission events
     case PERMISSION_REQUESTED = 'permission.requested';
     case PERMISSION_COMPLETED = 'permission.completed';

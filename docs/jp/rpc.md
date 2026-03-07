@@ -97,6 +97,18 @@ $session->rpc()->agent()->deselect();
 
 // compaction
 $session->rpc()->compaction()->compact();
+
+// tools (プロトコルv3+: external_tool.requestedイベントへの応答)
+$session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToolCallParams(
+    requestId: '...',
+    result: 'ツールの実行結果',
+));
+
+// permissions (プロトコルv3+: permission.requestedイベントへの応答)
+$session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
+    requestId: '...',
+    result: PermissionRequestKind::approved(),
+));
 ```
 
 ## 配列での引数指定
@@ -105,6 +117,36 @@ $session->rpc()->compaction()->compact();
 
 ```php
 $session->rpc()->mode()->set(['mode' => 'plan']);
+```
+
+## プロトコルv3のツール・パーミッション処理
+
+プロトコルv3以降では、ツール呼び出しリクエストとパーミッションリクエストがセッションイベントとして届きます（`external_tool.requested`、`permission.requested`）。
+それらに対してRPCで応答します。
+
+```php
+use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
+use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
+use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Enums\SessionEventType;
+
+Copilot::start(function (CopilotSession $session) {
+    $session->on(function (SessionEvent $event) use ($session): void {
+        if ($event->is(SessionEventType::EXTERNAL_TOOL_REQUESTED)) {
+            $session->rpc()->tools()->handlePendingToolCall(
+                new SessionToolsHandlePendingToolCallParams(
+                    requestId: $event->data('requestId'),
+                    result: 'ツールの実行結果',
+                )
+            );
+        }
+    });
+
+    $session->sendAndWait(prompt: '...');
+});
 ```
 
 ## Testing
