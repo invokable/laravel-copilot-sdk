@@ -8,6 +8,8 @@ use Revolution\Copilot\Rpc\PendingFleet;
 use Revolution\Copilot\Rpc\PendingMode;
 use Revolution\Copilot\Rpc\PendingModel;
 use Revolution\Copilot\Rpc\PendingPlan;
+use Revolution\Copilot\Rpc\PendingSessionPermissions;
+use Revolution\Copilot\Rpc\PendingSessionTools;
 use Revolution\Copilot\Rpc\PendingWorkspace;
 use Revolution\Copilot\Rpc\SessionRpc;
 
@@ -52,6 +54,18 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->compaction())->toBeInstanceOf(PendingCompaction::class);
+    });
+
+    it('returns PendingSessionTools from tools()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->tools())->toBeInstanceOf(PendingSessionTools::class);
+    });
+
+    it('returns PendingSessionPermissions from permissions()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->permissions())->toBeInstanceOf(PendingSessionPermissions::class);
     });
 });
 

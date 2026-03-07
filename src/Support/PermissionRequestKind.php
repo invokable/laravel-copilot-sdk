@@ -18,6 +18,8 @@ final readonly class PermissionRequestKind
 
     public const string DENIED_INTERACTIVELY_BY_USER = 'denied-interactively-by-user';
 
+    public const string DENIED_BY_CONTENT_EXCLUSION_POLICY = 'denied-by-content-exclusion-policy';
+
     public static function approved(): array
     {
         return ['kind' => self::APPROVED];
@@ -33,9 +35,24 @@ final readonly class PermissionRequestKind
         return ['kind' => self::DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER];
     }
 
-    public static function deniedInteractivelyByUser(): array
+    public static function deniedInteractivelyByUser(?string $feedback = null): array
     {
-        return ['kind' => self::DENIED_INTERACTIVELY_BY_USER];
+        $result = ['kind' => self::DENIED_INTERACTIVELY_BY_USER];
+
+        if ($feedback !== null) {
+            $result['feedback'] = $feedback;
+        }
+
+        return $result;
+    }
+
+    public static function deniedByContentExclusionPolicy(string $path, string $message): array
+    {
+        return [
+            'kind' => self::DENIED_BY_CONTENT_EXCLUSION_POLICY,
+            'path' => $path,
+            'message' => $message,
+        ];
     }
 
     /**
@@ -48,6 +65,7 @@ final readonly class PermissionRequestKind
             self::DENIED_BY_RULES => __('Denied by Rules'),
             self::DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER => __('Denied No Approval Rule and Could Not Request from User'),
             self::DENIED_INTERACTIVELY_BY_USER => __('Denied Interactively by User'),
+            self::DENIED_BY_CONTENT_EXCLUSION_POLICY => __('Denied by Content Exclusion Policy'),
         ];
     }
 }

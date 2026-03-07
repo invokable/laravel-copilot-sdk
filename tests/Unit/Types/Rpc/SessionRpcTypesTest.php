@@ -8,6 +8,10 @@ use Revolution\Copilot\Types\Rpc\SessionFleetStartResult;
 use Revolution\Copilot\Types\Rpc\SessionModeGetResult;
 use Revolution\Copilot\Types\Rpc\SessionModelGetCurrentResult;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestResult;
+use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
+use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallResult;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToResult;
 use Revolution\Copilot\Types\Rpc\SessionModeSetParams;
 use Revolution\Copilot\Types\Rpc\SessionModeSetResult;
@@ -78,14 +82,37 @@ describe('SessionPlanReadResult', function () {
         ]);
 
         expect($result->exists)->toBeTrue()
-            ->and($result->content)->toBe('# Plan');
+            ->and($result->content)->toBe('# Plan')
+            ->and($result->path)->toBeNull();
     });
 
     it('can be created from array without content', function () {
         $result = SessionPlanReadResult::fromArray(['exists' => false]);
 
         expect($result->exists)->toBeFalse()
-            ->and($result->content)->toBeNull();
+            ->and($result->content)->toBeNull()
+            ->and($result->path)->toBeNull();
+    });
+
+    it('can be created from array with path', function () {
+        $result = SessionPlanReadResult::fromArray([
+            'exists' => true,
+            'content' => '# Plan',
+            'path' => '/workspace/plan.md',
+        ]);
+
+        expect($result->exists)->toBeTrue()
+            ->and($result->path)->toBe('/workspace/plan.md');
+    });
+
+    it('includes path in toArray', function () {
+        $result = new SessionPlanReadResult(exists: true, content: '# Plan', path: '/workspace/plan.md');
+
+        expect($result->toArray())->toBe([
+            'exists' => true,
+            'content' => '# Plan',
+            'path' => '/workspace/plan.md',
+        ]);
     });
 });
 
@@ -180,5 +207,85 @@ describe('SessionCompactionCompactResult', function () {
             'tokensRemoved' => 500,
             'messagesRemoved' => 3,
         ]);
+    });
+});
+
+describe('SessionToolsHandlePendingToolCallResult', function () {
+    it('can be created from array', function () {
+        $result = SessionToolsHandlePendingToolCallResult::fromArray(['success' => true]);
+        expect($result->success)->toBeTrue();
+    });
+
+    it('can convert to array', function () {
+        $result = new SessionToolsHandlePendingToolCallResult(success: false);
+        expect($result->toArray())->toBe(['success' => false]);
+    });
+});
+
+describe('SessionToolsHandlePendingToolCallParams', function () {
+    it('can be created with string result', function () {
+        $params = new SessionToolsHandlePendingToolCallParams(requestId: 'req-1', result: 'done');
+        expect($params->toArray())->toBe(['requestId' => 'req-1', 'result' => 'done']);
+    });
+
+    it('can be created with structured result', function () {
+        $params = new SessionToolsHandlePendingToolCallParams(
+            requestId: 'req-1',
+            result: ['textResultForLlm' => 'output', 'resultType' => 'text'],
+        );
+        expect($params->toArray())->toMatchArray(['requestId' => 'req-1']);
+    });
+
+    it('can be created with error', function () {
+        $params = new SessionToolsHandlePendingToolCallParams(requestId: 'req-1', error: 'failed');
+        expect($params->toArray())->toBe(['requestId' => 'req-1', 'error' => 'failed']);
+    });
+
+    it('omits null fields', function () {
+        $params = new SessionToolsHandlePendingToolCallParams(requestId: 'req-1');
+        expect($params->toArray())->toBe(['requestId' => 'req-1']);
+    });
+
+    it('can be created from array', function () {
+        $params = SessionToolsHandlePendingToolCallParams::fromArray([
+            'requestId' => 'req-2',
+            'result' => 'success',
+        ]);
+        expect($params->requestId)->toBe('req-2')
+            ->and($params->result)->toBe('success');
+    });
+});
+
+describe('SessionPermissionsHandlePendingPermissionRequestResult', function () {
+    it('can be created from array', function () {
+        $result = SessionPermissionsHandlePendingPermissionRequestResult::fromArray(['success' => true]);
+        expect($result->success)->toBeTrue();
+    });
+
+    it('can convert to array', function () {
+        $result = new SessionPermissionsHandlePendingPermissionRequestResult(success: true);
+        expect($result->toArray())->toBe(['success' => true]);
+    });
+});
+
+describe('SessionPermissionsHandlePendingPermissionRequestParams', function () {
+    it('can be created with approved result', function () {
+        $params = new SessionPermissionsHandlePendingPermissionRequestParams(
+            requestId: 'perm-1',
+            result: ['kind' => 'approved'],
+        );
+        expect($params->toArray())->toBe([
+            'requestId' => 'perm-1',
+            'result' => ['kind' => 'approved'],
+        ]);
+    });
+
+    it('can be created from array', function () {
+        $params = SessionPermissionsHandlePendingPermissionRequestParams::fromArray([
+            'requestId' => 'perm-2',
+            'result' => ['kind' => 'denied-interactively-by-user'],
+        ]);
+        expect($params->requestId)->toBe('perm-2')
+            ->and($params->result['kind'])->toBe('denied-interactively-by-user');
     });
 });

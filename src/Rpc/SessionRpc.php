@@ -20,6 +20,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->fleet()->start();
  * $session->rpc()->agent()->list();
  * $session->rpc()->compaction()->compact();
+ * $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToolCallParams(requestId: '...', result: 'done'));
+ * $session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(requestId: '...', result: PermissionRequestKind::approved()));
  * ```
  */
 class SessionRpc
@@ -83,5 +85,25 @@ class SessionRpc
     public function compaction(): PendingCompaction
     {
         return new PendingCompaction($this->client, $this->sessionId);
+    }
+
+    /**
+     * Session-scoped tools RPC operations (protocol v3+).
+     *
+     * Used to respond to tool call requests received as session events.
+     */
+    public function tools(): PendingSessionTools
+    {
+        return new PendingSessionTools($this->client, $this->sessionId);
+    }
+
+    /**
+     * Session-scoped permissions RPC operations (protocol v3+).
+     *
+     * Used to respond to permission requests received as session events.
+     */
+    public function permissions(): PendingSessionPermissions
+    {
+        return new PendingSessionPermissions($this->client, $this->sessionId);
     }
 }
