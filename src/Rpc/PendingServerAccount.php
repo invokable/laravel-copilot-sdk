@@ -10,7 +10,7 @@ use Revolution\Copilot\Types\Rpc\AccountGetQuotaResult;
 /**
  * Pending account RPC operations.
  */
-class PendingAccount
+class PendingServerAccount
 {
     public function __construct(
         protected JsonRpcClient $client,

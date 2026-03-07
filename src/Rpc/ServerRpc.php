@@ -40,24 +40,24 @@ class ServerRpc
     /**
      * Models RPC operations.
      */
-    public function models(): PendingModels
+    public function models(): PendingServerModels
     {
-        return new PendingModels($this->client);
+        return new PendingServerModels($this->client);
     }
 
     /**
      * Tools RPC operations.
      */
-    public function tools(): PendingTools
+    public function tools(): PendingServerTools
     {
-        return new PendingTools($this->client);
+        return new PendingServerTools($this->client);
     }
 
     /**
      * Account RPC operations.
      */
-    public function account(): PendingAccount
+    public function account(): PendingServerAccount
     {
-        return new PendingAccount($this->client);
+        return new PendingServerAccount($this->client);
     }
 }

@@ -10,7 +10,7 @@ use Revolution\Copilot\Types\Rpc\ModelsListResult;
 /**
  * Pending models RPC operations.
  */
-class PendingModels
+class PendingServerModels
 {
     public function __construct(
         protected JsonRpcClient $client,

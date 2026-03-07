@@ -11,7 +11,7 @@ use Revolution\Copilot\Types\Rpc\ToolsListResult;
 /**
  * Pending tools RPC operations.
  */
-class PendingTools
+class PendingServerTools
 {
     public function __construct(
         protected JsonRpcClient $client,
