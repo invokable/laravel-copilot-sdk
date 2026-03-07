@@ -14,7 +14,7 @@ use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallResult;
  * Used to respond to tool call requests received as session events (protocol v3+).
  * For protocol v2, tool calls are handled automatically by the permission handler.
  */
-class PendingSessionTools
+class PendingTools
 {
     public function __construct(
         protected JsonRpcClient $client,

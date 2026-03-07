@@ -14,7 +14,7 @@ use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionReques
  * Used to respond to permission requests received as session events (protocol v3+).
  * For protocol v2, permission requests are handled automatically by the permission handler.
  */
-class PendingSessionPermissions
+class PendingPermissions
 {
     public function __construct(
         protected JsonRpcClient $client,

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Rpc\PendingSessionTools;
+use Revolution\Copilot\Rpc\PendingTools;
 use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
 use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallResult;
 
@@ -20,7 +20,7 @@ describe('PendingSessionTools', function () {
             )
             ->andReturn(['success' => true]);
 
-        $pending = new PendingSessionTools($client, 'test-session-id');
+        $pending = new PendingTools($client, 'test-session-id');
         $result = $pending->handlePendingToolCall(
             new SessionToolsHandlePendingToolCallParams(requestId: 'req-1', result: 'tool output'),
         );
@@ -39,7 +39,7 @@ describe('PendingSessionTools', function () {
             )
             ->andReturn(['success' => true]);
 
-        $pending = new PendingSessionTools($client, 'test-session-id');
+        $pending = new PendingTools($client, 'test-session-id');
         $result = $pending->handlePendingToolCall([
             'requestId' => 'req-2',
             'result' => 'output',
@@ -63,7 +63,7 @@ describe('PendingSessionTools', function () {
             )
             ->andReturn(['success' => false]);
 
-        $pending = new PendingSessionTools($client, 'test-session-id');
+        $pending = new PendingTools($client, 'test-session-id');
         $result = $pending->handlePendingToolCall(
             new SessionToolsHandlePendingToolCallParams(requestId: 'req-3', error: 'something went wrong'),
         );

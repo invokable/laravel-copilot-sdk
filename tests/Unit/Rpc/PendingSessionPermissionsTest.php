@@ -6,7 +6,7 @@ use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\JsonRpc\JsonRpcMessage;
-use Revolution\Copilot\Rpc\PendingSessionPermissions;
+use Revolution\Copilot\Rpc\PendingPermissions;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestResult;
 
@@ -60,7 +60,7 @@ describe('PendingSessionPermissions', function () {
         $sentMessages = [];
         $client = makePermissionsClient($sentMessages);
 
-        $pending = new PendingSessionPermissions($client, 'session-abc');
+        $pending = new PendingPermissions($client, 'session-abc');
         $pending->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
             requestId: 'req-1',
             result: ['kind' => 'approved'],
@@ -74,7 +74,7 @@ describe('PendingSessionPermissions', function () {
         $sentMessages = [];
         $client = makePermissionsClient($sentMessages);
 
-        $pending = new PendingSessionPermissions($client, 'session-abc');
+        $pending = new PendingPermissions($client, 'session-abc');
         $pending->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
             requestId: 'req-1',
             result: ['kind' => 'approved'],
@@ -88,7 +88,7 @@ describe('PendingSessionPermissions', function () {
         $sentMessages = [];
         $client = makePermissionsClient($sentMessages);
 
-        $pending = new PendingSessionPermissions($client, 'session-abc');
+        $pending = new PendingPermissions($client, 'session-abc');
         $pending->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
             requestId: 'perm-req-42',
             result: ['kind' => 'denied-interactively-by-user'],
@@ -103,7 +103,7 @@ describe('PendingSessionPermissions', function () {
         $sentMessages = [];
         $client = makePermissionsClient($sentMessages);
 
-        $pending = new PendingSessionPermissions($client, 'session-abc');
+        $pending = new PendingPermissions($client, 'session-abc');
         $result = $pending->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
             requestId: 'req-1',
             result: ['kind' => 'approved'],
@@ -117,7 +117,7 @@ describe('PendingSessionPermissions', function () {
         $sentMessages = [];
         $client = makePermissionsClient($sentMessages);
 
-        $pending = new PendingSessionPermissions($client, 'session-xyz');
+        $pending = new PendingPermissions($client, 'session-xyz');
         $result = $pending->handlePendingPermissionRequest([
             'requestId' => 'req-array',
             'result' => ['kind' => 'approved'],

@@ -92,9 +92,9 @@ class SessionRpc
      *
      * Used to respond to tool call requests received as session events.
      */
-    public function tools(): PendingSessionTools
+    public function tools(): PendingTools
     {
-        return new PendingSessionTools($this->client, $this->sessionId);
+        return new PendingTools($this->client, $this->sessionId);
     }
 
     /**
@@ -102,8 +102,8 @@ class SessionRpc
      *
      * Used to respond to permission requests received as session events.
      */
-    public function permissions(): PendingSessionPermissions
+    public function permissions(): PendingPermissions
     {
-        return new PendingSessionPermissions($this->client, $this->sessionId);
+        return new PendingPermissions($this->client, $this->sessionId);
     }
 }
