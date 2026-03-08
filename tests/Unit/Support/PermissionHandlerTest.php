@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Support\PermissionHandler;
-use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Support\PermissionRequestResultKind;
 
 describe('PermissionHandler', function () {
     it('approveAll returns a closure', function () {
@@ -29,7 +29,7 @@ describe('PermissionHandler', function () {
         $handler = PermissionHandler::approveSafety();
         $result = $handler(['kind' => 'shell'], ['sessionId' => 'test-session']);
 
-        expect($result)->toBe(['kind' => PermissionRequestKind::DENIED_INTERACTIVELY_BY_USER]);
+        expect($result)->toBe(['kind' => PermissionRequestResultKind::DENIED_INTERACTIVELY_BY_USER]);
     });
 
     it('approveSafety closure returns approved kind', function () {
@@ -43,6 +43,6 @@ describe('PermissionHandler', function () {
         $handler = PermissionHandler::denyAll();
         $result = $handler(['kind' => 'read'], ['sessionId' => 'test-session']);
 
-        expect($result)->toBe(['kind' => PermissionRequestKind::DENIED_INTERACTIVELY_BY_USER]);
+        expect($result)->toBe(['kind' => PermissionRequestResultKind::DENIED_INTERACTIVELY_BY_USER]);
     });
 });

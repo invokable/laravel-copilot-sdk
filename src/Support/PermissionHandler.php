@@ -18,7 +18,7 @@ final readonly class PermissionHandler
      */
     public static function approveAll(): Closure
     {
-        return fn (array $request, array $invocation): array => PermissionRequestKind::approved();
+        return fn (array $request, array $invocation): array => PermissionRequestResultKind::approved();
     }
 
     /**
@@ -30,8 +30,8 @@ final readonly class PermissionHandler
     {
         return function (array $request, array $invocation): array {
             return match ($request['kind'] ?? '') {
-                'shell', 'write' => PermissionRequestKind::deniedInteractivelyByUser(),
-                default => PermissionRequestKind::approved(),
+                'shell', 'write' => PermissionRequestResultKind::deniedInteractivelyByUser(),
+                default => PermissionRequestResultKind::approved(),
             };
         };
     }
@@ -43,6 +43,6 @@ final readonly class PermissionHandler
      */
     public static function denyAll(): Closure
     {
-        return fn (array $request, array $invocation): array => PermissionRequestKind::deniedInteractivelyByUser();
+        return fn (array $request, array $invocation): array => PermissionRequestResultKind::deniedInteractivelyByUser();
     }
 }

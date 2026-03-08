@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Concurrency;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Support\PermissionRequestResultKind;
 use Revolution\Copilot\Types\Hooks\PreToolUseHookOutput;
 use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
@@ -60,9 +60,9 @@ Artisan::command('copilot:chat {--resume}', function () {
             );
 
             if ($confirm) {
-                return PermissionRequestKind::approved();
+                return PermissionRequestResultKind::approved();
             } else {
-                return PermissionRequestKind::deniedInteractivelyByUser();
+                return PermissionRequestResultKind::deniedInteractivelyByUser();
             }
         },
         mcpServers: $mcp,

@@ -364,8 +364,9 @@ By default (`config/copilot.php` → `permission_approve: true`), all permission
 In web-facing applications or when prompts can be influenced by end users, you should **not** rely on blanket auto-approval. Instead, inspect each request and gate high-risk operations behind your own authorization logic.
 
 Custom handler example:
+
 ```php
-use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Support\PermissionRequestResultKind;
 
 $config = new SessionConfig(
     onPermissionRequest: function (array $request, array $invocation) {
@@ -374,7 +375,7 @@ $config = new SessionConfig(
             case 'shell':
             case 'write':
                 // High-risk operations: require explicit application-level authorization or deny by default.
-                return PermissionRequestKind::deniedInteractivelyByUser();
+                return PermissionRequestResultKind::deniedInteractivelyByUser();
 
             case 'read':
             case 'url':
@@ -382,7 +383,7 @@ $config = new SessionConfig(
             case 'custom-tool':
             default:
                 // Lower-risk operations: adjust this to your own policies (per-user confirmation, permissions, etc.).
-                return PermissionRequestKind::approved();
+                return PermissionRequestResultKind::approved();
         }
     },
 );

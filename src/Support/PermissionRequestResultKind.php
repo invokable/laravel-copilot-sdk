@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Support;
 
-/**
- * The other language versions are only defined as strings.
- * Make it easy to use with static methods.
- */
-final readonly class PermissionRequestKind
+final readonly class PermissionRequestResultKind
 {
     public const string APPROVED = 'approved';
 
