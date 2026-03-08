@@ -816,6 +816,7 @@ class Session implements CopilotSession
      *
      * @throws JsonRpcException
      */
+    #[\Deprecated(message: 'Use disconnect() instead. This method will be removed in a future release.', since: '0.2.28')]
     public function destroy(): void
     {
         $this->disconnect();
