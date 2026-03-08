@@ -93,7 +93,7 @@ describe('CopilotManager', function () {
 
     it('start method calls callback with session', function () {
         $mockSession = Mockery::mock(CopilotSession::class);
-        $mockSession->shouldReceive('destroy')->once();
+        $mockSession->shouldReceive('disconnect')->once();
 
         $mockClient = Mockery::mock(CopilotClient::class);
         $mockClient->shouldReceive('start')->once();
@@ -122,7 +122,7 @@ describe('CopilotManager', function () {
 
     it('start method destroys session even on exception', function () {
         $mockSession = Mockery::mock(CopilotSession::class);
-        $mockSession->shouldReceive('destroy')->once(); // Must be called even on exception
+        $mockSession->shouldReceive('disconnect')->once(); // Must be called even on exception
 
         $mockClient = Mockery::mock(CopilotClient::class);
         $mockClient->shouldReceive('start')->once();
@@ -176,7 +176,7 @@ describe('CopilotManager', function () {
             ->with('test prompt', null, null, 60.0)
             ->once()
             ->andReturn($mockEvent);
-        $mockSession->shouldReceive('destroy')->once();
+        $mockSession->shouldReceive('disconnect')->once();
 
         $mockClient = Mockery::mock(CopilotClient::class);
         $mockClient->shouldReceive('start')->once();
@@ -200,7 +200,7 @@ describe('CopilotManager', function () {
             ->with('prompt', null, null, 120.0) // Custom timeout
             ->once()
             ->andReturn(null);
-        $mockSession->shouldReceive('destroy')->once();
+        $mockSession->shouldReceive('disconnect')->once();
 
         $mockClient = Mockery::mock(CopilotClient::class);
         $mockClient->shouldReceive('start')->once();
@@ -218,7 +218,7 @@ describe('CopilotManager', function () {
     it('resume session', function () {
         $mockClient = mock(CopilotClient::class, function (MockInterface $mock) {
             $mockSession = mock(CopilotSession::class);
-            $mockSession->expects('destroy')->once();
+            $mockSession->expects('disconnect')->once();
 
             $mock->expects('start')->once();
             $mock->expects('resumeSession')->once()->andReturn($mockSession);

@@ -282,7 +282,7 @@ describe('Session', function () {
         $session->registerTools([['name' => 'test', 'handler' => fn () => null]]);
         $session->registerPermissionHandler(fn () => ['kind' => 'approved']);
 
-        $session->destroy();
+        $session->disconnect();
 
         // Handlers should be cleared
         expect($session->getToolHandler('test'))->toBeNull();

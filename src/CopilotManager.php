@@ -81,7 +81,7 @@ class CopilotManager implements Factory
         try {
             return $callback($session);
         } finally {
-            $session->destroy();
+            $session->disconnect();
         }
     }
 
@@ -105,7 +105,7 @@ class CopilotManager implements Factory
         try {
             yield from $callback($session);
         } finally {
-            $session->destroy();
+            $session->disconnect();
         }
     }
 

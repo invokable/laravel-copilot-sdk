@@ -83,7 +83,7 @@ Artisan::command('copilot:chat {--resume}', function () {
                 options: $sessions,
             );
 
-            $session->destroy();
+            $session->disconnect();
 
             $config = ResumeSessionConfig::fromArray($config->toArray());
             $session = Copilot::client()->resumeSession($session_id, $config);

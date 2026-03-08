@@ -188,7 +188,7 @@ class Client implements CopilotClient
         // Destroy all sessions
         foreach ($this->sessions as $session) {
             try {
-                $session->destroy();
+                $session->disconnect();
             } catch (Throwable $e) {
                 $errors[] = $e;
             }
