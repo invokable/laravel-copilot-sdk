@@ -531,4 +531,4 @@ The SDK dispatches Laravel events for logging and debugging:
 | `Attachment` | `Attachment::file()`, `Attachment::directory()`, `Attachment::selection()` |
 | `ServerRpc` / `SessionRpc` | Typed RPC layer |
 | `PermissionHandler` | `PermissionHandler::approveAll()` |
-| `PermissionRequestKind` | `approved()`, `deniedInteractivelyByUser()`, `select()` |
+| `PermissionRequestResultKind` | `approved()`, `deniedInteractivelyByUser()`, `select()` |

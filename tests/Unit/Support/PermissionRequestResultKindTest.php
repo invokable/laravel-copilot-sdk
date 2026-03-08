@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Support\PermissionRequestResultKind;
 
-describe('PermissionRequestKind', function () {
+describe('PermissionRequestResultKind', function () {
     it('approved', function () {
         expect(PermissionRequestResultKind::approved())->toContain('approved');
     });
