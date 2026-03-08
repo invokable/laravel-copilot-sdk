@@ -16,7 +16,7 @@ use Illuminate\Contracts\Support\Arrayable;
  * - "denied-interactively-by-user" (with optional "feedback" string)
  * - "denied-by-content-exclusion-policy" (with required "path" and "message" strings)
  *
- * Use {@see \Revolution\Copilot\Support\PermissionRequestKind} for building result arrays.
+ * Use {@see \Revolution\Copilot\Support\PermissionRequestResultKind} for building result arrays.
  */
 readonly class SessionPermissionsHandlePendingPermissionRequestParams implements Arrayable
 {

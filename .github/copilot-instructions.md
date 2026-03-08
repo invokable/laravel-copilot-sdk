@@ -163,7 +163,7 @@ src/
 │   └── Pending*.php            # Python版の*Apiと同様の中間クラス
 ├── Support/                     # 分類しにくいヘルパークラス
 │   ├── Attachment.php
-│   └── PermissionRequestKind.php
+│   └── PermissionRequestResultKind.php
 ├── Testing/
 │   ├── CopilotFake.php         # テスト用モック
 │   ├── FakeSession.php

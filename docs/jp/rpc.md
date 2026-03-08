@@ -107,7 +107,7 @@ $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToo
 // permissions (プロトコルv3+: permission.requestedイベントへの応答)
 $session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
     requestId: '...',
-    result: PermissionRequestKind::approved(),
+    result: PermissionRequestResultKind::approved(),
 ));
 ```
 

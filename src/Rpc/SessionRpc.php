@@ -21,7 +21,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->agent()->list();
  * $session->rpc()->compaction()->compact();
  * $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToolCallParams(requestId: '...', result: 'done'));
- * $session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(requestId: '...', result: PermissionRequestKind::approved()));
+ * $session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(requestId: '...', result: PermissionRequestResultKind::approved()));
  * ```
  */
 class SessionRpc

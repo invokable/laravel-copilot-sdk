@@ -19,7 +19,7 @@ use Revolution\Copilot\Exceptions\SessionErrorException;
 use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
-use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Support\PermissionRequestResultKind;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
 use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
@@ -616,7 +616,7 @@ class Session implements CopilotSession
                     $this->rpc()->permissions()->handlePendingPermissionRequest(
                         new SessionPermissionsHandlePendingPermissionRequestParams(
                             requestId: $requestId,
-                            result: PermissionRequestKind::deniedNoApprovalRuleAndCouldNotRequestFromUser(),
+                            result: PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser(),
                         )
                     );
                 } catch (Throwable) {
@@ -674,13 +674,13 @@ class Session implements CopilotSession
     public function handlePermissionRequest(array $request): array
     {
         if ($this->permissionHandler === null) {
-            return PermissionRequestKind::deniedNoApprovalRuleAndCouldNotRequestFromUser();
+            return PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser();
         }
 
         try {
             return ($this->permissionHandler)($request, ['sessionId' => $this->sessionId]);
         } catch (Throwable) {
-            return PermissionRequestKind::deniedNoApprovalRuleAndCouldNotRequestFromUser();
+            return PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser();
         }
     }
 

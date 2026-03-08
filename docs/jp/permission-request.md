@@ -187,11 +187,11 @@ kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool"
 
 ## レスポンス
 
-許可・拒否の結果を配列で返します。`PermissionRequestKind` クラスを使うと便利です。
+許可・拒否の結果を配列で返します。`PermissionRequestResultKind` クラスを使うと便利です。
 
 ```php
-return PermissionRequestKind::approved();
-return PermissionRequestKind::deniedInteractivelyByUser();
+return PermissionRequestResultKind::approved();
+return PermissionRequestResultKind::deniedInteractivelyByUser();
 ```
 
 ## プロトコルの詳細
@@ -200,33 +200,33 @@ Protocol v3（現在のデフォルト）では、パーミッションリクエ
 
 **`SessionConfig` の使い方は変わりません。** `onPermissionRequest` にハンドラを渡すだけで、プロトコルの違いはSDKが吸収します。
 
-## PermissionRequestKind
+## PermissionRequestResultKind
 
-`['kind' => 'approved']`の形式で返せばよいですが分かりにくいのでPermissionRequestKindクラスも用意しています。
+`['kind' => 'approved']`の形式で返せばよいですが分かりにくいので`PermissionRequestResultKind`クラスも用意しています。
 
 ```php
-use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Support\PermissionRequestResultKind;
 
 $confirm = confirm(
     label: 'Do you accept the requested permissions?',
 );
 
 if ($confirm) {
-    return PermissionRequestKind::approved();
+    return PermissionRequestResultKind::approved();
 } else {
-    return PermissionRequestKind::deniedInteractivelyByUser();
+    return PermissionRequestResultKind::deniedInteractivelyByUser();
 }
 ```
 
-`Laravel\Prompts\confirm`ではなく`Laravel\Prompts\select`を使いたい場合は`PermissionRequestKind::select()`で選択肢を取得できます。
+`Laravel\Prompts\confirm`ではなく`Laravel\Prompts\select`を使いたい場合は`PermissionRequestResultKind::select()`で選択肢を取得できます。
 
 ```php
-use Revolution\Copilot\Support\PermissionRequestKind;
+use Revolution\Copilot\Support\PermissionRequestResultKind;
 use function Laravel\Prompts\select;
 
 $select = select(
     label: 'Do you accept the requested permissions?',
-    options: PermissionRequestKind::select(),
+    options: PermissionRequestResultKind::select(),
 );
 
 return ['kind' => $select];
