@@ -21,8 +21,11 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\PermissionRequestKind;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
+use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\SessionHooks;
+use Revolution\Copilot\Types\ToolResultObject;
 use Revolution\Copilot\Types\UserInputRequest;
 use Revolution\Copilot\Types\UserInputResponse;
 use Throwable;
@@ -458,12 +461,17 @@ class Session implements CopilotSession
 
     /**
      * Dispatch an event to all registered handlers.
+     * Also handles broadcast request events internally (external tool calls, permissions).
      *
      * @internal
      */
     public function dispatchEvent(SessionEvent $event): void
     {
         SessionEventReceived::dispatch($this->sessionId, $event);
+
+        // Handle broadcast request events internally (protocol v3+) before dispatching to user handlers.
+        // Fire-and-forget: responses are sent asynchronously via RPC using a new Fiber.
+        $this->handleBroadcastEvent($event);
 
         // Dispatch to typed handlers for this specific event type
         $eventType = $event->type();
@@ -488,8 +496,139 @@ class Session implements CopilotSession
     }
 
     /**
-     * Register tool handlers.
+     * Handle broadcast request events (protocol v3+) by executing local handlers
+     * and responding via RPC. Uses a new Fiber to allow async RPC calls (fire-and-forget).
      *
+     * @internal
+     */
+    protected function handleBroadcastEvent(SessionEvent $event): void
+    {
+        if ($event->is(SessionEventType::EXTERNAL_TOOL_REQUESTED)) {
+            $requestId = $event->data['requestId'] ?? null;
+            $toolName = $event->data['toolName'] ?? null;
+            $arguments = $event->data['arguments'] ?? [];
+            $toolCallId = $event->data['toolCallId'] ?? null;
+
+            if ($requestId === null || $toolName === null) {
+                return;
+            }
+
+            $handler = $this->getToolHandler($toolName);
+
+            if ($handler === null) {
+                return; // This client doesn't handle this tool; another client will.
+            }
+
+            $this->executeToolAndRespond($requestId, $toolName, $toolCallId, $arguments, $handler);
+        } elseif ($event->is(SessionEventType::PERMISSION_REQUESTED)) {
+            $requestId = $event->data['requestId'] ?? null;
+            $permissionRequest = $event->data['permissionRequest'] ?? [];
+
+            if ($requestId === null || $this->permissionHandler === null) {
+                return;
+            }
+
+            $this->executePermissionAndRespond($requestId, $permissionRequest);
+        }
+    }
+
+    /**
+     * Execute a tool handler and send the result back via RPC.
+     * Runs in a new Fiber to allow async RPC calls without blocking the event loop.
+     *
+     * @internal
+     */
+    protected function executeToolAndRespond(string $requestId, string $toolName, ?string $toolCallId, mixed $arguments, Closure $handler): void
+    {
+        $fiber = new \Fiber(function () use ($requestId, $toolName, $toolCallId, $arguments, $handler): void {
+            try {
+                $invocation = [
+                    'sessionId' => $this->sessionId,
+                    'toolCallId' => $toolCallId,
+                    'toolName' => $toolName,
+                    'arguments' => $arguments,
+                ];
+
+                /** @var ToolResultObject|array|string|mixed $rawResult */
+                $rawResult = $handler($arguments, $invocation);
+
+                if ($rawResult instanceof ToolResultObject) {
+                    $result = $rawResult->toArray();
+                } elseif (is_string($rawResult) || is_array($rawResult)) {
+                    $result = $rawResult;
+                } else {
+                    $result = $rawResult !== null ? (string) $rawResult : '';
+                }
+
+                // Send failure via error param for consistent server-side formatting
+                if (is_array($result) && ($result['resultType'] ?? null) === 'failure' && isset($result['error'])) {
+                    $this->rpc()->tools()->handlePendingToolCall(
+                        new SessionToolsHandlePendingToolCallParams(
+                            requestId: $requestId,
+                            error: $result['error'],
+                        )
+                    );
+                } else {
+                    $this->rpc()->tools()->handlePendingToolCall(
+                        new SessionToolsHandlePendingToolCallParams(
+                            requestId: $requestId,
+                            result: $result,
+                        )
+                    );
+                }
+            } catch (Throwable $e) {
+                try {
+                    $this->rpc()->tools()->handlePendingToolCall(
+                        new SessionToolsHandlePendingToolCallParams(
+                            requestId: $requestId,
+                            error: $e->getMessage(),
+                        )
+                    );
+                } catch (Throwable) {
+                    // Connection lost or RPC error — nothing we can do
+                }
+            }
+        });
+
+        $fiber->start();
+    }
+
+    /**
+     * Execute the permission handler and send the result back via RPC.
+     * Runs in a new Fiber to allow async RPC calls without blocking the event loop.
+     *
+     * @internal
+     */
+    protected function executePermissionAndRespond(string $requestId, array $permissionRequest): void
+    {
+        $fiber = new \Fiber(function () use ($requestId, $permissionRequest): void {
+            try {
+                $result = ($this->permissionHandler)($permissionRequest, ['sessionId' => $this->sessionId]);
+
+                $this->rpc()->permissions()->handlePendingPermissionRequest(
+                    new SessionPermissionsHandlePendingPermissionRequestParams(
+                        requestId: $requestId,
+                        result: $result,
+                    )
+                );
+            } catch (Throwable) {
+                try {
+                    $this->rpc()->permissions()->handlePendingPermissionRequest(
+                        new SessionPermissionsHandlePendingPermissionRequestParams(
+                            requestId: $requestId,
+                            result: PermissionRequestKind::deniedNoApprovalRuleAndCouldNotRequestFromUser(),
+                        )
+                    );
+                } catch (Throwable) {
+                    // Connection lost or RPC error — nothing we can do
+                }
+            }
+        });
+
+        $fiber->start();
+    }
+
+    /**
      * @param  array<array{name: string, handler: Closure}>  $tools
      *
      * @internal
