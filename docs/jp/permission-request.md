@@ -187,11 +187,18 @@ kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool"
 
 ## レスポンス
 
-許可した場合のJSON-RPCレスポンス例です。idが0だったりresultが二重ですがこうしないと成功しませんでした。
+許可・拒否の結果を配列で返します。`PermissionRequestKind` クラスを使うと便利です。
 
-```json
-{"jsonrpc":"2.0","id":0,"result":{"result":{"kind":"approved"}}}
-``` 
+```php
+return PermissionRequestKind::approved();
+return PermissionRequestKind::deniedInteractivelyByUser();
+```
+
+## プロトコルの詳細
+
+Protocol v3（現在のデフォルト）では、パーミッションリクエストはJSON-RPCリクエストではなくセッションイベント（`permission.requested`）としてブロードキャストされます。SDKはこのイベントを内部的に処理して `session.permissions.handlePendingPermissionRequest` RPCで応答します。
+
+**`SessionConfig` の使い方は変わりません。** `onPermissionRequest` にハンドラを渡すだけで、プロトコルの違いはSDKが吸収します。
 
 ## PermissionRequestKind
 
@@ -211,7 +218,7 @@ if ($confirm) {
 }
 ```
 
-`Laravel\Prompts\confirm`ではなく`Laravel\Prompts\select`を使いたい場合は`PermissionRequestKind::select()`で4つの選択肢を取得できます。
+`Laravel\Prompts\confirm`ではなく`Laravel\Prompts\select`を使いたい場合は`PermissionRequestKind::select()`で選択肢を取得できます。
 
 ```php
 use Revolution\Copilot\Support\PermissionRequestKind;

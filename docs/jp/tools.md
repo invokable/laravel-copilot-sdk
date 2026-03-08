@@ -82,3 +82,22 @@ Artisan::command('copilot:tools', function () {
     }, config: $config);
 });
 ```
+
+## $invocation
+
+ツールハンドラの第2引数 `$invocation` には以下のフィールドが渡されます。
+
+```php
+[
+    'sessionId'  => '...',
+    'toolCallId' => '...',
+    'toolName'   => 'lookup_fact',
+    'arguments'  => [...], // ツール引数（$params と同じ内容）
+]
+```
+
+## プロトコルの詳細
+
+Protocol v3（現在のデフォルト）では、ツール呼び出しはJSON-RPCリクエストではなくセッションイベント（`external_tool.requested`）としてブロードキャストされます。SDKはこのイベントを内部的に処理して `session.tools.handlePendingToolCall` RPCで応答します。
+
+**`SessionConfig` の使い方は変わりません。** `tools` に定義を渡すだけで、プロトコルの違いはSDKが吸収します。

@@ -119,36 +119,6 @@ $session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermis
 $session->rpc()->mode()->set(['mode' => 'plan']);
 ```
 
-## プロトコルv3のツール・パーミッション処理
-
-プロトコルv3以降では、ツール呼び出しリクエストとパーミッションリクエストがセッションイベントとして届きます（`external_tool.requested`、`permission.requested`）。
-それらに対してRPCで応答します。
-
-```php
-use Revolution\Copilot\Contracts\CopilotSession;
-use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Support\PermissionRequestKind;
-use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
-use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
-use Revolution\Copilot\Types\SessionEvent;
-use Revolution\Copilot\Enums\SessionEventType;
-
-Copilot::start(function (CopilotSession $session) {
-    $session->on(function (SessionEvent $event) use ($session): void {
-        if ($event->is(SessionEventType::EXTERNAL_TOOL_REQUESTED)) {
-            $session->rpc()->tools()->handlePendingToolCall(
-                new SessionToolsHandlePendingToolCallParams(
-                    requestId: $event->data('requestId'),
-                    result: 'ツールの実行結果',
-                )
-            );
-        }
-    });
-
-    $session->sendAndWait(prompt: '...');
-});
-```
-
 ## Testing
 
 `Copilot::fake()`でのモックは使えないので`Copilot::expects('client')`や`Copilot::expects('start')`でモックしてください。
