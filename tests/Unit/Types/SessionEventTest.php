@@ -205,4 +205,13 @@ describe('SessionEventType', function () {
             ->and(SessionEventType::SESSION_TASK_COMPLETE->value)->toBe('session.task_complete')
             ->and(SessionEventType::ASSISTANT_STREAMING_DELTA->value)->toBe('assistant.streaming_delta');
     });
+
+    it('has system.notification case', function () {
+        expect(SessionEventType::SYSTEM_NOTIFICATION->value)->toBe('system.notification');
+    });
+
+    it('can create system.notification from value', function () {
+        expect(SessionEventType::from('system.notification'))
+            ->toBe(SessionEventType::SYSTEM_NOTIFICATION);
+    });
 });

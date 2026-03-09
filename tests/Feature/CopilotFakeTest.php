@@ -196,4 +196,18 @@ describe('createSession()', function () {
         expect($session)->toBeInstanceOf(CopilotSession::class)
             ->and($session->id())->toStartWith('fake-session-');
     });
+
+    it('fake session log() is a no-op', function () {
+        Copilot::fake('test');
+
+        Copilot::start(function (CopilotSession $session) {
+            // Should not throw any exceptions
+            $session->log('Processing started');
+            $session->log('Warning message', level: 'warning');
+            $session->log('Debug info', level: 'info', ephemeral: true);
+        });
+
+        // If we get here without exceptions, the test passes
+        expect(true)->toBeTrue();
+    });
 });
