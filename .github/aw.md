@@ -13,6 +13,10 @@ gh extension upgrade github/gh-aw
 gh aw upgrade
 ```
 
+```shell
+cd ../ && gh extension upgrade github/gh-aw && gh aw upgrade
+```
+
 `actions-lock.json` `sdk-sync.lock.yml` `copilot-setup-steps.yml` `agentic-workflows.agent.md`などが適切に更新される。
 
 upgradeコマンドだけで解決できない時は`agentic-workflows`カスタムエージェントを使ってCopilotで修正。
