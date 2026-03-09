@@ -1,37 +1,33 @@
 # Permission Request
 
-## Auto-approve (デフォルト)
+## デフォルト動作（deny-all）
 
-`config/copilot.php`で`permission_approve`が`true`（デフォルト）の場合、`Copilot::run()`や`Copilot::start()`を使う時は自動的にすべてのPermission Requestが許可されます。（ただし危険性の高い`shell`, `write`は除きます）
+`config/copilot.php`で`permission_approve`が`"deny-all"`（デフォルト）の場合、`Copilot::run()`や`Copilot::start()`を使う時は自動的にすべてのPermission Requestが**拒否**されます。
 
-公式SDKはすべて拒否がデフォルトですがLaravel版では `Copilot::run()`, `Copilot::start()` で使う時の利便性を優先して許可にしています。
-
-> [!CAUTION]
-> ユーザーからのプロンプト入力を許可する使い方の場合は、自動許可は危険なので必ずfalseにしてください。
-> readでLaravelプロジェクトのコードを読めるだけでも危険です。
+テキスト生成が主な目的の場合、パーミッションは不要なので安全なデフォルトです。
 
 ```php
 // config/copilot.php
-'permission_approve' => env('COPILOT_PERMISSION_APPROVE', true),
+'permission_approve' => env('COPILOT_PERMISSION_APPROVE', 'deny-all'),
 ```
 
-この設定が有効な場合、`onPermissionRequest`を明示的に指定しなくても`PermissionHandler::approveSafety()`が自動的に使われます。
+## 設定可能な値
 
-```php
-use Revolution\Copilot\Facades\Copilot;
-
-// onPermissionRequestを指定しなくても自動的に全許可
-$response = Copilot::run(prompt: 'Hello');
-```
-
-公式SDKと同様にデフォルトで拒否したい場合は`false`に設定します。
+| 値 | 動作 |
+|---|---|
+| `"deny-all"` | すべてを自動拒否（**デフォルト**） |
+| `"approve-safety"` | `shell`, `write` のみ拒否、他は自動許可 |
+| `"approve-all"` | すべてを自動許可 |
+| `false` | ハンドラなし → `onPermissionRequest` の指定が必須（公式SDK同様） |
 
 ```php
 // .env
-COPILOT_PERMISSION_APPROVE=false,
+COPILOT_PERMISSION_APPROVE="approve-safety"
 ```
 
-この場合は`onPermissionRequest`の指定が必須になります。
+> [!CAUTION]
+> ユーザーからのプロンプト入力を許可する使い方の場合は、`"approve-safety"`や`"approve-all"`は危険なので必ず`false`または`"deny-all"`にしてください。
+> readでLaravelプロジェクトのコードを読めるだけでも危険です。
 
 ## PermissionHandler::approveAll()
 

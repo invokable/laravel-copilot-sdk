@@ -97,13 +97,17 @@ return [
     | Auto-approve Permission Requests
     |--------------------------------------------------------------------------
     |
-    | When true, all permission requests (except for shell and write)
-    | are automatically approved when using the Copilot facade (CopilotManager).
-    | Set to false to require explicit permission handling like the official SDK.
+    | Controls how permission requests are handled when using the Copilot facade
+    | (Copilot::run(), Copilot::start(), etc.).
     |
-    | Note: This only applies when using Copilot::run(), Copilot::start(), etc.
-    | Direct Client usage always requires an explicit onPermissionRequest handler.
+    | Accepted values:
+    |   "deny-all"       - Deny all requests automatically (default, safest)
+    |   "approve-safety" - Approve all except shell and write
+    |   "approve-all"    - Approve all requests automatically
+    |   false            - No handler injected; onPermissionRequest is required
+    |
+    | Note: Direct Client usage always requires an explicit onPermissionRequest handler.
     |
     */
-    'permission_approve' => env('COPILOT_PERMISSION_APPROVE', true),
+    'permission_approve' => env('COPILOT_PERMISSION_APPROVE', 'deny-all'),
 ];

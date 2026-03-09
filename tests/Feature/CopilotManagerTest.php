@@ -16,6 +16,74 @@ beforeEach(function () {
     Copilot::clearResolvedInstances();
 });
 
+describe('ensurePermissionHandler', function () {
+    /**
+     * @param  array|string|bool  $setting
+     */
+    $callEnsure = function ($setting, array $config = []) {
+        $manager = new CopilotManager(['permission_approve' => $setting]);
+        $reflection = new ReflectionClass($manager);
+        $method = $reflection->getMethod('ensurePermissionHandler');
+        $method->setAccessible(true);
+
+        return $method->invoke($manager, $config);
+    };
+
+    it('injects denyAll handler for deny-all setting', function () use ($callEnsure) {
+        $result = $callEnsure('deny-all');
+
+        expect($result)->toHaveKey('onPermissionRequest')
+            ->and($result['onPermissionRequest'])->toBeInstanceOf(Closure::class);
+
+        // Verify it actually denies
+        $response = ($result['onPermissionRequest'])(['kind' => 'read'], ['sessionId' => 'x']);
+        expect($response['kind'])->not->toBe('approved');
+    });
+
+    it('injects approveSafety handler for approve-safety setting', function () use ($callEnsure) {
+        $result = $callEnsure('approve-safety');
+
+        expect($result)->toHaveKey('onPermissionRequest');
+
+        $response = ($result['onPermissionRequest'])(['kind' => 'read'], ['sessionId' => 'x']);
+        expect($response['kind'])->toBe('approved');
+
+        $response = ($result['onPermissionRequest'])(['kind' => 'shell'], ['sessionId' => 'x']);
+        expect($response['kind'])->not->toBe('approved');
+    });
+
+    it('injects approveAll handler for approve-all setting', function () use ($callEnsure) {
+        $result = $callEnsure('approve-all');
+
+        expect($result)->toHaveKey('onPermissionRequest');
+
+        $response = ($result['onPermissionRequest'])(['kind' => 'shell'], ['sessionId' => 'x']);
+        expect($response['kind'])->toBe('approved');
+    });
+
+    it('injects approveAll handler for legacy true setting', function () use ($callEnsure) {
+        $result = $callEnsure(true);
+
+        expect($result)->toHaveKey('onPermissionRequest');
+
+        $response = ($result['onPermissionRequest'])(['kind' => 'shell'], ['sessionId' => 'x']);
+        expect($response['kind'])->toBe('approved');
+    });
+
+    it('does not inject handler when setting is false', function () use ($callEnsure) {
+        $result = $callEnsure(false);
+
+        expect($result)->not->toHaveKey('onPermissionRequest');
+    });
+
+    it('does not overwrite existing onPermissionRequest', function () use ($callEnsure) {
+        $custom = fn () => ['kind' => 'custom'];
+        $result = $callEnsure('deny-all', ['onPermissionRequest' => $custom]);
+
+        expect($result['onPermissionRequest'])->toBe($custom);
+    });
+});
+
 describe('CopilotManager', function () {
     it('can be instantiated with config', function () {
         $manager = new CopilotManager([

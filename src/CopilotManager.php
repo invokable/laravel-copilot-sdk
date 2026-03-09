@@ -161,15 +161,29 @@ class CopilotManager implements Factory
     /**
      * Ensure the config has an onPermissionRequest handler.
      *
-     * If no handler is provided and the `permission_approve` config is true,
-     * automatically injects PermissionHandler::approveAll().
+     * Injects a handler based on the `permission_approve` config value:
+     * - "deny-all"       → PermissionHandler::denyAll()
+     * - "approve-safety" → PermissionHandler::approveSafety()
+     * - "approve-all"    → PermissionHandler::approveAll()
+     * - false            → no handler injected (onPermissionRequest required)
      */
     protected function ensurePermissionHandler(array $config): array
     {
-        if (! isset($config['onPermissionRequest'])) {
-            if ($this->config['permission_approve'] ?? config('copilot.permission_approve', true)) {
-                $config['onPermissionRequest'] = PermissionHandler::approveSafety();
-            }
+        if (isset($config['onPermissionRequest'])) {
+            return $config;
+        }
+
+        $setting = $this->config['permission_approve'] ?? config('copilot.permission_approve', 'deny-all');
+
+        $handler = match ($setting) {
+            'deny-all' => PermissionHandler::denyAll(),
+            'approve-safety' => PermissionHandler::approveSafety(),
+            'approve-all', true => PermissionHandler::approveAll(),
+            default => null,
+        };
+
+        if ($handler !== null) {
+            $config['onPermissionRequest'] = $handler;
         }
 
         return $config;
