@@ -161,7 +161,7 @@ class Session implements CopilotSession
      * @param  string  $prompt  The prompt/message to send
      * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments. type: "file" | "directory"
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
-     * @param  float  $timeout  Maximum time to wait for idle state, in seconds
+     * @param  ?float  $timeout  Maximum time to wait for idle state, in seconds
      */
     public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): ?SessionEvent
     {
