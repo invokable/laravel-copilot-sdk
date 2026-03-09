@@ -22,7 +22,7 @@ class PendingServerTools
      */
     public function list(ToolsListParams|array $params = []): ToolsListResult
     {
-        $paramsArray = $params instanceof ToolsListParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof ToolsListParams ? $params : ToolsListParams::fromArray($params))->toArray();
 
         return ToolsListResult::fromArray(
             $this->client->request('tools.list', $paramsArray),

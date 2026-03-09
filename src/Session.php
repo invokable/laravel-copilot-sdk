@@ -10,6 +10,7 @@ use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Events\Session\MessageSend;
 use Revolution\Copilot\Events\Session\MessageSendAndWait;
@@ -20,6 +21,7 @@ use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\PermissionRequestResultKind;
+use Revolution\Copilot\Types\Rpc\SessionLogParams;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
 use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
@@ -830,6 +832,29 @@ class Session implements CopilotSession
     public function setModel(string $model): void
     {
         $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $model));
+    }
+
+    /**
+     * Log a message to the session timeline.
+     * The message appears in the session event stream and is visible to SDK consumers
+     * and (for non-ephemeral messages) persisted to the session event log on disk.
+     *
+     * @param  string  $message  Human-readable message text
+     * @param  LogLevel|null  $level  Log severity. Defaults to info.
+     * @param  bool|null  $ephemeral  When true, the message is not persisted to the session event log on disk.
+     * @return string Event ID of the created log entry.
+     *
+     * @throws JsonRpcException
+     */
+    public function log(string $message, ?LogLevel $level = null, ?bool $ephemeral = null): string
+    {
+        $result = $this->rpc()->log()->log(new SessionLogParams(
+            message: $message,
+            level: $level,
+            ephemeral: $ephemeral,
+        ));
+
+        return $result->eventId;
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\Rpc\PendingAgent;
 use Revolution\Copilot\Rpc\PendingCompaction;
 use Revolution\Copilot\Rpc\PendingFleet;
+use Revolution\Copilot\Rpc\PendingLog;
 use Revolution\Copilot\Rpc\PendingMode;
 use Revolution\Copilot\Rpc\PendingModel;
 use Revolution\Copilot\Rpc\PendingPermissions;
@@ -66,6 +67,12 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->permissions())->toBeInstanceOf(PendingPermissions::class);
+    });
+
+    it('returns PendingLog from log()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->log())->toBeInstanceOf(PendingLog::class);
     });
 });
 

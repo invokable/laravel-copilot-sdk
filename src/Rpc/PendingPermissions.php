@@ -26,7 +26,7 @@ class PendingPermissions
      */
     public function handlePendingPermissionRequest(SessionPermissionsHandlePendingPermissionRequestParams|array $params): SessionPermissionsHandlePendingPermissionRequestResult
     {
-        $paramsArray = $params instanceof SessionPermissionsHandlePendingPermissionRequestParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof SessionPermissionsHandlePendingPermissionRequestParams ? $params : SessionPermissionsHandlePendingPermissionRequestParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return SessionPermissionsHandlePendingPermissionRequestResult::fromArray(

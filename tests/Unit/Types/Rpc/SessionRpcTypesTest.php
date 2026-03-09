@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\LogLevel;
+use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\Rpc\SessionCompactionCompactResult;
 use Revolution\Copilot\Types\Rpc\SessionFleetStartParams;
 use Revolution\Copilot\Types\Rpc\SessionFleetStartResult;
+use Revolution\Copilot\Types\Rpc\SessionLogParams;
+use Revolution\Copilot\Types\Rpc\SessionLogResult;
 use Revolution\Copilot\Types\Rpc\SessionModeGetResult;
 use Revolution\Copilot\Types\Rpc\SessionModelGetCurrentResult;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
@@ -38,6 +42,39 @@ describe('SessionModelSwitchToParams', function () {
     it('can be created and converted', function () {
         $params = new SessionModelSwitchToParams(modelId: 'gpt-4');
         expect($params->toArray())->toBe(['modelId' => 'gpt-4']);
+    });
+
+    it('can be created with reasoningEffort', function () {
+        $params = new SessionModelSwitchToParams(
+            modelId: 'claude-opus-4',
+            reasoningEffort: ReasoningEffort::HIGH,
+        );
+        expect($params->toArray())->toBe([
+            'modelId' => 'claude-opus-4',
+            'reasoningEffort' => 'high',
+        ]);
+    });
+
+    it('filters null reasoningEffort', function () {
+        $params = new SessionModelSwitchToParams(modelId: 'gpt-4', reasoningEffort: null);
+        expect($params->toArray())->toBe(['modelId' => 'gpt-4']);
+    });
+
+    it('can be created from array with reasoningEffort', function () {
+        $params = SessionModelSwitchToParams::fromArray([
+            'modelId' => 'o1-preview',
+            'reasoningEffort' => 'medium',
+        ]);
+        expect($params->modelId)->toBe('o1-preview')
+            ->and($params->reasoningEffort)->toBe(ReasoningEffort::MEDIUM);
+    });
+
+    it('can be created from array without reasoningEffort', function () {
+        $params = SessionModelSwitchToParams::fromArray([
+            'modelId' => 'gpt-4',
+        ]);
+        expect($params->modelId)->toBe('gpt-4')
+            ->and($params->reasoningEffort)->toBeNull();
     });
 });
 
@@ -287,5 +324,80 @@ describe('SessionPermissionsHandlePendingPermissionRequestParams', function () {
         ]);
         expect($params->requestId)->toBe('perm-2')
             ->and($params->result['kind'])->toBe('denied-interactively-by-user');
+    });
+});
+
+describe('SessionLogParams', function () {
+    it('can be created with message only', function () {
+        $params = new SessionLogParams(message: 'Processing started');
+        expect($params->message)->toBe('Processing started')
+            ->and($params->level)->toBeNull()
+            ->and($params->ephemeral)->toBeNull();
+    });
+
+    it('can be created with all parameters', function () {
+        $params = new SessionLogParams(
+            message: 'Disk usage high',
+            level: LogLevel::WARNING,
+            ephemeral: true,
+        );
+        expect($params->message)->toBe('Disk usage high')
+            ->and($params->level)->toBe(LogLevel::WARNING)
+            ->and($params->ephemeral)->toBeTrue();
+    });
+
+    it('converts to array filtering null values', function () {
+        $params = new SessionLogParams(message: 'Hello');
+        expect($params->toArray())->toBe(['message' => 'Hello']);
+    });
+
+    it('converts to array with all values', function () {
+        $params = new SessionLogParams(
+            message: 'Error occurred',
+            level: LogLevel::ERROR,
+            ephemeral: false,
+        );
+        expect($params->toArray())->toBe([
+            'message' => 'Error occurred',
+            'level' => 'error',
+            'ephemeral' => false,
+        ]);
+    });
+
+    it('can be created from array', function () {
+        $params = SessionLogParams::fromArray([
+            'message' => 'Test message',
+            'level' => 'info',
+            'ephemeral' => true,
+        ]);
+        expect($params->message)->toBe('Test message')
+            ->and($params->level)->toBe(LogLevel::INFO)
+            ->and($params->ephemeral)->toBeTrue();
+    });
+
+    it('can be created from array with missing optional fields', function () {
+        $params = SessionLogParams::fromArray([
+            'message' => 'Just a message',
+        ]);
+        expect($params->message)->toBe('Just a message')
+            ->and($params->level)->toBeNull()
+            ->and($params->ephemeral)->toBeNull();
+    });
+});
+
+describe('SessionLogResult', function () {
+    it('can be created with eventId', function () {
+        $result = new SessionLogResult(eventId: 'evt-123');
+        expect($result->eventId)->toBe('evt-123');
+    });
+
+    it('can be created from array', function () {
+        $result = SessionLogResult::fromArray(['eventId' => 'evt-456']);
+        expect($result->eventId)->toBe('evt-456');
+    });
+
+    it('can convert to array', function () {
+        $result = new SessionLogResult(eventId: 'evt-789');
+        expect($result->toArray())->toBe(['eventId' => 'evt-789']);
     });
 });

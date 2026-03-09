@@ -35,7 +35,7 @@ class PendingPlan
      */
     public function update(SessionPlanUpdateParams|array $params): array
     {
-        $paramsArray = $params instanceof SessionPlanUpdateParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof SessionPlanUpdateParams ? $params : SessionPlanUpdateParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.plan.update', $paramsArray);

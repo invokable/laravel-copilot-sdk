@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Testing;
 
 use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\SessionEvent;
@@ -50,6 +51,11 @@ class FakeSession implements CopilotSession
     public function setModel(string $model): void
     {
         // No-op in fake
+    }
+
+    public function log(string $message, ?LogLevel $level = null, ?bool $ephemeral = null): string
+    {
+        return '';
     }
 
     public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string

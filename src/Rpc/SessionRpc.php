@@ -18,6 +18,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->plan()->read();
  * $session->rpc()->workspace()->listFiles();
  * $session->rpc()->fleet()->start();
+ * $session->rpc()->log()->log(new SessionLogParams(message: 'Processing started'));
+ * $session->rpc()->log()->log(new SessionLogParams(message: 'Disk usage high', level: LogLevel::WARNING));
  * $session->rpc()->agent()->list();
  * $session->rpc()->compaction()->compact();
  * $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToolCallParams(requestId: '...', result: 'done'));
@@ -105,5 +107,15 @@ class SessionRpc
     public function permissions(): PendingPermissions
     {
         return new PendingPermissions($this->client, $this->sessionId);
+    }
+
+    /**
+     * Session log RPC operations.
+     *
+     * Used to log messages to the session timeline.
+     */
+    public function log(): PendingLog
+    {
+        return new PendingLog($this->client, $this->sessionId);
     }
 }

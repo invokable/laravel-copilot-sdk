@@ -96,4 +96,7 @@ enum SessionEventType: string
 
     // System message
     case SYSTEM_MESSAGE = 'system.message';
+
+    // System notification (agent/shell completion notifications)
+    case SYSTEM_NOTIFICATION = 'system.notification';
 }

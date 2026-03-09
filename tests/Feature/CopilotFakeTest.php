@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\CopilotManager;
+use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
 
@@ -195,5 +196,19 @@ describe('createSession()', function () {
 
         expect($session)->toBeInstanceOf(CopilotSession::class)
             ->and($session->id())->toStartWith('fake-session-');
+    });
+
+    it('fake session log() is a no-op', function () {
+        Copilot::fake('test');
+
+        Copilot::start(function (CopilotSession $session) {
+            // Should not throw any exceptions
+            $session->log('Processing started');
+            $session->log('Warning message', level: LogLevel::WARNING);
+            $session->log('Debug info', level: LogLevel::INFO, ephemeral: true);
+        });
+
+        // If we get here without exceptions, the test passes
+        expect(true)->toBeTrue();
     });
 });
