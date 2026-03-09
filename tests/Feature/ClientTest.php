@@ -336,4 +336,48 @@ describe('Client', function () {
         fclose($stdin);
         fclose($stdout);
     });
+
+    it('usingListModels returns the client instance', function () {
+        $client = new Client;
+
+        expect($client->usingListModels(fn () => []))->toBe($client);
+    });
+
+    it('usingListModels with null clears the handler', function () {
+        $client = new Client;
+        $client->usingListModels(fn () => []);
+        $client->usingListModels(null);
+
+        expect($client->usingListModels(null))->toBe($client);
+    });
+
+    it('listModels calls custom handler set via usingListModels', function () {
+        $client = new Client;
+        $client->usingListModels(fn () => [
+            [
+                'id' => 'my-model',
+                'name' => 'My Model',
+                'capabilities' => [
+                    'supports' => ['vision' => false],
+                    'limits' => ['max_context_window_tokens' => 8192],
+                ],
+            ],
+        ]);
+
+        $models = $client->listModels();
+
+        expect($models)->toHaveCount(1)
+            ->and($models[0])->toBeInstanceOf(\Revolution\Copilot\Types\ModelInfo::class)
+            ->and($models[0]->id)->toBe('my-model')
+            ->and($models[0]->name)->toBe('My Model');
+    });
+
+    it('listModels returns empty array when custom handler returns empty', function () {
+        $client = new Client;
+        $client->usingListModels(fn () => []);
+
+        $models = $client->listModels();
+
+        expect($models)->toBe([]);
+    });
 });
