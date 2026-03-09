@@ -842,15 +842,19 @@ class Session implements CopilotSession
      * @param  string|null  $level  Log severity: "info", "warning", or "error". Defaults to "info".
      * @param  bool|null  $ephemeral  When true, the message is not persisted to the session event log on disk.
      *
+     * @return string Event ID of the created log entry.
+     *
      * @throws JsonRpcException
      */
-    public function log(string $message, ?string $level = null, ?bool $ephemeral = null): void
+    public function log(string $message, ?string $level = null, ?bool $ephemeral = null): string
     {
-        $this->rpc()->log()->log(new SessionLogParams(
+        $result = $this->rpc()->log()->log(new SessionLogParams(
             message: $message,
             level: $level,
             ephemeral: $ephemeral,
         ));
+
+        return $result->eventId;
     }
 
     /**
