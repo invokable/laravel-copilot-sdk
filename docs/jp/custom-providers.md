@@ -105,3 +105,31 @@ $response = Copilot::run(
 - カスタムプロバイダー使用時は`model`パラメータが**必須**です。指定しないとエラーになります。
 - Azureエンドポイント（`*.openai.azure.com`）では、必ず`type: 'azure'`を使用してください。
 - `baseUrl`はホストのみを指定し、パスの構築はSDKが自動的に行います。
+
+## onListModels ハンドラー
+
+BYOKモードでカスタムプロバイダーを使用している場合、`client->listModels()`がCLIサーバーではなくカスタムハンドラーを呼び出すように設定できます。
+
+`usingListModels()`メソッドを使って設定します。clientは初期化されやすいため、`listModels()`の前に常に`usingListModels()`を設定してください。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\ModelInfo;
+
+$models = Copilot::client()->usingListModels(function (): array {
+    // カスタムプロバイダーで利用可能なモデルを返す
+    return [
+        ['id' => 'my-model-1', 'name' => 'My Model 1', 'version' => '1.0'],
+        ['id' => 'my-model-2', 'name' => 'My Model 2', 'version' => '2.0'],
+    ];
+})->listModels();
+```
+
+`null`を渡すとハンドラーを解除してデフォルトのCLIサーバー動作に戻ります。
+
+```php
+// ハンドラーを解除してデフォルト動作（CLIサーバーに問い合わせ）に戻す
+$models = Copilot::client()->usingListModels(null)->listModels();
+```
+
+`usingListModels()`が設定されている場合、`listModels()`はCLIサーバーへの接続を必要とせず、キャッシュも使用しません。

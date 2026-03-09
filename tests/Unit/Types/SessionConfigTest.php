@@ -35,6 +35,7 @@ describe('SessionConfig', function () {
             'skillDirectories' => ['/path/to/skills'],
             'disabledSkills' => ['skill1'],
             'infiniteSessions' => ['enabled' => true, 'backgroundCompactionThreshold' => 0.80],
+            'agent' => 'reviewer',
         ]);
 
         expect($config->sessionId)->toBe('test-session-id')
@@ -58,7 +59,8 @@ describe('SessionConfig', function () {
             ->and($config->disabledSkills)->toBe(['skill1'])
             ->and($config->infiniteSessions)->toBeInstanceOf(InfiniteSessionConfig::class)
             ->and($config->infiniteSessions->enabled)->toBeTrue()
-            ->and($config->infiniteSessions->backgroundCompactionThreshold)->toBe(0.80);
+            ->and($config->infiniteSessions->backgroundCompactionThreshold)->toBe(0.80)
+            ->and($config->agent)->toBe('reviewer');
     });
 
     it('can be created from array with minimal fields', function () {
@@ -82,7 +84,8 @@ describe('SessionConfig', function () {
             ->and($config->customAgents)->toBeNull()
             ->and($config->skillDirectories)->toBeNull()
             ->and($config->disabledSkills)->toBeNull()
-            ->and($config->infiniteSessions)->toBeNull();
+            ->and($config->infiniteSessions)->toBeNull()
+            ->and($config->agent)->toBeNull();
     });
 
     it('preserves SystemMessageConfig instance when passed directly', function () {
@@ -128,6 +131,7 @@ describe('SessionConfig', function () {
             skillDirectories: ['/skills'],
             disabledSkills: ['skill1'],
             infiniteSessions: new InfiniteSessionConfig(enabled: false),
+            agent: 'reviewer',
         );
 
         $array = $config->toArray();
@@ -150,7 +154,8 @@ describe('SessionConfig', function () {
             ->and($array['customAgents'])->toBe([['name' => 'agent1']])
             ->and($array['skillDirectories'])->toBe(['/skills'])
             ->and($array['disabledSkills'])->toBe(['skill1'])
-            ->and($array['infiniteSessions'])->toBe(['enabled' => false]);
+            ->and($array['infiniteSessions'])->toBe(['enabled' => false])
+            ->and($array['agent'])->toBe('reviewer');
     });
 
     it('filters null values in toArray', function () {
@@ -257,5 +262,29 @@ describe('SessionConfig', function () {
         ]);
 
         expect($config->reasoningEffort)->toBe(ReasoningEffort::MEDIUM);
+    });
+
+    it('accepts agent parameter', function () {
+        $config = new SessionConfig(agent: 'reviewer');
+
+        expect($config->agent)->toBe('reviewer');
+    });
+
+    it('includes agent in toArray', function () {
+        $config = new SessionConfig(agent: 'code-review');
+
+        expect($config->toArray()['agent'])->toBe('code-review');
+    });
+
+    it('can be created from array with agent', function () {
+        $config = SessionConfig::fromArray(['agent' => 'my-agent']);
+
+        expect($config->agent)->toBe('my-agent');
+    });
+
+    it('excludes agent from toArray when null', function () {
+        $config = new SessionConfig;
+
+        expect($config->toArray())->not->toHaveKey('agent');
     });
 });

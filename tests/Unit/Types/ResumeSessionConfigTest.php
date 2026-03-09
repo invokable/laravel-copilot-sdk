@@ -36,6 +36,7 @@ describe('ResumeSessionConfig', function () {
             'disabledSkills' => ['skill1'],
             'infiniteSessions' => new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
             'disableResume' => true,
+            'agent' => 'reviewer',
         ]);
 
         expect($config->tools)->toBe([['name' => 'test_tool']])
@@ -54,7 +55,8 @@ describe('ResumeSessionConfig', function () {
             ->and($config->mcpServers)->toBe(['server1' => ['command' => 'npx']])
             ->and($config->customAgents)->toBe([['name' => 'agent1']])
             ->and($config->skillDirectories)->toBe(['/path/to/skills'])
-            ->and($config->disabledSkills)->toBe(['skill1']);
+            ->and($config->disabledSkills)->toBe(['skill1'])
+            ->and($config->agent)->toBe('reviewer');
     });
 
     it('can be created from array with minimal fields', function () {
@@ -71,7 +73,8 @@ describe('ResumeSessionConfig', function () {
             ->and($config->mcpServers)->toBeNull()
             ->and($config->customAgents)->toBeNull()
             ->and($config->skillDirectories)->toBeNull()
-            ->and($config->disabledSkills)->toBeNull();
+            ->and($config->disabledSkills)->toBeNull()
+            ->and($config->agent)->toBeNull();
     });
 
     it('preserves ProviderConfig instance when passed directly', function () {
@@ -118,6 +121,7 @@ describe('ResumeSessionConfig', function () {
             disabledSkills: ['skill1'],
             infiniteSessions: new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
             disableResume: false,
+            agent: 'reviewer',
         );
 
         $array = $config->toArray();
@@ -134,7 +138,8 @@ describe('ResumeSessionConfig', function () {
             ->and($array['mcpServers'])->toBe(['server1' => ['command' => 'test']])
             ->and($array['customAgents'])->toBe([['name' => 'agent1']])
             ->and($array['skillDirectories'])->toBe(['/skills'])
-            ->and($array['disabledSkills'])->toBe(['skill1']);
+            ->and($array['disabledSkills'])->toBe(['skill1'])
+            ->and($array['agent'])->toBe('reviewer');
     });
 
     it('filters null values in toArray', function () {
@@ -210,5 +215,29 @@ describe('ResumeSessionConfig', function () {
         ]);
 
         expect($config->reasoningEffort)->toBe(ReasoningEffort::MEDIUM);
+    });
+
+    it('accepts agent parameter', function () {
+        $config = new ResumeSessionConfig(agent: 'reviewer');
+
+        expect($config->agent)->toBe('reviewer');
+    });
+
+    it('includes agent in toArray', function () {
+        $config = new ResumeSessionConfig(agent: 'code-review');
+
+        expect($config->toArray()['agent'])->toBe('code-review');
+    });
+
+    it('can be created from array with agent', function () {
+        $config = ResumeSessionConfig::fromArray(['agent' => 'my-agent']);
+
+        expect($config->agent)->toBe('my-agent');
+    });
+
+    it('excludes agent from toArray when null', function () {
+        $config = new ResumeSessionConfig;
+
+        expect($config->toArray())->not->toHaveKey('agent');
     });
 });
