@@ -61,6 +61,12 @@ class Client implements CopilotClient
     protected bool $tcpMode = false;
 
     /**
+     * Custom handler for listing available models (for BYOK mode).
+     * When set, listModels() calls this instead of querying the CLI server.
+     */
+    protected $onListModels = null;
+
+    /**
      * Active sessions.
      *
      * @var array<string, Session>
@@ -91,8 +97,12 @@ class Client implements CopilotClient
             $this->tcpMode = true;
             $this->transport = TcpTransport::fromUrl(data_get($options, 'cli_url'));
 
+            $this->onListModels = data_get($options, 'on_list_models');
+
             return;
         }
+
+        $this->onListModels = data_get($options, 'on_list_models');
 
         // Stdio mode: start CLI process
         $this->processManager = app(ProcessManager::class, [
@@ -282,6 +292,7 @@ class Client implements CopilotClient
             'mcpServers' => $config['mcpServers'] ?? null,
             'envValueMode' => 'direct',
             'customAgents' => $config['customAgents'] ?? null,
+            'agent' => $config['agent'] ?? null,
             'configDir' => $config['configDir'] ?? null,
             'skillDirectories' => $config['skillDirectories'] ?? null,
             'disabledSkills' => $config['disabledSkills'] ?? null,
@@ -360,6 +371,7 @@ class Client implements CopilotClient
             'mcpServers' => $config['mcpServers'] ?? null,
             'envValueMode' => 'direct',
             'customAgents' => $config['customAgents'] ?? null,
+            'agent' => $config['agent'] ?? null,
             'skillDirectories' => $config['skillDirectories'] ?? null,
             'disabledSkills' => $config['disabledSkills'] ?? null,
             'disableResume' => $config['disableResume'] ?? null,
@@ -449,6 +461,10 @@ class Client implements CopilotClient
     /**
      * List available models with their metadata.
      *
+     * If an `on_list_models` handler was provided in the client options,
+     * it is called instead of querying the CLI server. Useful in BYOK mode
+     * to return models available from your custom provider.
+     *
      * Results are cached after the first successful call to avoid rate limiting.
      * The cache is cleared when the client disconnects.
      *
@@ -458,6 +474,15 @@ class Client implements CopilotClient
      */
     public function listModels(): array
     {
+        if ($this->onListModels !== null) {
+            $models = ($this->onListModels)();
+
+            return array_map(
+                fn (array $model) => ModelInfo::fromArray($model),
+                $models,
+            );
+        }
+
         $this->ensureConnected();
 
         // Create a cache key based on options to prevent conflicts between different users' settings.

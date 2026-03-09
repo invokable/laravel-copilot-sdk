@@ -80,6 +80,9 @@ $config = new SessionConfig(
         ],
     ],
 
+    // セッション開始時にアクティブにするエージェントを指定。customAgentsのnameと一致する必要がある。
+    agent: 'reviewer',
+
     // スキルディレクトリ
     skillDirectories: [],
 

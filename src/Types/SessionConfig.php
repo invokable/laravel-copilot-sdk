@@ -100,6 +100,12 @@ readonly class SessionConfig implements Arrayable
          */
         public ?array $customAgents = null,
         /**
+         * Name of the custom agent to activate when the session starts.
+         * Must match the `name` of one of the agents in `customAgents`.
+         * Equivalent to calling `session.rpc.agent.select({ name })` after creation.
+         */
+        public ?string $agent = null,
+        /**
          * Directories to load skills from.
          */
         public ?array $skillDirectories = null,
@@ -166,6 +172,7 @@ readonly class SessionConfig implements Arrayable
             streaming: $data['streaming'] ?? null,
             mcpServers: $data['mcpServers'] ?? null,
             customAgents: $data['customAgents'] ?? null,
+            agent: $data['agent'] ?? null,
             skillDirectories: $data['skillDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
             infiniteSessions: $infiniteSessions,
@@ -215,6 +222,7 @@ readonly class SessionConfig implements Arrayable
             'streaming' => $this->streaming,
             'mcpServers' => $this->mcpServers,
             'customAgents' => $this->customAgents,
+            'agent' => $this->agent,
             'skillDirectories' => $this->skillDirectories,
             'disabledSkills' => $this->disabledSkills,
             'infiniteSessions' => $infiniteSessions,
