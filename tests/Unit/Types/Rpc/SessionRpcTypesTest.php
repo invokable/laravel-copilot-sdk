@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\Rpc\SessionCompactionCompactResult;
 use Revolution\Copilot\Types\Rpc\SessionFleetStartParams;
@@ -337,11 +338,11 @@ describe('SessionLogParams', function () {
     it('can be created with all parameters', function () {
         $params = new SessionLogParams(
             message: 'Disk usage high',
-            level: 'warning',
+            level: LogLevel::WARNING,
             ephemeral: true,
         );
         expect($params->message)->toBe('Disk usage high')
-            ->and($params->level)->toBe('warning')
+            ->and($params->level)->toBe(LogLevel::WARNING)
             ->and($params->ephemeral)->toBeTrue();
     });
 
@@ -353,7 +354,7 @@ describe('SessionLogParams', function () {
     it('converts to array with all values', function () {
         $params = new SessionLogParams(
             message: 'Error occurred',
-            level: 'error',
+            level: LogLevel::ERROR,
             ephemeral: false,
         );
         expect($params->toArray())->toBe([
@@ -370,7 +371,7 @@ describe('SessionLogParams', function () {
             'ephemeral' => true,
         ]);
         expect($params->message)->toBe('Test message')
-            ->and($params->level)->toBe('info')
+            ->and($params->level)->toBe(LogLevel::INFO)
             ->and($params->ephemeral)->toBeTrue();
     });
 

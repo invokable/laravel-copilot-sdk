@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingLog;
 use Revolution\Copilot\Types\Rpc\SessionLogParams;
@@ -44,7 +45,7 @@ describe('PendingLog', function () {
         $pending = new PendingLog($client, 'test-session-id');
         $result = $pending->log(new SessionLogParams(
             message: 'Disk usage high',
-            level: 'warning',
+            level: LogLevel::WARNING,
             ephemeral: true,
         ));
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\CopilotManager;
+use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
 
@@ -203,8 +204,8 @@ describe('createSession()', function () {
         Copilot::start(function (CopilotSession $session) {
             // Should not throw any exceptions
             $session->log('Processing started');
-            $session->log('Warning message', level: 'warning');
-            $session->log('Debug info', level: 'info', ephemeral: true);
+            $session->log('Warning message', level: LogLevel::WARNING);
+            $session->log('Debug info', level: LogLevel::INFO, ephemeral: true);
         });
 
         // If we get here without exceptions, the test passes

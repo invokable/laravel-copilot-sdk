@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Contracts;
 
 use Closure;
+use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\SessionRpc;
@@ -36,12 +37,13 @@ interface CopilotSession
      * Log a message to the session timeline.
      *
      * @param  string  $message  Human-readable message text
-     * @param  string|null  $level  Log severity: "info", "warning", or "error". Defaults to "info".
+     * @param  LogLevel|null  $level  Log severity. Defaults to info.
      * @param  bool|null  $ephemeral  When true, the message is not persisted to the session event log on disk.
+     * @return string Event ID of the created log entry.
      *
      * @throws JsonRpcException
      */
-    public function log(string $message, ?string $level = null, ?bool $ephemeral = null): void;
+    public function log(string $message, ?LogLevel $level = null, ?bool $ephemeral = null): string;
 
     /**
      * Send a message to this session.
