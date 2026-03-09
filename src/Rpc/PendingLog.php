@@ -23,7 +23,7 @@ class PendingLog
      */
     public function log(SessionLogParams|array $params): SessionLogResult
     {
-        $paramsArray = $params instanceof SessionLogParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof SessionLogParams ? $params : SessionLogParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return SessionLogResult::fromArray(

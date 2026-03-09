@@ -36,7 +36,7 @@ class PendingModel
      */
     public function switchTo(SessionModelSwitchToParams|array $params): SessionModelSwitchToResult
     {
-        $paramsArray = $params instanceof SessionModelSwitchToParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof SessionModelSwitchToParams ? $params : SessionModelSwitchToParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return SessionModelSwitchToResult::fromArray(

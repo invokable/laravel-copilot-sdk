@@ -37,7 +37,7 @@ class PendingWorkspace
      */
     public function readFile(SessionWorkspaceReadFileParams|array $params): SessionWorkspaceReadFileResult
     {
-        $paramsArray = $params instanceof SessionWorkspaceReadFileParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof SessionWorkspaceReadFileParams ? $params : SessionWorkspaceReadFileParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return SessionWorkspaceReadFileResult::fromArray(
@@ -50,7 +50,7 @@ class PendingWorkspace
      */
     public function createFile(SessionWorkspaceCreateFileParams|array $params): array
     {
-        $paramsArray = $params instanceof SessionWorkspaceCreateFileParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof SessionWorkspaceCreateFileParams ? $params : SessionWorkspaceCreateFileParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.workspace.createFile', $paramsArray);

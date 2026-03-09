@@ -49,7 +49,7 @@ class PendingAgent
      */
     public function select(SessionAgentSelectParams|array $params): SessionAgentSelectResult
     {
-        $paramsArray = $params instanceof SessionAgentSelectParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof SessionAgentSelectParams ? $params : SessionAgentSelectParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return SessionAgentSelectResult::fromArray(
