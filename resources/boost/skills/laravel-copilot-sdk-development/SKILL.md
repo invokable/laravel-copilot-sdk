@@ -442,6 +442,7 @@ use Illuminate\Support\Facades\Concurrency;
 
 ```php
 // config/ai.php
+'default' => 'copilot',
 'providers' => [
     'copilot' => ['driver' => 'copilot', 'key' => ''],
 ],
