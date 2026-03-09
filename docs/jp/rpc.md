@@ -114,8 +114,8 @@ $session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermis
 
 // log: セッションタイムラインへのメッセージ記録
 $session->rpc()->log()->log(new SessionLogParams(message: '処理を開始しました'));
-$session->rpc()->log()->log(new SessionLogParams(message: 'ディスク使用量が多い', level: 'warning'));
-$session->rpc()->log()->log(new SessionLogParams(message: 'エラーが発生しました', level: 'error'));
+$session->rpc()->log()->log(new SessionLogParams(message: 'ディスク使用量が多い', level: LogLevel::WARNING));
+$session->rpc()->log()->log(new SessionLogParams(message: 'エラーが発生しました', level: LogLevel::ERROR));
 $session->rpc()->log()->log(new SessionLogParams(message: 'デバッグ情報', ephemeral: true));
 ```
 
