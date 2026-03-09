@@ -172,6 +172,10 @@ Check the following files and update them if the corresponding feature changed:
 
 Update if the getting-started flow has changed (new required config, changed API signatures, etc.).
 
+### resources/boost/skills/laravel-copilot-sdk-development/SKILL.md
+
+Update skills for Laravel Boost if necessary.
+
 ### Documentation guidelines
 
 - Keep the Japanese tone and style consistent with existing content.
