@@ -52,6 +52,11 @@ class FakeSession implements CopilotSession
         // No-op in fake
     }
 
+    public function log(string $message, ?string $level = null, ?bool $ephemeral = null): void
+    {
+        // No-op in fake
+    }
+
     public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string
     {
         $this->recorded[] = [

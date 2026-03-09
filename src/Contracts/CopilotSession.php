@@ -33,6 +33,17 @@ interface CopilotSession
     public function setModel(string $model): void;
 
     /**
+     * Log a message to the session timeline.
+     *
+     * @param  string  $message  Human-readable message text
+     * @param  string|null  $level  Log severity: "info", "warning", or "error". Defaults to "info".
+     * @param  bool|null  $ephemeral  When true, the message is not persisted to the session event log on disk.
+     *
+     * @throws JsonRpcException
+     */
+    public function log(string $message, ?string $level = null, ?bool $ephemeral = null): void;
+
+    /**
      * Send a message to this session.
      */
     public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string;

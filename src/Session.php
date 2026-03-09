@@ -21,6 +21,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\PermissionRequestResultKind;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
+use Revolution\Copilot\Types\Rpc\SessionLogParams;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
 use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
 use Revolution\Copilot\Types\SessionEvent;
@@ -830,6 +831,26 @@ class Session implements CopilotSession
     public function setModel(string $model): void
     {
         $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $model));
+    }
+
+    /**
+     * Log a message to the session timeline.
+     * The message appears in the session event stream and is visible to SDK consumers
+     * and (for non-ephemeral messages) persisted to the session event log on disk.
+     *
+     * @param  string  $message  Human-readable message text
+     * @param  string|null  $level  Log severity: "info", "warning", or "error". Defaults to "info".
+     * @param  bool|null  $ephemeral  When true, the message is not persisted to the session event log on disk.
+     *
+     * @throws JsonRpcException
+     */
+    public function log(string $message, ?string $level = null, ?bool $ephemeral = null): void
+    {
+        $this->rpc()->log()->log(new SessionLogParams(
+            message: $message,
+            level: $level,
+            ephemeral: $ephemeral,
+        ));
     }
 
     /**
