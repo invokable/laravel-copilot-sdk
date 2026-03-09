@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\LogLevel;
 
 /**
  * Parameters for logging a message to the session timeline.
@@ -15,7 +16,7 @@ readonly class SessionLogParams implements Arrayable
         /** Human-readable message */
         public string $message,
         /** Log severity level. Determines how the message is displayed in the timeline. Defaults to "info". */
-        public ?string $level = null,
+        public ?LogLevel $level = null,
         /** When true, the message is transient and not persisted to the session event log on disk */
         public ?bool $ephemeral = null,
     ) {}
@@ -24,7 +25,7 @@ readonly class SessionLogParams implements Arrayable
     {
         return new self(
             message: $data['message'],
-            level: $data['level'] ?? null,
+            level: isset($data['level']) ? LogLevel::from($data['level']) : null,
             ephemeral: $data['ephemeral'] ?? null,
         );
     }
@@ -33,7 +34,7 @@ readonly class SessionLogParams implements Arrayable
     {
         return array_filter([
             'message' => $this->message,
-            'level' => $this->level,
+            'level' => $this->level?->value,
             'ephemeral' => $this->ephemeral,
         ], fn ($v) => $v !== null);
     }

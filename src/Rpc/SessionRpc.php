@@ -19,7 +19,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->workspace()->listFiles();
  * $session->rpc()->fleet()->start();
  * $session->rpc()->log()->log(new SessionLogParams(message: 'Processing started'));
- * $session->rpc()->log()->log(new SessionLogParams(message: 'Disk usage high', level: 'warning'));
+ * $session->rpc()->log()->log(new SessionLogParams(message: 'Disk usage high', level: LogLevel::WARNING));
  * $session->rpc()->agent()->list();
  * $session->rpc()->compaction()->compact();
  * $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToolCallParams(requestId: '...', result: 'done'));
