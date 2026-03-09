@@ -72,7 +72,7 @@ Copilot::start(function (CopilotSession $session) {
 $session->rpc()->model()->getCurrent();
 $session->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: 'gpt-4'));
 // reasoningEffortを指定する場合（対応モデルのみ）
-$session->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: 'claude-opus-4', reasoningEffort: ReasoningEffort::HIGH));
+$session->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: 'claude-opus-4.6', reasoningEffort: ReasoningEffort::HIGH));
 
 // mode
 $session->rpc()->mode()->get();
