@@ -110,7 +110,7 @@ $response = Copilot::run(
 
 BYOKモードでカスタムプロバイダーを使用している場合、`client->listModels()`がCLIサーバーではなくカスタムハンドラーを呼び出すように設定できます。
 
-`usingListModels()`メソッドを使って設定するのが推奨です。clientは初期化されやすいため、`listModels()`の前に常に`usingListModels()`を設定してください。
+`usingListModels()`メソッドを使って設定します。clientは初期化されやすいため、`listModels()`の前に常に`usingListModels()`を設定してください。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
@@ -132,27 +132,4 @@ $models = Copilot::client()->usingListModels(function (): array {
 $models = Copilot::client()->usingListModels(null)->listModels();
 ```
 
-`on_list_models`オプションをクライアント設定に渡す方法でも設定できます。
-
-```php
-use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Types\ModelInfo;
-
-// AppServiceProvider などで設定
-Copilot::forceClient(fn () => app(\Revolution\Copilot\Client::class, [
-    'options' => [
-        'on_list_models' => function (): array {
-            // カスタムプロバイダーで利用可能なモデルを返す
-            return [
-                ['id' => 'my-model-1', 'name' => 'My Model 1', 'version' => '1.0'],
-                ['id' => 'my-model-2', 'name' => 'My Model 2', 'version' => '2.0'],
-            ];
-        },
-    ],
-]));
-
-// on_list_models が設定されている場合、接続なしでも listModels() が呼び出せる
-$models = Copilot::client()->listModels();
-```
-
-`on_list_models`や`usingListModels()`が設定されている場合、`listModels()`はCLIサーバーへの接続を必要とせず、キャッシュも使用しません。
+`usingListModels()`が設定されている場合、`listModels()`はCLIサーバーへの接続を必要とせず、キャッシュも使用しません。

@@ -97,12 +97,8 @@ class Client implements CopilotClient
             $this->tcpMode = true;
             $this->transport = TcpTransport::fromUrl(data_get($options, 'cli_url'));
 
-            $this->onListModels = data_get($options, 'on_list_models');
-
             return;
         }
-
-        $this->onListModels = data_get($options, 'on_list_models');
 
         // Stdio mode: start CLI process
         $this->processManager = app(ProcessManager::class, [
@@ -478,9 +474,9 @@ class Client implements CopilotClient
     /**
      * List available models with their metadata.
      *
-     * If an `on_list_models` handler was provided in the client options or via
-     * usingListModels(), it is called instead of querying the CLI server. Useful
-     * in BYOK mode to return models available from your custom provider.
+     * If a handler was provided via usingListModels(), it is called instead of
+     * querying the CLI server. Useful in BYOK mode to return models available
+     * from your custom provider.
      *
      * Results are cached after the first successful call to avoid rate limiting.
      * The cache is cleared when the client disconnects.
