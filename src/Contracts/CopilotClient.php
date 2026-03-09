@@ -73,6 +73,14 @@ interface CopilotClient
     public function getAuthStatus(): GetAuthStatusResponse;
 
     /**
+     * Set a custom handler for listing available models (for BYOK mode).
+     *
+     * When set, listModels() calls this callback instead of querying the CLI server.
+     * Pass null to remove the handler and revert to the default CLI server behaviour.
+     */
+    public function usingListModels(?callable $callback = null): static;
+
+    /**
      * List available models with their metadata.
      *
      * @return array<ModelInfo>

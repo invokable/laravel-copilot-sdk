@@ -459,11 +459,28 @@ class Client implements CopilotClient
     }
 
     /**
+     * Set a custom handler for listing available models (for BYOK mode).
+     *
+     * When set, listModels() calls this callback instead of querying the CLI server.
+     * Pass null to remove the handler and revert to the default CLI server behaviour.
+     *
+     * ```php
+     * $models = Copilot::client()->usingListModels(fn() => [])->listModels();
+     * ```
+     */
+    public function usingListModels(?callable $callback = null): static
+    {
+        $this->onListModels = $callback;
+
+        return $this;
+    }
+
+    /**
      * List available models with their metadata.
      *
-     * If an `on_list_models` handler was provided in the client options,
-     * it is called instead of querying the CLI server. Useful in BYOK mode
-     * to return models available from your custom provider.
+     * If an `on_list_models` handler was provided in the client options or via
+     * usingListModels(), it is called instead of querying the CLI server. Useful
+     * in BYOK mode to return models available from your custom provider.
      *
      * Results are cached after the first successful call to avoid rate limiting.
      * The cache is cleared when the client disconnects.
