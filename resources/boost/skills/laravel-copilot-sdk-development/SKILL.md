@@ -30,7 +30,7 @@ COPILOT_CLI_PATH=copilot
 COPILOT_MODEL=claude-sonnet-4.6
 COPILOT_TIMEOUT=60
 COPILOT_URL=127.0.0.1:12345       # Set this to enable TCP mode
-COPILOT_PERMISSION_APPROVE=false   # Do not auto-approve permission requests
+COPILOT_PERMISSION_APPROVE="deny-all"   # Do not auto-approve permission requests when end users prompt is available
 ```
 
 ---
@@ -360,7 +360,7 @@ RPC params also accept arrays: `$session->rpc()->mode()->set(['mode' => 'plan'])
 
 ## Permission Requests
 
-By default (`config/copilot.php` → `permission_approve: true`), all permission requests are auto-approved except for shell and write.
+By default (`config/copilot.php` → `permission_approve: 'deny-all'`), all permission requests are denied.
 In web-facing applications or when prompts can be influenced by end users, you should **not** rely on blanket auto-approval. Instead, inspect each request and gate high-risk operations behind your own authorization logic.
 
 Custom handler example:
