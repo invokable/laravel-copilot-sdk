@@ -1,4 +1,4 @@
-# Copilot CLI SDK for Laravel Project Guidelines
+# GitHub Copilot SDK for Laravel Project Guidelines
 
 ## Overview
 
@@ -12,6 +12,13 @@ https://github.com/github/copilot-sdk
 ```shell
 git submodule update --remote --merge
 ```
+
+## 公式SDKの自動同期
+
+GitHub Agentic Workflowsで自動的に同期を実行している。
+`.github/workflows/sdk-sync.md`
+
+自動同期とは別に人間が手動でコーディングしてることも多いのでコミットログやプルリクのコメントに書いてあるファイルが見つからない時は現在のプロジェクト内で検索し直す。
 
 ## Technology Stack
 
