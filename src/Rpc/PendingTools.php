@@ -26,7 +26,7 @@ class PendingTools
      */
     public function handlePendingToolCall(SessionToolsHandlePendingToolCallParams|array $params): SessionToolsHandlePendingToolCallResult
     {
-        $paramsArray = $params instanceof SessionToolsHandlePendingToolCallParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof SessionToolsHandlePendingToolCallParams ? $params : SessionToolsHandlePendingToolCallParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return SessionToolsHandlePendingToolCallResult::fromArray(

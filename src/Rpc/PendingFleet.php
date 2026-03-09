@@ -23,7 +23,7 @@ class PendingFleet
      */
     public function start(SessionFleetStartParams|array $params = []): SessionFleetStartResult
     {
-        $paramsArray = $params instanceof SessionFleetStartParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof SessionFleetStartParams ? $params : SessionFleetStartParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return SessionFleetStartResult::fromArray(

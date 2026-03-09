@@ -36,7 +36,7 @@ class PendingMode
      */
     public function set(SessionModeSetParams|array $params): SessionModeSetResult
     {
-        $paramsArray = $params instanceof SessionModeSetParams ? $params->toArray() : $params;
+        $paramsArray = ($params instanceof SessionModeSetParams ? $params : SessionModeSetParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return SessionModeSetResult::fromArray(
