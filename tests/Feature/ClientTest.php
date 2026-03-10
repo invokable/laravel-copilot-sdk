@@ -13,6 +13,7 @@ use Revolution\Copilot\Protocol;
 use Revolution\Copilot\Session;
 use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Transport\StdioTransport;
+use Revolution\Copilot\Types\ModelInfo;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
@@ -252,7 +253,7 @@ describe('Client', function () {
         $client->start();
 
         expect(fn () => $client->createSession([]))
-            ->toThrow(\InvalidArgumentException::class, 'onPermissionRequest handler is required');
+            ->toThrow(InvalidArgumentException::class, 'onPermissionRequest handler is required');
 
         fclose($stdin);
         fclose($stdout);
@@ -284,7 +285,7 @@ describe('Client', function () {
         $client->start();
 
         expect(fn () => $client->resumeSession('test-session-123', []))
-            ->toThrow(\InvalidArgumentException::class, 'onPermissionRequest handler is required');
+            ->toThrow(InvalidArgumentException::class, 'onPermissionRequest handler is required');
 
         fclose($stdin);
         fclose($stdout);
@@ -367,7 +368,7 @@ describe('Client', function () {
         $models = $client->listModels();
 
         expect($models)->toHaveCount(1)
-            ->and($models[0])->toBeInstanceOf(\Revolution\Copilot\Types\ModelInfo::class)
+            ->and($models[0])->toBeInstanceOf(ModelInfo::class)
             ->and($models[0]->id)->toBe('my-model')
             ->and($models[0]->name)->toBe('My Model');
     });

@@ -8,7 +8,9 @@ use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\SessionEventType;
+use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
+use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
@@ -38,8 +40,8 @@ class FakeSession implements CopilotSession
         // Return a SessionRpc with a mock client; methods will throw if actually called in tests
         // Since SessionRpc requires a real JsonRpcClient, we create a minimal instance
         return new SessionRpc(
-            new \Revolution\Copilot\JsonRpc\JsonRpcClient(
-                new \Revolution\Copilot\Transport\StdioTransport(
+            new JsonRpcClient(
+                new StdioTransport(
                     fopen('php://memory', 'r'),
                     fopen('php://memory', 'w'),
                 ),

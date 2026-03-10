@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Types\Hooks\BaseHookInput;
 use Revolution\Copilot\Types\Hooks\UserPromptSubmittedHookInput;
 
 describe('UserPromptSubmittedHookInput', function () {
@@ -52,6 +53,6 @@ describe('UserPromptSubmittedHookInput', function () {
     it('extends BaseHookInput', function () {
         $input = UserPromptSubmittedHookInput::fromArray([]);
 
-        expect($input)->toBeInstanceOf(\Revolution\Copilot\Types\Hooks\BaseHookInput::class);
+        expect($input)->toBeInstanceOf(BaseHookInput::class);
     });
 });

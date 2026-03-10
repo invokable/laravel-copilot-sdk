@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Types\Hooks\BaseHookInput;
 use Revolution\Copilot\Types\Hooks\PostToolUseHookInput;
 use Revolution\Copilot\Types\ToolResultObject;
 
@@ -83,6 +84,6 @@ describe('PostToolUseHookInput', function () {
     it('extends BaseHookInput', function () {
         $input = PostToolUseHookInput::fromArray([]);
 
-        expect($input)->toBeInstanceOf(\Revolution\Copilot\Types\Hooks\BaseHookInput::class);
+        expect($input)->toBeInstanceOf(BaseHookInput::class);
     });
 });

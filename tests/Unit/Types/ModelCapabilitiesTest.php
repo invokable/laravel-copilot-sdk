@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\ModelCapabilities;
 
 describe('ModelCapabilities', function () {
@@ -66,7 +67,7 @@ describe('ModelCapabilities', function () {
     it('implements Arrayable interface', function () {
         $capabilities = new ModelCapabilities(supports: [], limits: []);
 
-        expect($capabilities)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($capabilities)->toBeInstanceOf(Arrayable::class);
     });
 
     it('can check if reasoning effort is supported', function () {

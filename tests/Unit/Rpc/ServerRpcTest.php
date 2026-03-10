@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerAccount;
 use Revolution\Copilot\Rpc\PendingServerModels;
 use Revolution\Copilot\Rpc\PendingServerTools;
 use Revolution\Copilot\Rpc\ServerRpc;
+use Revolution\Copilot\Transport\StdioTransport;
 
 describe('ServerRpc', function () {
     it('returns PendingModels from models()', function () {
@@ -27,12 +29,12 @@ describe('ServerRpc', function () {
     });
 });
 
-function createMockRpcClient(): \Revolution\Copilot\JsonRpc\JsonRpcClient
+function createMockRpcClient(): JsonRpcClient
 {
-    $transport = new \Revolution\Copilot\Transport\StdioTransport(
+    $transport = new StdioTransport(
         fopen('php://memory', 'r'),
         fopen('php://memory', 'w'),
     );
 
-    return new \Revolution\Copilot\JsonRpc\JsonRpcClient($transport);
+    return new JsonRpcClient($transport);
 }

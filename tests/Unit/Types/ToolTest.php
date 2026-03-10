@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\Tool;
 
 describe('Tool', function () {
@@ -181,6 +182,6 @@ describe('Tool', function () {
             handler: fn () => null,
         );
 
-        expect($tool)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($tool)->toBeInstanceOf(Arrayable::class);
     });
 });

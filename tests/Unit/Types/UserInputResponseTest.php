@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\UserInputResponse;
 
 describe('UserInputResponse', function () {
@@ -70,6 +71,6 @@ describe('UserInputResponse', function () {
     it('implements Arrayable interface', function () {
         $response = new UserInputResponse(answer: 'Test');
 
-        expect($response)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($response)->toBeInstanceOf(Arrayable::class);
     });
 });

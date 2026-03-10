@@ -1,9 +1,11 @@
 <?php
 
 declare(strict_types=1);
+use Laravel\Ai\AiServiceProvider;
+use Laravel\Boost\BoostServiceProvider;
 
 return [
     //
-    Laravel\Ai\AiServiceProvider::class,
-    Laravel\Boost\BoostServiceProvider::class,
+    AiServiceProvider::class,
+    BoostServiceProvider::class,
 ];

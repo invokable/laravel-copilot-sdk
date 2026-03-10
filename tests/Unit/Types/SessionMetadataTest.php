@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\SessionContext;
 use Revolution\Copilot\Types\SessionMetadata;
 
@@ -79,7 +80,7 @@ describe('SessionMetadata', function () {
             modifiedTime: '2026-01-24T13:00:00Z',
         );
 
-        expect($metadata)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($metadata)->toBeInstanceOf(Arrayable::class);
     });
 
     it('can be created with context', function () {

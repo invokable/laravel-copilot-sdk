@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\ProviderConfig;
@@ -209,7 +210,7 @@ describe('SessionConfig', function () {
     it('implements Arrayable interface', function () {
         $config = new SessionConfig;
 
-        expect($config)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($config)->toBeInstanceOf(Arrayable::class);
     });
 
     it('accepts reasoningEffort as enum', function () {

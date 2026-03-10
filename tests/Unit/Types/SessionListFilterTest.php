@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\SessionListFilter;
 
 describe('SessionListFilter', function () {
@@ -98,6 +99,6 @@ describe('SessionListFilter', function () {
     it('implements Arrayable interface', function () {
         $filter = new SessionListFilter;
 
-        expect($filter)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($filter)->toBeInstanceOf(Arrayable::class);
     });
 });

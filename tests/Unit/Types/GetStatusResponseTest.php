@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\GetStatusResponse;
 
 describe('GetStatusResponse', function () {
@@ -30,6 +31,6 @@ describe('GetStatusResponse', function () {
     it('implements Arrayable interface', function () {
         $response = new GetStatusResponse(version: '1.0.0', protocolVersion: 1);
 
-        expect($response)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($response)->toBeInstanceOf(Arrayable::class);
     });
 });

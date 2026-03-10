@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Mockery\MockInterface;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Exceptions\JsonRpcException;
@@ -18,7 +19,7 @@ beforeEach(function () {
 /**
  * Create a mock transport that captures the onReceive handler.
  *
- * @return array{transport: \Mockery\MockInterface|Transport, simulateReceive: Closure}
+ * @return array{transport: MockInterface|Transport, simulateReceive: Closure}
  */
 function createMockTransport(): array
 {

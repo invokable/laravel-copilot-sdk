@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 
 describe('InfiniteSessionConfig', function () {
@@ -78,6 +79,6 @@ describe('InfiniteSessionConfig', function () {
     it('implements Arrayable interface', function () {
         $config = new InfiniteSessionConfig;
 
-        expect($config)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($config)->toBeInstanceOf(Arrayable::class);
     });
 });

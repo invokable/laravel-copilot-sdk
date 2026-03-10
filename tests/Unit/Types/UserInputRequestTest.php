@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\UserInputRequest;
 
 describe('UserInputRequest', function () {
@@ -76,6 +77,6 @@ describe('UserInputRequest', function () {
     it('implements Arrayable interface', function () {
         $request = new UserInputRequest(question: 'Test');
 
-        expect($request)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($request)->toBeInstanceOf(Arrayable::class);
     });
 });

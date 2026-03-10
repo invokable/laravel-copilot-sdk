@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\ToolResultObject;
 
 describe('ToolResultObject', function () {
@@ -104,6 +105,6 @@ describe('ToolResultObject', function () {
     it('implements Arrayable interface', function () {
         $result = new ToolResultObject(textResultForLlm: 'Test');
 
-        expect($result)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($result)->toBeInstanceOf(Arrayable::class);
     });
 });

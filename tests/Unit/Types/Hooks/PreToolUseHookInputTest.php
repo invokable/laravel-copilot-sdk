@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Types\Hooks\BaseHookInput;
 use Revolution\Copilot\Types\Hooks\PreToolUseHookInput;
 
 describe('PreToolUseHookInput', function () {
@@ -64,6 +65,6 @@ describe('PreToolUseHookInput', function () {
             toolArgs: null,
         );
 
-        expect($input)->toBeInstanceOf(\Revolution\Copilot\Types\Hooks\BaseHookInput::class);
+        expect($input)->toBeInstanceOf(BaseHookInput::class);
     });
 });

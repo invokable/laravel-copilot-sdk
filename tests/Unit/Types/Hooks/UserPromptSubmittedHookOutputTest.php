@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\Hooks\UserPromptSubmittedHookOutput;
 
 describe('UserPromptSubmittedHookOutput', function () {
@@ -62,6 +63,6 @@ describe('UserPromptSubmittedHookOutput', function () {
     it('implements Arrayable interface', function () {
         $output = new UserPromptSubmittedHookOutput;
 
-        expect($output)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($output)->toBeInstanceOf(Arrayable::class);
     });
 });

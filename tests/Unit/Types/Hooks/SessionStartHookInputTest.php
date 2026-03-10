@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Types\Hooks\BaseHookInput;
 use Revolution\Copilot\Types\Hooks\SessionStartHookInput;
 
 describe('SessionStartHookInput', function () {
@@ -84,6 +85,6 @@ describe('SessionStartHookInput', function () {
     it('extends BaseHookInput', function () {
         $input = SessionStartHookInput::fromArray([]);
 
-        expect($input)->toBeInstanceOf(\Revolution\Copilot\Types\Hooks\BaseHookInput::class);
+        expect($input)->toBeInstanceOf(BaseHookInput::class);
     });
 });

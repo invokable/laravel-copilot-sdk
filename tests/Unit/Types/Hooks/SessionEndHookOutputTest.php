@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\Hooks\SessionEndHookOutput;
 
 describe('SessionEndHookOutput', function () {
@@ -64,6 +65,6 @@ describe('SessionEndHookOutput', function () {
     it('implements Arrayable interface', function () {
         $output = new SessionEndHookOutput;
 
-        expect($output)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($output)->toBeInstanceOf(Arrayable::class);
     });
 });

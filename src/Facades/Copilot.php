@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Facades;
 use Illuminate\Support\Facades\Facade;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
+use Revolution\Copilot\CopilotManager;
 use Revolution\Copilot\Testing\ResponseSequence;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
@@ -26,7 +27,7 @@ use Revolution\Copilot\Types\SessionEvent;
  * @method static Factory assertPromptCount(int $count)
  * @method static Factory assertNothingSent()
  *
- * @mixin  \Revolution\Copilot\CopilotManager
+ * @mixin  CopilotManager
  */
 class Copilot extends Facade
 {

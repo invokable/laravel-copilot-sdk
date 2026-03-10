@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 
 describe('GetAuthStatusResponse', function () {
@@ -64,6 +65,6 @@ describe('GetAuthStatusResponse', function () {
     it('implements Arrayable interface', function () {
         $response = new GetAuthStatusResponse(isAuthenticated: true);
 
-        expect($response)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($response)->toBeInstanceOf(Arrayable::class);
     });
 });

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\Hooks\BaseHookInput;
 
 describe('BaseHookInput', function () {
@@ -47,6 +48,6 @@ describe('BaseHookInput', function () {
     it('implements Arrayable interface', function () {
         $input = new BaseHookInput(timestamp: 0, cwd: '');
 
-        expect($input)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($input)->toBeInstanceOf(Arrayable::class);
     });
 });

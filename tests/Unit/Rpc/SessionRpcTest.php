@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingAgent;
 use Revolution\Copilot\Rpc\PendingCompaction;
 use Revolution\Copilot\Rpc\PendingFleet;
@@ -13,6 +14,7 @@ use Revolution\Copilot\Rpc\PendingPlan;
 use Revolution\Copilot\Rpc\PendingTools;
 use Revolution\Copilot\Rpc\PendingWorkspace;
 use Revolution\Copilot\Rpc\SessionRpc;
+use Revolution\Copilot\Transport\StdioTransport;
 
 describe('SessionRpc', function () {
     it('returns PendingModel from model()', function () {
@@ -76,12 +78,12 @@ describe('SessionRpc', function () {
     });
 });
 
-function createMockSessionRpcClient(): \Revolution\Copilot\JsonRpc\JsonRpcClient
+function createMockSessionRpcClient(): JsonRpcClient
 {
-    $transport = new \Revolution\Copilot\Transport\StdioTransport(
+    $transport = new StdioTransport(
         fopen('php://memory', 'r'),
         fopen('php://memory', 'w'),
     );
 
-    return new \Revolution\Copilot\JsonRpc\JsonRpcClient($transport);
+    return new JsonRpcClient($transport);
 }

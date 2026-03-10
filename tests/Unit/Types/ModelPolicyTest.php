@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\ModelPolicy;
 
 describe('ModelPolicy', function () {
@@ -48,6 +49,6 @@ describe('ModelPolicy', function () {
     it('implements Arrayable interface', function () {
         $policy = new ModelPolicy(state: 'enabled', terms: 'standard');
 
-        expect($policy)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($policy)->toBeInstanceOf(Arrayable::class);
     });
 });

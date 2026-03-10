@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\ModelBilling;
 
 describe('ModelBilling', function () {
@@ -33,6 +34,6 @@ describe('ModelBilling', function () {
     it('implements Arrayable interface', function () {
         $billing = new ModelBilling(multiplier: 1.0);
 
-        expect($billing)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($billing)->toBeInstanceOf(Arrayable::class);
     });
 });

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\Hooks\PostToolUseHookOutput;
 use Revolution\Copilot\Types\ToolResultObject;
 
@@ -93,6 +94,6 @@ describe('PostToolUseHookOutput', function () {
     it('implements Arrayable interface', function () {
         $output = new PostToolUseHookOutput;
 
-        expect($output)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($output)->toBeInstanceOf(Arrayable::class);
     });
 });

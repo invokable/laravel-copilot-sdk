@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use Revolt\EventLoop;
+use Revolution\Copilot\Enums\SessionEventType;
+use Revolution\Copilot\Exceptions\SessionErrorException;
+use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Session;
@@ -148,7 +152,7 @@ describe('Session', function () {
         $messageCallCount = 0;
         $receivedEvent = null;
 
-        $session->on(Revolution\Copilot\Enums\SessionEventType::ASSISTANT_MESSAGE, function (SessionEvent $event) use (&$messageCallCount, &$receivedEvent) {
+        $session->on(SessionEventType::ASSISTANT_MESSAGE, function (SessionEvent $event) use (&$messageCallCount, &$receivedEvent) {
             $messageCallCount++;
             $receivedEvent = $event;
         });
@@ -365,7 +369,7 @@ describe('Session', function () {
         });
 
         // Simulate error event after a short delay
-        Revolt\EventLoop::delay(0.02, function () use ($session) {
+        EventLoop::delay(0.02, function () use ($session) {
             $errorEvent = SessionEvent::fromArray([
                 'type' => 'session.error',
                 'data' => ['message' => 'Test error'],
@@ -381,7 +385,7 @@ describe('Session', function () {
 
         // throw() should throw the stored exception
         expect(fn () => $receivedEvent->throw())
-            ->toThrow(Revolution\Copilot\Exceptions\SessionErrorException::class, 'Session error: Test error');
+            ->toThrow(SessionErrorException::class, 'Session error: Test error');
     });
 
     it('sendAndWait returns event with exception on timeout', function () {
@@ -408,7 +412,7 @@ describe('Session', function () {
 
         // throw() should throw the stored exception
         expect(fn () => $receivedEvent->throw())
-            ->toThrow(Revolution\Copilot\Exceptions\SessionTimeoutException::class);
+            ->toThrow(SessionTimeoutException::class);
     });
 
     it('successful event throw() returns self', function () {

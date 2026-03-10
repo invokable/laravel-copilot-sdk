@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\Hooks\ErrorOccurredHookOutput;
 
 describe('ErrorOccurredHookOutput', function () {
@@ -89,6 +90,6 @@ describe('ErrorOccurredHookOutput', function () {
     it('implements Arrayable interface', function () {
         $output = new ErrorOccurredHookOutput;
 
-        expect($output)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($output)->toBeInstanceOf(Arrayable::class);
     });
 });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Support\PermissionRequestResultKind;
 
 /**
  * Parameters for handling a pending permission request.
@@ -16,7 +17,7 @@ use Illuminate\Contracts\Support\Arrayable;
  * - "denied-interactively-by-user" (with optional "feedback" string)
  * - "denied-by-content-exclusion-policy" (with required "path" and "message" strings)
  *
- * Use {@see \Revolution\Copilot\Support\PermissionRequestResultKind} for building result arrays.
+ * Use {@see PermissionRequestResultKind} for building result arrays.
  */
 readonly class SessionPermissionsHandlePendingPermissionRequestParams implements Arrayable
 {

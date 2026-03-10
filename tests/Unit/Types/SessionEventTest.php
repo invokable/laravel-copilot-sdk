@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Broadcasting\AnonymousEvent;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Support\Facades\Broadcast;
 use Revolution\Copilot\Enums\SessionEventType;
@@ -121,7 +122,7 @@ describe('SessionEvent', function () {
 
 describe('SessionEvent broadcast', function () {
     it('can broadcast to a channel', function () {
-        $anonymous = Mockery::mock(\Illuminate\Broadcasting\AnonymousEvent::class);
+        $anonymous = Mockery::mock(AnonymousEvent::class);
         $anonymous->shouldReceive('as')
             ->once()
             ->with('assistant.message')
@@ -147,7 +148,7 @@ describe('SessionEvent broadcast', function () {
     });
 
     it('can broadcast now to a channel', function () {
-        $anonymous = Mockery::mock(\Illuminate\Broadcasting\AnonymousEvent::class);
+        $anonymous = Mockery::mock(AnonymousEvent::class);
         $anonymous->shouldReceive('as')
             ->once()
             ->with('assistant.message_delta')

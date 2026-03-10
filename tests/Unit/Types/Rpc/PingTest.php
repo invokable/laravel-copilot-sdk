@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\Rpc\PingParams;
 use Revolution\Copilot\Types\Rpc\PingResult;
 
@@ -34,7 +35,7 @@ describe('PingResult', function () {
 
     it('implements Arrayable interface', function () {
         $result = new PingResult(message: 'test', timestamp: 0, protocolVersion: 1.0);
-        expect($result)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($result)->toBeInstanceOf(Arrayable::class);
     });
 });
 

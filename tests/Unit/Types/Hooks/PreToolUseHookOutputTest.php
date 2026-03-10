@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\Hooks\PreToolUseHookOutput;
 
 describe('PreToolUseHookOutput', function () {
@@ -82,6 +83,6 @@ describe('PreToolUseHookOutput', function () {
     it('implements Arrayable interface', function () {
         $output = new PreToolUseHookOutput;
 
-        expect($output)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($output)->toBeInstanceOf(Arrayable::class);
     });
 });

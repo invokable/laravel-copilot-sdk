@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\ForegroundSessionInfo;
 
 describe('ForegroundSessionInfo', function () {
@@ -45,6 +46,6 @@ describe('ForegroundSessionInfo', function () {
     it('implements Arrayable interface', function () {
         $info = new ForegroundSessionInfo;
 
-        expect($info)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($info)->toBeInstanceOf(Arrayable::class);
     });
 });

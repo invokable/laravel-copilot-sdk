@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\ProviderConfig;
 
 describe('ProviderConfig', function () {
@@ -75,6 +76,6 @@ describe('ProviderConfig', function () {
     it('implements Arrayable interface', function () {
         $config = new ProviderConfig(baseUrl: 'https://example.com');
 
-        expect($config)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($config)->toBeInstanceOf(Arrayable::class);
     });
 });

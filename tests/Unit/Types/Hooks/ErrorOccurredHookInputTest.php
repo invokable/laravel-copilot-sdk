@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Types\Hooks\BaseHookInput;
 use Revolution\Copilot\Types\Hooks\ErrorOccurredHookInput;
 
 describe('ErrorOccurredHookInput', function () {
@@ -79,6 +80,6 @@ describe('ErrorOccurredHookInput', function () {
     it('extends BaseHookInput', function () {
         $input = ErrorOccurredHookInput::fromArray([]);
 
-        expect($input)->toBeInstanceOf(\Revolution\Copilot\Types\Hooks\BaseHookInput::class);
+        expect($input)->toBeInstanceOf(BaseHookInput::class);
     });
 });

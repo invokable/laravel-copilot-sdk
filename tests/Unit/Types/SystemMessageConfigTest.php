@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\SystemMessageConfig;
 
 describe('SystemMessageConfig', function () {
@@ -65,6 +66,6 @@ describe('SystemMessageConfig', function () {
     it('implements Arrayable interface', function () {
         $config = new SystemMessageConfig;
 
-        expect($config)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($config)->toBeInstanceOf(Arrayable::class);
     });
 });

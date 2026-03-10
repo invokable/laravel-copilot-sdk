@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Types\Hooks\BaseHookInput;
 use Revolution\Copilot\Types\Hooks\SessionEndHookInput;
 
 describe('SessionEndHookInput', function () {
@@ -90,6 +91,6 @@ describe('SessionEndHookInput', function () {
     it('extends BaseHookInput', function () {
         $input = SessionEndHookInput::fromArray([]);
 
-        expect($input)->toBeInstanceOf(\Revolution\Copilot\Types\Hooks\BaseHookInput::class);
+        expect($input)->toBeInstanceOf(BaseHookInput::class);
     });
 });

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\SessionHooks;
 
 describe('SessionHooks', function () {
@@ -106,6 +107,6 @@ describe('SessionHooks', function () {
     it('implements Arrayable interface', function () {
         $hooks = new SessionHooks;
 
-        expect($hooks)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($hooks)->toBeInstanceOf(Arrayable::class);
     });
 });

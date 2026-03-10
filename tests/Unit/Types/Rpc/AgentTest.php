@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\Rpc\AgentInfo;
 use Revolution\Copilot\Types\Rpc\SessionAgentGetCurrentResult;
 use Revolution\Copilot\Types\Rpc\SessionAgentListResult;
@@ -37,7 +38,7 @@ describe('AgentInfo', function () {
 
     it('implements Arrayable interface', function () {
         $agent = new AgentInfo(name: 'a', displayName: 'b', description: 'c');
-        expect($agent)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($agent)->toBeInstanceOf(Arrayable::class);
     });
 });
 

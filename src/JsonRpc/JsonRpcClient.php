@@ -7,6 +7,7 @@ namespace Revolution\Copilot\JsonRpc;
 use Closure;
 use Illuminate\Support\Str;
 use Revolt\EventLoop;
+use Revolt\EventLoop\Suspension;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Events\JsonRpc\MessageReceived;
 use Revolution\Copilot\Events\JsonRpc\MessageSending;
@@ -25,7 +26,7 @@ class JsonRpcClient
     /**
      * Pending requests waiting for responses.
      *
-     * @var array<string, array{suspension: \Revolt\EventLoop\Suspension, result: mixed, error: array|null}>
+     * @var array<string, array{suspension: Suspension, result: mixed, error: array|null}>
      */
     protected array $pendingRequests = [];
 

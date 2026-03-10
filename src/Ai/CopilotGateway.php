@@ -8,6 +8,7 @@ use Closure;
 use Exception;
 use Generator;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Str;
 use Laravel\Ai\Contracts\Files\TranscribableAudio;
 use Laravel\Ai\Contracts\Gateway\Gateway;
@@ -54,7 +55,7 @@ class CopilotGateway implements Gateway
     /**
      * Generate text representing the next message in a conversation.
      *
-     * @param  array<string, \Illuminate\JsonSchema\Types\Type>|null  $schema
+     * @param  array<string, Type>|null  $schema
      *
      * @throws Exception
      */
@@ -83,7 +84,7 @@ class CopilotGateway implements Gateway
     /**
      * Stream text representing the next message in a conversation.
      *
-     * @param  array<string, \Illuminate\JsonSchema\Types\Type>|null  $schema
+     * @param  array<string, Type>|null  $schema
      */
     public function streamText(string $invocationId, TextProvider $provider, string $model, ?string $instructions, array $messages = [], array $tools = [], ?array $schema = null, ?TextGenerationOptions $options = null, ?int $timeout = null): Generator
     {

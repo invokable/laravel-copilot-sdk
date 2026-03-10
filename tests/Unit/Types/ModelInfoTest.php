@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\ModelBilling;
 use Revolution\Copilot\Types\ModelCapabilities;
@@ -102,7 +103,7 @@ describe('ModelInfo', function () {
             capabilities: new ModelCapabilities(supports: [], limits: []),
         );
 
-        expect($modelInfo)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($modelInfo)->toBeInstanceOf(Arrayable::class);
     });
 
     it('can handle supportedReasoningEfforts array', function () {

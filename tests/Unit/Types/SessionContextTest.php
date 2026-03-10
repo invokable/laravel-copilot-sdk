@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\SessionContext;
 
 describe('SessionContext', function () {
@@ -92,6 +93,6 @@ describe('SessionContext', function () {
     it('implements Arrayable interface', function () {
         $context = new SessionContext(cwd: '/home');
 
-        expect($context)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($context)->toBeInstanceOf(Arrayable::class);
     });
 });

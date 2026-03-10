@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\SessionLifecycleEventType;
 use Revolution\Copilot\Types\SessionLifecycleEvent;
 use Revolution\Copilot\Types\SessionLifecycleEventMetadata;
@@ -147,6 +148,6 @@ describe('SessionLifecycleEvent', function () {
             sessionId: 'session-new',
         );
 
-        expect($event)->toBeInstanceOf(\Illuminate\Contracts\Support\Arrayable::class);
+        expect($event)->toBeInstanceOf(Arrayable::class);
     });
 });
