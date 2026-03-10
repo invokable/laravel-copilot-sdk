@@ -119,6 +119,15 @@ readonly class SessionConfig implements Arrayable
          * Set to `new InfiniteSessionConfig(enabled: false)` to disable.
          */
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
+        /**
+         * Optional event handler registered on the session before the session.create RPC is issued.
+         * This guarantees that early events emitted by the CLI during session creation (e.g. session.start)
+         * are delivered to the handler.
+         *
+         * Equivalent to calling `$session->on($handler)` immediately after creation, but executes
+         * earlier in the lifecycle so no events are missed.
+         */
+        public ?Closure $onEvent = null,
     ) {}
 
     /**
@@ -176,6 +185,7 @@ readonly class SessionConfig implements Arrayable
             skillDirectories: $data['skillDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
             infiniteSessions: $infiniteSessions,
+            onEvent: $data['onEvent'] ?? null,
         );
     }
 
@@ -226,6 +236,7 @@ readonly class SessionConfig implements Arrayable
             'skillDirectories' => $this->skillDirectories,
             'disabledSkills' => $this->disabledSkills,
             'infiniteSessions' => $infiniteSessions,
+            'onEvent' => $this->onEvent,
         ], fn ($value) => $value !== null);
     }
 }

@@ -98,6 +98,13 @@ $config = new SessionConfig(
 
     // 無限セッションを無効化
     // infiniteSessions: new InfiniteSessionConfig(enabled: false),
+
+    // セッション作成RPCより前にイベントハンドラを登録する。
+    // session.start などの早期イベントを取りこぼさないようにするために使用する。
+    // $session->on($handler) を後から呼ぶのと同等だが、ライフサイクルのより早い段階で登録される。
+    onEvent: function (SessionEvent $event) {
+        // すべてのセッションイベントを受け取る
+    },
 );
 
 $response = Copilot::run('...', config: $config);

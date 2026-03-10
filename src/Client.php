@@ -314,6 +314,10 @@ class Client implements CopilotClient
             $session->registerHooks($hooks);
         }
 
+        if (isset($config['onEvent']) && is_callable($config['onEvent'])) {
+            $session->on($config['onEvent']);
+        }
+
         $this->sessions[$sessionId] = $session;
 
         CreateSession::dispatch($session);
@@ -390,6 +394,10 @@ class Client implements CopilotClient
 
         if ($hooks !== null) {
             $session->registerHooks($hooks);
+        }
+
+        if (isset($config['onEvent']) && is_callable($config['onEvent'])) {
+            $session->on($config['onEvent']);
         }
 
         $this->sessions[$resumedSessionId] = $session;
