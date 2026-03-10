@@ -120,6 +120,15 @@ readonly class ResumeSessionConfig implements Arrayable
          * @default false
          */
         public ?bool $disableResume = null,
+        /**
+         * Optional event handler registered on the session before the session.resume RPC is issued.
+         * This guarantees that early events emitted by the CLI during session resumption
+         * are delivered to the handler.
+         *
+         * Equivalent to calling `$session->on($handler)` immediately after resumption, but executes
+         * earlier in the lifecycle so no events are missed.
+         */
+        public ?Closure $onEvent = null,
     ) {}
 
     /**
@@ -177,6 +186,7 @@ readonly class ResumeSessionConfig implements Arrayable
             disabledSkills: $data['disabledSkills'] ?? null,
             infiniteSessions: $infiniteSessions,
             disableResume: $data['disableResume'] ?? null,
+            onEvent: $data['onEvent'] ?? null,
         );
     }
 
@@ -227,6 +237,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'disabledSkills' => $this->disabledSkills,
             'infiniteSessions' => $infiniteSessions,
             'disableResume' => $this->disableResume,
+            'onEvent' => $this->onEvent,
         ], fn ($value) => $value !== null);
     }
 }
