@@ -144,7 +144,13 @@ class ProcessManager
     protected function startProcess(): void
     {
         if (empty($this->cliPath)) {
-            $this->cliPath = (new ExecutableFinder)->find(name: 'copilot', default: 'copilot');
+            $this->cliPath = (new ExecutableFinder)->find(name: 'copilot');
+        }
+
+        if (empty($this->cliPath)) {
+            throw new RuntimeException(
+                'Path to Copilot CLI is required. Please provide it via the cli_path option, or use cli_url to rely on a remote CLI.',
+            );
         }
 
         // Handle 'gh copilot' case
