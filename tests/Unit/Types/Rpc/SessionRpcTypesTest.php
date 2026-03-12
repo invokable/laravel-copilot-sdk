@@ -66,7 +66,7 @@ describe('SessionModelSwitchToParams', function () {
             'reasoningEffort' => 'medium',
         ]);
         expect($params->modelId)->toBe('o1-preview')
-            ->and($params->reasoningEffort)->toBe(ReasoningEffort::MEDIUM);
+            ->and($params->reasoningEffort)->toBe('medium');
     });
 
     it('can be created from array without reasoningEffort', function () {

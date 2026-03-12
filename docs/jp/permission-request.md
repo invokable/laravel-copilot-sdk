@@ -227,3 +227,13 @@ $select = select(
 
 return ['kind' => $select];
 ```
+
+### no-result
+
+ハンドラが結果を返せない場合（例: UIが利用できない環境）は`no-result`を返すことができます。`no-result`を返すとRPC呼び出しをスキップし、Copilot CLI側でデフォルトの拒否処理が行われます。
+
+```php
+return PermissionRequestResultKind::noResult();
+// または ['kind' => 'no-result']
+```
+

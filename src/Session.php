@@ -607,6 +607,10 @@ class Session implements CopilotSession
             try {
                 $result = ($this->permissionHandler)($permissionRequest, ['sessionId' => $this->sessionId]);
 
+                if (($result['kind'] ?? null) === PermissionRequestResultKind::NO_RESULT) {
+                    return;
+                }
+
                 $this->rpc()->permissions()->handlePendingPermissionRequest(
                     new SessionPermissionsHandlePendingPermissionRequestParams(
                         requestId: $requestId,
