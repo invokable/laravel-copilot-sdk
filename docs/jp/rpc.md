@@ -117,6 +117,22 @@ $session->rpc()->log()->log(new SessionLogParams(message: '処理を開始しま
 $session->rpc()->log()->log(new SessionLogParams(message: 'ディスク使用量が多い', level: LogLevel::WARNING));
 $session->rpc()->log()->log(new SessionLogParams(message: 'エラーが発生しました', level: LogLevel::ERROR));
 $session->rpc()->log()->log(new SessionLogParams(message: 'デバッグ情報', ephemeral: true));
+
+// shell: セッション内でシェルコマンドを実行
+$result = $session->rpc()->shell()->exec(new SessionShellExecParams(command: 'ls -la'));
+// $result->processId でプロセスIDを取得してkillや出力追跡に使用
+
+$session->rpc()->shell()->exec(new SessionShellExecParams(
+    command: 'npm test',
+    cwd: '/path/to/project',
+    timeout: 60000, // ミリ秒
+));
+
+// 実行中のシェルプロセスを停止
+$session->rpc()->shell()->kill(new SessionShellKillParams(
+    processId: $result->processId,
+    signal: 'SIGTERM', // SIGTERM（デフォルト）, SIGKILL, SIGINT
+));
 ```
 
 ## 配列での引数指定

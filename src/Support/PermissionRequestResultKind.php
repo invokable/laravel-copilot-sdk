@@ -8,6 +8,8 @@ final readonly class PermissionRequestResultKind
 {
     public const string APPROVED = 'approved';
 
+    public const string NO_RESULT = 'no-result';
+
     public const string DENIED_BY_RULES = 'denied-by-rules';
 
     public const string DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER = 'denied-no-approval-rule-and-could-not-request-from-user';
@@ -19,6 +21,15 @@ final readonly class PermissionRequestResultKind
     public static function approved(): array
     {
         return ['kind' => self::APPROVED];
+    }
+
+    /**
+     * Return no-result to indicate the handler cannot provide a result.
+     * When returned from a permission handler, the RPC call is skipped entirely.
+     */
+    public static function noResult(): array
+    {
+        return ['kind' => self::NO_RESULT];
     }
 
     public static function deniedByRules(): array

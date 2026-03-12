@@ -26,10 +26,12 @@ enum SessionEventType: string
     case SESSION_SNAPSHOT_REWIND = 'session.snapshot_rewind';
     case SESSION_SHUTDOWN = 'session.shutdown';
     case SESSION_USAGE_INFO = 'session.usage_info';
+    case SESSION_BACKGROUND_TASKS_CHANGED = 'session.background_tasks_changed';
     case SESSION_COMPACTION_START = 'session.compaction_start';
     case SESSION_COMPACTION_COMPLETE = 'session.compaction_complete';
     case SESSION_CONTEXT_CHANGED = 'session.context_changed';
     case SESSION_TASK_COMPLETE = 'session.task_complete';
+    case SESSION_TOOLS_UPDATED = 'session.tools_updated';
 
     // User messages
     case USER_MESSAGE = 'user.message';

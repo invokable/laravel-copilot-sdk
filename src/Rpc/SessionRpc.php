@@ -118,4 +118,14 @@ class SessionRpc
     {
         return new PendingLog($this->client, $this->sessionId);
     }
+
+    /**
+     * Shell RPC operations.
+     *
+     * Used to execute and manage shell commands within the session.
+     */
+    public function shell(): PendingShell
+    {
+        return new PendingShell($this->client, $this->sessionId);
+    }
 }
