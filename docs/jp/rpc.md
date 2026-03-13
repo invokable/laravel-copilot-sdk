@@ -74,6 +74,10 @@ $session->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: 'gpt-
 // reasoningEffortを指定する場合（対応モデルのみ）
 $session->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: 'claude-opus-4.6', reasoningEffort: ReasoningEffort::HIGH));
 
+// setModel()ヘルパーでも同様にreasoningEffortを指定可能
+$session->setModel('claude-opus-4.6', ReasoningEffort::HIGH);
+$session->setModel('claude-opus-4.6', 'high'); // 文字列でも指定可能
+
 // mode
 $session->rpc()->mode()->get();
 $session->rpc()->mode()->set(new SessionModeSetParams(mode: 'plan'));

@@ -31,7 +31,7 @@ interface CopilotSession
      *
      * @throws JsonRpcException
      */
-    public function setModel(string $model): void;
+    public function setModel(string $model, \Revolution\Copilot\Enums\ReasoningEffort|string|null $reasoningEffort = null): void;
 
     /**
      * Log a message to the session timeline.

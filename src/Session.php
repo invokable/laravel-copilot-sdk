@@ -510,6 +510,8 @@ class Session implements CopilotSession
             $toolName = $event->data['toolName'] ?? null;
             $arguments = $event->data['arguments'] ?? [];
             $toolCallId = $event->data['toolCallId'] ?? null;
+            $traceparent = $event->data['traceparent'] ?? null;
+            $tracestate = $event->data['tracestate'] ?? null;
 
             if ($requestId === null || $toolName === null) {
                 return;
@@ -521,7 +523,7 @@ class Session implements CopilotSession
                 return; // This client doesn't handle this tool; another client will.
             }
 
-            $this->executeToolAndRespond($requestId, $toolName, $toolCallId, $arguments, $handler);
+            $this->executeToolAndRespond($requestId, $toolName, $toolCallId, $arguments, $handler, $traceparent, $tracestate);
         } elseif ($event->is(SessionEventType::PERMISSION_REQUESTED)) {
             $requestId = $event->data['requestId'] ?? null;
             $permissionRequest = $event->data['permissionRequest'] ?? [];
@@ -540,9 +542,9 @@ class Session implements CopilotSession
      *
      * @internal
      */
-    protected function executeToolAndRespond(string $requestId, string $toolName, ?string $toolCallId, mixed $arguments, Closure $handler): void
+    protected function executeToolAndRespond(string $requestId, string $toolName, ?string $toolCallId, mixed $arguments, Closure $handler, ?string $traceparent = null, ?string $tracestate = null): void
     {
-        $fiber = new \Fiber(function () use ($requestId, $toolName, $toolCallId, $arguments, $handler): void {
+        $fiber = new \Fiber(function () use ($requestId, $toolName, $toolCallId, $arguments, $handler, $traceparent, $tracestate): void {
             try {
                 $invocation = [
                     'sessionId' => $this->sessionId,
@@ -550,6 +552,13 @@ class Session implements CopilotSession
                     'toolName' => $toolName,
                     'arguments' => $arguments,
                 ];
+
+                if ($traceparent !== null) {
+                    $invocation['traceparent'] = $traceparent;
+                }
+                if ($tracestate !== null) {
+                    $invocation['tracestate'] = $tracestate;
+                }
 
                 /** @var ToolResultObject|array|string|mixed $rawResult */
                 $rawResult = $handler($arguments, $invocation);
@@ -833,9 +842,9 @@ class Session implements CopilotSession
      *
      * @throws JsonRpcException
      */
-    public function setModel(string $model): void
+    public function setModel(string $model, \Revolution\Copilot\Enums\ReasoningEffort|string|null $reasoningEffort = null): void
     {
-        $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $model));
+        $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $model, reasoningEffort: $reasoningEffort));
     }
 
     /**
