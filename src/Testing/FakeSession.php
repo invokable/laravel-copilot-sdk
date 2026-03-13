@@ -50,7 +50,7 @@ class FakeSession implements CopilotSession
         );
     }
 
-    public function setModel(string $model): void
+    public function setModel(string $model, \Revolution\Copilot\Enums\ReasoningEffort|string|null $reasoningEffort = null): void
     {
         // No-op in fake
     }

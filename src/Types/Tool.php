@@ -18,6 +18,7 @@ readonly class Tool implements Arrayable
         public ?array $parameters,
         public Closure $handler,
         public bool $overridesBuiltInTool = false,
+        public bool $skipPermission = false,
     ) {}
 
     /**
@@ -29,8 +30,9 @@ readonly class Tool implements Arrayable
         ?array $parameters,
         Closure $handler,
         bool $overridesBuiltInTool = false,
+        bool $skipPermission = false,
     ): array {
-        return new self($name, $description, $parameters, $handler, $overridesBuiltInTool)->toArray();
+        return new self($name, $description, $parameters, $handler, $overridesBuiltInTool, $skipPermission)->toArray();
     }
 
     /**
@@ -46,6 +48,7 @@ readonly class Tool implements Arrayable
             parameters: $data['parameters'] ?? null,
             handler: $data['handler'],
             overridesBuiltInTool: $data['overridesBuiltInTool'] ?? false,
+            skipPermission: $data['skipPermission'] ?? false,
         );
     }
 
@@ -65,6 +68,10 @@ readonly class Tool implements Arrayable
 
         if ($this->overridesBuiltInTool) {
             $array['overridesBuiltInTool'] = true;
+        }
+
+        if ($this->skipPermission) {
+            $array['skipPermission'] = true;
         }
 
         return $array;

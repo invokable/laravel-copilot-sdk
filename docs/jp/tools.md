@@ -62,6 +62,7 @@ Artisan::command('copilot:tools', function () {
                     );
                 },
                 overridesBuiltInTool: false,
+                skipPermission: false, // trueにするとパーミッションプロンプトなしで実行
             ),
         ],
     );
@@ -83,6 +84,20 @@ Artisan::command('copilot:tools', function () {
 });
 ```
 
+## skipPermission
+
+`skipPermission: true` を指定すると、そのツールはパーミッションプロンプトなしで実行できます。
+
+```php
+Tool::define(
+    name: 'read_only_lookup',
+    description: 'Read-only data lookup.',
+    parameters: $parameters,
+    handler: fn ($params) => ['result' => 'data'],
+    skipPermission: true,
+),
+```
+
 ## $invocation
 
 ツールハンドラの第2引数 `$invocation` には以下のフィールドが渡されます。
@@ -93,6 +108,9 @@ Artisan::command('copilot:tools', function () {
     'toolCallId' => '...',
     'toolName'   => 'lookup_fact',
     'arguments'  => [...], // ツール引数（$params と同じ内容）
+    // OpenTelemetryが有効な場合のみ含まれる
+    'traceparent' => '...', // W3C Trace Context traceparent
+    'tracestate'  => '...', // W3C Trace Context tracestate
 ]
 ```
 

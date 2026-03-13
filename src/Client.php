@@ -109,6 +109,7 @@ class Client implements CopilotClient
             'env' => data_get($options, 'env'),
             'githubToken' => data_get($options, 'github_token'),
             'useLoggedInUser' => data_get($options, 'use_logged_in_user'),
+            'telemetry' => data_get($options, 'telemetry'),
         ]);
     }
 
@@ -264,6 +265,7 @@ class Client implements CopilotClient
             'description' => $tool['description'] ?? null,
             'parameters' => $tool['parameters'] ?? null,
             'overridesBuiltInTool' => $tool['overridesBuiltInTool'] ?? null,
+            'skipPermission' => $tool['skipPermission'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
         $hooks = $config['hooks'] ?? null;
@@ -351,6 +353,7 @@ class Client implements CopilotClient
             'description' => $tool['description'] ?? null,
             'parameters' => $tool['parameters'] ?? null,
             'overridesBuiltInTool' => $tool['overridesBuiltInTool'] ?? null,
+            'skipPermission' => $tool['skipPermission'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
         $hooks = $config['hooks'] ?? null;

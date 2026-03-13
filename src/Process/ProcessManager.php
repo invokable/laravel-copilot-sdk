@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Process;
 
 use Revolution\Copilot\Events\Process\ProcessStarted;
 use Revolution\Copilot\Transport\StdioTransport;
+use Revolution\Copilot\Types\TelemetryConfig;
 use RuntimeException;
 use Symfony\Component\Process\ExecutableFinder;
 
@@ -44,6 +45,7 @@ class ProcessManager
         protected ?array $env = null,
         protected ?string $githubToken = null,
         protected ?bool $useLoggedInUser = null,
+        protected TelemetryConfig|array|null $telemetry = null,
     ) {
         $this->cwd ??= getcwd() ?: null;
     }
@@ -167,6 +169,14 @@ class ProcessManager
 
         $env = array_merge(getenv(), $this->env ?? []);
         unset($env['NODE_DEBUG']);
+
+        // Apply OpenTelemetry environment variables if telemetry is configured
+        if ($this->telemetry !== null) {
+            $telemetry = $this->telemetry instanceof TelemetryConfig
+                ? $this->telemetry
+                : TelemetryConfig::fromArray($this->telemetry);
+            $env = array_merge($env, $telemetry->toEnv());
+        }
 
         // Set auth token in environment if provided
         if (filled($this->githubToken)) {
