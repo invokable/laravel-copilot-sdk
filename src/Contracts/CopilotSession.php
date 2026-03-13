@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Contracts;
 
 use Closure;
 use Revolution\Copilot\Enums\LogLevel;
+use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\SessionRpc;
@@ -31,7 +32,7 @@ interface CopilotSession
      *
      * @throws JsonRpcException
      */
-    public function setModel(string $model, \Revolution\Copilot\Enums\ReasoningEffort|string|null $reasoningEffort = null): void;
+    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null): void;
 
     /**
      * Log a message to the session timeline.

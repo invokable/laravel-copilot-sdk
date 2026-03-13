@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\LogLevel;
+use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Events\Session\MessageSend;
 use Revolution\Copilot\Events\Session\MessageSendAndWait;
@@ -842,7 +843,7 @@ class Session implements CopilotSession
      *
      * @throws JsonRpcException
      */
-    public function setModel(string $model, \Revolution\Copilot\Enums\ReasoningEffort|string|null $reasoningEffort = null): void
+    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null): void
     {
         $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $model, reasoningEffort: $reasoningEffort));
     }
