@@ -35,6 +35,7 @@ safe-outputs:
     expires: 14
     fallback-as-issue: false
     if-no-changes: ignore
+    github-token: ${{ secrets.GH_AW_AGENT_TOKEN }}
 
 network:
   allowed:
@@ -65,7 +66,7 @@ Check if recently merged `sdk-sync` PRs introduced source files without correspo
    - For each new `src/` file, check if a corresponding test file exists under `tests/`.
    - Mapping convention: `src/Types/Foo.php` → `tests/Unit/Types/FooTest.php`, `src/Rpc/PendingFoo.php` → `tests/Unit/Rpc/PendingFooTest.php`, etc.
 4. If test gaps are found, add tests for **all** newly added files from those PRs (this is the exception to the one-file-at-a-time rule).
-5. If no sdk-sync PRs have new untested files, proceed to Step 2.
+5. If no sdk-sync PRs have new untested files, or if the testing has already been improved in this workflow, proceed to Step 2.
 
 ## Step 2: Coverage-Based Improvement (Priority 2)
 
