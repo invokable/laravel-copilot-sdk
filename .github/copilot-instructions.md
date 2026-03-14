@@ -33,6 +33,13 @@ composer run test        # Run tests with Pest
 composer run lint        # Run Laravel Pint for code style checks
 ```
 
+pestやpintを直接実行する
+```shell
+vendor/bin/pest --coverage --compact --parallel # テストカバレッジの取得。テストをパラレルに実行。
+
+vendor/bin/pint --dirty --format agent # 変更されたファイルのみを修正。AIエージェント向けにjsonで結果を出力。
+```
+
 実際にCopilot CLIを起動する動作確認コマンド。
 ```shell
 vendor/bin/testbench copilot:ping
