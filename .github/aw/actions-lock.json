@@ -39,11 +39,6 @@
       "repo": "shivammathur/setup-php",
       "version": "2.36.0",
       "sha": "db91e1a0e48e84637d325a7ee4d2677e146ceec4"
-    },
-    "shivammathur/setup-php@v2": {
-      "repo": "shivammathur/setup-php",
-      "version": "v2",
-      "sha": "d59004228537ca90c8dca680592a08a675bf52b6"
     }
   }
 }

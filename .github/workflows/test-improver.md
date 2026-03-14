@@ -8,7 +8,7 @@ on:
 
 steps:
   - name: Set up PHP
-    uses: shivammathur/setup-php@v2
+    uses: shivammathur/setup-php@2.36.0
     with:
       php-version: 8.5
       extensions: mbstring
