@@ -14,6 +14,7 @@ permissions:
 
 engine:
   id: copilot
+  model: claude-opus-4.6
   agent: laravel-sdk-sync
 
 checkout:
