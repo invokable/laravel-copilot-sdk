@@ -19,6 +19,10 @@ use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionReques
 use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestResult;
 use Revolution\Copilot\Types\Rpc\SessionPlanReadResult;
 use Revolution\Copilot\Types\Rpc\SessionPlanUpdateParams;
+use Revolution\Copilot\Types\Rpc\SessionShellExecParams;
+use Revolution\Copilot\Types\Rpc\SessionShellExecResult;
+use Revolution\Copilot\Types\Rpc\SessionShellKillParams;
+use Revolution\Copilot\Types\Rpc\SessionShellKillResult;
 use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
 use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallResult;
 use Revolution\Copilot\Types\Rpc\SessionWorkspaceCreateFileParams;
@@ -399,5 +403,159 @@ describe('SessionLogResult', function () {
     it('can convert to array', function () {
         $result = new SessionLogResult(eventId: 'evt-789');
         expect($result->toArray())->toBe(['eventId' => 'evt-789']);
+    });
+});
+
+describe('SessionShellExecParams', function () {
+    it('can be created with required command only', function () {
+        $params = new SessionShellExecParams(command: 'ls -la');
+
+        expect($params->command)->toBe('ls -la')
+            ->and($params->cwd)->toBeNull()
+            ->and($params->timeout)->toBeNull();
+    });
+
+    it('can be created with all fields', function () {
+        $params = new SessionShellExecParams(command: 'npm test', cwd: '/app', timeout: 60000);
+
+        expect($params->command)->toBe('npm test')
+            ->and($params->cwd)->toBe('/app')
+            ->and($params->timeout)->toBe(60000);
+    });
+
+    it('can be created from array', function () {
+        $params = SessionShellExecParams::fromArray([
+            'command' => 'echo hello',
+            'cwd' => '/home/user',
+            'timeout' => 5000,
+        ]);
+
+        expect($params->command)->toBe('echo hello')
+            ->and($params->cwd)->toBe('/home/user')
+            ->and($params->timeout)->toBe(5000);
+    });
+
+    it('can be created from array with command only', function () {
+        $params = SessionShellExecParams::fromArray(['command' => 'pwd']);
+
+        expect($params->command)->toBe('pwd')
+            ->and($params->cwd)->toBeNull()
+            ->and($params->timeout)->toBeNull();
+    });
+
+    it('filters null values in toArray', function () {
+        $params = new SessionShellExecParams(command: 'ls');
+
+        expect($params->toArray())->toBe(['command' => 'ls']);
+    });
+
+    it('includes all fields in toArray', function () {
+        $params = new SessionShellExecParams(command: 'npm test', cwd: '/app', timeout: 30000);
+
+        expect($params->toArray())->toBe([
+            'command' => 'npm test',
+            'cwd' => '/app',
+            'timeout' => 30000,
+        ]);
+    });
+});
+
+describe('SessionShellExecResult', function () {
+    it('can be created with processId', function () {
+        $result = new SessionShellExecResult(processId: 'proc-123');
+
+        expect($result->processId)->toBe('proc-123');
+    });
+
+    it('can be created from array', function () {
+        $result = SessionShellExecResult::fromArray(['processId' => 'proc-456']);
+
+        expect($result->processId)->toBe('proc-456');
+    });
+
+    it('can convert to array', function () {
+        $result = new SessionShellExecResult(processId: 'proc-789');
+
+        expect($result->toArray())->toBe(['processId' => 'proc-789']);
+    });
+});
+
+describe('SessionShellKillParams', function () {
+    it('can be created with processId only', function () {
+        $params = new SessionShellKillParams(processId: 'proc-123');
+
+        expect($params->processId)->toBe('proc-123')
+            ->and($params->signal)->toBeNull();
+    });
+
+    it('can be created with signal', function () {
+        $params = new SessionShellKillParams(processId: 'proc-123', signal: 'SIGKILL');
+
+        expect($params->processId)->toBe('proc-123')
+            ->and($params->signal)->toBe('SIGKILL');
+    });
+
+    it('can be created from array', function () {
+        $params = SessionShellKillParams::fromArray([
+            'processId' => 'proc-456',
+            'signal' => 'SIGTERM',
+        ]);
+
+        expect($params->processId)->toBe('proc-456')
+            ->and($params->signal)->toBe('SIGTERM');
+    });
+
+    it('can be created from array without signal', function () {
+        $params = SessionShellKillParams::fromArray(['processId' => 'proc-789']);
+
+        expect($params->processId)->toBe('proc-789')
+            ->and($params->signal)->toBeNull();
+    });
+
+    it('filters null signal in toArray', function () {
+        $params = new SessionShellKillParams(processId: 'proc-123');
+
+        expect($params->toArray())->toBe(['processId' => 'proc-123']);
+    });
+
+    it('includes signal in toArray when set', function () {
+        $params = new SessionShellKillParams(processId: 'proc-123', signal: 'SIGKILL');
+
+        expect($params->toArray())->toBe([
+            'processId' => 'proc-123',
+            'signal' => 'SIGKILL',
+        ]);
+    });
+});
+
+describe('SessionShellKillResult', function () {
+    it('can be created with killed true', function () {
+        $result = new SessionShellKillResult(killed: true);
+
+        expect($result->killed)->toBeTrue();
+    });
+
+    it('can be created with killed false', function () {
+        $result = new SessionShellKillResult(killed: false);
+
+        expect($result->killed)->toBeFalse();
+    });
+
+    it('can be created from array', function () {
+        $result = SessionShellKillResult::fromArray(['killed' => true]);
+
+        expect($result->killed)->toBeTrue();
+    });
+
+    it('casts killed to bool from truthy value', function () {
+        $result = SessionShellKillResult::fromArray(['killed' => 1]);
+
+        expect($result->killed)->toBeTrue();
+    });
+
+    it('can convert to array', function () {
+        $result = new SessionShellKillResult(killed: true);
+
+        expect($result->toArray())->toBe(['killed' => true]);
     });
 });
