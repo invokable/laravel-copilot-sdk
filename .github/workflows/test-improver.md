@@ -43,7 +43,7 @@ safe-outputs:
     labels: [test-improver, automated]
     reviewers: [kawax]
     draft: true
-    expires: 14
+    expires: 14d
     fallback-as-issue: false
     if-no-changes: ignore
 
