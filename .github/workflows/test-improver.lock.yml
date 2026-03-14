@@ -23,7 +23,7 @@
 #
 # Weekly workflow to improve test coverage incrementally by adding missing tests.
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"595f9b27febe3803f9e7eef673a06d120168c89c9f32fe5049596ef623060dfa","compiler_version":"v0.58.1","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"f9b6c2d429e8facb50869314761b1fd94196183531e20ca794b3d2b979b6f1c9","compiler_version":"v0.58.1","strict":true}
 
 name: "Test Improver"
 "on":
@@ -279,6 +279,15 @@ jobs:
           submodules: recursive
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
+      - name: Set up PHP
+        uses: shivammathur/setup-php@d59004228537ca90c8dca680592a08a675bf52b6 # v2
+        with:
+          coverage: xdebug
+          extensions: mbstring
+          php-version: 8.5
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
       # Cache memory file share configuration from frontmatter processed below
       - name: Create cache-memory directory
         run: bash /opt/gh-aw/actions/create_cache_memory_dir.sh

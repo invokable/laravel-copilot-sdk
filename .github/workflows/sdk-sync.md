@@ -6,6 +6,17 @@ on:
   schedule: daily around 5:00 utc+9 on weekdays # 日本時間で火曜から土曜の午前5時頃
   workflow_dispatch:
 
+steps:
+  - name: Set up PHP
+    uses: shivammathur/setup-php@v2
+    with:
+      php-version: 8.5
+      extensions: mbstring
+      coverage: xdebug
+
+  - name: Install Composer dependencies
+    run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
 permissions:
   contents: read
   models: read
