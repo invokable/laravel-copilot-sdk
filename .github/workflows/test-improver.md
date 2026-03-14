@@ -35,7 +35,6 @@ safe-outputs:
     expires: 14
     fallback-as-issue: false
     if-no-changes: ignore
-    github-token: ${{ secrets.GH_AW_AGENT_TOKEN }}
 
 network:
   allowed:
