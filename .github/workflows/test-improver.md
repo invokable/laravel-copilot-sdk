@@ -3,7 +3,7 @@ name: Test Improver
 description: Weekly workflow to improve test coverage incrementally by adding missing tests.
 
 on:
-  schedule: weekly on sunday
+  schedule: weekly on saturday around 6:00 utc+9 # 日本時間で日曜午前6時頃
   workflow_dispatch:
 
 permissions:
