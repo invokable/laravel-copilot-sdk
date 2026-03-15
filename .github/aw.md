@@ -11,10 +11,12 @@ cd ../
 gh extension upgrade github/gh-aw
 # workflowを更新
 gh aw upgrade
+# upgradeで更新されないファイルを更新
+gh aw compile
 ```
 
 ```shell
-cd ../ && gh extension upgrade github/gh-aw && gh aw upgrade
+cd ../ && gh extension upgrade github/gh-aw && gh aw upgrade && gh aw compile
 ```
 
 `actions-lock.json` `sdk-sync.lock.yml` `copilot-setup-steps.yml` `agentic-workflows.agent.md`などが適切に更新される。
