@@ -11,12 +11,14 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionPlanReadResult implements Arrayable
 {
+    /**
+     * @param  bool  $exists  Whether the plan file exists in the workspace
+     * @param  ?string  $content  The content of the plan file, or null if it does not exist
+     * @param  ?string  $path  Absolute file path of the plan file, or null if workspace is not enabled
+     */
     public function __construct(
-        /** Whether the plan file exists in the workspace */
         public bool $exists,
-        /** The content of the plan file, or null if it does not exist */
         public ?string $content = null,
-        /** Absolute file path of the plan file, or null if workspace is not enabled */
         public ?string $path = null,
     ) {}
 

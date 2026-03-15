@@ -11,6 +11,9 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionModelSwitchToResult implements Arrayable
 {
+    /**
+     * @param  ?string  $modelId  The model ID after switching, or null if using the default model
+     */
     public function __construct(
         public ?string $modelId = null,
     ) {}

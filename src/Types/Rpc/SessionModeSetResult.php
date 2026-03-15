@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionModeSetResult implements Arrayable
 {
+    /**
+     * @param  string  $mode  The agent mode after switching.
+     */
     public function __construct(
-        /** The agent mode after switching. */
         public string $mode,
     ) {}
 

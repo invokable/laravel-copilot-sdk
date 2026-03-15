@@ -13,6 +13,11 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionLifecycleEventMetadata implements Arrayable
 {
+    /**
+     * @param  string  $startTime  ISO 8601 timestamp when the session was created
+     * @param  string  $modifiedTime  ISO 8601 timestamp when the session was last modified
+     * @param  ?string  $summary  Session summary
+     */
     public function __construct(
         public string $startTime,
         public string $modifiedTime,

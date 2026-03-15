@@ -11,6 +11,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionContext implements Arrayable
 {
+    /**
+     * @param  string  $cwd  Working directory where the session was created
+     * @param  ?string  $gitRoot  Git repository root (if in a git repo)
+     * @param  ?string  $repository  GitHub repository in "owner/repo" format
+     * @param  ?string  $branch  Current git branch
+     */
     public function __construct(
         public string $cwd,
         public ?string $gitRoot = null,

@@ -11,6 +11,9 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionToolsHandlePendingToolCallResult implements Arrayable
 {
+    /**
+     * @param  bool  $success  Whether the tool call was handled successfully
+     */
     public function __construct(
         public bool $success,
     ) {}

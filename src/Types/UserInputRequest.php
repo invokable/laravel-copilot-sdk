@@ -11,20 +11,14 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class UserInputRequest implements Arrayable
 {
+    /**
+     * @param  string  $question  The question to ask the user
+     * @param  ?array  $choices  Optional choices for multiple choice questions
+     * @param  ?bool  $allowFreeform  Whether to allow freeform text input in addition to choices
+     */
     public function __construct(
-        /**
-         * The question to ask the user.
-         */
         public string $question,
-        /**
-         * Optional choices for multiple choice questions.
-         */
         public ?array $choices = null,
-        /**
-         * Whether to allow freeform text input in addition to choices.
-         *
-         * @default true
-         */
         public ?bool $allowFreeform = null,
     ) {}
 

@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionLogResult implements Arrayable
 {
+    /**
+     * @param  string  $eventId  The unique identifier of the emitted session event
+     */
     public function __construct(
-        /** The unique identifier of the emitted session event */
         public string $eventId,
     ) {}
 

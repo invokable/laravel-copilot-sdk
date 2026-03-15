@@ -11,10 +11,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionWorkspaceCreateFileParams implements Arrayable
 {
+    /**
+     * @param  string  $path  Relative path within the workspace files directory
+     * @param  string  $content  File content to write as a UTF-8 string
+     */
     public function __construct(
-        /** Relative path within the workspace files directory */
         public string $path,
-        /** File content to write as a UTF-8 string */
         public string $content,
     ) {}
 

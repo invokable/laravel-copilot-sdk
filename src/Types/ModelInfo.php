@@ -12,20 +12,22 @@ use Revolution\Copilot\Enums\ReasoningEffort;
  */
 readonly class ModelInfo implements Arrayable
 {
+    /**
+     * @param  string  $id  Model identifier (e.g., "claude-sonnet-4.5")
+     * @param  string  $name  Display name
+     * @param  ModelCapabilities  $capabilities  Model capabilities and limits
+     * @param  ?ModelPolicy  $policy  Policy state
+     * @param  ?ModelBilling  $billing  Billing information
+     * @param  ?array  $supportedReasoningEfforts  Supported reasoning effort levels (only present if model supports reasoning effort)
+     * @param  ReasoningEffort|string|null  $defaultReasoningEffort  Default reasoning effort level (only present if model supports reasoning effort)
+     */
     public function __construct(
-        /** Model identifier (e.g., "claude-sonnet-4.5") */
         public string $id,
-        /** Display name */
         public string $name,
-        /** Model capabilities and limits */
         public ModelCapabilities $capabilities,
-        /** Policy state */
         public ?ModelPolicy $policy = null,
-        /** Billing information */
         public ?ModelBilling $billing = null,
-        /** Supported reasoning effort levels (only present if model supports reasoning effort) */
         public ?array $supportedReasoningEfforts = null,
-        /** Default reasoning effort level (only present if model supports reasoning effort) */
         public ReasoningEffort|string|null $defaultReasoningEffort = null,
     ) {}
 

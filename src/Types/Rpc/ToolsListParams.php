@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class ToolsListParams implements Arrayable
 {
+    /**
+     * @param  ?string  $model  Optional model ID — when provided, the returned tool list reflects model-specific overrides
+     */
     public function __construct(
-        /** Optional model ID — when provided, the returned tool list reflects model-specific overrides */
         public ?string $model = null,
     ) {}
 

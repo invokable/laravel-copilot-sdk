@@ -11,10 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionShellKillResult implements Arrayable
 {
+    /**
+     * @param  bool  $killed  Whether the signal was sent successfully
+     */
     public function __construct(
-        /**
-         * Whether the signal was sent successfully.
-         */
         public bool $killed,
     ) {}
 

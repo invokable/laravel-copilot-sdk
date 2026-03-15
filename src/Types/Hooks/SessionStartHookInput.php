@@ -9,16 +9,16 @@ namespace Revolution\Copilot\Types\Hooks;
  */
 readonly class SessionStartHookInput extends BaseHookInput
 {
+    /**
+     * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
+     * @param  string  $cwd  Current working directory
+     * @param  string  $source  Source of the session: "startup", "resume", or "new"
+     * @param  ?string  $initialPrompt  Initial prompt, if any
+     */
     public function __construct(
         int $timestamp,
         string $cwd,
-        /**
-         * Source of the session: "startup", "resume", or "new".
-         */
         public string $source,
-        /**
-         * Initial prompt, if any.
-         */
         public ?string $initialPrompt = null,
     ) {
         parent::__construct($timestamp, $cwd);

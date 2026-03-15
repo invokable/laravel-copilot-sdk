@@ -11,6 +11,9 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionPermissionsHandlePendingPermissionRequestResult implements Arrayable
 {
+    /**
+     * @param  bool  $success  Whether the permission request was handled successfully
+     */
     public function __construct(
         public bool $success,
     ) {}

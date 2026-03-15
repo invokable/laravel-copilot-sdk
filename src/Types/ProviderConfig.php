@@ -11,32 +11,22 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class ProviderConfig implements Arrayable
 {
+    /**
+     * @param  string  $baseUrl  API endpoint URL
+     * @param  ?string  $type  Provider type. Defaults to "openai" for generic OpenAI-compatible APIs.
+     * @param  ?string  $wireApi  API format (openai/azure only). Defaults to "completions".
+     * @param  ?string  $apiKey  API key. Optional for local providers like Ollama.
+     * @param  ?string  $bearerToken  Bearer token for authentication. Sets the Authorization header directly.
+     *                                Use this for services requiring bearer token auth instead of API key.
+     *                                Takes precedence over apiKey when both are set.
+     * @param  ?array  $azure  Azure-specific options
+     */
     public function __construct(
-        /**
-         * API endpoint URL.
-         */
         public string $baseUrl,
-        /**
-         * Provider type. Defaults to "openai" for generic OpenAI-compatible APIs.
-         */
         public ?string $type = null,
-        /**
-         * API format (openai/azure only). Defaults to "completions".
-         */
         public ?string $wireApi = null,
-        /**
-         * API key. Optional for local providers like Ollama.
-         */
         public ?string $apiKey = null,
-        /**
-         * Bearer token for authentication. Sets the Authorization header directly.
-         * Use this for services requiring bearer token auth instead of API key.
-         * Takes precedence over apiKey when both are set.
-         */
         public ?string $bearerToken = null,
-        /**
-         * Azure-specific options.
-         */
         public ?array $azure = null,
     ) {}
 

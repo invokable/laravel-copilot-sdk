@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class ModelBilling implements Arrayable
 {
+    /**
+     * @param  float  $multiplier  Billing multiplier
+     */
     public function __construct(
-        /** Billing multiplier */
         public float $multiplier,
     ) {}
 

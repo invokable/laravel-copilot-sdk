@@ -12,30 +12,20 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionHooks implements Arrayable
 {
+    /**
+     * @param  ?Closure  $onPreToolUse  Called before a tool is executed
+     * @param  ?Closure  $onPostToolUse  Called after a tool is executed
+     * @param  ?Closure  $onUserPromptSubmitted  Called when the user submits a prompt
+     * @param  ?Closure  $onSessionStart  Called when a session starts
+     * @param  ?Closure  $onSessionEnd  Called when a session ends
+     * @param  ?Closure  $onErrorOccurred  Called when an error occurs
+     */
     public function __construct(
-        /**
-         * Called before a tool is executed.
-         */
         public ?Closure $onPreToolUse = null,
-        /**
-         * Called after a tool is executed.
-         */
         public ?Closure $onPostToolUse = null,
-        /**
-         * Called when the user submits a prompt.
-         */
         public ?Closure $onUserPromptSubmitted = null,
-        /**
-         * Called when a session starts.
-         */
         public ?Closure $onSessionStart = null,
-        /**
-         * Called when a session ends.
-         */
         public ?Closure $onSessionEnd = null,
-        /**
-         * Called when an error occurs.
-         */
         public ?Closure $onErrorOccurred = null,
     ) {}
 

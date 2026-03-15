@@ -9,20 +9,18 @@ namespace Revolution\Copilot\Types\Hooks;
  */
 readonly class SessionEndHookInput extends BaseHookInput
 {
+    /**
+     * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
+     * @param  string  $cwd  Current working directory
+     * @param  string  $reason  Reason for ending: "complete", "error", "abort", "timeout", or "user_exit"
+     * @param  ?string  $finalMessage  Final message, if any
+     * @param  ?string  $error  Error message, if any
+     */
     public function __construct(
         int $timestamp,
         string $cwd,
-        /**
-         * Reason for ending: "complete", "error", "abort", "timeout", or "user_exit".
-         */
         public string $reason,
-        /**
-         * Final message, if any.
-         */
         public ?string $finalMessage = null,
-        /**
-         * Error message, if any.
-         */
         public ?string $error = null,
     ) {
         parent::__construct($timestamp, $cwd);

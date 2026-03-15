@@ -11,6 +11,14 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionMetadata implements Arrayable
 {
+    /**
+     * @param  string  $sessionId  Unique identifier of the session
+     * @param  string  $startTime  ISO 8601 timestamp when the session was created
+     * @param  string  $modifiedTime  ISO 8601 timestamp when the session was last modified
+     * @param  ?string  $summary  Session summary
+     * @param  bool  $isRemote  Whether this is a remote session
+     * @param  ?SessionContext  $context  Working directory context (cwd, git info) from session creation
+     */
     public function __construct(
         public string $sessionId,
         public string $startTime,

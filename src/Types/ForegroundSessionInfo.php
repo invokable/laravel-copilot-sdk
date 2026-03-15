@@ -13,15 +13,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class ForegroundSessionInfo implements Arrayable
 {
+    /**
+     * @param  ?string  $sessionId  ID of the foreground session, or null if none
+     * @param  ?string  $workspacePath  Workspace path of the foreground session
+     */
     public function __construct(
-        /**
-         * ID of the foreground session, or null if none.
-         */
         public ?string $sessionId = null,
-
-        /**
-         * Workspace path of the foreground session.
-         */
         public ?string $workspacePath = null,
     ) {}
 

@@ -13,14 +13,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SystemMessageConfig implements Arrayable
 {
+    /**
+     * @param  ?string  $mode  Mode: "append" (default) or "replace"
+     * @param  ?string  $content  Content to append or replace with
+     */
     public function __construct(
-        /**
-         * Mode: "append" (default) or "replace".
-         */
         public ?string $mode = null,
-        /**
-         * Content to append or replace with.
-         */
         public ?string $content = null,
     ) {}
 

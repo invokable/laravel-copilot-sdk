@@ -11,10 +11,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class ModelPolicy implements Arrayable
 {
+    /**
+     * @param  string  $state  Policy state: enabled, disabled, or unconfigured
+     * @param  string  $terms  Terms
+     */
     public function __construct(
-        /** Policy state: enabled, disabled, or unconfigured */
         public string $state,
-        /** Terms */
         public string $terms,
     ) {}
 

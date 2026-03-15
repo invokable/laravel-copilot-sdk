@@ -11,18 +11,14 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionEndHookOutput implements Arrayable
 {
+    /**
+     * @param  ?bool  $suppressOutput  Whether to suppress output
+     * @param  ?array  $cleanupActions  Cleanup actions to perform
+     * @param  ?string  $sessionSummary  Session summary
+     */
     public function __construct(
-        /**
-         * Whether to suppress output.
-         */
         public ?bool $suppressOutput = null,
-        /**
-         * Cleanup actions to perform.
-         */
         public ?array $cleanupActions = null,
-        /**
-         * Session summary.
-         */
         public ?string $sessionSummary = null,
     ) {}
 

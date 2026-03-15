@@ -11,10 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionShellExecResult implements Arrayable
 {
+    /**
+     * @param  string  $processId  Unique identifier for tracking streamed output
+     */
     public function __construct(
-        /**
-         * Unique identifier for tracking streamed output.
-         */
         public string $processId,
     ) {}
 

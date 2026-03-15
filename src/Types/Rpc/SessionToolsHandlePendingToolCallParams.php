@@ -16,9 +16,13 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionToolsHandlePendingToolCallParams implements Arrayable
 {
+    /**
+     * @param  string  $requestId  The ID of the pending tool call to handle
+     * @param  string|array|null  $result  Plain string result or structured result object
+     * @param  ?string  $error  Error message if tool execution failed
+     */
     public function __construct(
         public string $requestId,
-        /** Plain string result or structured result object */
         public string|array|null $result = null,
         public ?string $error = null,
     ) {}

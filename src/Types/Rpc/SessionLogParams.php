@@ -12,12 +12,14 @@ use Revolution\Copilot\Enums\LogLevel;
  */
 readonly class SessionLogParams implements Arrayable
 {
+    /**
+     * @param  string  $message  Human-readable message
+     * @param  ?LogLevel  $level  Log severity level. Determines how the message is displayed in the timeline. Defaults to "info".
+     * @param  ?bool  $ephemeral  When true, the message is transient and not persisted to the session event log on disk
+     */
     public function __construct(
-        /** Human-readable message */
         public string $message,
-        /** Log severity level. Determines how the message is displayed in the timeline. Defaults to "info". */
         public ?LogLevel $level = null,
-        /** When true, the message is transient and not persisted to the session event log on disk */
         public ?bool $ephemeral = null,
     ) {}
 

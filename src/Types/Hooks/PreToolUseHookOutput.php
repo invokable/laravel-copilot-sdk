@@ -11,26 +11,18 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class PreToolUseHookOutput implements Arrayable
 {
+    /**
+     * @param  ?string  $permissionDecision  Permission decision: "allow", "deny", or "ask"
+     * @param  ?string  $permissionDecisionReason  Reason for the permission decision
+     * @param  mixed  $modifiedArgs  Modified arguments for the tool
+     * @param  ?string  $additionalContext  Additional context to provide to the agent
+     * @param  ?bool  $suppressOutput  Whether to suppress output
+     */
     public function __construct(
-        /**
-         * Permission decision: "allow", "deny", or "ask".
-         */
         public ?string $permissionDecision = null,
-        /**
-         * Reason for the permission decision.
-         */
         public ?string $permissionDecisionReason = null,
-        /**
-         * Modified arguments for the tool.
-         */
         public mixed $modifiedArgs = null,
-        /**
-         * Additional context to provide to the agent.
-         */
         public ?string $additionalContext = null,
-        /**
-         * Whether to suppress output.
-         */
         public ?bool $suppressOutput = null,
     ) {}
 

@@ -11,14 +11,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionShellKillParams implements Arrayable
 {
+    /**
+     * @param  string  $processId  Process identifier returned by shell.exec
+     * @param  ?string  $signal  Signal to send (default: SIGTERM)
+     */
     public function __construct(
-        /**
-         * Process identifier returned by shell.exec.
-         */
         public string $processId,
-        /**
-         * Signal to send (default: SIGTERM).
-         */
         public ?string $signal = null,
     ) {}
 

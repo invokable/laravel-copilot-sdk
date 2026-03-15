@@ -12,6 +12,14 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class Tool implements Arrayable
 {
+    /**
+     * @param  string  $name  Tool name
+     * @param  ?string  $description  Tool description
+     * @param  ?array  $parameters  Tool parameter schema
+     * @param  Closure  $handler  Tool handler function
+     * @param  bool  $overridesBuiltInTool  Whether this tool overrides a built-in tool with the same name
+     * @param  bool  $skipPermission  Whether to skip permission prompt for this tool
+     */
     public function __construct(
         public string $name,
         public ?string $description,

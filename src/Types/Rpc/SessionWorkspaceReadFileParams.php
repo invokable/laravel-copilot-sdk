@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionWorkspaceReadFileParams implements Arrayable
 {
+    /**
+     * @param  string  $path  Relative path within the workspace files directory
+     */
     public function __construct(
-        /** Relative path within the workspace files directory */
         public string $path,
     ) {}
 

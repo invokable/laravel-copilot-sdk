@@ -11,6 +11,9 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionModelGetCurrentResult implements Arrayable
 {
+    /**
+     * @param  ?string  $modelId  The currently active model ID, or null if using the default model
+     */
     public function __construct(
         public ?string $modelId = null,
     ) {}

@@ -12,10 +12,9 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class ToolsListResult implements Arrayable
 {
     /**
-     * @param  array<array{name: string, namespacedName?: string, description: string, parameters?: array, instructions?: string}>  $tools
+     * @param  array<array{name: string, namespacedName?: string, description: string, parameters?: array, instructions?: string}>  $tools  List of available built-in tools with metadata
      */
     public function __construct(
-        /** List of available built-in tools with metadata */
         public array $tools,
     ) {}
 
