@@ -11,6 +11,13 @@ use Revolution\Copilot\Types\ToolResultObject;
  */
 readonly class PostToolUseHookInput extends BaseHookInput
 {
+    /**
+     * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
+     * @param  string  $cwd  Current working directory
+     * @param  string  $toolName  Name of the tool that was executed
+     * @param  mixed  $toolArgs  Arguments passed to the tool
+     * @param  ToolResultObject|array  $toolResult  Result returned by the tool
+     */
     public function __construct(
         int $timestamp,
         string $cwd,

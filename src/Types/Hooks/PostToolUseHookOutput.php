@@ -12,18 +12,14 @@ use Revolution\Copilot\Types\ToolResultObject;
  */
 readonly class PostToolUseHookOutput implements Arrayable
 {
+    /**
+     * @param  ToolResultObject|array|null  $modifiedResult  Modified result to return
+     * @param  ?string  $additionalContext  Additional context to provide to the agent
+     * @param  ?bool  $suppressOutput  Whether to suppress output
+     */
     public function __construct(
-        /**
-         * Modified result to return.
-         */
         public ToolResultObject|array|null $modifiedResult = null,
-        /**
-         * Additional context to provide to the agent.
-         */
         public ?string $additionalContext = null,
-        /**
-         * Whether to suppress output.
-         */
         public ?bool $suppressOutput = null,
     ) {}
 

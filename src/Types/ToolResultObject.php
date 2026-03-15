@@ -11,30 +11,20 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class ToolResultObject implements Arrayable
 {
+    /**
+     * @param  string  $textResultForLlm  Text result for the LLM
+     * @param  string  $resultType  Result type: "success", "failure", "rejected", or "denied"
+     * @param  ?array  $binaryResultsForLlm  Binary results for the LLM
+     * @param  ?string  $error  Error message, if any
+     * @param  ?string  $sessionLog  Session log
+     * @param  ?array  $toolTelemetry  Tool telemetry data
+     */
     public function __construct(
-        /**
-         * Text result for the LLM.
-         */
         public string $textResultForLlm,
-        /**
-         * Result type: "success", "failure", "rejected", or "denied".
-         */
         public string $resultType = 'success',
-        /**
-         * Binary results for the LLM.
-         */
         public ?array $binaryResultsForLlm = null,
-        /**
-         * Error message, if any.
-         */
         public ?string $error = null,
-        /**
-         * Session log.
-         */
         public ?string $sessionLog = null,
-        /**
-         * Tool telemetry data.
-         */
         public ?array $toolTelemetry = null,
     ) {}
 

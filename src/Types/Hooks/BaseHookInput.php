@@ -11,6 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class BaseHookInput implements Arrayable
 {
+    /**
+     * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
+     * @param  string  $cwd  Current working directory
+     */
     public function __construct(
         public int $timestamp,
         public string $cwd,

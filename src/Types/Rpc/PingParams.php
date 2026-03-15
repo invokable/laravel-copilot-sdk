@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class PingParams implements Arrayable
 {
+    /**
+     * @param  ?string  $message  Optional message to echo back
+     */
     public function __construct(
-        /** Optional message to echo back */
         public ?string $message = null,
     ) {}
 

@@ -11,16 +11,18 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class GetAuthStatusResponse implements Arrayable
 {
+    /**
+     * @param  bool  $isAuthenticated  Whether the user is authenticated
+     * @param  ?string  $authType  Authentication type
+     * @param  ?string  $host  GitHub host URL
+     * @param  ?string  $login  User login name
+     * @param  ?string  $statusMessage  Human-readable status message
+     */
     public function __construct(
-        /** Whether the user is authenticated */
         public bool $isAuthenticated,
-        /** Authentication type */
         public ?string $authType = null,
-        /** GitHub host URL */
         public ?string $host = null,
-        /** User login name */
         public ?string $login = null,
-        /** Human-readable status message */
         public ?string $statusMessage = null,
     ) {}
 

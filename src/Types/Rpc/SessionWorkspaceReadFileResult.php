@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionWorkspaceReadFileResult implements Arrayable
 {
+    /**
+     * @param  string  $content  File content as a UTF-8 string
+     */
     public function __construct(
-        /** File content as a UTF-8 string */
         public string $content,
     ) {}
 

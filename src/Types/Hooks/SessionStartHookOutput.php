@@ -11,14 +11,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionStartHookOutput implements Arrayable
 {
+    /**
+     * @param  ?string  $additionalContext  Additional context to provide to the agent
+     * @param  ?array  $modifiedConfig  Modified configuration
+     */
     public function __construct(
-        /**
-         * Additional context to provide to the agent.
-         */
         public ?string $additionalContext = null,
-        /**
-         * Modified configuration.
-         */
         public ?array $modifiedConfig = null,
     ) {}
 

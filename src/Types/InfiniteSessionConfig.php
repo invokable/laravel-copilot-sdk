@@ -13,23 +13,18 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class InfiniteSessionConfig implements Arrayable
 {
+    /**
+     * @param  ?bool  $enabled  Whether infinite sessions are enabled. Default: true
+     * @param  ?float  $backgroundCompactionThreshold  Context utilization threshold (0.0-1.0) at which background compaction starts.
+     *                                                 Compaction runs asynchronously, allowing the session to continue processing.
+     *                                                 Default: 0.80
+     * @param  ?float  $bufferExhaustionThreshold  Context utilization threshold (0.0-1.0) at which the session blocks until compaction completes.
+     *                                             This prevents context overflow when compaction hasn't finished in time.
+     *                                             Default: 0.95
+     */
     public function __construct(
-        /**
-         * Whether infinite sessions are enabled.
-         * Default: true
-         */
         public ?bool $enabled = null,
-        /**
-         * Context utilization threshold (0.0-1.0) at which background compaction starts.
-         * Compaction runs asynchronously, allowing the session to continue processing.
-         * Default: 0.80
-         */
         public ?float $backgroundCompactionThreshold = null,
-        /**
-         * Context utilization threshold (0.0-1.0) at which the session blocks until compaction completes.
-         * This prevents context overflow when compaction hasn't finished in time.
-         * Default: 0.95
-         */
         public ?float $bufferExhaustionThreshold = null,
     ) {}
 

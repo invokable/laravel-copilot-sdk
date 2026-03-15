@@ -9,6 +9,12 @@ namespace Revolution\Copilot\Types\Hooks;
  */
 readonly class PreToolUseHookInput extends BaseHookInput
 {
+    /**
+     * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
+     * @param  string  $cwd  Current working directory
+     * @param  string  $toolName  Name of the tool to be executed
+     * @param  mixed  $toolArgs  Arguments to be passed to the tool
+     */
     public function __construct(
         int $timestamp,
         string $cwd,

@@ -11,10 +11,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class ModelCapabilities implements Arrayable
 {
+    /**
+     * @param  array  $supports  Supports configuration
+     * @param  array  $limits  Limits configuration
+     */
     public function __construct(
-        /** Supports configuration */
         public array $supports,
-        /** Limits configuration */
         public array $limits,
     ) {}
 

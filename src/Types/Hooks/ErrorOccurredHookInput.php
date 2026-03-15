@@ -9,20 +9,18 @@ namespace Revolution\Copilot\Types\Hooks;
  */
 readonly class ErrorOccurredHookInput extends BaseHookInput
 {
+    /**
+     * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
+     * @param  string  $cwd  Current working directory
+     * @param  string  $error  Error message
+     * @param  string  $errorContext  Error context: "model_call", "tool_execution", "system", or "user_input"
+     * @param  bool  $recoverable  Whether the error is recoverable
+     */
     public function __construct(
         int $timestamp,
         string $cwd,
-        /**
-         * Error message.
-         */
         public string $error,
-        /**
-         * Error context: "model_call", "tool_execution", "system", or "user_input".
-         */
         public string $errorContext,
-        /**
-         * Whether the error is recoverable.
-         */
         public bool $recoverable,
     ) {
         parent::__construct($timestamp, $cwd);

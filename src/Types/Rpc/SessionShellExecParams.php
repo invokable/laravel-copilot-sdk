@@ -11,18 +11,14 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionShellExecParams implements Arrayable
 {
+    /**
+     * @param  string  $command  Shell command to execute
+     * @param  ?string  $cwd  Working directory (defaults to session working directory)
+     * @param  ?int  $timeout  Timeout in milliseconds (default: 30000)
+     */
     public function __construct(
-        /**
-         * Shell command to execute.
-         */
         public string $command,
-        /**
-         * Working directory (defaults to session working directory).
-         */
         public ?string $cwd = null,
-        /**
-         * Timeout in milliseconds (default: 30000).
-         */
         public ?int $timeout = null,
     ) {}
 

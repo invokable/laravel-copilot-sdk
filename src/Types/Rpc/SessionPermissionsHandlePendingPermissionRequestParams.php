@@ -21,9 +21,12 @@ use Revolution\Copilot\Support\PermissionRequestResultKind;
  */
 readonly class SessionPermissionsHandlePendingPermissionRequestParams implements Arrayable
 {
+    /**
+     * @param  string  $requestId  The ID of the pending permission request to handle
+     * @param  array  $result  Permission decision result; see class docblock for structure
+     */
     public function __construct(
         public string $requestId,
-        /** Permission decision result; see class docblock for structure */
         public array $result,
     ) {}
 

@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionFleetStartResult implements Arrayable
 {
+    /**
+     * @param  bool  $started  Whether fleet mode was successfully activated
+     */
     public function __construct(
-        /** Whether fleet mode was successfully activated */
         public bool $started,
     ) {}
 

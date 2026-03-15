@@ -13,120 +13,73 @@ use Revolution\Copilot\Enums\ReasoningEffort;
  */
 readonly class SessionConfig implements Arrayable
 {
+    /**
+     * @param  ?string  $sessionId  Optional custom session ID. If not provided, server will generate one.
+     * @param  ?string  $clientName  Client name to identify the application using the SDK.
+     *                               Included in the User-Agent header for API requests.
+     * @param  ?string  $model  Model to use for this session
+     * @param  ReasoningEffort|string|null  $reasoningEffort  Reasoning effort level for models that support it.
+     *                                                        Only valid for models where capabilities.supports.reasoningEffort is true.
+     *                                                        Use client.listModels() to check supported values for each model.
+     *                                                        Accepts either ReasoningEffort enum or string value.
+     * @param  ?string  $configDir  Override the default configuration directory location.
+     *                              When specified, the session will use this directory for storing config and state.
+     * @param  ?array  $tools  Tools exposed to the CLI server
+     * @param  SystemMessageConfig|array|null  $systemMessage  System message configuration. Controls how the system prompt is constructed.
+     * @param  ?array  $availableTools  List of tool names to allow. When specified, only these tools will be available.
+     *                                  Takes precedence over excludedTools.
+     * @param  ?array  $excludedTools  List of tool names to disable. All other tools remain available.
+     *                                 Ignored if availableTools is specified.
+     * @param  ProviderConfig|array|null  $provider  Custom provider configuration (BYOK - Bring Your Own Key).
+     *                                               When specified, uses the provided API endpoint instead of the Copilot API.
+     * @param  ?Closure  $onPermissionRequest  Handler for permission requests from the server.
+     *                                         When provided, the server will call this handler to request permission for operations.
+     * @param  ?Closure  $onUserInputRequest  Handler for user input requests from the agent.
+     *                                        When provided, enables the ask_user tool allowing the agent to ask questions.
+     * @param  SessionHooks|array|null  $hooks  Hook handlers for intercepting session lifecycle events.
+     *                                          When provided, enables hooks callback allowing custom logic at various points.
+     * @param  ?string  $workingDirectory  Working directory for the session. Tool operations will be relative to this directory.
+     * @param  ?bool  $streaming  Enable streaming of assistant message and reasoning chunks.
+     *                            When true, ephemeral assistant.message_delta and assistant.reasoning_delta
+     *                            events are sent as the response is generated.
+     * @param  ?array  $mcpServers  MCP server configurations for the session. Keys are server names, values are server configurations.
+     * @param  ?array  $customAgents  Custom agent configurations for the session
+     * @param  ?string  $agent  Name of the custom agent to activate when the session starts.
+     *                          Must match the `name` of one of the agents in `customAgents`.
+     *                          Equivalent to calling `session.rpc.agent.select({ name })` after creation.
+     * @param  ?array  $skillDirectories  Directories to load skills from
+     * @param  ?array  $disabledSkills  List of skill names to disable
+     * @param  InfiniteSessionConfig|array|null  $infiniteSessions  Infinite session configuration for persistent workspaces and automatic compaction.
+     *                                                              When enabled (default), sessions automatically manage context limits and persist state.
+     *                                                              Set to `new InfiniteSessionConfig(enabled: false)` to disable.
+     * @param  ?Closure  $onEvent  Optional event handler registered on the session before the session.create RPC is issued.
+     *                             This guarantees that early events emitted by the CLI during session creation (e.g. session.start)
+     *                             are delivered to the handler.
+     *                             Equivalent to calling `$session->on($handler)` immediately after creation, but executes
+     *                             earlier in the lifecycle so no events are missed.
+     */
     public function __construct(
-        /**
-         * Optional custom session ID.
-         * If not provided, server will generate one.
-         */
         public ?string $sessionId = null,
-        /**
-         * Client name to identify the application using the SDK.
-         * Included in the User-Agent header for API requests.
-         */
         public ?string $clientName = null,
-        /**
-         * Model to use for this session.
-         */
         public ?string $model = null,
-        /**
-         * Reasoning effort level for models that support it.
-         * Only valid for models where capabilities.supports.reasoningEffort is true.
-         * Use client.listModels() to check supported values for each model.
-         * Accepts either ReasoningEffort enum or string value.
-         */
         public ReasoningEffort|string|null $reasoningEffort = null,
-        /**
-         * Override the default configuration directory location.
-         * When specified, the session will use this directory for storing config and state.
-         */
         public ?string $configDir = null,
-        /**
-         * Tools exposed to the CLI server.
-         */
         public ?array $tools = null,
-        /**
-         * System message configuration.
-         * Controls how the system prompt is constructed.
-         */
         public SystemMessageConfig|array|null $systemMessage = null,
-        /**
-         * List of tool names to allow. When specified, only these tools will be available.
-         * Takes precedence over excludedTools.
-         */
         public ?array $availableTools = null,
-        /**
-         * List of tool names to disable. All other tools remain available.
-         * Ignored if availableTools is specified.
-         */
         public ?array $excludedTools = null,
-        /**
-         * Custom provider configuration (BYOK - Bring Your Own Key).
-         * When specified, uses the provided API endpoint instead of the Copilot API.
-         */
         public ProviderConfig|array|null $provider = null,
-        /**
-         * Handler for permission requests from the server.
-         * When provided, the server will call this handler to request permission for operations.
-         */
         public ?Closure $onPermissionRequest = null,
-        /**
-         * Handler for user input requests from the agent.
-         * When provided, enables the ask_user tool allowing the agent to ask questions.
-         */
         public ?Closure $onUserInputRequest = null,
-        /**
-         * Hook handlers for intercepting session lifecycle events.
-         * When provided, enables hooks callback allowing custom logic at various points.
-         */
         public SessionHooks|array|null $hooks = null,
-        /**
-         * Working directory for the session.
-         * Tool operations will be relative to this directory.
-         */
         public ?string $workingDirectory = null,
-        /**
-         * Enable streaming of assistant message and reasoning chunks.
-         * When true, ephemeral assistant.message_delta and assistant.reasoning_delta
-         * events are sent as the response is generated.
-         */
         public ?bool $streaming = null,
-        /**
-         * MCP server configurations for the session.
-         * Keys are server names, values are server configurations.
-         */
         public ?array $mcpServers = null,
-        /**
-         * Custom agent configurations for the session.
-         */
         public ?array $customAgents = null,
-        /**
-         * Name of the custom agent to activate when the session starts.
-         * Must match the `name` of one of the agents in `customAgents`.
-         * Equivalent to calling `session.rpc.agent.select({ name })` after creation.
-         */
         public ?string $agent = null,
-        /**
-         * Directories to load skills from.
-         */
         public ?array $skillDirectories = null,
-        /**
-         * List of skill names to disable.
-         */
         public ?array $disabledSkills = null,
-        /**
-         * Infinite session configuration for persistent workspaces and automatic compaction.
-         * When enabled (default), sessions automatically manage context limits and persist state.
-         * Set to `new InfiniteSessionConfig(enabled: false)` to disable.
-         */
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
-        /**
-         * Optional event handler registered on the session before the session.create RPC is issued.
-         * This guarantees that early events emitted by the CLI during session creation (e.g. session.start)
-         * are delivered to the handler.
-         *
-         * Equivalent to calling `$session->on($handler)` immediately after creation, but executes
-         * earlier in the lifecycle so no events are missed.
-         */
         public ?Closure $onEvent = null,
     ) {}
 

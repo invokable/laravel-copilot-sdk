@@ -11,22 +11,16 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class ErrorOccurredHookOutput implements Arrayable
 {
+    /**
+     * @param  ?bool  $suppressOutput  Whether to suppress output
+     * @param  ?string  $errorHandling  Error handling strategy: "retry", "skip", or "abort"
+     * @param  ?int  $retryCount  Number of retries to attempt
+     * @param  ?string  $userNotification  User notification message
+     */
     public function __construct(
-        /**
-         * Whether to suppress output.
-         */
         public ?bool $suppressOutput = null,
-        /**
-         * Error handling strategy: "retry", "skip", or "abort".
-         */
         public ?string $errorHandling = null,
-        /**
-         * Number of retries to attempt.
-         */
         public ?int $retryCount = null,
-        /**
-         * User notification message.
-         */
         public ?string $userNotification = null,
     ) {}
 

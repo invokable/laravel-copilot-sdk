@@ -11,12 +11,14 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class AgentInfo implements Arrayable
 {
+    /**
+     * @param  string  $name  Unique identifier of the custom agent
+     * @param  string  $displayName  Human-readable display name
+     * @param  string  $description  Description of the agent's purpose
+     */
     public function __construct(
-        /** Unique identifier of the custom agent */
         public string $name,
-        /** Human-readable display name */
         public string $displayName,
-        /** Description of the agent's purpose */
         public string $description,
     ) {}
 

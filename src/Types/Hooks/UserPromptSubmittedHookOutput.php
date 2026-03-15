@@ -11,18 +11,14 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class UserPromptSubmittedHookOutput implements Arrayable
 {
+    /**
+     * @param  ?string  $modifiedPrompt  Modified prompt to use
+     * @param  ?string  $additionalContext  Additional context to provide to the agent
+     * @param  ?bool  $suppressOutput  Whether to suppress output
+     */
     public function __construct(
-        /**
-         * Modified prompt to use.
-         */
         public ?string $modifiedPrompt = null,
-        /**
-         * Additional context to provide to the agent.
-         */
         public ?string $additionalContext = null,
-        /**
-         * Whether to suppress output.
-         */
         public ?bool $suppressOutput = null,
     ) {}
 

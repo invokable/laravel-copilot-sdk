@@ -16,20 +16,14 @@ use Revolution\Copilot\Enums\SessionLifecycleEventType;
  */
 readonly class SessionLifecycleEvent implements Arrayable
 {
+    /**
+     * @param  SessionLifecycleEventType  $type  Type of lifecycle event
+     * @param  string  $sessionId  ID of the session this event relates to
+     * @param  ?SessionLifecycleEventMetadata  $metadata  Session metadata (not included for deleted sessions)
+     */
     public function __construct(
-        /**
-         * Type of lifecycle event.
-         */
         public SessionLifecycleEventType $type,
-
-        /**
-         * ID of the session this event relates to.
-         */
         public string $sessionId,
-
-        /**
-         * Session metadata (not included for deleted sessions).
-         */
         public ?SessionLifecycleEventMetadata $metadata = null,
     ) {}
 

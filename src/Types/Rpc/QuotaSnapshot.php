@@ -11,18 +11,20 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class QuotaSnapshot implements Arrayable
 {
+    /**
+     * @param  int  $entitlementRequests  Number of requests included in the entitlement
+     * @param  int  $usedRequests  Number of requests used so far this period
+     * @param  float  $remainingPercentage  Percentage of entitlement remaining
+     * @param  int  $overage  Number of overage requests made this period
+     * @param  bool  $overageAllowedWithExhaustedQuota  Whether pay-per-request usage is allowed when quota is exhausted
+     * @param  ?string  $resetDate  Date when the quota resets (ISO 8601)
+     */
     public function __construct(
-        /** Number of requests included in the entitlement */
         public int $entitlementRequests,
-        /** Number of requests used so far this period */
         public int $usedRequests,
-        /** Percentage of entitlement remaining */
         public float $remainingPercentage,
-        /** Number of overage requests made this period */
         public int $overage,
-        /** Whether pay-per-request usage is allowed when quota is exhausted */
         public bool $overageAllowedWithExhaustedQuota,
-        /** Date when the quota resets (ISO 8601) */
         public ?string $resetDate = null,
     ) {}
 

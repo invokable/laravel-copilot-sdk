@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionModeSetParams implements Arrayable
 {
+    /**
+     * @param  string  $mode  The mode to switch to. Valid values: "interactive", "plan", "autopilot".
+     */
     public function __construct(
-        /** The mode to switch to. Valid values: "interactive", "plan", "autopilot". */
         public string $mode,
     ) {}
 

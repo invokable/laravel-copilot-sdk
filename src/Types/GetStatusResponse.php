@@ -11,10 +11,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class GetStatusResponse implements Arrayable
 {
+    /**
+     * @param  string  $version  Package version (e.g., "1.0.0")
+     * @param  int  $protocolVersion  Protocol version for SDK compatibility
+     */
     public function __construct(
-        /** Package version (e.g., "1.0.0") */
         public string $version,
-        /** Protocol version for SDK compatibility */
         public int $protocolVersion,
     ) {}
 

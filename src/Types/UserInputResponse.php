@@ -11,14 +11,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class UserInputResponse implements Arrayable
 {
+    /**
+     * @param  string  $answer  The user's answer
+     * @param  bool  $wasFreeform  Whether the answer was freeform (not from choices)
+     */
     public function __construct(
-        /**
-         * The user's answer.
-         */
         public string $answer,
-        /**
-         * Whether the answer was freeform (not from choices).
-         */
         public bool $wasFreeform = false,
     ) {}
 

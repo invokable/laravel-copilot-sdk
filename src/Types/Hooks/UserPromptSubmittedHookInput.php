@@ -9,6 +9,11 @@ namespace Revolution\Copilot\Types\Hooks;
  */
 readonly class UserPromptSubmittedHookInput extends BaseHookInput
 {
+    /**
+     * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
+     * @param  string  $cwd  Current working directory
+     * @param  string  $prompt  The user's submitted prompt
+     */
     public function __construct(
         int $timestamp,
         string $cwd,

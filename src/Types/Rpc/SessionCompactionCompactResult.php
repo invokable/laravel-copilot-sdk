@@ -11,12 +11,14 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionCompactionCompactResult implements Arrayable
 {
+    /**
+     * @param  bool  $success  Whether compaction completed successfully
+     * @param  int  $tokensRemoved  Number of tokens freed by compaction
+     * @param  int  $messagesRemoved  Number of messages removed during compaction
+     */
     public function __construct(
-        /** Whether compaction completed successfully */
         public bool $success,
-        /** Number of tokens freed by compaction */
         public int $tokensRemoved,
-        /** Number of messages removed during compaction */
         public int $messagesRemoved,
     ) {}
 

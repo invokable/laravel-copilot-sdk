@@ -12,12 +12,13 @@ use Revolution\Copilot\Enums\ReasoningEffort;
  */
 readonly class SessionModelSwitchToParams implements Arrayable
 {
+    /**
+     * @param  string  $modelId  The model ID to switch to
+     * @param  ReasoningEffort|string|null  $reasoningEffort  Reasoning effort level to use for the model.
+     *                                                        Accepts either ReasoningEffort enum or string value.
+     */
     public function __construct(
         public string $modelId,
-        /**
-         * Reasoning effort level to use for the model.
-         * Accepts either ReasoningEffort enum or string value.
-         */
         public ReasoningEffort|string|null $reasoningEffort = null,
     ) {}
 

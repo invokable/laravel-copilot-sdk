@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionAgentSelectResult implements Arrayable
 {
+    /**
+     * @param  AgentInfo  $agent  The newly selected custom agent
+     */
     public function __construct(
-        /** The newly selected custom agent */
         public AgentInfo $agent,
     ) {}
 

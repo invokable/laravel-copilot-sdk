@@ -11,6 +11,12 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionListFilter implements Arrayable
 {
+    /**
+     * @param  ?string  $cwd  Filter by exact cwd match
+     * @param  ?string  $gitRoot  Filter by git root
+     * @param  ?string  $repository  Filter by repository (owner/repo format)
+     * @param  ?string  $branch  Filter by branch
+     */
     public function __construct(
         public ?string $cwd = null,
         public ?string $gitRoot = null,

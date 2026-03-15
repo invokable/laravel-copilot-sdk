@@ -11,12 +11,14 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class PingResult implements Arrayable
 {
+    /**
+     * @param  string  $message  Echoed message (or default greeting)
+     * @param  float  $timestamp  Server timestamp in milliseconds
+     * @param  float  $protocolVersion  Server protocol version number
+     */
     public function __construct(
-        /** Echoed message (or default greeting) */
         public string $message,
-        /** Server timestamp in milliseconds */
         public float $timestamp,
-        /** Server protocol version number */
         public float $protocolVersion,
     ) {}
 

@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionFleetStartParams implements Arrayable
 {
+    /**
+     * @param  ?string  $prompt  Optional user prompt to combine with fleet instructions
+     */
     public function __construct(
-        /** Optional user prompt to combine with fleet instructions */
         public ?string $prompt = null,
     ) {}
 

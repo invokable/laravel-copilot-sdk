@@ -11,8 +11,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class SessionPlanUpdateParams implements Arrayable
 {
+    /**
+     * @param  string  $content  The new content for plan.md
+     */
     public function __construct(
-        /** The new content for plan.md */
         public string $content,
     ) {}
 
