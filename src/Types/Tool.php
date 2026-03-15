@@ -46,7 +46,7 @@ readonly class Tool implements Arrayable
     /**
      * Create from array.
      *
-     * @param  array{name: string, description?: string, parameters?: array, handler: callable, overridesBuiltInTool?: bool}  $data
+     * @param  array{name: string, description?: string, parameters?: array, handler: callable, overridesBuiltInTool?: bool, skipPermission?: bool}  $data
      */
     public static function fromArray(array $data): self
     {
@@ -63,7 +63,7 @@ readonly class Tool implements Arrayable
     /**
      * Convert to array.
      *
-     * @return array{name: string, description: string|null, parameters: array|null, handler: Closure, overridesBuiltInTool?: bool}
+     * @return array{name: string, description: string|null, parameters: array|null, handler: Closure, overridesBuiltInTool?: bool, skipPermission?: bool}
      */
     public function toArray(): array
     {
