@@ -146,7 +146,7 @@ class CopilotGateway implements Gateway
     /**
      * Generate audio from the given text.
      */
-    public function generateAudio(AudioProvider $provider, string $model, string $text, string $voice, ?string $instructions = null): AudioResponse
+    public function generateAudio(AudioProvider $provider, string $model, string $text, string $voice, ?string $instructions = null, int $timeout = 30,): AudioResponse
     {
         throw new LogicException('Not supported.');
     }
