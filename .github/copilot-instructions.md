@@ -18,6 +18,8 @@ git submodule update --remote --merge
 GitHub Agentic Workflowsで自動的に同期を実行している。
 `.github/workflows/sdk-sync.md`
 
+GitHub Agentic Workflowsのアップデート手順：`.github/aw.md`
+
 自動同期とは別に人間が手動でコーディングしてることも多いのでコミットログやプルリクのコメントに書いてあるファイルが見つからない時は現在のプロジェクト内で検索し直す。
 
 ## Technology Stack
