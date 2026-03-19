@@ -12,6 +12,8 @@ use Revolution\Copilot\Types\Rpc\SessionAgentSelectResult;
 
 /**
  * Pending agent RPC operations for a session.
+ *
+ * @experimental This API group is experimental and may change or be removed.
  */
 class PendingAgent
 {

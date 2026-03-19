@@ -8,6 +8,8 @@ use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * Result of listing agents.
+ *
+ * @experimental This type is part of an experimental API and may change or be removed.
  */
 readonly class SessionAgentListResult implements Arrayable
 {

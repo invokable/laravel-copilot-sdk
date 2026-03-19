@@ -8,6 +8,8 @@ use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * Parameters for selecting an agent.
+ *
+ * @experimental This type is part of an experimental API and may change or be removed.
  */
 readonly class SessionAgentSelectParams implements Arrayable
 {

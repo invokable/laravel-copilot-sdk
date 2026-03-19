@@ -29,4 +29,21 @@ describe('Attachment', function () {
             'text' => '...',
         ]);
     });
+
+    it('blob', function () {
+        expect(Attachment::blob(data: 'iVBORw0KGgo=', mimeType: 'image/png', displayName: 'screenshot.png'))->toBe([
+            'type' => 'blob',
+            'data' => 'iVBORw0KGgo=',
+            'mimeType' => 'image/png',
+            'displayName' => 'screenshot.png',
+        ]);
+    });
+
+    it('blob without displayName', function () {
+        expect(Attachment::blob(data: 'iVBORw0KGgo=', mimeType: 'image/png'))->toBe([
+            'type' => 'blob',
+            'data' => 'iVBORw0KGgo=',
+            'mimeType' => 'image/png',
+        ]);
+    });
 });

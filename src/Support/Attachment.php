@@ -34,4 +34,17 @@ class Attachment
             'text' => $text,
         ]);
     }
+
+    /**
+     * Create a blob attachment for inline base64-encoded content (e.g. images).
+     */
+    public static function blob(string $data, string $mimeType, ?string $displayName = null): array
+    {
+        return array_filter([
+            'type' => 'blob',
+            'data' => $data,
+            'mimeType' => $mimeType,
+            'displayName' => $displayName,
+        ]);
+    }
 }
