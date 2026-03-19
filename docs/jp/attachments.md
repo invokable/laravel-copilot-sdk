@@ -26,6 +26,12 @@ $attachments = [
         ],
         'text' => '...',
     ],
+    [
+        'type' => 'blob',
+        'data' => base64_encode(file_get_contents('/path/to/image.png')),
+        'mimeType' => 'image/png',
+        'displayName' => 'screenshot.png',// 省略可
+    ],
 ];
 
 $response = Copilot::run(prompt: '...', attachments: $attachments);
@@ -41,9 +47,25 @@ $attachments = [
     Attachment::file(path: '/path/to/file.php', displayName: 'My File'),
     Attachment::directory(path: '/path/to/dir/', displayName: 'dir'),
     Attachment::selection(filePath: '/path/to/file.php', displayName: 'My File', selection: ['start' => ['line' => 1, 'character' => 10], 'end' => ['line' => 5, 'character' => 10]], text: '...'),
+    Attachment::blob(data: base64_encode(file_get_contents('/path/to/image.png')), mimeType: 'image/png', displayName: 'screenshot.png'),
 ];
 
 $response = Copilot::run(prompt: '...', attachments: $attachments);
+```
+
+## Blob Attachments
+
+`blob`タイプはBase64エンコードされたデータをインラインで添付するために使います。ディスクI/Oなしで画像などのバイナリデータを直接送信できます。
+
+```php
+use Revolution\Copilot\Support\Attachment;
+
+// 画像ファイルをBase64エンコードして添付
+$attachment = Attachment::blob(
+    data: base64_encode(file_get_contents('/path/to/image.png')),
+    mimeType: 'image/png',
+    displayName: 'screenshot.png',
+);
 ```
 
 selectionは公式SDKにもまだドキュメントがないので詳細は不明です。

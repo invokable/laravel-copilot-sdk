@@ -10,6 +10,8 @@ use Revolution\Copilot\Types\Rpc\SessionFleetStartResult;
 
 /**
  * Pending fleet RPC operations for a session.
+ *
+ * @experimental This API group is experimental and may change or be removed.
  */
 class PendingFleet
 {

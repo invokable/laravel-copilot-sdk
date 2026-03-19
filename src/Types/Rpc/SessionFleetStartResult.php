@@ -8,6 +8,8 @@ use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * Result of starting fleet mode.
+ *
+ * @experimental This type is part of an experimental API and may change or be removed.
  */
 readonly class SessionFleetStartResult implements Arrayable
 {

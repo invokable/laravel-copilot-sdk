@@ -8,6 +8,8 @@ use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * Result of getting current agent.
+ *
+ * @experimental This type is part of an experimental API and may change or be removed.
  */
 readonly class SessionAgentGetCurrentResult implements Arrayable
 {
