@@ -60,7 +60,7 @@
         "test": "pest --compact",
         "test:coverage": "pest --compact --coverage --coverage-clover build/logs/clover.xml",
         "lint": [
-            "pint"
+            "pint --parallel"
         ],
         "test:lint": [
             "pint --test"
