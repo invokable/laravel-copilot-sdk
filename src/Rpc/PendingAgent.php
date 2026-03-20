@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\SessionAgentGetCurrentResult;
 use Revolution\Copilot\Types\Rpc\SessionAgentListResult;
+use Revolution\Copilot\Types\Rpc\SessionAgentReloadResult;
 use Revolution\Copilot\Types\Rpc\SessionAgentSelectParams;
 use Revolution\Copilot\Types\Rpc\SessionAgentSelectResult;
 
@@ -67,5 +68,17 @@ class PendingAgent
         return $this->client->request('session.agent.deselect', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Reload custom agents.
+     */
+    public function reload(): SessionAgentReloadResult
+    {
+        return SessionAgentReloadResult::fromArray(
+            $this->client->request('session.agent.reload', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
     }
 }

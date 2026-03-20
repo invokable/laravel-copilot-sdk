@@ -36,6 +36,23 @@ $config = new SessionConfig(
         content: 'You are a helpful assistant for Laravel developers.',
     ),
 
+    // システムメッセージ: replaceモード（システムプロンプトを完全に置き換え）
+    // systemMessage: new SystemMessageConfig(
+    //     mode: 'replace',
+    //     content: 'カスタムシステムプロンプト全体',
+    // ),
+
+    // システムメッセージ: customizeモード（セクション単位でオーバーライド）
+    // systemMessage: new SystemMessageConfig(
+    //     mode: 'customize',
+    //     sections: [
+    //         'tone' => new SectionOverride(action: SectionOverrideAction::REPLACE, content: 'Always respond in Japanese.'),
+    //         'safety' => new SectionOverride(action: SectionOverrideAction::REMOVE),
+    //         'custom_instructions' => new SectionOverride(action: SectionOverrideAction::APPEND, content: 'Additional instructions here.'),
+    //     ],
+    //     content: 'appendモード同様の追加コンテンツ（オプション）',
+    // ),
+
     // カスタムプロバイダー
     provider: new ProviderConfig(),
 

@@ -100,6 +100,28 @@ $session->rpc()->agent()->list();
 $session->rpc()->agent()->getCurrent();
 $session->rpc()->agent()->select(new SessionAgentSelectParams(agentId: '...'));
 $session->rpc()->agent()->deselect();
+$session->rpc()->agent()->reload();
+
+// skills (experimental: スキルの管理)
+$session->rpc()->skills()->list();
+$session->rpc()->skills()->enable(new SessionSkillsEnableParams(name: 'skill-name'));
+$session->rpc()->skills()->disable(new SessionSkillsDisableParams(name: 'skill-name'));
+$session->rpc()->skills()->reload();
+
+// mcp (experimental: MCPサーバーの管理)
+$session->rpc()->mcp()->list();
+$session->rpc()->mcp()->enable(new SessionMcpEnableParams(serverName: 'server-name'));
+$session->rpc()->mcp()->disable(new SessionMcpDisableParams(serverName: 'server-name'));
+$session->rpc()->mcp()->reload();
+
+// plugins (experimental: プラグインの一覧)
+$session->rpc()->plugins()->list();
+
+// extensions (experimental: エクステンションの管理)
+$session->rpc()->extensions()->list();
+$session->rpc()->extensions()->enable(new SessionExtensionsEnableParams(id: 'project:my-ext'));
+$session->rpc()->extensions()->disable(new SessionExtensionsDisableParams(id: 'project:my-ext'));
+$session->rpc()->extensions()->reload();
 
 // compaction
 $session->rpc()->compaction()->compact();
@@ -114,6 +136,17 @@ $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToo
 $session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
     requestId: '...',
     result: PermissionRequestResultKind::approved(),
+));
+
+// commands: コマンド呼び出しイベントへの応答
+$session->rpc()->commands()->handlePendingCommand(new SessionCommandsHandlePendingCommandParams(
+    requestId: '...',
+));
+
+// ui: UIエリシテーションリクエストへの応答
+$session->rpc()->ui()->elicitation(new SessionUiElicitationParams(
+    message: 'ユーザーへの質問',
+    requestedSchema: ['type' => 'object', 'properties' => [...]],
 ));
 
 // log: セッションタイムラインへのメッセージ記録
