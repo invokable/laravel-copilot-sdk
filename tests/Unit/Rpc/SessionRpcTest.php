@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingAgent;
+use Revolution\Copilot\Rpc\PendingCommands;
 use Revolution\Copilot\Rpc\PendingCompaction;
+use Revolution\Copilot\Rpc\PendingExtensions;
 use Revolution\Copilot\Rpc\PendingFleet;
 use Revolution\Copilot\Rpc\PendingLog;
+use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Rpc\PendingMode;
 use Revolution\Copilot\Rpc\PendingModel;
 use Revolution\Copilot\Rpc\PendingPermissions;
 use Revolution\Copilot\Rpc\PendingPlan;
+use Revolution\Copilot\Rpc\PendingPlugins;
+use Revolution\Copilot\Rpc\PendingSkills;
 use Revolution\Copilot\Rpc\PendingTools;
+use Revolution\Copilot\Rpc\PendingUi;
 use Revolution\Copilot\Rpc\PendingWorkspace;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
@@ -75,6 +81,42 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->log())->toBeInstanceOf(PendingLog::class);
+    });
+
+    it('returns PendingSkills from skills()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->skills())->toBeInstanceOf(PendingSkills::class);
+    });
+
+    it('returns PendingMcp from mcp()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->mcp())->toBeInstanceOf(PendingMcp::class);
+    });
+
+    it('returns PendingPlugins from plugins()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->plugins())->toBeInstanceOf(PendingPlugins::class);
+    });
+
+    it('returns PendingExtensions from extensions()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->extensions())->toBeInstanceOf(PendingExtensions::class);
+    });
+
+    it('returns PendingCommands from commands()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->commands())->toBeInstanceOf(PendingCommands::class);
+    });
+
+    it('returns PendingUi from ui()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->ui())->toBeInstanceOf(PendingUi::class);
     });
 });
 
