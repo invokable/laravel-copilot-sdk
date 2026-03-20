@@ -387,6 +387,40 @@ describe('SessionLogParams', function () {
             ->and($params->level)->toBeNull()
             ->and($params->ephemeral)->toBeNull();
     });
+
+    it('can be created with url', function () {
+        $params = new SessionLogParams(
+            message: 'See details',
+            url: 'https://example.com/details',
+        );
+        expect($params->url)->toBe('https://example.com/details');
+    });
+
+    it('converts to array with url', function () {
+        $params = new SessionLogParams(
+            message: 'Check logs',
+            level: LogLevel::INFO,
+            url: 'https://example.com/logs',
+        );
+        expect($params->toArray())->toBe([
+            'message' => 'Check logs',
+            'level' => 'info',
+            'url' => 'https://example.com/logs',
+        ]);
+    });
+
+    it('can be created from array with url', function () {
+        $params = SessionLogParams::fromArray([
+            'message' => 'Details here',
+            'url' => 'https://example.com/info',
+        ]);
+        expect($params->url)->toBe('https://example.com/info');
+    });
+
+    it('filters null url in toArray', function () {
+        $params = new SessionLogParams(message: 'No URL');
+        expect($params->toArray())->not->toHaveKey('url');
+    });
 });
 
 describe('SessionLogResult', function () {
