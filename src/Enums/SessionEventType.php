@@ -82,6 +82,10 @@ enum SessionEventType: string
     case ELICITATION_REQUESTED = 'elicitation.requested';
     case ELICITATION_COMPLETED = 'elicitation.completed';
 
+    // MCP OAuth events
+    case MCP_OAUTH_REQUIRED = 'mcp.oauth_required';
+    case MCP_OAUTH_COMPLETED = 'mcp.oauth_completed';
+
     // Skill events
     case SKILL_INVOKED = 'skill.invoked';
 

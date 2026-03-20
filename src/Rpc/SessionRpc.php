@@ -21,8 +21,15 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->log()->log(new SessionLogParams(message: 'Processing started'));
  * $session->rpc()->log()->log(new SessionLogParams(message: 'Disk usage high', level: LogLevel::WARNING));
  * $session->rpc()->agent()->list();
+ * $session->rpc()->agent()->reload();
+ * $session->rpc()->skills()->list();
+ * $session->rpc()->mcp()->list();
+ * $session->rpc()->plugins()->list();
+ * $session->rpc()->extensions()->list();
  * $session->rpc()->compaction()->compact();
  * $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToolCallParams(requestId: '...', result: 'done'));
+ * $session->rpc()->commands()->handlePendingCommand(new SessionCommandsHandlePendingCommandParams(requestId: '...'));
+ * $session->rpc()->ui()->elicitation(new SessionUiElicitationParams(message: '...', requestedSchema: [...]));
  * $session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(requestId: '...', result: PermissionRequestResultKind::approved()));
  * ```
  */
@@ -82,6 +89,46 @@ class SessionRpc
     }
 
     /**
+     * Skills RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function skills(): PendingSkills
+    {
+        return new PendingSkills($this->client, $this->sessionId);
+    }
+
+    /**
+     * MCP server RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function mcp(): PendingMcp
+    {
+        return new PendingMcp($this->client, $this->sessionId);
+    }
+
+    /**
+     * Plugins RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function plugins(): PendingPlugins
+    {
+        return new PendingPlugins($this->client, $this->sessionId);
+    }
+
+    /**
+     * Extensions RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function extensions(): PendingExtensions
+    {
+        return new PendingExtensions($this->client, $this->sessionId);
+    }
+
+    /**
      * Compaction RPC operations.
      */
     public function compaction(): PendingCompaction
@@ -107,6 +154,26 @@ class SessionRpc
     public function permissions(): PendingPermissions
     {
         return new PendingPermissions($this->client, $this->sessionId);
+    }
+
+    /**
+     * Session-scoped commands RPC operations.
+     *
+     * Used to respond to command invocation events.
+     */
+    public function commands(): PendingCommands
+    {
+        return new PendingCommands($this->client, $this->sessionId);
+    }
+
+    /**
+     * UI RPC operations.
+     *
+     * Used to respond to UI elicitation requests.
+     */
+    public function ui(): PendingUi
+    {
+        return new PendingUi($this->client, $this->sessionId);
     }
 
     /**
