@@ -9,6 +9,7 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
 use Revolt\EventLoop;
+use Revolution\Copilot\Concerns\Session\HasDeprecated;
 use Revolution\Copilot\Concerns\Session\HasHooks;
 use Revolution\Copilot\Concerns\Session\HasPermissionHandler;
 use Revolution\Copilot\Concerns\Session\HasToolHandlers;
@@ -36,6 +37,7 @@ use Throwable;
 class Session implements CopilotSession
 {
     use Conditionable;
+    use HasDeprecated;
     use HasHooks;
     use HasPermissionHandler;
     use HasToolHandlers;
@@ -556,20 +558,6 @@ class Session implements CopilotSession
         $this->permissionHandler = null;
         $this->userInputHandler = null;
         $this->hooks = null;
-    }
-
-    /**
-     * @deprecated Use disconnect() instead. This method will be removed in a future release.
-     *
-     * Disconnect this session and release all in-memory resources.
-     * Session data on disk is preserved for later resumption.
-     *
-     * @throws JsonRpcException
-     */
-    #[\Deprecated(message: 'Use disconnect() instead. This method will be removed in a future release.', since: '0.2.28')]
-    public function destroy(): void
-    {
-        $this->disconnect();
     }
 
     /**
