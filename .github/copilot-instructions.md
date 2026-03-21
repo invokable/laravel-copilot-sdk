@@ -147,6 +147,9 @@ src/
 ├── Ai/                         # Laravel AI SDK Integration
 │   ├── CopilotGateway.php
 │   └── CopilotProvider.php
+├── Concerns/                   # Client.phpやSession.phpからコード分割したトレイト
+│   ├── Client/*.php
+│   ├── Session/*.php
 ├── Contracts/
 │   ├── CopilotClient.php       # クライアントインターフェース
 │   ├── CopilotSession.php      # セッションインターフェース
