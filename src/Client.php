@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
-use Illuminate\Contracts\Cache\LockTimeoutException;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use Revolution\Copilot\Concerns\Client\HandlesServerRequests;
+use Revolution\Copilot\Concerns\Client\ManagesModels;
+use Revolution\Copilot\Concerns\Client\ManagesSessions;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Events\Client\ClientStarted;
 use Revolution\Copilot\Events\Client\PingPong;
-use Revolution\Copilot\Events\Client\ToolCall;
 use Revolution\Copilot\Events\Session\CreateSession;
 use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
@@ -22,22 +22,13 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Transport\TcpTransport;
-use Revolution\Copilot\Types\ForegroundSessionInfo;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
-use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
-use Revolution\Copilot\Types\SessionLifecycleEvent;
-use Revolution\Copilot\Types\SessionListFilter;
-use Revolution\Copilot\Types\SessionMetadata;
-use Revolution\Copilot\Types\ToolResultObject;
-use Revolution\Copilot\Types\UserInputRequest;
 use RuntimeException;
 use Throwable;
-
-use function Illuminate\Support\defer;
 
 /**
  * Main client for interacting with the Copilot CLI.
@@ -45,7 +36,10 @@ use function Illuminate\Support\defer;
 class Client implements CopilotClient
 {
     use Conditionable;
+    use HandlesServerRequests;
     use Macroable;
+    use ManagesModels;
+    use ManagesSessions;
 
     protected ?ProcessManager $processManager = null;
 
@@ -61,24 +55,11 @@ class Client implements CopilotClient
     protected bool $tcpMode = false;
 
     /**
-     * Custom handler for listing available models (for BYOK mode).
-     * When set, listModels() calls this instead of querying the CLI server.
-     */
-    protected $onListModels = null;
-
-    /**
      * Active sessions.
      *
      * @var array<string, Session>
      */
     protected array $sessions = [];
-
-    /**
-     * Session lifecycle event handlers.
-     *
-     * @var array<callable(SessionLifecycleEvent): void>
-     */
-    protected array $lifecycleHandlers = [];
 
     /**
      * Create a new CopilotClient.
@@ -466,202 +447,6 @@ class Client implements CopilotClient
     }
 
     /**
-     * Set a custom handler for listing available models (for BYOK mode).
-     *
-     * When set, listModels() calls this callback instead of querying the CLI server.
-     * Pass null to remove the handler and revert to the default CLI server behaviour.
-     *
-     * ```php
-     * $models = Copilot::client()->usingListModels(fn() => [])->listModels();
-     * ```
-     */
-    public function usingListModels(?callable $callback = null): static
-    {
-        $this->onListModels = $callback;
-
-        return $this;
-    }
-
-    /**
-     * List available models with their metadata.
-     *
-     * If a handler was provided via usingListModels(), it is called instead of
-     * querying the CLI server. Useful in BYOK mode to return models available
-     * from your custom provider.
-     *
-     * Results are cached after the first successful call to avoid rate limiting.
-     * The cache is cleared when the client disconnects.
-     *
-     * @return array<ModelInfo>
-     *
-     * @throws JsonRpcException|LockTimeoutException
-     */
-    public function listModels(): array
-    {
-        if ($this->onListModels !== null) {
-            $models = ($this->onListModels)();
-
-            return array_map(
-                fn (array $model) => ModelInfo::fromArray($model),
-                $models,
-            );
-        }
-
-        $this->ensureConnected();
-
-        // Create a cache key based on options to prevent conflicts between different users' settings.
-        $cache_key = md5(json_encode($this->options));
-
-        $modelsData = Cache::lock('copilot-models-lock', 10)->block(5, function () use ($cache_key) {
-            return Cache::remember('copilot-models-cache:'.$cache_key, now()->plus(minutes: 5), function () {
-                $response = $this->rpcClient->request('models.list');
-
-                return $response['models'] ?? [];
-            });
-        });
-
-        defer(fn () => Cache::forget('copilot-models-cache:'.$cache_key));
-
-        return array_map(
-            fn (array $model) => ModelInfo::fromArray($model),
-            $modelsData,
-        );
-    }
-
-    /**
-     * Get the last session ID.
-     *
-     * @throws JsonRpcException
-     */
-    public function getLastSessionId(): ?string
-    {
-        $this->ensureConnected();
-
-        $response = $this->rpcClient->request('session.getLastId', []);
-
-        return $response['sessionId'] ?? null;
-    }
-
-    /**
-     * Delete a session.
-     *
-     * @throws JsonRpcException
-     */
-    public function deleteSession(string $sessionId): void
-    {
-        $this->ensureConnected();
-
-        $response = $this->rpcClient->request('session.delete', [
-            'sessionId' => $sessionId,
-        ]);
-
-        if (! ($response['success'] ?? false)) {
-            throw new RuntimeException('Failed to delete session: '.($response['error'] ?? 'Unknown error'));
-        }
-
-        unset($this->sessions[$sessionId]);
-    }
-
-    /**
-     * List all available sessions.
-     *
-     * Returns metadata about each session including ID, timestamps, summary, and context.
-     *
-     * @param  SessionListFilter|array{cwd?: string, gitRoot?: string, repository?: string, branch?: string}|null  $filter  Optional filter to limit returned sessions by context fields
-     * @return array<SessionMetadata>
-     *
-     * @throws JsonRpcException
-     *
-     * @example
-     * // List all sessions
-     * $sessions = $client->listSessions();
-     *
-     * // List sessions for a specific repository
-     * $sessions = $client->listSessions(['repository' => 'owner/repo']);
-     *
-     * // List sessions in a specific working directory
-     * $sessions = $client->listSessions(new SessionListFilter(cwd: '/path/to/project'));
-     */
-    public function listSessions(SessionListFilter|array|null $filter = null): array
-    {
-        $this->ensureConnected();
-
-        $filterArray = match (true) {
-            $filter instanceof SessionListFilter => $filter->toArray(),
-            is_array($filter) => array_filter($filter, fn ($v) => $v !== null),
-            default => [],
-        };
-
-        $response = $this->rpcClient->request('session.list', array_filter([
-            'filter' => $filterArray ?: null,
-        ]));
-
-        return array_map(
-            fn (array $session) => SessionMetadata::fromArray($session),
-            $response['sessions'] ?? [],
-        );
-    }
-
-    /**
-     * Gets the foreground session ID in TUI+server mode.
-     *
-     * This returns the ID of the session currently displayed in the TUI.
-     * Only available when connecting to a server running in TUI+server mode (--ui-server).
-     *
-     * @throws JsonRpcException
-     */
-    public function getForegroundSessionId(): ?string
-    {
-        $this->ensureConnected();
-
-        $response = $this->rpcClient->request('session.getForeground', []);
-
-        return ForegroundSessionInfo::fromArray($response)->sessionId;
-    }
-
-    /**
-     * Sets the foreground session in TUI+server mode.
-     *
-     * This requests the TUI to switch to displaying the specified session.
-     * Only available when connecting to a server running in TUI+server mode (--ui-server).
-     *
-     * @throws RuntimeException|JsonRpcException
-     */
-    public function setForegroundSessionId(string $sessionId): void
-    {
-        $this->ensureConnected();
-
-        $response = $this->rpcClient->request('session.setForeground', [
-            'sessionId' => $sessionId,
-        ]);
-
-        if (! ($response['success'] ?? false)) {
-            throw new RuntimeException($response['error'] ?? 'Failed to set foreground session');
-        }
-    }
-
-    /**
-     * Subscribes to session lifecycle events.
-     *
-     * Lifecycle events are emitted when sessions are created, deleted, updated,
-     * or change foreground/background state (in TUI+server mode).
-     *
-     * @param  callable(SessionLifecycleEvent): void  $handler
-     * @return callable(): void A function that, when called, unsubscribes the handler
-     */
-    public function onLifecycle(callable $handler): callable
-    {
-        $this->lifecycleHandlers[] = $handler;
-
-        return function () use ($handler) {
-            $this->lifecycleHandlers = array_filter(
-                $this->lifecycleHandlers,
-                fn ($h) => $h !== $handler,
-            );
-        };
-    }
-
-    /**
      * Ensure the client is connected.
      *
      * @throws RuntimeException
@@ -717,183 +502,5 @@ class Client implements CopilotClient
         if ($method === 'session.lifecycle') {
             $this->handleLifecycleNotification($params);
         }
-    }
-
-    /**
-     * Handle session lifecycle notifications.
-     */
-    protected function handleLifecycleNotification(array $params): void
-    {
-        // Validate required fields
-        if (! isset($params['type']) || ! is_string($params['type'])) {
-            return;
-        }
-
-        if (! isset($params['sessionId']) || ! is_string($params['sessionId'])) {
-            return;
-        }
-
-        try {
-            $event = SessionLifecycleEvent::fromArray($params);
-
-            // Dispatch to all registered handlers
-            foreach ($this->lifecycleHandlers as $handler) {
-                try {
-                    $handler($event);
-                } catch (Throwable) {
-                    // Ignore handler errors
-                }
-            }
-        } catch (Throwable) {
-            // Ignore parsing errors for invalid event types
-        }
-    }
-
-    /**
-     * Handle tool call requests from the server.
-     */
-    protected function handleToolCall(array $params): array
-    {
-        $sessionId = $params['sessionId'] ?? null;
-        $toolCallId = $params['toolCallId'] ?? null;
-        $toolName = $params['toolName'] ?? null;
-        $arguments = $params['arguments'] ?? [];
-
-        if ($sessionId === null || $toolName === null) {
-            return ['result' => [
-                'textResultForLlm' => 'Invalid tool call parameters',
-                'resultType' => 'failure',
-            ]];
-        }
-
-        $session = $this->sessions[$sessionId] ?? null;
-
-        if ($session === null) {
-            return ['result' => [
-                'textResultForLlm' => "Unknown session: {$sessionId}",
-                'resultType' => 'failure',
-            ]];
-        }
-
-        $handler = $session->getToolHandler($toolName);
-
-        if ($handler === null) {
-            return ['result' => [
-                'textResultForLlm' => "Tool not supported by SDK client: {$toolName}",
-                'resultType' => 'rejected',
-            ]];
-        }
-
-        try {
-            $invocation = [
-                'sessionId' => $sessionId,
-                'toolCallId' => $toolCallId,
-                'toolName' => $toolName,
-                'arguments' => $arguments,
-            ];
-
-            /** @var ToolResultObject|array|mixed $result */
-            $result = $handler($arguments, $invocation);
-
-            $result = $result instanceof ToolResultObject ? $result->toArray() : $result;
-
-            ToolCall::dispatch($arguments, $invocation, $result);
-
-            // Normalize result
-            if (is_string($result)) {
-                return ['result' => $result];
-            }
-
-            if (is_array($result) && isset($result['textResultForLlm'])) {
-                return ['result' => $result];
-            }
-
-            return ['result' => [
-                'textResultForLlm' => is_array($result) ? json_encode($result) : (string) $result,
-                'resultType' => 'success',
-            ]];
-        } catch (Throwable $e) {
-            return ['result' => [
-                'textResultForLlm' => "Tool execution failed: {$e->getMessage()}",
-                'resultType' => 'failure',
-                'error' => $e->getMessage(),
-            ]];
-        }
-    }
-
-    /**
-     * Handle permission requests from the server.
-     */
-    protected function handlePermissionRequest(array $params): array
-    {
-        $sessionId = $params['sessionId'] ?? null;
-        $request = $params['permissionRequest'] ?? [];
-
-        if ($sessionId === null) {
-            return ['result' => ['kind' => 'denied-no-approval-rule-and-could-not-request-from-user']];
-        }
-
-        $session = $this->sessions[$sessionId] ?? null;
-
-        if ($session === null) {
-            return ['result' => ['kind' => 'denied-no-approval-rule-and-could-not-request-from-user']];
-        }
-
-        return ['result' => $session->handlePermissionRequest($request)];
-    }
-
-    /**
-     * Handle user input requests from the server.
-     */
-    protected function handleUserInputRequest(array $params): array
-    {
-        $sessionId = $params['sessionId'] ?? null;
-        $question = $params['question'] ?? '';
-        $choices = $params['choices'] ?? null;
-        $allowFreeform = $params['allowFreeform'] ?? null;
-
-        if ($sessionId === null || $question === '') {
-            throw new \InvalidArgumentException('Invalid user input request payload');
-        }
-
-        $session = $this->sessions[$sessionId] ?? null;
-
-        if ($session === null) {
-            throw new RuntimeException("Session not found: {$sessionId}");
-        }
-
-        $request = new UserInputRequest(
-            question: $question,
-            choices: $choices,
-            allowFreeform: $allowFreeform,
-        );
-
-        $response = $session->handleUserInputRequest($request);
-
-        return $response->toArray();
-    }
-
-    /**
-     * Handle hooks invocation from the server.
-     */
-    protected function handleHooksInvoke(array $params): array
-    {
-        $sessionId = $params['sessionId'] ?? null;
-        $hookType = $params['hookType'] ?? '';
-        $input = $params['input'] ?? null;
-
-        if ($sessionId === null || $hookType === '') {
-            throw new \InvalidArgumentException('Invalid hooks invoke payload');
-        }
-
-        $session = $this->sessions[$sessionId] ?? null;
-
-        if ($session === null) {
-            throw new RuntimeException("Session not found: {$sessionId}");
-        }
-
-        $output = $session->handleHooksInvoke($hookType, $input);
-
-        return ['output' => $output];
     }
 }
