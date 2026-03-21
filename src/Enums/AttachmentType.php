@@ -13,4 +13,5 @@ enum AttachmentType: string
     case FILE = 'file';
     case GITHUB_REFERENCE = 'github_reference';
     case SELECTION = 'selection';
+    case BLOB = 'blob';
 }
