@@ -9,6 +9,10 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
 use Revolt\EventLoop;
+use Revolution\Copilot\Concerns\Session\HasHooks;
+use Revolution\Copilot\Concerns\Session\HasPermissionHandler;
+use Revolution\Copilot\Concerns\Session\HasToolHandlers;
+use Revolution\Copilot\Concerns\Session\HasUserInputHandler;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ReasoningEffort;
@@ -21,16 +25,9 @@ use Revolution\Copilot\Exceptions\SessionErrorException;
 use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
-use Revolution\Copilot\Support\PermissionRequestResultKind;
 use Revolution\Copilot\Types\Rpc\SessionLogParams;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
-use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
-use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
 use Revolution\Copilot\Types\SessionEvent;
-use Revolution\Copilot\Types\SessionHooks;
-use Revolution\Copilot\Types\ToolResultObject;
-use Revolution\Copilot\Types\UserInputRequest;
-use Revolution\Copilot\Types\UserInputResponse;
 use Throwable;
 
 /**
@@ -39,6 +36,10 @@ use Throwable;
 class Session implements CopilotSession
 {
     use Conditionable;
+    use HasHooks;
+    use HasPermissionHandler;
+    use HasToolHandlers;
+    use HasUserInputHandler;
     use Macroable;
 
     /**
@@ -54,32 +55,6 @@ class Session implements CopilotSession
      * @var array<string, array<Closure(SessionEvent): void>>
      */
     protected array $typedEventHandlers = [];
-
-    /**
-     * Tool handlers.
-     *
-     * @var array<string, Closure(array, array): mixed>
-     */
-    protected array $toolHandlers = [];
-
-    /**
-     * Permission handler.
-     *
-     * @var Closure(array, array): array|null
-     */
-    protected ?Closure $permissionHandler = null;
-
-    /**
-     * User input handler.
-     *
-     * @var Closure(UserInputRequest, array): UserInputResponse|null
-     */
-    protected ?Closure $userInputHandler = null;
-
-    /**
-     * Session hooks.
-     */
-    protected ?SessionHooks $hooks = null;
 
     /**
      * Wait state: idle flag.
@@ -534,247 +509,6 @@ class Session implements CopilotSession
             }
 
             $this->executePermissionAndRespond($requestId, $permissionRequest);
-        }
-    }
-
-    /**
-     * Execute a tool handler and send the result back via RPC.
-     * Runs in a new Fiber to allow async RPC calls without blocking the event loop.
-     *
-     * @internal
-     */
-    protected function executeToolAndRespond(string $requestId, string $toolName, ?string $toolCallId, mixed $arguments, Closure $handler, ?string $traceparent = null, ?string $tracestate = null): void
-    {
-        $fiber = new \Fiber(function () use ($requestId, $toolName, $toolCallId, $arguments, $handler, $traceparent, $tracestate): void {
-            try {
-                $invocation = [
-                    'sessionId' => $this->sessionId,
-                    'toolCallId' => $toolCallId,
-                    'toolName' => $toolName,
-                    'arguments' => $arguments,
-                ];
-
-                if ($traceparent !== null) {
-                    $invocation['traceparent'] = $traceparent;
-                }
-                if ($tracestate !== null) {
-                    $invocation['tracestate'] = $tracestate;
-                }
-
-                /** @var ToolResultObject|array|string|mixed $rawResult */
-                $rawResult = $handler($arguments, $invocation);
-
-                if ($rawResult instanceof ToolResultObject) {
-                    $result = $rawResult->toArray();
-                } elseif (is_string($rawResult) || is_array($rawResult)) {
-                    $result = $rawResult;
-                } else {
-                    $result = $rawResult !== null ? (string) $rawResult : '';
-                }
-
-                // Send failure via error param for consistent server-side formatting
-                if (is_array($result) && ($result['resultType'] ?? null) === 'failure' && isset($result['error'])) {
-                    $this->rpc()->tools()->handlePendingToolCall(
-                        new SessionToolsHandlePendingToolCallParams(
-                            requestId: $requestId,
-                            error: $result['error'],
-                        )
-                    );
-                } else {
-                    $this->rpc()->tools()->handlePendingToolCall(
-                        new SessionToolsHandlePendingToolCallParams(
-                            requestId: $requestId,
-                            result: $result,
-                        )
-                    );
-                }
-            } catch (Throwable $e) {
-                try {
-                    $this->rpc()->tools()->handlePendingToolCall(
-                        new SessionToolsHandlePendingToolCallParams(
-                            requestId: $requestId,
-                            error: $e->getMessage(),
-                        )
-                    );
-                } catch (Throwable) {
-                    // Connection lost or RPC error — nothing we can do
-                }
-            }
-        });
-
-        $fiber->start();
-    }
-
-    /**
-     * Execute the permission handler and send the result back via RPC.
-     * Runs in a new Fiber to allow async RPC calls without blocking the event loop.
-     *
-     * @internal
-     */
-    protected function executePermissionAndRespond(string $requestId, array $permissionRequest): void
-    {
-        $fiber = new \Fiber(function () use ($requestId, $permissionRequest): void {
-            try {
-                $result = ($this->permissionHandler)($permissionRequest, ['sessionId' => $this->sessionId]);
-
-                if (($result['kind'] ?? null) === PermissionRequestResultKind::NO_RESULT) {
-                    return;
-                }
-
-                $this->rpc()->permissions()->handlePendingPermissionRequest(
-                    new SessionPermissionsHandlePendingPermissionRequestParams(
-                        requestId: $requestId,
-                        result: $result,
-                    )
-                );
-            } catch (Throwable) {
-                try {
-                    $this->rpc()->permissions()->handlePendingPermissionRequest(
-                        new SessionPermissionsHandlePendingPermissionRequestParams(
-                            requestId: $requestId,
-                            result: PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser(),
-                        )
-                    );
-                } catch (Throwable) {
-                    // Connection lost or RPC error — nothing we can do
-                }
-            }
-        });
-
-        $fiber->start();
-    }
-
-    /**
-     * @param  array<array{name: string, handler: Closure}>  $tools
-     *
-     * @internal
-     */
-    public function registerTools(array $tools): void
-    {
-        $this->toolHandlers = [];
-
-        foreach ($tools as $tool) {
-            if (isset($tool['name'], $tool['handler'])) {
-                $this->toolHandlers[$tool['name']] = $tool['handler'];
-            }
-        }
-    }
-
-    /**
-     * Get a tool handler by name.
-     *
-     * @internal
-     */
-    public function getToolHandler(string $name): ?Closure
-    {
-        return $this->toolHandlers[$name] ?? null;
-    }
-
-    /**
-     * Register a permission handler.
-     *
-     * @param  Closure(array, array): array|null  $handler
-     *
-     * @internal
-     */
-    public function registerPermissionHandler(?Closure $handler): void
-    {
-        $this->permissionHandler = $handler;
-    }
-
-    /**
-     * Handle a permission request.
-     *
-     * @internal
-     */
-    public function handlePermissionRequest(array $request): array
-    {
-        if ($this->permissionHandler === null) {
-            return PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser();
-        }
-
-        try {
-            return ($this->permissionHandler)($request, ['sessionId' => $this->sessionId]);
-        } catch (Throwable) {
-            return PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser();
-        }
-    }
-
-    /**
-     * Register a user input handler.
-     *
-     * @param  Closure(UserInputRequest, array): UserInputResponse|null  $handler
-     *
-     * @internal
-     */
-    public function registerUserInputHandler(?Closure $handler): void
-    {
-        $this->userInputHandler = $handler;
-    }
-
-    /**
-     * Handle a user input request.
-     *
-     * @throws \RuntimeException
-     *
-     * @internal
-     */
-    public function handleUserInputRequest(UserInputRequest $request): UserInputResponse
-    {
-        if ($this->userInputHandler === null) {
-            throw new \RuntimeException('User input requested but no handler registered');
-        }
-
-        /** @var UserInputResponse|array $result */
-        $result = ($this->userInputHandler)($request, ['sessionId' => $this->sessionId]);
-
-        return $result instanceof UserInputResponse
-            ? $result
-            : UserInputResponse::fromArray($result);
-    }
-
-    /**
-     * Register session hooks.
-     *
-     * @internal
-     */
-    public function registerHooks(SessionHooks|array|null $hooks): void
-    {
-        $this->hooks = $hooks instanceof SessionHooks
-            ? $hooks
-            : ($hooks !== null ? SessionHooks::fromArray($hooks) : null);
-    }
-
-    /**
-     * Handle a hooks invocation.
-     *
-     * @internal
-     */
-    public function handleHooksInvoke(string $hookType, mixed $input): mixed
-    {
-        if ($this->hooks === null) {
-            return null;
-        }
-
-        $handlerMap = [
-            'preToolUse' => $this->hooks->onPreToolUse,
-            'postToolUse' => $this->hooks->onPostToolUse,
-            'userPromptSubmitted' => $this->hooks->onUserPromptSubmitted,
-            'sessionStart' => $this->hooks->onSessionStart,
-            'sessionEnd' => $this->hooks->onSessionEnd,
-            'errorOccurred' => $this->hooks->onErrorOccurred,
-        ];
-
-        $handler = $handlerMap[$hookType] ?? null;
-
-        if ($handler === null) {
-            return null;
-        }
-
-        try {
-            return $handler($input, ['sessionId' => $this->sessionId]);
-        } catch (Throwable) {
-            return null;
         }
     }
 
