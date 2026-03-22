@@ -26,6 +26,7 @@ use Revolution\Copilot\Exceptions\SessionErrorException;
 use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
+use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Types\Rpc\SessionLogParams;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
 use Revolution\Copilot\Types\SessionEvent;
@@ -123,12 +124,13 @@ class Session implements CopilotSession
      */
     public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string
     {
-        $response = $this->client->request('session.send', [
+        $response = $this->client->request('session.send', array_filter([
+            ...TraceContext::get(),
             'sessionId' => $this->sessionId,
             'prompt' => $prompt,
             'attachments' => $attachments,
             'mode' => $mode,
-        ]);
+        ], fn ($v) => $v !== null));
 
         MessageSend::dispatch($this->sessionId, $response['messageId'] ?? '', $prompt, $attachments, $mode);
 
