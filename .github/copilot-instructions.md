@@ -158,7 +158,8 @@ src/
 ├── Enums/
 │   ├── ConnectionState.php
 │   ├── ReasoningEffort.php
-│   └── SessionEventType.php
+│   ├── SessionEventType.php
+│   └── ...
 ├── Events/
 │   ├── Client/
 │   │   ├── ClientStarted.php
@@ -194,6 +195,7 @@ src/
 │   └── Pending*.php            # Python版の*Apiと同様の中間クラス
 ├── Support/                     # 分類しにくいヘルパークラス
 │   ├── Attachment.php
+│   ├── PermissionHandler.php
 │   └── PermissionRequestResultKind.php
 ├── Testing/
 │   ├── CopilotFake.php         # テスト用モック
