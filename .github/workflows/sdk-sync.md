@@ -109,7 +109,7 @@ Use this mapping table to determine which Laravel files need updates:
 |---|---|
 | `generated/rpc.ts` / `generated/rpc.py` | `src/Types/Rpc/*.php` (type classes), `src/Rpc/*.php` (RPC clients + Pending* classes) |
 | `generated/session-events.ts` | `src/Enums/SessionEventType.php`, `src/Types/SessionEvent.php` |
-| `client.ts` client methods | `src/Client.php`, `src/Contracts/CopilotClient.php` |
+| `client.ts` client methods | `src/Client.php`, `src/Contracts/CopilotClient.php`, `src/CopilotManager.php` |
 | `session.ts` session methods | `src/Session.php`, `src/Contracts/CopilotSession.php` |
 | `types.ts` type definitions | `src/Types/*.php` |
 | Protocol version changes | `src/Protocol.php` |
@@ -124,6 +124,7 @@ Follow these conventions strictly:
 - **Enums**: Use PHP 8.4 backed enums in `src/Enums/`.
 - **Contracts**: Update interfaces in `src/Contracts/` when adding public methods to Client or Session.
 - **Testing**: Update fakes in `src/Testing/` (CopilotFake, FakeSession) when Contracts change.
+- **Client options**: When `Client::__construct` `$options` keys change (added, removed, or renamed), update `CopilotManager::client()` (which builds the `$options` array) and `CopilotManager::useStdio()` (which filters allowed keys via `Arr::only()`) accordingly.
 
 ### What NOT to change
 

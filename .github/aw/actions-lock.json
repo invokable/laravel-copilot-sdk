@@ -1,9 +1,19 @@
 {
   "entries": {
+    "actions/cache/restore@v5.0.3": {
+      "repo": "actions/cache/restore",
+      "version": "v5.0.3",
+      "sha": "cdf6c1fa76f9f475f3d7449005a359c84ca0f306"
+    },
     "actions/cache/restore@v5.0.4": {
       "repo": "actions/cache/restore",
       "version": "v5.0.4",
       "sha": "668228422ae6a00e4ad889ee87cd7109ec5666a7"
+    },
+    "actions/cache/save@v5.0.3": {
+      "repo": "actions/cache/save",
+      "version": "v5.0.3",
+      "sha": "cdf6c1fa76f9f475f3d7449005a359c84ca0f306"
     },
     "actions/cache/save@v5.0.4": {
       "repo": "actions/cache/save",
@@ -34,6 +44,11 @@
       "repo": "github/gh-aw-actions/setup",
       "version": "v0.62.4",
       "sha": "e0b4815368e98f969f4e3985d8c2346f913f1bda"
+    },
+    "github/gh-aw-actions/setup@v0.62.5": {
+      "repo": "github/gh-aw-actions/setup",
+      "version": "v0.62.5",
+      "sha": "dc50be57c94373431b49d3d0927f318ac2bb5c4c"
     },
     "github/gh-aw/actions/setup@v0.62.4": {
       "repo": "github/gh-aw/actions/setup",
