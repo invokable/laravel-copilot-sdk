@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Support;
 
+use Revolution\Copilot\Enums\AttachmentType;
+
 class Attachment
 {
     public static function file(string $path, ?string $displayName = null): array
     {
         return array_filter([
-            'type' => 'file',
+            'type' => AttachmentType::FILE->value,
             'path' => $path,
             'displayName' => $displayName,
         ]);
@@ -18,7 +20,7 @@ class Attachment
     public static function directory(string $path, ?string $displayName = null): array
     {
         return array_filter([
-            'type' => 'directory',
+            'type' => AttachmentType::DIRECTORY->value,
             'path' => $path,
             'displayName' => $displayName,
         ]);
@@ -27,7 +29,7 @@ class Attachment
     public static function selection(string $filePath, string $displayName, ?array $selection = null, ?string $text = null): array
     {
         return array_filter([
-            'type' => 'selection',
+            'type' => AttachmentType::SELECTION->value,
             'filePath' => $filePath,
             'displayName' => $displayName,
             'selection' => $selection,
@@ -41,7 +43,7 @@ class Attachment
     public static function blob(string $data, string $mimeType, ?string $displayName = null): array
     {
         return array_filter([
-            'type' => 'blob',
+            'type' => AttachmentType::BLOB->value,
             'data' => $data,
             'mimeType' => $mimeType,
             'displayName' => $displayName,
