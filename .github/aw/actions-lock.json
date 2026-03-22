@@ -1,19 +1,9 @@
 {
   "entries": {
-    "actions/cache/restore@v5.0.3": {
-      "repo": "actions/cache/restore",
-      "version": "v5.0.3",
-      "sha": "cdf6c1fa76f9f475f3d7449005a359c84ca0f306"
-    },
     "actions/cache/restore@v5.0.4": {
       "repo": "actions/cache/restore",
       "version": "v5.0.4",
       "sha": "668228422ae6a00e4ad889ee87cd7109ec5666a7"
-    },
-    "actions/cache/save@v5.0.3": {
-      "repo": "actions/cache/save",
-      "version": "v5.0.3",
-      "sha": "cdf6c1fa76f9f475f3d7449005a359c84ca0f306"
     },
     "actions/cache/save@v5.0.4": {
       "repo": "actions/cache/save",
@@ -50,10 +40,10 @@
       "version": "v0.62.5",
       "sha": "dc50be57c94373431b49d3d0927f318ac2bb5c4c"
     },
-    "github/gh-aw/actions/setup@v0.62.4": {
+    "github/gh-aw/actions/setup@v0.62.5": {
       "repo": "github/gh-aw/actions/setup",
-      "version": "v0.62.4",
-      "sha": "a898ed7b8f8238a30d9c9f560813547e695cfb0a"
+      "version": "v0.62.5",
+      "sha": "48d8fdfddc8cad854ac0c70ceb573f09fb8f9c9b"
     },
     "shivammathur/setup-php@2.37.0": {
       "repo": "shivammathur/setup-php",
