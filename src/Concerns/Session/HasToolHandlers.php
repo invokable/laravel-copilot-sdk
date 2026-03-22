@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Concerns\Session;
 
 use Closure;
+use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
 use Revolution\Copilot\Types\ToolResultObject;
 use Throwable;
@@ -58,6 +59,8 @@ trait HasToolHandlers
     protected function executeToolAndRespond(string $requestId, string $toolName, ?string $toolCallId, mixed $arguments, Closure $handler, ?string $traceparent = null, ?string $tracestate = null): void
     {
         $fiber = new \Fiber(function () use ($requestId, $toolName, $toolCallId, $arguments, $handler, $traceparent, $tracestate): void {
+            $scope = TraceContext::restore($traceparent, $tracestate);
+
             try {
                 $invocation = [
                     'sessionId' => $this->sessionId,
@@ -111,6 +114,8 @@ trait HasToolHandlers
                 } catch (Throwable) {
                     // Connection lost or RPC error — nothing we can do
                 }
+            } finally {
+                TraceContext::detach($scope);
             }
         });
 

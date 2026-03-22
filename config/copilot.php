@@ -110,4 +110,27 @@ return [
     |
     */
     'permission_approve' => env('COPILOT_PERMISSION_APPROVE', 'deny-all'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | OpenTelemetry / Telemetry
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for OpenTelemetry instrumentation of the Copilot CLI process.
+    | When provided, these settings are translated into environment variables
+    | on the spawned CLI server process.
+    |
+    | Set `telemetry` to an array with any of the following keys:
+    |   - otlpEndpoint:   OTLP HTTP endpoint URL (e.g., "http://localhost:4318")
+    |   - filePath:       File path for JSON-lines trace output
+    |   - exporterType:   "otlp-http" or "file"
+    |   - sourceName:     Instrumentation scope name
+    |   - captureContent: Whether to capture message content (prompts, responses)
+    |
+    | Set to null to disable telemetry.
+    |
+    | Note: This option is ignored when 'url' is set (TCP mode).
+    |
+    */
+    'telemetry' => null,
 ];

@@ -21,6 +21,7 @@ use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Rpc\ServerRpc;
+use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Transport\TcpTransport;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
@@ -255,6 +256,7 @@ class Client implements CopilotClient
         ));
 
         $response = $this->rpcClient->request('session.create', array_filter([
+            ...TraceContext::get(),
             'sessionId' => $config['sessionId'] ?? null,
             'model' => $config['model'] ?? null,
             'reasoningEffort' => $config['reasoningEffort'] ?? null,
@@ -343,6 +345,7 @@ class Client implements CopilotClient
         ));
 
         $response = $this->rpcClient->request('session.resume', array_filter([
+            ...TraceContext::get(),
             'sessionId' => $sessionId,
             'reasoningEffort' => $config['reasoningEffort'] ?? null,
             'tools' => $toolsForRequest ?: null,

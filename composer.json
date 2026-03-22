@@ -80,6 +80,9 @@
             "@php vendor/bin/testbench serve --ansi"
         ]
     },
+    "suggest": {
+        "open-telemetry/api": "Required for automatic W3C Trace Context propagation between your app and the Copilot CLI"
+    },
     "config": {
         "allow-plugins": {
             "pestphp/pest-plugin": true

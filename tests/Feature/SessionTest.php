@@ -32,8 +32,6 @@ describe('Session', function () {
             ->with('session.send', [
                 'sessionId' => 'test-session',
                 'prompt' => 'Hello World',
-                'attachments' => null,
-                'mode' => null,
             ])
             ->once()
             ->andReturn(['messageId' => 'msg-123']);
