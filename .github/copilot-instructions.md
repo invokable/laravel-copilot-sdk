@@ -196,7 +196,8 @@ src/
 ├── Support/                     # 分類しにくいヘルパークラス
 │   ├── Attachment.php
 │   ├── PermissionHandler.php
-│   └── PermissionRequestResultKind.php
+│   ├── PermissionRequestResultKind.php
+│   └── TraceContext.php
 ├── Testing/
 │   ├── CopilotFake.php         # テスト用モック
 │   ├── FakeSession.php
