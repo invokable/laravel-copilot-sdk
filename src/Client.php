@@ -251,11 +251,25 @@ class Client implements CopilotClient
         ], fn ($v) => $v !== null), $tools);
 
         $commands = $config['commands'] ?? [];
-        $commandsForRequest = array_map(fn ($cmd) => array_filter([
-            'name' => $cmd['name'],
-            'description' => $cmd['description'] ?? null,
-        ], fn ($v) => $v !== null), $commands) ?: null;
+        $commandsForRequest = array_map(function ($cmd) {
+            if (is_object($cmd)) {
+                if (method_exists($cmd, 'toArray')) {
+                    $cmd = $cmd->toArray();
+                } elseif ($cmd instanceof \JsonSerializable) {
+                    $cmd = $cmd->jsonSerialize();
+                }
+            }
 
+            if (! is_array($cmd) || ! isset($cmd['name'])) {
+                return null;
+            }
+
+            return array_filter([
+                'name' => $cmd['name'],
+                'description' => $cmd['description'] ?? null,
+            ], fn ($v) => $v !== null);
+        }, $commands);
+        $commandsForRequest = array_values(array_filter($commandsForRequest)) ?: null;
         $hooks = $config['hooks'] ?? null;
         $hasHooks = $hooks !== null && ! empty(array_filter(
             is_array($hooks) ? $hooks : $hooks->toArray(),
