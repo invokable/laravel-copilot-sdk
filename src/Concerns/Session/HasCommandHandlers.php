@@ -35,9 +35,23 @@ trait HasCommandHandlers
         $this->commandHandlers = [];
 
         foreach ($commands as $command) {
-            if (isset($command['name'], $command['handler'])) {
-                $this->commandHandlers[$command['name']] = $command['handler'];
+            if (! is_array($command)) {
+                continue;
             }
+
+            if (! isset($command['name'], $command['handler'])) {
+                continue;
+            }
+
+            if (! is_string($command['name'])) {
+                continue;
+            }
+
+            if (! $command['handler'] instanceof Closure) {
+                continue;
+            }
+
+            $this->commandHandlers[$command['name']] = $command['handler'];
         }
     }
 
