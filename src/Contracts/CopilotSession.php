@@ -10,6 +10,9 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\SessionRpc;
+use Revolution\Copilot\Types\InputOptions;
+use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
+use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
@@ -26,6 +29,44 @@ interface CopilotSession
      * Typed session-scoped RPC methods.
      */
     public function rpc(): SessionRpc;
+
+    /**
+     * Get the host capabilities for this session.
+     */
+    public function capabilities(): SessionCapabilities;
+
+    /**
+     * Send a raw elicitation request to the CLI host.
+     *
+     * @throws \RuntimeException if the host does not support elicitation
+     */
+    public function elicitation(string $message, array $requestedSchema): SessionUiElicitationResult;
+
+    /**
+     * Show a confirmation dialog and return the user's boolean answer.
+     * Returns `false` if the user declines or cancels.
+     *
+     * @throws \RuntimeException if the host does not support elicitation
+     */
+    public function confirm(string $message): bool;
+
+    /**
+     * Show a selection dialog with the given options.
+     * Returns the selected value, or `null` if the user declines/cancels.
+     *
+     * @param  string[]  $options
+     *
+     * @throws \RuntimeException if the host does not support elicitation
+     */
+    public function select(string $message, array $options): ?string;
+
+    /**
+     * Show a text input dialog.
+     * Returns the entered text, or `null` if the user declines/cancels.
+     *
+     * @throws \RuntimeException if the host does not support elicitation
+     */
+    public function input(string $message, InputOptions|array|null $options = null): ?string;
 
     /**
      * Switch the model for this session.

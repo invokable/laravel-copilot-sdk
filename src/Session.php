@@ -9,10 +9,12 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
 use Revolt\EventLoop;
+use Revolution\Copilot\Concerns\Session\HasCommandHandlers;
 use Revolution\Copilot\Concerns\Session\HasDeprecated;
 use Revolution\Copilot\Concerns\Session\HasHooks;
 use Revolution\Copilot\Concerns\Session\HasPermissionHandler;
 use Revolution\Copilot\Concerns\Session\HasToolHandlers;
+use Revolution\Copilot\Concerns\Session\HasUiApi;
 use Revolution\Copilot\Concerns\Session\HasUserInputHandler;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\LogLevel;
@@ -38,10 +40,12 @@ use Throwable;
 class Session implements CopilotSession
 {
     use Conditionable;
+    use HasCommandHandlers;
     use HasDeprecated;
     use HasHooks;
     use HasPermissionHandler;
     use HasToolHandlers;
+    use HasUiApi;
     use HasUserInputHandler;
     use Macroable;
 
@@ -513,6 +517,17 @@ class Session implements CopilotSession
             }
 
             $this->executePermissionAndRespond($requestId, $permissionRequest);
+        } elseif ($event->is(SessionEventType::COMMAND_EXECUTE)) {
+            $requestId = $event->data['requestId'] ?? null;
+            $commandName = $event->data['commandName'] ?? null;
+            $command = $event->data['command'] ?? '';
+            $args = $event->data['args'] ?? '';
+
+            if ($requestId === null || $commandName === null) {
+                return;
+            }
+
+            $this->executeCommandAndRespond($requestId, $commandName, $command, $args);
         }
     }
 
@@ -557,9 +572,11 @@ class Session implements CopilotSession
         $this->eventHandlers = [];
         $this->typedEventHandlers = [];
         $this->toolHandlers = [];
+        $this->commandHandlers = [];
         $this->permissionHandler = null;
         $this->userInputHandler = null;
         $this->hooks = null;
+        $this->capabilities = new \Revolution\Copilot\Types\SessionCapabilities();
     }
 
     /**

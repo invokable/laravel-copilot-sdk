@@ -250,6 +250,12 @@ class Client implements CopilotClient
             'skipPermission' => $tool['skipPermission'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
+        $commands = $config['commands'] ?? [];
+        $commandsForRequest = array_map(fn ($cmd) => array_filter([
+            'name' => $cmd['name'],
+            'description' => $cmd['description'] ?? null,
+        ], fn ($v) => $v !== null), $commands) ?: null;
+
         $hooks = $config['hooks'] ?? null;
         $hasHooks = $hooks !== null && ! empty(array_filter(
             is_array($hooks) ? $hooks : $hooks->toArray(),
@@ -261,6 +267,7 @@ class Client implements CopilotClient
             'model' => $config['model'] ?? null,
             'reasoningEffort' => $config['reasoningEffort'] ?? null,
             'tools' => $toolsForRequest ?: null,
+            'commands' => $commandsForRequest,
             'systemMessage' => $config['systemMessage'] ?? null,
             'availableTools' => $config['availableTools'] ?? null,
             'excludedTools' => $config['excludedTools'] ?? null,
@@ -282,6 +289,7 @@ class Client implements CopilotClient
 
         $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
         $workspacePath = $response['workspacePath'] ?? null;
+        $capabilities = $response['capabilities'] ?? null;
 
         $session = app(Session::class, [
             'sessionId' => $sessionId,
@@ -289,6 +297,8 @@ class Client implements CopilotClient
             'workspacePath' => $workspacePath,
         ]);
         $session->registerTools($tools);
+        $session->registerCommands($commands);
+        $session->setCapabilities($capabilities);
         $session->registerPermissionHandler($config['onPermissionRequest']);
 
         if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
@@ -339,6 +349,12 @@ class Client implements CopilotClient
             'skipPermission' => $tool['skipPermission'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
+        $commands = $config['commands'] ?? [];
+        $commandsForRequest = array_map(fn ($cmd) => array_filter([
+            'name' => $cmd['name'],
+            'description' => $cmd['description'] ?? null,
+        ], fn ($v) => $v !== null), $commands) ?: null;
+
         $hooks = $config['hooks'] ?? null;
         $hasHooks = $hooks !== null && ! empty(array_filter(
             is_array($hooks) ? $hooks : $hooks->toArray(),
@@ -349,6 +365,7 @@ class Client implements CopilotClient
             'sessionId' => $sessionId,
             'reasoningEffort' => $config['reasoningEffort'] ?? null,
             'tools' => $toolsForRequest ?: null,
+            'commands' => $commandsForRequest,
             'provider' => $config['provider'] ?? null,
             'requestPermission' => true,
             'requestUserInput' => isset($config['onUserInputRequest']),
@@ -366,6 +383,7 @@ class Client implements CopilotClient
 
         $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');
         $workspacePath = $response['workspacePath'] ?? null;
+        $capabilities = $response['capabilities'] ?? null;
 
         $session = app(Session::class, [
             'sessionId' => $resumedSessionId,
@@ -373,6 +391,8 @@ class Client implements CopilotClient
             'workspacePath' => $workspacePath,
         ]);
         $session->registerTools($tools);
+        $session->registerCommands($commands);
+        $session->setCapabilities($capabilities);
         $session->registerPermissionHandler($config['onPermissionRequest']);
 
         if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {

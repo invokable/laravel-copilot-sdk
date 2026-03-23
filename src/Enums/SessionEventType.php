@@ -63,8 +63,10 @@ enum SessionEventType: string
     case EXTERNAL_TOOL_COMPLETED = 'external_tool.completed';
 
     // Command events (protocol v3+)
+    case COMMAND_EXECUTE = 'command.execute';
     case COMMAND_QUEUED = 'command.queued';
     case COMMAND_COMPLETED = 'command.completed';
+    case COMMANDS_CHANGED = 'commands.changed';
 
     // Exit plan mode events (protocol v3+)
     case EXIT_PLAN_MODE_REQUESTED = 'exit_plan_mode.requested';
