@@ -35,6 +35,14 @@ trait HasCommandHandlers
         $this->commandHandlers = [];
 
         foreach ($commands as $command) {
+            if (is_object($command)) {
+                if (method_exists($command, 'toArray')) {
+                    $command = $command->toArray();
+                } elseif ($command instanceof \JsonSerializable) {
+                    $command = $command->jsonSerialize();
+                }
+            }
+
             if (! is_array($command)) {
                 continue;
             }
@@ -108,10 +116,11 @@ trait HasCommandHandlers
                 );
             } catch (Throwable $e) {
                 try {
+                    logger()->error('Command handler failed', ['command' => $commandName, 'exception' => $e]);
                     $this->rpc()->commands()->handlePendingCommand(
                         new SessionCommandsHandlePendingCommandParams(
                             requestId: $requestId,
-                            error: $e->getMessage(),
+                            error: 'Command failed',
                         )
                     );
                 } catch (Throwable) {
