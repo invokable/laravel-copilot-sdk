@@ -196,6 +196,8 @@ describe('Client', function () {
 
         $mockSession = Mockery::mock(Session::class);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with([]);
+        $mockSession->shouldReceive('setCapabilities')->once();
         $mockSession->shouldReceive('registerPermissionHandler')->once();
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
@@ -318,6 +320,8 @@ describe('Client', function () {
 
         $mockSession = Mockery::mock(Session::class);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with([]);
+        $mockSession->shouldReceive('setCapabilities')->once();
         $mockSession->shouldReceive('registerPermissionHandler')->once();
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
