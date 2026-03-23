@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Concerns\Session;
 
 use Closure;
+use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\CommandContext;
+use Revolution\Copilot\Types\CommandDefinition;
 use Revolution\Copilot\Types\Rpc\SessionCommandsHandlePendingCommandParams;
 use Throwable;
 
@@ -26,7 +28,7 @@ trait HasCommandHandlers
     /**
      * Register command handlers for this session.
      *
-     * @param  array<array{name: string, handler: Closure}>  $commands
+     * @param  array<array{name: string, handler: Closure}|CommandDefinition>  $commands
      *
      * @internal
      */
@@ -35,12 +37,8 @@ trait HasCommandHandlers
         $this->commandHandlers = [];
 
         foreach ($commands as $command) {
-            if (is_object($command)) {
-                if (method_exists($command, 'toArray')) {
-                    $command = $command->toArray();
-                } elseif ($command instanceof \JsonSerializable) {
-                    $command = $command->jsonSerialize();
-                }
+            if ($command instanceof Arrayable) {
+                $command = $command->toArray();
             }
 
             if (! is_array($command)) {
@@ -90,7 +88,7 @@ trait HasCommandHandlers
                         new SessionCommandsHandlePendingCommandParams(
                             requestId: $requestId,
                             error: "Unknown command: {$commandName}",
-                        )
+                        ),
                     );
                 } catch (Throwable) {
                     // Connection lost or RPC error
@@ -112,7 +110,7 @@ trait HasCommandHandlers
                 $this->rpc()->commands()->handlePendingCommand(
                     new SessionCommandsHandlePendingCommandParams(
                         requestId: $requestId,
-                    )
+                    ),
                 );
             } catch (Throwable $e) {
                 try {
@@ -121,7 +119,7 @@ trait HasCommandHandlers
                         new SessionCommandsHandlePendingCommandParams(
                             requestId: $requestId,
                             error: 'Command failed',
-                        )
+                        ),
                     );
                 } catch (Throwable) {
                     // Connection lost or RPC error

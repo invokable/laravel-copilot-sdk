@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use Revolution\Copilot\Concerns\Client\HandlesServerRequests;
@@ -23,6 +24,7 @@ use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Transport\TcpTransport;
+use Revolution\Copilot\Types\CommandDefinition;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\ResumeSessionConfig;
@@ -413,17 +415,14 @@ class Client implements CopilotClient
      * Accepts plain arrays, objects with toArray(), or JsonSerializable objects.
      * Entries missing a 'name' key are filtered out.
      *
+     * @param  array<array{name: string, handler: Closure}|CommandDefinition>  $commands
      * @return list<array{name: string, description?: string}>|null
      */
     private function normalizeCommandsForRequest(array $commands): ?array
     {
         $normalized = array_map(function ($cmd) {
-            if (is_object($cmd)) {
-                if (method_exists($cmd, 'toArray')) {
-                    $cmd = $cmd->toArray();
-                } elseif ($cmd instanceof \JsonSerializable) {
-                    $cmd = $cmd->jsonSerialize();
-                }
+            if ($cmd instanceof Arrayable) {
+                $cmd = $cmd->toArray();
             }
 
             if (! is_array($cmd) || ! isset($cmd['name']) || ! is_string($cmd['name'])) {
