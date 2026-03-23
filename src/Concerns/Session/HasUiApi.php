@@ -29,7 +29,7 @@ trait HasUiApi
     {
         $this->capabilities = $capabilities !== null
             ? SessionCapabilities::fromArray($capabilities)
-            : new SessionCapabilities();
+            : new SessionCapabilities;
     }
 
     /**
@@ -37,7 +37,7 @@ trait HasUiApi
      */
     public function capabilities(): SessionCapabilities
     {
-        return $this->capabilities ?? new SessionCapabilities();
+        return $this->capabilities ?? new SessionCapabilities;
     }
 
     /**

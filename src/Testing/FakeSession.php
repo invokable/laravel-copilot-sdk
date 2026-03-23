@@ -57,7 +57,7 @@ class FakeSession implements CopilotSession
 
     public function capabilities(): SessionCapabilities
     {
-        return new SessionCapabilities();
+        return new SessionCapabilities;
     }
 
     public function elicitation(string $message, array $requestedSchema): SessionUiElicitationResult
