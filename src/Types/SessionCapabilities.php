@@ -23,7 +23,7 @@ readonly class SessionCapabilities implements Arrayable
      */
     public function supportsElicitation(): bool
     {
-        return $this->ui['elicitation'] ?? false;
+        return (bool) ($this->ui['elicitation'] ?? false);
     }
 
     public static function fromArray(array $data): self

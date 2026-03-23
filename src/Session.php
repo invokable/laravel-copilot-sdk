@@ -31,6 +31,7 @@ use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Types\Rpc\SessionLogParams;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
+use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
 use Throwable;
 
@@ -576,7 +577,7 @@ class Session implements CopilotSession
         $this->permissionHandler = null;
         $this->userInputHandler = null;
         $this->hooks = null;
-        $this->capabilities = new \Revolution\Copilot\Types\SessionCapabilities();
+        $this->capabilities = new SessionCapabilities;
     }
 
     /**

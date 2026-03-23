@@ -426,14 +426,26 @@ class Client implements CopilotClient
                 }
             }
 
-            if (! is_array($cmd) || ! isset($cmd['name'])) {
+            if (! is_array($cmd) || ! isset($cmd['name']) || ! is_string($cmd['name'])) {
                 return null;
             }
 
-            return array_filter([
-                'name' => $cmd['name'],
-                'description' => $cmd['description'] ?? null,
-            ], fn ($v) => $v !== null);
+            $name = trim($cmd['name']);
+            if ($name === '') {
+                return null;
+            }
+
+            $description = null;
+            if (array_key_exists('description', $cmd) && is_string($cmd['description'])) {
+                $description = $cmd['description'];
+            }
+
+            $result = ['name' => $name];
+            if ($description !== null) {
+                $result['description'] = $description;
+            }
+
+            return $result;
         }, $commands);
 
         return array_values(array_filter($normalized)) ?: null;
