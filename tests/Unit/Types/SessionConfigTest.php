@@ -288,4 +288,43 @@ describe('SessionConfig', function () {
 
         expect($config->toArray())->not->toHaveKey('agent');
     });
+
+    it('accepts commands parameter', function () {
+        $handler = fn () => null;
+        $commands = [
+            ['name' => 'deploy', 'handler' => $handler, 'description' => 'Deploy the app'],
+        ];
+
+        $config = new SessionConfig(commands: $commands);
+
+        expect($config->commands)->toBe($commands);
+    });
+
+    it('includes commands in toArray', function () {
+        $handler = fn () => null;
+        $config = new SessionConfig(commands: [
+            ['name' => 'deploy', 'handler' => $handler],
+        ]);
+
+        expect($config->toArray()['commands'])->toHaveCount(1)
+            ->and($config->toArray()['commands'][0]['name'])->toBe('deploy');
+    });
+
+    it('can be created from array with commands', function () {
+        $handler = fn () => null;
+        $config = SessionConfig::fromArray([
+            'commands' => [
+                ['name' => 'test', 'handler' => $handler],
+            ],
+        ]);
+
+        expect($config->commands)->toHaveCount(1)
+            ->and($config->commands[0]['name'])->toBe('test');
+    });
+
+    it('excludes commands from toArray when null', function () {
+        $config = new SessionConfig;
+
+        expect($config->toArray())->not->toHaveKey('commands');
+    });
 });

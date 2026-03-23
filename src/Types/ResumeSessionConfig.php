@@ -24,6 +24,9 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?string  $configDir  Override the default configuration directory location.
      *                              When specified, the session will use this directory for storing config and state.
      * @param  ?array  $tools  Tools exposed to the CLI server
+     * @param  ?array  $commands  Slash commands registered for this session.
+     *                            When the CLI has a TUI, each command appears as `/name` for the user to invoke.
+     *                            Each entry should have 'name', 'handler', and optionally 'description'.
      * @param  SystemMessageConfig|array|null  $systemMessage  System message configuration. Controls how the system prompt is constructed.
      * @param  ?array  $availableTools  List of tool names to allow. When specified, only these tools will be available.
      *                                  Takes precedence over excludedTools.
@@ -64,6 +67,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ReasoningEffort|string|null $reasoningEffort = null,
         public ?string $configDir = null,
         public ?array $tools = null,
+        public ?array $commands = null,
         public SystemMessageConfig|array|null $systemMessage = null,
         public ?array $availableTools = null,
         public ?array $excludedTools = null,
@@ -122,6 +126,7 @@ readonly class ResumeSessionConfig implements Arrayable
             reasoningEffort: $data['reasoningEffort'] ?? null,
             configDir: $data['configDir'] ?? null,
             tools: $data['tools'] ?? null,
+            commands: $data['commands'] ?? null,
             systemMessage: $systemMessage,
             availableTools: $data['availableTools'] ?? null,
             excludedTools: $data['excludedTools'] ?? null,
@@ -173,6 +178,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'reasoningEffort' => $reasoningEffort,
             'configDir' => $this->configDir,
             'tools' => $this->tools,
+            'commands' => $this->commands,
             'systemMessage' => $systemMessage,
             'availableTools' => $this->availableTools,
             'excludedTools' => $this->excludedTools,

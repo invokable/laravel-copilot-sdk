@@ -13,6 +13,7 @@ use Revolution\Copilot\Protocol;
 use Revolution\Copilot\Session;
 use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Transport\StdioTransport;
+use Revolution\Copilot\Types\CommandDefinition;
 use Revolution\Copilot\Types\ModelInfo;
 
 beforeEach(function () {
@@ -196,6 +197,8 @@ describe('Client', function () {
 
         $mockSession = Mockery::mock(Session::class);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with([]);
+        $mockSession->shouldReceive('setCapabilities')->once();
         $mockSession->shouldReceive('registerPermissionHandler')->once();
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
@@ -212,6 +215,220 @@ describe('Client', function () {
 
         fclose($stdin);
         fclose($stdout);
+    });
+
+    it('createSession sends only name/description for array commands in RPC request', function () {
+        $handler = fn ($ctx) => 'result';
+        $commands = [
+            [
+                'name' => 'test',
+                'description' => 'Test command',
+                'handler' => $handler,
+            ],
+        ];
+
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('status.get')
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.create', Mockery::on(function ($params) {
+                $cmds = $params['commands'] ?? null;
+
+                return is_array($cmds)
+                    && count($cmds) === 1
+                    && $cmds[0] === ['name' => 'test', 'description' => 'Test command']
+                    && ! array_key_exists('handler', $cmds[0]);
+            }))
+            ->once()
+            ->andReturn(['sessionId' => 'test-session-123']);
+
+        $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with($commands);
+        $mockSession->shouldReceive('setCapabilities')->once()->with(null);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+        $this->app->bind(Session::class, fn () => $mockSession);
+
+        $client = new Client;
+        $client->start();
+        $session = $client->createSession([
+            'commands' => $commands,
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
+
+        expect($session)->toBe($mockSession);
+    });
+
+    it('createSession with CommandDefinition objects sends only name/description to RPC and passes originals to registerCommands', function () {
+        $handler = fn ($ctx) => 'result';
+        $commands = [
+            new CommandDefinition(
+                name: 'deploy',
+                handler: $handler,
+                description: 'Deploy the application',
+            ),
+        ];
+
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('status.get')
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.create', Mockery::on(function ($params) {
+                $cmds = $params['commands'] ?? null;
+
+                return is_array($cmds)
+                    && count($cmds) === 1
+                    && $cmds[0] === ['name' => 'deploy', 'description' => 'Deploy the application']
+                    && ! array_key_exists('handler', $cmds[0]);
+            }))
+            ->once()
+            ->andReturn(['sessionId' => 'test-session-123']);
+
+        $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with($commands);
+        $mockSession->shouldReceive('setCapabilities')->once()->with(null);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+        $this->app->bind(Session::class, fn () => $mockSession);
+
+        $client = new Client;
+        $client->start();
+        $session = $client->createSession([
+            'commands' => $commands,
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
+
+        expect($session)->toBe($mockSession);
+    });
+
+    it('createSession passes capabilities payload from response to setCapabilities', function () {
+        $capabilitiesPayload = ['ui' => ['elicitation' => true]];
+
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('status.get')
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.create', Mockery::any())
+            ->once()
+            ->andReturn([
+                'sessionId' => 'test-session-123',
+                'capabilities' => $capabilitiesPayload,
+            ]);
+
+        $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with([]);
+        $mockSession->shouldReceive('setCapabilities')->once()->with($capabilitiesPayload);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+        $this->app->bind(Session::class, fn () => $mockSession);
+
+        $client = new Client;
+        $client->start();
+        $session = $client->createSession([
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
+
+        expect($session)->toBe($mockSession);
+    });
+
+    it('resumeSession sends only name/description for commands in RPC request', function () {
+        Event::fake();
+
+        $handler = fn ($ctx) => 'result';
+        $commands = [
+            [
+                'name' => 'rollback',
+                'description' => 'Rollback last deployment',
+                'handler' => $handler,
+            ],
+        ];
+
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('status.get')
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.resume', Mockery::on(function ($params) {
+                $cmds = $params['commands'] ?? null;
+
+                return is_array($cmds)
+                    && count($cmds) === 1
+                    && $cmds[0] === ['name' => 'rollback', 'description' => 'Rollback last deployment']
+                    && ! array_key_exists('handler', $cmds[0]);
+            }))
+            ->once()
+            ->andReturn(['sessionId' => 'test-session-123']);
+
+        $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with($commands);
+        $mockSession->shouldReceive('setCapabilities')->once()->with(null);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+        $this->app->bind(Session::class, fn () => $mockSession);
+
+        $client = new Client;
+        $client->start();
+        $session = $client->resumeSession('test-session-123', [
+            'commands' => $commands,
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
+
+        expect($session)->toBe($mockSession);
     });
 
     it('throws when createSession called without connection', function () {
@@ -318,6 +535,8 @@ describe('Client', function () {
 
         $mockSession = Mockery::mock(Session::class);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with([]);
+        $mockSession->shouldReceive('setCapabilities')->once();
         $mockSession->shouldReceive('registerPermissionHandler')->once();
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);

@@ -6,12 +6,16 @@ namespace Revolution\Copilot\Testing;
 
 use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
+use Revolution\Copilot\Types\InputOptions;
+use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
+use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
@@ -49,6 +53,31 @@ class FakeSession implements CopilotSession
             ),
             $this->sessionId,
         );
+    }
+
+    public function capabilities(): SessionCapabilities
+    {
+        return new SessionCapabilities;
+    }
+
+    public function elicitation(string $message, array $requestedSchema): SessionUiElicitationResult
+    {
+        return new SessionUiElicitationResult(action: ElicitationAction::CANCEL);
+    }
+
+    public function confirm(string $message): bool
+    {
+        return false;
+    }
+
+    public function select(string $message, array $options): ?string
+    {
+        return null;
+    }
+
+    public function input(string $message, InputOptions|array|null $options = null): ?string
+    {
+        return null;
     }
 
     public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null): void

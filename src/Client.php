@@ -250,6 +250,8 @@ class Client implements CopilotClient
             'skipPermission' => $tool['skipPermission'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
+        $commands = $config['commands'] ?? [];
+        $commandsForRequest = $this->normalizeCommandsForRequest($commands);
         $hooks = $config['hooks'] ?? null;
         $hasHooks = $hooks !== null && ! empty(array_filter(
             is_array($hooks) ? $hooks : $hooks->toArray(),
@@ -261,6 +263,7 @@ class Client implements CopilotClient
             'model' => $config['model'] ?? null,
             'reasoningEffort' => $config['reasoningEffort'] ?? null,
             'tools' => $toolsForRequest ?: null,
+            'commands' => $commandsForRequest,
             'systemMessage' => $config['systemMessage'] ?? null,
             'availableTools' => $config['availableTools'] ?? null,
             'excludedTools' => $config['excludedTools'] ?? null,
@@ -282,6 +285,7 @@ class Client implements CopilotClient
 
         $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
         $workspacePath = $response['workspacePath'] ?? null;
+        $capabilities = $response['capabilities'] ?? null;
 
         $session = app(Session::class, [
             'sessionId' => $sessionId,
@@ -289,6 +293,8 @@ class Client implements CopilotClient
             'workspacePath' => $workspacePath,
         ]);
         $session->registerTools($tools);
+        $session->registerCommands($commands);
+        $session->setCapabilities($capabilities);
         $session->registerPermissionHandler($config['onPermissionRequest']);
 
         if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
@@ -339,6 +345,9 @@ class Client implements CopilotClient
             'skipPermission' => $tool['skipPermission'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
+        $commands = $config['commands'] ?? [];
+        $commandsForRequest = $this->normalizeCommandsForRequest($commands);
+
         $hooks = $config['hooks'] ?? null;
         $hasHooks = $hooks !== null && ! empty(array_filter(
             is_array($hooks) ? $hooks : $hooks->toArray(),
@@ -349,6 +358,7 @@ class Client implements CopilotClient
             'sessionId' => $sessionId,
             'reasoningEffort' => $config['reasoningEffort'] ?? null,
             'tools' => $toolsForRequest ?: null,
+            'commands' => $commandsForRequest,
             'provider' => $config['provider'] ?? null,
             'requestPermission' => true,
             'requestUserInput' => isset($config['onUserInputRequest']),
@@ -366,6 +376,7 @@ class Client implements CopilotClient
 
         $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');
         $workspacePath = $response['workspacePath'] ?? null;
+        $capabilities = $response['capabilities'] ?? null;
 
         $session = app(Session::class, [
             'sessionId' => $resumedSessionId,
@@ -373,6 +384,8 @@ class Client implements CopilotClient
             'workspacePath' => $workspacePath,
         ]);
         $session->registerTools($tools);
+        $session->registerCommands($commands);
+        $session->setCapabilities($capabilities);
         $session->registerPermissionHandler($config['onPermissionRequest']);
 
         if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
@@ -392,6 +405,50 @@ class Client implements CopilotClient
         ResumeSession::dispatch($session);
 
         return $session;
+    }
+
+    /**
+     * Normalize a commands array into the format expected by the JSON-RPC request.
+     *
+     * Accepts plain arrays, objects with toArray(), or JsonSerializable objects.
+     * Entries missing a 'name' key are filtered out.
+     *
+     * @return list<array{name: string, description?: string}>|null
+     */
+    private function normalizeCommandsForRequest(array $commands): ?array
+    {
+        $normalized = array_map(function ($cmd) {
+            if (is_object($cmd)) {
+                if (method_exists($cmd, 'toArray')) {
+                    $cmd = $cmd->toArray();
+                } elseif ($cmd instanceof \JsonSerializable) {
+                    $cmd = $cmd->jsonSerialize();
+                }
+            }
+
+            if (! is_array($cmd) || ! isset($cmd['name']) || ! is_string($cmd['name'])) {
+                return null;
+            }
+
+            $name = trim($cmd['name']);
+            if ($name === '') {
+                return null;
+            }
+
+            $description = null;
+            if (array_key_exists('description', $cmd) && is_string($cmd['description'])) {
+                $description = $cmd['description'];
+            }
+
+            $result = ['name' => $name];
+            if ($description !== null) {
+                $result['description'] = $description;
+            }
+
+            return $result;
+        }, $commands);
+
+        return array_values(array_filter($normalized)) ?: null;
     }
 
     /**
