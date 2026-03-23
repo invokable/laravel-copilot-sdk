@@ -180,10 +180,7 @@ trait HasUiApi
     protected function assertElicitation(): void
     {
         if (! $this->capabilities()->supportsElicitation()) {
-            throw new RuntimeException(
-                'Elicitation is not supported by the host. '
-                .'Check session.capabilities()->supportsElicitation() before calling UI methods.',
-            );
+            throw new RuntimeException('Elicitation is not supported by the host');
         }
     }
 }

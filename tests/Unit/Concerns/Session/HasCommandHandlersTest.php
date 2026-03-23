@@ -93,4 +93,20 @@ describe('HasCommandHandlers', function () {
 
         expect($session->getCommandHandler('deploy'))->not->toBeNull();
     });
+
+    it('accepts CommandDefinition objects directly', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient);
+
+        $handler = fn (CommandContext $ctx) => null;
+        $def = new CommandDefinition(
+            name: 'deploy',
+            handler: $handler,
+            description: 'Deploy the app',
+        );
+
+        $session->registerCommands([$def]);
+
+        expect($session->getCommandHandler('deploy'))->toBe($handler);
+    });
 });
