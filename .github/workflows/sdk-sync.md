@@ -150,15 +150,77 @@ Follow these conventions strictly:
    - Proper method in `ServerRpc.php` or `SessionRpc.php`
 5. For each new enum value, add the case to the appropriate PHP enum.
 
-## Step 5: Validate
+## Step 5: Add Tests
+
+For every new or changed class implemented in Step 4, add or update corresponding Pest tests.
+
+### Test placement rules
+
+| Source location | Test location |
+|---|---|
+| `src/Types/Rpc/*.php` | `tests/Unit/Types/Rpc/*Test.php` |
+| `src/Types/*.php` | `tests/Unit/Types/*Test.php` |
+| `src/Rpc/*.php` | `tests/Unit/Rpc/*Test.php` |
+| `src/Enums/*.php` | `tests/Unit/Enums/*Test.php` |
+| `src/Support/*.php` | `tests/Unit/Support/*Test.php` |
+
+### Guidelines
+
+- Use Pest `describe()`/`it()` syntax consistently.
+- Use `expect()` for all assertions — never use PHPUnit-style `$this->assert*()`.
+- All test files must start with `declare(strict_types=1);`.
+- For `readonly class` types with `fromArray()`/`toArray()`:
+  - Test creation with all fields populated.
+  - Test creation with minimal/default values (empty array).
+  - Test `toArray()` roundtrip.
+  - Test handling of optional/nullable fields.
+- For enum classes: test all new cases exist and that `from()`/`tryFrom()` behave correctly.
+- For new RPC `Pending*` classes: test that calling the method returns the expected result type.
+- Study existing test files in `tests/Unit/` that are similar to the target before writing new ones.
+
+### Example test structure
+
+```php
+<?php
+
+declare(strict_types=1);
+
+use Revolution\Copilot\Types\Rpc\SomeType;
+
+describe('SomeType', function () {
+    it('can be created from array with all fields', function () {
+        $data = SomeType::fromArray([
+            'field1' => 'value1',
+            'field2' => true,
+        ]);
+
+        expect($data->field1)->toBe('value1')
+            ->and($data->field2)->toBeTrue();
+    });
+
+    it('handles default values', function () {
+        $data = SomeType::fromArray([]);
+
+        expect($data->field1)->toBeNull()
+            ->and($data->field2)->toBeFalse();
+    });
+
+    it('converts to array', function () {
+        $data = SomeType::fromArray(['field1' => 'value1']);
+
+        expect($data->toArray())->toHaveKey('field1', 'value1');
+    });
+});
+```
+
+## Step 6: Validate
 
 1. Run the test suite: `composer run test`
 2. Run the linter: `composer run lint`
 3. If tests fail due to your changes, fix them.
 4. If existing tests need updating for new behavior, update them.
-5. Add new tests for significant new functionality in the `tests/` directory.
 
-## Step 6: Update Documentation
+## Step 7: Update Documentation
 
 Review the changes implemented in Step 4 and update relevant documentation files:
 
@@ -196,7 +258,7 @@ Update skills for Laravel Boost if necessary.
 - If a new feature has no corresponding doc file, skip (do not create new doc files in this workflow).
 - Do not rewrite sections unrelated to the synced changes.
 
-## Step 7: Save Sync State
+## Step 8: Save Sync State
 
 Write the sync state to cache-memory so future runs know what was processed:
 
@@ -210,7 +272,7 @@ Write the sync state to cache-memory so future runs know what was processed:
 
 Save this as `sdk-sync-state.json` in cache-memory.
 
-## Step 8: Create Pull Request
+## Step 9: Create Pull Request
 
 Create a draft PR with:
 - **Title**: A concise description of the sync (e.g., "Sync with copilot-sdk: add new RPC methods for model switching")
