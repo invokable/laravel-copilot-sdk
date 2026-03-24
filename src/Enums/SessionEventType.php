@@ -30,6 +30,11 @@ enum SessionEventType: string
     case SESSION_COMPACTION_START = 'session.compaction_start';
     case SESSION_COMPACTION_COMPLETE = 'session.compaction_complete';
     case SESSION_CONTEXT_CHANGED = 'session.context_changed';
+    case SESSION_CUSTOM_AGENTS_UPDATED = 'session.custom_agents_updated';
+    case SESSION_EXTENSIONS_LOADED = 'session.extensions_loaded';
+    case SESSION_MCP_SERVERS_LOADED = 'session.mcp_servers_loaded';
+    case SESSION_MCP_SERVER_STATUS_CHANGED = 'session.mcp_server_status_changed';
+    case SESSION_SKILLS_LOADED = 'session.skills_loaded';
     case SESSION_TASK_COMPLETE = 'session.task_complete';
     case SESSION_TOOLS_UPDATED = 'session.tools_updated';
 
