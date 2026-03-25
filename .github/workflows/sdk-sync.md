@@ -125,6 +125,7 @@ Follow these conventions strictly:
 - **Contracts**: Update interfaces in `src/Contracts/` when adding public methods to Client or Session.
 - **Testing**: Update fakes in `src/Testing/` (CopilotFake, FakeSession) when Contracts change.
 - **Client options**: When `Client::__construct` `$options` keys change (added, removed, or renamed), update `CopilotManager::client()` (which builds the `$options` array) and `CopilotManager::useStdio()` (which filters allowed keys via `Arr::only()`) accordingly.
+- **Session event `data` changes**: When `session-events.ts` changes only the `data` shape (fields inside each event's data payload), **skip those changes**. In the Laravel implementation, `SessionEvent::$data` is a generic `array` and all data fields are accessed dynamically (e.g., `$event->content()`, `$event->data('key')`), so upstream `data` structure changes require no code updates. Only sync changes to event **types** (new/removed/renamed event kinds) or **top-level fields** (`id`, `timestamp`, `parentId`, `type`, `ephemeral`).
 
 ### What NOT to change
 
