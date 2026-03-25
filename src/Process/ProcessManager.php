@@ -145,6 +145,11 @@ class ProcessManager
      */
     protected function startProcess(): void
     {
+        // Resolve CLI path: explicit > COPILOT_CLI_PATH env var > ExecutableFinder
+        if (empty($this->cliPath)) {
+            $this->cliPath = ($this->env ?? [])['COPILOT_CLI_PATH'] ?? null;
+        }
+
         if (empty($this->cliPath)) {
             $this->cliPath = (new ExecutableFinder)->find(name: 'copilot');
         }
