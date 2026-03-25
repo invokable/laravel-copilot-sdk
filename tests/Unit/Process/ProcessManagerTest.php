@@ -4,6 +4,43 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Process\ProcessManager;
 
+describe('ProcessManager CLI Path Resolution', function () {
+    it('resolves COPILOT_CLI_PATH from env when cliPath is null', function () {
+        $manager = new ProcessManager(
+            cliPath: null,
+            env: ['COPILOT_CLI_PATH' => '/custom/path/copilot'],
+        );
+
+        $reflection = new ReflectionClass($manager);
+        $method = $reflection->getMethod('startProcess');
+
+        // startProcess will fail because the binary doesn't exist,
+        // but we can verify cliPath was resolved from env
+        try {
+            $method->invoke($manager);
+        } catch (RuntimeException) {
+            // Expected: process won't actually start
+        } catch (ErrorException) {
+            // Expected: proc_open may fail with posix_spawn error
+        }
+
+        $property = $reflection->getProperty('cliPath');
+        expect($property->getValue($manager))->toBe('/custom/path/copilot');
+    });
+
+    it('prefers explicit cliPath over env COPILOT_CLI_PATH', function () {
+        $manager = new ProcessManager(
+            cliPath: '/explicit/copilot',
+            env: ['COPILOT_CLI_PATH' => '/env/copilot'],
+        );
+
+        $reflection = new ReflectionClass($manager);
+        $property = $reflection->getProperty('cliPath');
+
+        expect($property->getValue($manager))->toBe('/explicit/copilot');
+    });
+});
+
 describe('ProcessManager Auth Options', function () {
     it('accepts github_token option', function () {
         $manager = new ProcessManager(
