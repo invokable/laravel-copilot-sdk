@@ -28,6 +28,9 @@ engine:
   model: claude-opus-4.6
   agent: laravel-sdk-sync
 
+env:
+  COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
 checkout:
   - path: .
     submodules: recursive
