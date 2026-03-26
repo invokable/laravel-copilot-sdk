@@ -75,6 +75,11 @@ class Session implements CopilotSession
     protected ?string $waitError = null;
 
     /**
+     * Whether this session has been disconnected.
+     */
+    protected bool $disconnected = false;
+
+    /**
      * Wait state: last assistant message.
      */
     protected ?SessionEvent $waitLastAssistantMessage = null;
@@ -562,22 +567,33 @@ class Session implements CopilotSession
      * To permanently remove all session data including files on disk, use
      * deleteSession() instead.
      *
+     * This method is idempotent — calling it multiple times is safe and will
+     * not raise an error if the session is already disconnected.
+     *
      * @throws JsonRpcException
      */
     public function disconnect(): void
     {
-        $this->client->request('session.destroy', [
-            'sessionId' => $this->sessionId,
-        ]);
+        if ($this->disconnected) {
+            return;
+        }
 
-        $this->eventHandlers = [];
-        $this->typedEventHandlers = [];
-        $this->toolHandlers = [];
-        $this->commandHandlers = [];
-        $this->permissionHandler = null;
-        $this->userInputHandler = null;
-        $this->hooks = null;
-        $this->capabilities = new SessionCapabilities;
+        $this->disconnected = true;
+
+        try {
+            $this->client->request('session.destroy', [
+                'sessionId' => $this->sessionId,
+            ]);
+        } finally {
+            $this->eventHandlers = [];
+            $this->typedEventHandlers = [];
+            $this->toolHandlers = [];
+            $this->commandHandlers = [];
+            $this->permissionHandler = null;
+            $this->userInputHandler = null;
+            $this->hooks = null;
+            $this->capabilities = new SessionCapabilities;
+        }
     }
 
     /**

@@ -600,4 +600,75 @@ describe('Client', function () {
 
         expect($models)->toBe([]);
     });
+
+    it('getSessionMetadata returns metadata for existing session', function () {
+        $mockRpc = Mockery::mock(JsonRpcClient::class);
+        $mockRpc->shouldReceive('request')
+            ->with('session.getMetadata', ['sessionId' => 'session-123'])
+            ->once()
+            ->andReturn([
+                'session' => [
+                    'sessionId' => 'session-123',
+                    'startTime' => '2026-01-24T10:00:00Z',
+                    'modifiedTime' => '2026-01-24T10:30:00Z',
+                    'summary' => 'Test session',
+                    'isRemote' => false,
+                ],
+            ]);
+
+        $client = new Client;
+        $ref = new ReflectionClass($client);
+        $ref->getProperty('rpcClient')->setValue($client, $mockRpc);
+        $ref->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $metadata = $client->getSessionMetadata('session-123');
+
+        expect($metadata)->not->toBeNull()
+            ->and($metadata->sessionId)->toBe('session-123')
+            ->and($metadata->startTime)->toBe('2026-01-24T10:00:00Z')
+            ->and($metadata->modifiedTime)->toBe('2026-01-24T10:30:00Z')
+            ->and($metadata->summary)->toBe('Test session')
+            ->and($metadata->isRemote)->toBeFalse();
+    });
+
+    it('getSessionMetadata returns null for non-existent session', function () {
+        $mockRpc = Mockery::mock(JsonRpcClient::class);
+        $mockRpc->shouldReceive('request')
+            ->with('session.getMetadata', ['sessionId' => 'non-existent'])
+            ->once()
+            ->andReturn(['session' => null]);
+
+        $client = new Client;
+        $ref = new ReflectionClass($client);
+        $ref->getProperty('rpcClient')->setValue($client, $mockRpc);
+        $ref->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $metadata = $client->getSessionMetadata('non-existent');
+
+        expect($metadata)->toBeNull();
+    });
+
+    it('getSessionMetadata returns null when session key is missing', function () {
+        $mockRpc = Mockery::mock(JsonRpcClient::class);
+        $mockRpc->shouldReceive('request')
+            ->with('session.getMetadata', ['sessionId' => 'missing'])
+            ->once()
+            ->andReturn([]);
+
+        $client = new Client;
+        $ref = new ReflectionClass($client);
+        $ref->getProperty('rpcClient')->setValue($client, $mockRpc);
+        $ref->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $metadata = $client->getSessionMetadata('missing');
+
+        expect($metadata)->toBeNull();
+    });
+
+    it('getSessionMetadata throws when not connected', function () {
+        $client = new Client;
+
+        expect(fn () => $client->getSessionMetadata('session-123'))
+            ->toThrow(RuntimeException::class);
+    });
 });
