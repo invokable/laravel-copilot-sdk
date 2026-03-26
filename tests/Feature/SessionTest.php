@@ -301,6 +301,34 @@ describe('Session', function () {
         $session->abort();
     });
 
+    it('disconnect is idempotent', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.destroy', ['sessionId' => 'test-session'])
+            ->once()
+            ->andReturn([]);
+
+        $session = new Session('test-session', $mockClient);
+        $session->disconnect();
+        $session->disconnect(); // Second call should be no-op
+    });
+
+    it('disconnect clears handlers even when RPC fails', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.destroy', ['sessionId' => 'test-session'])
+            ->once()
+            ->andThrow(new RuntimeException('Connection lost'));
+
+        $session = new Session('test-session', $mockClient);
+        $session->registerTools([['name' => 'test', 'handler' => fn () => null]]);
+
+        expect(fn () => $session->disconnect())->toThrow(RuntimeException::class);
+
+        // Handlers should still be cleared despite the error
+        expect($session->getToolHandler('test'))->toBeNull();
+    });
+
     it('setModel calls session.model.switchTo via rpc', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')

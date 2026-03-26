@@ -100,6 +100,37 @@ trait ManagesSessions
     }
 
     /**
+     * Get metadata for a specific session by ID.
+     *
+     * This provides an efficient O(1) lookup of a single session's metadata
+     * instead of listing all sessions. Returns null if the session is not found.
+     *
+     * @throws JsonRpcException
+     *
+     * @example
+     * $metadata = $client->getSessionMetadata('session-123');
+     * if ($metadata) {
+     *     echo "Session started at: {$metadata->startTime}";
+     * }
+     */
+    public function getSessionMetadata(string $sessionId): ?SessionMetadata
+    {
+        $this->ensureConnected();
+
+        $response = $this->rpcClient->request('session.getMetadata', [
+            'sessionId' => $sessionId,
+        ]);
+
+        $session = $response['session'] ?? null;
+
+        if ($session === null) {
+            return null;
+        }
+
+        return SessionMetadata::fromArray($session);
+    }
+
+    /**
      * Gets the foreground session ID in TUI+server mode.
      *
      * This returns the ID of the session currently displayed in the TUI.

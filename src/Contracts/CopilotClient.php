@@ -100,6 +100,16 @@ interface CopilotClient
     public function listSessions(SessionListFilter|array|null $filter = null): array;
 
     /**
+     * Get metadata for a specific session by ID.
+     *
+     * This provides an efficient O(1) lookup of a single session's metadata
+     * instead of listing all sessions. Returns null if the session is not found.
+     *
+     * @throws JsonRpcException
+     */
+    public function getSessionMetadata(string $sessionId): ?SessionMetadata;
+
+    /**
      * Gets the foreground session ID in TUI+server mode.
      *
      * @throws JsonRpcException
