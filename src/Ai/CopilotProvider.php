@@ -29,7 +29,7 @@ class CopilotProvider extends Provider implements FileProvider, TextProvider
      */
     public function defaultTextModel(): string
     {
-        return 'claude-sonnet-4.5';
+        return 'claude-sonnet-4.6';
     }
 
     /**
@@ -37,7 +37,7 @@ class CopilotProvider extends Provider implements FileProvider, TextProvider
      */
     public function cheapestTextModel(): string
     {
-        return 'claude-haiku-4-5';
+        return 'claude-haiku-4.5';
     }
 
     /**
@@ -45,6 +45,6 @@ class CopilotProvider extends Provider implements FileProvider, TextProvider
      */
     public function smartestTextModel(): string
     {
-        return 'claude-opus-4-6';
+        return 'claude-opus-4.6';
     }
 }
