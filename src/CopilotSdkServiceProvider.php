@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Ai\Ai;
-use Revolution\Copilot\Ai\CopilotGateway;
 use Revolution\Copilot\Ai\CopilotProvider;
 use Revolution\Copilot\Contracts\Factory;
 
@@ -39,7 +38,6 @@ class CopilotSdkServiceProvider extends ServiceProvider
         if (class_exists(Ai::class)) {
             Ai::extend('copilot', function (Application $app, array $config) {
                 return new CopilotProvider(
-                    new CopilotGateway($this->app['events']),
                     $config,
                     $this->app->make(Dispatcher::class),
                 );

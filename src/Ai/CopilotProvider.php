@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Ai;
 
+use Illuminate\Contracts\Events\Dispatcher;
+use Laravel\Ai\Contracts\Gateway\TextGateway;
 use Laravel\Ai\Contracts\Providers\FileProvider;
 use Laravel\Ai\Contracts\Providers\TextProvider;
 use Laravel\Ai\Providers\Concerns\GeneratesText;
@@ -23,6 +25,19 @@ class CopilotProvider extends Provider implements FileProvider, TextProvider
     use HasTextGateway;
     use ManagesFiles;
     use StreamsText;
+
+    public function __construct(
+        protected array $config,
+        protected Dispatcher $events,
+    ) {}
+
+    /**
+     * Get the provider's text gateway.
+     */
+    public function textGateway(): TextGateway
+    {
+        return $this->textGateway ??= new CopilotGateway;
+    }
 
     /**
      * Get the name of the default text model.
