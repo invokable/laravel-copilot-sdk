@@ -39,6 +39,9 @@ readonly class SessionConfig implements Arrayable
      *                                         When provided, the server will call this handler to request permission for operations.
      * @param  ?Closure  $onUserInputRequest  Handler for user input requests from the agent.
      *                                        When provided, enables the ask_user tool allowing the agent to ask questions.
+     * @param  ?Closure  $onElicitationRequest  Handler for elicitation requests from the agent.
+     *                                          When provided, the server calls back to this client for form-based UI dialogs.
+     *                                          Also enables the `elicitation` capability on the session.
      * @param  SessionHooks|array|null  $hooks  Hook handlers for intercepting session lifecycle events.
      *                                          When provided, enables hooks callback allowing custom logic at various points.
      * @param  ?string  $workingDirectory  Working directory for the session. Tool operations will be relative to this directory.
@@ -75,6 +78,7 @@ readonly class SessionConfig implements Arrayable
         public ProviderConfig|array|null $provider = null,
         public ?Closure $onPermissionRequest = null,
         public ?Closure $onUserInputRequest = null,
+        public ?Closure $onElicitationRequest = null,
         public SessionHooks|array|null $hooks = null,
         public ?string $workingDirectory = null,
         public ?bool $streaming = null,
@@ -134,6 +138,7 @@ readonly class SessionConfig implements Arrayable
             provider: $provider,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
             onUserInputRequest: $data['onUserInputRequest'] ?? null,
+            onElicitationRequest: $data['onElicitationRequest'] ?? null,
             hooks: $hooks,
             workingDirectory: $data['workingDirectory'] ?? null,
             streaming: $data['streaming'] ?? null,
@@ -186,6 +191,7 @@ readonly class SessionConfig implements Arrayable
             'provider' => $provider,
             'onPermissionRequest' => $this->onPermissionRequest,
             'onUserInputRequest' => $this->onUserInputRequest,
+            'onElicitationRequest' => $this->onElicitationRequest,
             'hooks' => $hooks,
             'workingDirectory' => $this->workingDirectory,
             'streaming' => $this->streaming,

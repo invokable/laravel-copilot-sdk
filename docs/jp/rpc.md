@@ -149,6 +149,12 @@ $session->rpc()->ui()->elicitation(new SessionUiElicitationParams(
     requestedSchema: ['type' => 'object', 'properties' => [...]],
 ));
 
+// ui: 保留中のエリシテーションリクエストへの応答（elicitation.requestedイベント経由）
+$session->rpc()->ui()->handlePendingElicitation(new SessionUiHandlePendingElicitationParams(
+    requestId: '...',
+    result: ['action' => 'accept', 'content' => ['name' => 'John']],
+));
+
 // log: セッションタイムラインへのメッセージ記録
 $session->rpc()->log()->log(new SessionLogParams(message: '処理を開始しました'));
 $session->rpc()->log()->log(new SessionLogParams(message: 'ディスク使用量が多い', level: LogLevel::WARNING));

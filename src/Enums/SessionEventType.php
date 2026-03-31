@@ -36,7 +36,11 @@ enum SessionEventType: string
     case SESSION_MCP_SERVER_STATUS_CHANGED = 'session.mcp_server_status_changed';
     case SESSION_SKILLS_LOADED = 'session.skills_loaded';
     case SESSION_TASK_COMPLETE = 'session.task_complete';
+    case SESSION_REMOTE_STEERABLE_CHANGED = 'session.remote_steerable_changed';
     case SESSION_TOOLS_UPDATED = 'session.tools_updated';
+
+    // Capabilities
+    case CAPABILITIES_CHANGED = 'capabilities.changed';
 
     // User messages
     case USER_MESSAGE = 'user.message';
@@ -88,6 +92,10 @@ enum SessionEventType: string
     // Elicitation events
     case ELICITATION_REQUESTED = 'elicitation.requested';
     case ELICITATION_COMPLETED = 'elicitation.completed';
+
+    // Sampling events (MCP server sampling requests)
+    case SAMPLING_REQUESTED = 'sampling.requested';
+    case SAMPLING_COMPLETED = 'sampling.completed';
 
     // MCP OAuth events
     case MCP_OAUTH_REQUIRED = 'mcp.oauth_required';

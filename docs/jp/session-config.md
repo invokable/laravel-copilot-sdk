@@ -64,6 +64,13 @@ $config = new SessionConfig(
         // ユーザーインプットリクエストを処理。ask_user
     },
 
+    // エリシテーションリクエストのハンドラー
+    // 設定するとエージェントからのフォームベースUIダイアログリクエストを受け取れる
+    onElicitationRequest: function (ElicitationRequest $request, array $invocation) {
+        // エリシテーションリクエストを処理
+        return ['action' => 'accept', 'content' => ['field' => 'value']];
+    },
+
     // セッションフック
     hooks: [],
 

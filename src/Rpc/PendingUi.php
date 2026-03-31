@@ -7,6 +7,8 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\SessionUiElicitationParams;
 use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
+use Revolution\Copilot\Types\Rpc\SessionUiHandlePendingElicitationParams;
+use Revolution\Copilot\Types\Rpc\SessionUiHandlePendingElicitationResult;
 
 /**
  * Pending UI RPC operations for a session.
@@ -28,6 +30,19 @@ class PendingUi
 
         return SessionUiElicitationResult::fromArray(
             $this->client->request('session.ui.elicitation', $paramsArray),
+        );
+    }
+
+    /**
+     * Respond to a pending elicitation request from a broadcast event.
+     */
+    public function handlePendingElicitation(SessionUiHandlePendingElicitationParams|array $params): SessionUiHandlePendingElicitationResult
+    {
+        $paramsArray = ($params instanceof SessionUiHandlePendingElicitationParams ? $params : SessionUiHandlePendingElicitationParams::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SessionUiHandlePendingElicitationResult::fromArray(
+            $this->client->request('session.ui.handlePendingElicitation', $paramsArray),
         );
     }
 }

@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use Revolt\EventLoop;
 use Revolution\Copilot\Concerns\Session\HasCommandHandlers;
 use Revolution\Copilot\Concerns\Session\HasDeprecated;
+use Revolution\Copilot\Concerns\Session\HasElicitationHandler;
 use Revolution\Copilot\Concerns\Session\HasHooks;
 use Revolution\Copilot\Concerns\Session\HasPermissionHandler;
 use Revolution\Copilot\Concerns\Session\HasToolHandlers;
@@ -29,6 +30,7 @@ use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\TraceContext;
+use Revolution\Copilot\Types\ElicitationRequest;
 use Revolution\Copilot\Types\Rpc\SessionLogParams;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
 use Revolution\Copilot\Types\SessionCapabilities;
@@ -43,6 +45,7 @@ class Session implements CopilotSession
     use Conditionable;
     use HasCommandHandlers;
     use HasDeprecated;
+    use HasElicitationHandler;
     use HasHooks;
     use HasPermissionHandler;
     use HasToolHandlers;
@@ -534,6 +537,26 @@ class Session implements CopilotSession
             }
 
             $this->executeCommandAndRespond($requestId, $commandName, $command, $args);
+        } elseif ($event->is(SessionEventType::ELICITATION_REQUESTED)) {
+            if ($this->elicitationHandler !== null) {
+                $requestId = $event->data['requestId'] ?? null;
+
+                if ($requestId === null) {
+                    return;
+                }
+
+                $request = new ElicitationRequest(
+                    message: $event->data['message'] ?? '',
+                    requestedSchema: $event->data['requestedSchema'] ?? null,
+                    mode: $event->data['mode'] ?? null,
+                    elicitationSource: $event->data['elicitationSource'] ?? null,
+                    url: $event->data['url'] ?? null,
+                );
+
+                $this->handleElicitationRequest($request, $requestId);
+            }
+        } elseif ($event->is(SessionEventType::CAPABILITIES_CHANGED)) {
+            $this->mergeCapabilities($event->data);
         }
     }
 
@@ -591,6 +614,7 @@ class Session implements CopilotSession
             $this->commandHandlers = [];
             $this->permissionHandler = null;
             $this->userInputHandler = null;
+            $this->elicitationHandler = null;
             $this->hooks = null;
             $this->capabilities = new SessionCapabilities;
         }
