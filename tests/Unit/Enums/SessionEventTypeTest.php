@@ -46,4 +46,30 @@ describe('SessionEventType', function () {
             ->and(SessionEventType::from('session.mcp_server_status_changed'))->toBe(SessionEventType::SESSION_MCP_SERVER_STATUS_CHANGED)
             ->and(SessionEventType::from('session.skills_loaded'))->toBe(SessionEventType::SESSION_SKILLS_LOADED);
     });
+
+    it('has capabilities changed event type', function () {
+        expect(SessionEventType::CAPABILITIES_CHANGED->value)->toBe('capabilities.changed');
+    });
+
+    it('can create capabilities changed from string', function () {
+        expect(SessionEventType::from('capabilities.changed'))->toBe(SessionEventType::CAPABILITIES_CHANGED);
+    });
+
+    it('has sampling event types', function () {
+        expect(SessionEventType::SAMPLING_REQUESTED->value)->toBe('sampling.requested')
+            ->and(SessionEventType::SAMPLING_COMPLETED->value)->toBe('sampling.completed');
+    });
+
+    it('can create sampling event types from string', function () {
+        expect(SessionEventType::from('sampling.requested'))->toBe(SessionEventType::SAMPLING_REQUESTED)
+            ->and(SessionEventType::from('sampling.completed'))->toBe(SessionEventType::SAMPLING_COMPLETED);
+    });
+
+    it('has remote steerable changed event type', function () {
+        expect(SessionEventType::SESSION_REMOTE_STEERABLE_CHANGED->value)->toBe('session.remote_steerable_changed');
+    });
+
+    it('can create remote steerable changed from string', function () {
+        expect(SessionEventType::from('session.remote_steerable_changed'))->toBe(SessionEventType::SESSION_REMOTE_STEERABLE_CHANGED);
+    });
 });

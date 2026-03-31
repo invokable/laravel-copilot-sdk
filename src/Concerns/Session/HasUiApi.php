@@ -183,4 +183,16 @@ trait HasUiApi
             throw new RuntimeException('Elicitation is not supported by the host');
         }
     }
+
+    /**
+     * Merge updated capabilities from a capabilities.changed event.
+     *
+     * @internal
+     */
+    public function mergeCapabilities(array $data): void
+    {
+        $current = $this->capabilities()->toArray();
+        $merged = array_replace_recursive($current, $data);
+        $this->capabilities = SessionCapabilities::fromArray($merged);
+    }
 }

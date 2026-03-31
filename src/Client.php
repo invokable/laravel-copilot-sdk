@@ -272,6 +272,7 @@ class Client implements CopilotClient
             'provider' => $config['provider'] ?? null,
             'requestPermission' => true,
             'requestUserInput' => isset($config['onUserInputRequest']),
+            'requestElicitation' => isset($config['onElicitationRequest']),
             'hooks' => $hasHooks,
             'workingDirectory' => $config['workingDirectory'] ?? null,
             'streaming' => $config['streaming'] ?? null,
@@ -301,6 +302,10 @@ class Client implements CopilotClient
 
         if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
             $session->registerUserInputHandler($config['onUserInputRequest']);
+        }
+
+        if (isset($config['onElicitationRequest']) && is_callable($config['onElicitationRequest'])) {
+            $session->registerElicitationHandler($config['onElicitationRequest']);
         }
 
         if ($hooks !== null) {
@@ -364,6 +369,7 @@ class Client implements CopilotClient
             'provider' => $config['provider'] ?? null,
             'requestPermission' => true,
             'requestUserInput' => isset($config['onUserInputRequest']),
+            'requestElicitation' => isset($config['onElicitationRequest']),
             'hooks' => $hasHooks,
             'workingDirectory' => $config['workingDirectory'] ?? null,
             'streaming' => $config['streaming'] ?? null,
@@ -392,6 +398,10 @@ class Client implements CopilotClient
 
         if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
             $session->registerUserInputHandler($config['onUserInputRequest']);
+        }
+
+        if (isset($config['onElicitationRequest']) && is_callable($config['onElicitationRequest'])) {
+            $session->registerElicitationHandler($config['onElicitationRequest']);
         }
 
         if ($hooks !== null) {
