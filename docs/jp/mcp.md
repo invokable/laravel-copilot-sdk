@@ -34,3 +34,59 @@ Artisan::command('copilot:mcp', function () {
     }, config: $config);
 });
 ```
+
+## MCPサーバーのステータス
+
+セッション内のMCPサーバーのステータスは以下の値を取ります：
+
+| ステータス | 説明 |
+|---|---|
+| `connected` | 接続済み |
+| `failed` | 接続失敗 |
+| `needs-auth` | 認証が必要 |
+| `pending` | 接続待ち |
+| `disabled` | 無効化済み |
+| `not_configured` | 未設定 |
+
+## MCPサーバー設定の管理（Server RPC）
+
+セッションとは別に、サーバーレベルでMCPサーバーの設定を管理できます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\McpConfigAddParams;
+use Revolution\Copilot\Types\Rpc\McpConfigUpdateParams;
+use Revolution\Copilot\Types\Rpc\McpConfigRemoveParams;
+use Revolution\Copilot\Types\Rpc\McpServerValue;
+
+// 設定済みのMCPサーバー一覧を取得
+$result = Copilot::client()->rpc()->mcp()->list();
+foreach ($result->servers as $name => $config) {
+    dump($name, $config->type, $config->command);
+}
+
+// MCPサーバーを追加
+Copilot::client()->rpc()->mcp()->add(new McpConfigAddParams(
+    name: 'laravel-boost',
+    config: new McpServerValue(
+        type: 'local',
+        command: 'php',
+        args: ['artisan', 'boost:mcp'],
+        tools: ['*'],
+    ),
+));
+
+// MCPサーバーの設定を更新
+Copilot::client()->rpc()->mcp()->update(new McpConfigUpdateParams(
+    name: 'laravel-boost',
+    config: new McpServerValue(
+        type: 'local',
+        command: 'php',
+        args: ['artisan', 'boost:mcp', '--verbose'],
+        tools: ['*'],
+    ),
+));
+
+// MCPサーバーを削除
+Copilot::client()->rpc()->mcp()->remove(new McpConfigRemoveParams(name: 'laravel-boost'));
+```

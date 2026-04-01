@@ -36,6 +36,25 @@ Copilot::client()->rpc()->tools()->list();
 
 // account
 Copilot::client()->rpc()->account()->getQuota();
+
+// mcp config (MCPサーバー設定の管理)
+Copilot::client()->rpc()->mcp()->list();
+Copilot::client()->rpc()->mcp()->add(new McpConfigAddParams(
+    name: 'my-server',
+    config: new McpServerValue(type: 'local', command: 'php', args: ['artisan', 'mcp']),
+));
+Copilot::client()->rpc()->mcp()->update(new McpConfigUpdateParams(
+    name: 'my-server',
+    config: new McpServerValue(type: 'http', url: 'https://mcp.example.com'),
+));
+Copilot::client()->rpc()->mcp()->remove(new McpConfigRemoveParams(name: 'my-server'));
+
+// sessionFs (セッションファイルシステムプロバイダーの登録)
+Copilot::client()->rpc()->sessionFs()->setProvider(new SessionFsSetProviderParams(
+    initialCwd: '/path/to/project',
+    sessionStatePath: '.copilot/sessions',
+    conventions: 'posix',
+));
 ```
 
 ## SessionRpc

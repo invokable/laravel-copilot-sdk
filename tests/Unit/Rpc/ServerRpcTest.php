@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerAccount;
+use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Rpc\PendingServerModels;
+use Revolution\Copilot\Rpc\PendingServerSessionFs;
 use Revolution\Copilot\Rpc\PendingServerTools;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Transport\StdioTransport;
@@ -26,6 +28,18 @@ describe('ServerRpc', function () {
         $rpc = new ServerRpc(createMockRpcClient());
 
         expect($rpc->account())->toBeInstanceOf(PendingServerAccount::class);
+    });
+
+    it('returns PendingServerMcpConfig from mcp()', function () {
+        $rpc = new ServerRpc(createMockRpcClient());
+
+        expect($rpc->mcp())->toBeInstanceOf(PendingServerMcpConfig::class);
+    });
+
+    it('returns PendingServerSessionFs from sessionFs()', function () {
+        $rpc = new ServerRpc(createMockRpcClient());
+
+        expect($rpc->sessionFs())->toBeInstanceOf(PendingServerSessionFs::class);
     });
 });
 
