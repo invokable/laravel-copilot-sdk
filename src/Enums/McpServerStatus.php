@@ -13,6 +13,7 @@ enum McpServerStatus: string
 {
     case CONNECTED = 'connected';
     case FAILED = 'failed';
+    case NEEDS_AUTH = 'needs-auth';
     case PENDING = 'pending';
     case DISABLED = 'disabled';
     case NOT_CONFIGURED = 'not_configured';

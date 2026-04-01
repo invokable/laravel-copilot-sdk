@@ -79,12 +79,14 @@ trait HasToolHandlers
                 /** @var ToolResultObject|array|string|mixed $rawResult */
                 $rawResult = $handler($arguments, $invocation);
 
-                if ($rawResult instanceof ToolResultObject) {
+                if ($rawResult === null) {
+                    $result = '';
+                } elseif ($rawResult instanceof ToolResultObject) {
                     $result = $rawResult->toArray();
                 } elseif (is_string($rawResult) || is_array($rawResult)) {
                     $result = $rawResult;
                 } else {
-                    $result = $rawResult !== null ? (string) $rawResult : '';
+                    $result = (string) $rawResult;
                 }
 
                 // Send failure via error param for consistent server-side formatting

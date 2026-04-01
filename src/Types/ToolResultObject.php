@@ -13,7 +13,7 @@ readonly class ToolResultObject implements Arrayable
 {
     /**
      * @param  string  $textResultForLlm  Text result for the LLM
-     * @param  string  $resultType  Result type: "success", "failure", "rejected", or "denied"
+     * @param  string  $resultType  Result type: "success", "failure", "rejected", "denied", or "timeout"
      * @param  ?array  $binaryResultsForLlm  Binary results for the LLM
      * @param  ?string  $error  Error message, if any
      * @param  ?string  $sessionLog  Session log

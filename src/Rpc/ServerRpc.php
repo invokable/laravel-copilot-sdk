@@ -17,6 +17,8 @@ use Revolution\Copilot\Types\Rpc\PingResult;
  * $client->rpc()->models()->list();
  * $client->rpc()->tools()->list();
  * $client->rpc()->account()->getQuota();
+ * $client->rpc()->mcp()->config()->list();
+ * $client->rpc()->sessionFs()->setProvider(...);
  * ```
  */
 class ServerRpc
@@ -59,5 +61,21 @@ class ServerRpc
     public function account(): PendingServerAccount
     {
         return new PendingServerAccount($this->client);
+    }
+
+    /**
+     * MCP configuration RPC operations.
+     */
+    public function mcp(): PendingServerMcpConfig
+    {
+        return new PendingServerMcpConfig($this->client);
+    }
+
+    /**
+     * SessionFs RPC operations.
+     */
+    public function sessionFs(): PendingServerSessionFs
+    {
+        return new PendingServerSessionFs($this->client);
     }
 }
