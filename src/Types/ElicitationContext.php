@@ -7,12 +7,15 @@ namespace Revolution\Copilot\Types;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * @deprecated Use ElicitationContext instead. This class will be removed in a future release.
- * @see ElicitationContext
+ * Context for an elicitation handler invocation, combining the request data
+ * with session context. Mirrors the single-argument pattern of CommandContext.
+ *
+ * Contains the data extracted from an `elicitation.requested` session event.
  */
-readonly class ElicitationRequest implements Arrayable
+readonly class ElicitationContext implements Arrayable
 {
     /**
+     * @param  string  $sessionId  Identifier of the session that triggered the elicitation request
      * @param  string  $message  Message describing what information is needed from the user
      * @param  ?array  $requestedSchema  JSON Schema describing the form fields to present
      * @param  ?string  $mode  Elicitation mode: "form" for structured input, "url" for browser redirect
@@ -20,6 +23,7 @@ readonly class ElicitationRequest implements Arrayable
      * @param  ?string  $url  URL to open in the user's browser (url mode only)
      */
     public function __construct(
+        public string $sessionId,
         public string $message,
         public ?array $requestedSchema = null,
         public ?string $mode = null,
@@ -30,7 +34,8 @@ readonly class ElicitationRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            message: $data['message'],
+            sessionId: $data['sessionId'] ?? '',
+            message: $data['message'] ?? '',
             requestedSchema: $data['requestedSchema'] ?? null,
             mode: $data['mode'] ?? null,
             elicitationSource: $data['elicitationSource'] ?? null,
@@ -41,6 +46,7 @@ readonly class ElicitationRequest implements Arrayable
     public function toArray(): array
     {
         return array_filter([
+            'sessionId' => $this->sessionId,
             'message' => $this->message,
             'requestedSchema' => $this->requestedSchema,
             'mode' => $this->mode,

@@ -66,7 +66,7 @@ $config = new SessionConfig(
 
     // エリシテーションリクエストのハンドラー
     // 設定するとエージェントからのフォームベースUIダイアログリクエストを受け取れる
-    onElicitationRequest: function (ElicitationRequest $request, array $invocation) {
+    onElicitationRequest: function (ElicitationContext $context) {
         // エリシテーションリクエストを処理
         return ['action' => 'accept', 'content' => ['field' => 'value']];
     },

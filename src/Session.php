@@ -30,7 +30,7 @@ use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\TraceContext;
-use Revolution\Copilot\Types\ElicitationRequest;
+use Revolution\Copilot\Types\ElicitationContext;
 use Revolution\Copilot\Types\Rpc\SessionLogParams;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
 use Revolution\Copilot\Types\SessionCapabilities;
@@ -545,7 +545,8 @@ class Session implements CopilotSession
                     return;
                 }
 
-                $request = new ElicitationRequest(
+                $context = new ElicitationContext(
+                    sessionId: $this->sessionId,
                     message: $event->data['message'] ?? '',
                     requestedSchema: $event->data['requestedSchema'] ?? null,
                     mode: $event->data['mode'] ?? null,
@@ -553,7 +554,7 @@ class Session implements CopilotSession
                     url: $event->data['url'] ?? null,
                 );
 
-                $this->handleElicitationRequest($request, $requestId);
+                $this->handleElicitationRequest($context, $requestId);
             }
         } elseif ($event->is(SessionEventType::CAPABILITIES_CHANGED)) {
             $this->mergeCapabilities($event->data);
