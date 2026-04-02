@@ -7,7 +7,7 @@ namespace Revolution\Copilot\Concerns\Session;
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ElicitationAction;
-use Revolution\Copilot\Types\ElicitationRequest;
+use Revolution\Copilot\Types\ElicitationContext;
 use Revolution\Copilot\Types\Rpc\SessionUiHandlePendingElicitationParams;
 use Throwable;
 
@@ -25,14 +25,14 @@ trait HasElicitationHandler
     /**
      * Elicitation handler.
      *
-     * @var Closure(ElicitationRequest, array{sessionId: string}): mixed|null
+     * @var Closure(ElicitationContext): mixed|null
      */
     protected ?Closure $elicitationHandler = null;
 
     /**
      * Register an elicitation handler.
      *
-     * @param  Closure(ElicitationRequest, array{sessionId: string}): mixed|null  $handler
+     * @param  Closure(ElicitationContext): mixed|null  $handler
      *
      * @internal
      */
@@ -48,14 +48,14 @@ trait HasElicitationHandler
      *
      * @internal
      */
-    protected function handleElicitationRequest(ElicitationRequest $request, string $requestId): void
+    protected function handleElicitationRequest(ElicitationContext $context, string $requestId): void
     {
         if ($this->elicitationHandler === null) {
             return;
         }
 
         try {
-            $result = ($this->elicitationHandler)($request, ['sessionId' => $this->sessionId]);
+            $result = ($this->elicitationHandler)($context);
 
             // Normalize result to array
             $resultArray = match (true) {
