@@ -520,6 +520,11 @@ class Session implements CopilotSession
         } elseif ($event->is(SessionEventType::PERMISSION_REQUESTED)) {
             $requestId = $event->data['requestId'] ?? null;
             $permissionRequest = $event->data['permissionRequest'] ?? [];
+            $resolvedByHook = $event->data['resolvedByHook'] ?? false;
+
+            if ($resolvedByHook) {
+                return; // Already resolved by a permissionRequest hook; no client action needed.
+            }
 
             if ($requestId === null || $this->permissionHandler === null) {
                 return;

@@ -18,6 +18,8 @@ final readonly class PermissionRequestResultKind
 
     public const string DENIED_BY_CONTENT_EXCLUSION_POLICY = 'denied-by-content-exclusion-policy';
 
+    public const string DENIED_BY_PERMISSION_REQUEST_HOOK = 'denied-by-permission-request-hook';
+
     public static function approved(): array
     {
         return ['kind' => self::APPROVED];
@@ -62,6 +64,21 @@ final readonly class PermissionRequestResultKind
         ];
     }
 
+    public static function deniedByPermissionRequestHook(?string $message = null, ?bool $interrupt = null): array
+    {
+        $result = ['kind' => self::DENIED_BY_PERMISSION_REQUEST_HOOK];
+
+        if ($message !== null) {
+            $result['message'] = $message;
+        }
+
+        if ($interrupt !== null) {
+            $result['interrupt'] = $interrupt;
+        }
+
+        return $result;
+    }
+
     /**
      * Array for Laravel\Prompts\select.
      */
@@ -73,6 +90,7 @@ final readonly class PermissionRequestResultKind
             self::DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER => __('Denied No Approval Rule and Could Not Request from User'),
             self::DENIED_INTERACTIVELY_BY_USER => __('Denied Interactively by User'),
             self::DENIED_BY_CONTENT_EXCLUSION_POLICY => __('Denied by Content Exclusion Policy'),
+            self::DENIED_BY_PERMISSION_REQUEST_HOOK => __('Denied by Permission Request Hook'),
         ];
     }
 }
