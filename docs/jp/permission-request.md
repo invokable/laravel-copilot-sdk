@@ -237,3 +237,14 @@ return PermissionRequestResultKind::noResult();
 // または ['kind' => 'no-result']
 ```
 
+### denied-by-permission-request-hook
+
+`permissionRequest`フックによって既に解決済みのパーミッションリクエストには、SDKが自動的に`resolvedByHook`フラグを検出して`onPermissionRequest`ハンドラの呼び出しをスキップします。
+
+手動でこの結果を返す場合は`deniedByPermissionRequestHook()`を使います。オプションで`message`と`interrupt`を指定できます。
+
+```php
+return PermissionRequestResultKind::deniedByPermissionRequestHook();
+return PermissionRequestResultKind::deniedByPermissionRequestHook(message: 'Blocked by hook', interrupt: true);
+```
+

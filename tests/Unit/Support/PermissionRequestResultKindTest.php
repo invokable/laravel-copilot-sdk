@@ -34,8 +34,33 @@ describe('PermissionRequestResultKind', function () {
             ->and($result['message'])->toBe('Excluded by policy');
     });
 
+    it('deniedByPermissionRequestHook', function () {
+        $result = PermissionRequestResultKind::deniedByPermissionRequestHook();
+        expect($result['kind'])->toBe('denied-by-permission-request-hook')
+            ->and($result)->not->toHaveKey('message')
+            ->and($result)->not->toHaveKey('interrupt');
+    });
+
+    it('deniedByPermissionRequestHook with message', function () {
+        $result = PermissionRequestResultKind::deniedByPermissionRequestHook('Blocked by hook');
+        expect($result['kind'])->toBe('denied-by-permission-request-hook')
+            ->and($result['message'])->toBe('Blocked by hook')
+            ->and($result)->not->toHaveKey('interrupt');
+    });
+
+    it('deniedByPermissionRequestHook with message and interrupt', function () {
+        $result = PermissionRequestResultKind::deniedByPermissionRequestHook('Blocked', true);
+        expect($result['kind'])->toBe('denied-by-permission-request-hook')
+            ->and($result['message'])->toBe('Blocked')
+            ->and($result['interrupt'])->toBeTrue();
+    });
+
     it('select includes content exclusion policy', function () {
         expect(PermissionRequestResultKind::select())->toHaveKey('denied-by-content-exclusion-policy');
+    });
+
+    it('select includes permission request hook', function () {
+        expect(PermissionRequestResultKind::select())->toHaveKey('denied-by-permission-request-hook');
     });
 
     it('select', function () {
