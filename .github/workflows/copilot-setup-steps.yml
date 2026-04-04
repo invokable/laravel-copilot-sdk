@@ -29,9 +29,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install gh-aw CLI
-        uses: github/gh-aw-actions/setup-cli@15b2fa31e9a1b771c9773c162273924d8f5ea516 # v0.65.5
+        uses: github/gh-aw-actions/setup-cli@73ae9ce231580f337133352d321d42b6bf54b6a9 # v0.66.1
         with:
-          version: v0.65.5
+          version: v0.66.1
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
