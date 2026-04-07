@@ -11,6 +11,7 @@ use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\InputOptions;
+use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
@@ -73,7 +74,7 @@ interface CopilotSession
      *
      * @throws JsonRpcException
      */
-    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null): void;
+    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null): void;
 
     /**
      * Log a message to the session timeline.

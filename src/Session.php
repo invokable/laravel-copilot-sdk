@@ -31,6 +31,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Types\ElicitationContext;
+use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SessionLogParams;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
 use Revolution\Copilot\Types\SessionCapabilities;
@@ -631,9 +632,15 @@ class Session implements CopilotSession
      *
      * @throws JsonRpcException
      */
-    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null): void
+    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null): void
     {
-        $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $model, reasoningEffort: $reasoningEffort));
+        $caps = match (true) {
+            $modelCapabilities instanceof ModelCapabilitiesOverride => $modelCapabilities,
+            is_array($modelCapabilities) => ModelCapabilitiesOverride::fromArray($modelCapabilities),
+            default => null,
+        };
+
+        $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $model, reasoningEffort: $reasoningEffort, modelCapabilities: $caps));
     }
 
     /**
