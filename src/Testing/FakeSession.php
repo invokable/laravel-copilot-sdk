@@ -14,6 +14,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\InputOptions;
+use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
@@ -80,7 +81,7 @@ class FakeSession implements CopilotSession
         return null;
     }
 
-    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null): void
+    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null): void
     {
         // No-op in fake
     }

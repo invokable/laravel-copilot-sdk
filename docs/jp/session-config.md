@@ -11,6 +11,9 @@ use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SystemMessageConfig;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\UserInputRequest;
+use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
+use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverrideSupports;
+use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverrideLimits;
 use Revolution\Copilot\Enums\ReasoningEffort;
 
 $config = new SessionConfig(
@@ -24,6 +27,14 @@ $config = new SessionConfig(
 
     // 推論レベル。対応しているモデルでのみ設定可能。
     reasoningEffort: ReasoningEffort::HIGH,
+
+    // モデルのcapabilitiesをオーバーライド。ランタイムのデフォルトにdeep-mergeされる。
+    // modelCapabilities: new ModelCapabilitiesOverride(
+    //     supports: new ModelCapabilitiesOverrideSupports(vision: true, reasoningEffort: true),
+    //     limits: new ModelCapabilitiesOverrideLimits(max_prompt_tokens: 200000),
+    // ),
+    // 配列での指定も可能
+    // modelCapabilities: ['supports' => ['vision' => true]],
 
     // configディレクトリを上書き設定
     configDir: '',

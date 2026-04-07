@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Types;
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 
 /**
  * Configuration for resuming a session.
@@ -21,6 +22,7 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                                        Only valid for models where capabilities.supports.reasoningEffort is true.
      *                                                        Use client.listModels() to check supported values for each model.
      *                                                        Accepts either ReasoningEffort enum or string value.
+     * @param  ModelCapabilitiesOverride|array|null  $modelCapabilities  Per-property overrides for model capabilities, deep-merged over runtime defaults.
      * @param  ?string  $configDir  Override the default configuration directory location.
      *                              When specified, the session will use this directory for storing config and state.
      * @param  ?array  $tools  Tools exposed to the CLI server
@@ -68,6 +70,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?string $clientName = null,
         public ?string $model = null,
         public ReasoningEffort|string|null $reasoningEffort = null,
+        public ModelCapabilitiesOverride|array|null $modelCapabilities = null,
         public ?string $configDir = null,
         public ?array $tools = null,
         public ?array $commands = null,
@@ -124,10 +127,18 @@ readonly class ResumeSessionConfig implements Arrayable
                 : SessionHooks::fromArray($data['hooks']);
         }
 
+        $modelCapabilities = null;
+        if (isset($data['modelCapabilities'])) {
+            $modelCapabilities = $data['modelCapabilities'] instanceof ModelCapabilitiesOverride
+                ? $data['modelCapabilities']
+                : ModelCapabilitiesOverride::fromArray($data['modelCapabilities']);
+        }
+
         return new self(
             clientName: $data['clientName'] ?? null,
             model: $data['model'] ?? null,
             reasoningEffort: $data['reasoningEffort'] ?? null,
+            modelCapabilities: $modelCapabilities,
             configDir: $data['configDir'] ?? null,
             tools: $data['tools'] ?? null,
             commands: $data['commands'] ?? null,
@@ -177,10 +188,15 @@ readonly class ResumeSessionConfig implements Arrayable
             ? $this->hooks->toArray()
             : $this->hooks;
 
+        $modelCapabilities = $this->modelCapabilities instanceof ModelCapabilitiesOverride
+            ? $this->modelCapabilities->toArray()
+            : $this->modelCapabilities;
+
         return array_filter([
             'clientName' => $this->clientName,
             'model' => $this->model,
             'reasoningEffort' => $reasoningEffort,
+            'modelCapabilities' => $modelCapabilities,
             'configDir' => $this->configDir,
             'tools' => $this->tools,
             'commands' => $this->commands,

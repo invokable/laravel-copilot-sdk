@@ -92,10 +92,18 @@ $session->rpc()->model()->getCurrent();
 $session->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: 'gpt-4'));
 // reasoningEffortを指定する場合（対応モデルのみ）
 $session->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: 'claude-opus-4.6', reasoningEffort: ReasoningEffort::HIGH));
+// modelCapabilitiesをオーバーライドする場合
+$session->rpc()->model()->switchTo(new SessionModelSwitchToParams(
+    modelId: 'gpt-4',
+    modelCapabilities: new ModelCapabilitiesOverride(
+        supports: new ModelCapabilitiesOverrideSupports(vision: true),
+    ),
+));
 
-// setModel()ヘルパーでも同様にreasoningEffortを指定可能
+// setModel()ヘルパーでも同様にreasoningEffortやmodelCapabilitiesを指定可能
 $session->setModel('claude-opus-4.6', ReasoningEffort::HIGH);
 $session->setModel('claude-opus-4.6', 'high'); // 文字列でも指定可能
+$session->setModel('gpt-4', modelCapabilities: ['supports' => ['vision' => true]]); // 配列でも指定可能
 
 // mode
 $session->rpc()->mode()->get();
@@ -196,6 +204,25 @@ $session->rpc()->shell()->kill(new SessionShellKillParams(
     signal: 'SIGTERM', // SIGTERM（デフォルト）, SIGKILL, SIGINT
 ));
 ```
+
+## SessionFS コールバック型
+
+セッションスコープのファイルシステム操作のためのコールバック型（Params/Result）が定義されています。これらはCopilot CLIがクライアントにコールバックする際のリクエスト/レスポンスの型です。
+
+| 型クラス | 用途 |
+|---|---|
+| `SessionFsReadFileParams` / `SessionFsReadFileResult` | ファイル読み取り |
+| `SessionFsWriteFileParams` | ファイル書き込み |
+| `SessionFsAppendFileParams` | ファイル追記 |
+| `SessionFsExistsParams` / `SessionFsExistsResult` | ファイル存在確認 |
+| `SessionFsStatParams` / `SessionFsStatResult` | ファイルメタデータ取得 |
+| `SessionFsMkdirParams` | ディレクトリ作成 |
+| `SessionFsReaddirParams` / `SessionFsReaddirResult` | ディレクトリ一覧 |
+| `SessionFsReaddirWithTypesParams` / `SessionFsReaddirWithTypesResult` | 型付きディレクトリ一覧 |
+| `SessionFsRmParams` | ファイル/ディレクトリ削除 |
+| `SessionFsRenameParams` | ファイル/ディレクトリ名前変更 |
+
+これらの型クラスは`src/Types/Rpc/`に配置されています。
 
 ## 配列での引数指定
 
