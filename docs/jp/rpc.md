@@ -55,6 +55,12 @@ Copilot::client()->rpc()->sessionFs()->setProvider(new SessionFsSetProviderParam
     sessionStatePath: '.copilot/sessions',
     conventions: 'posix',
 ));
+
+// sessions (experimental: セッションのフォーク)
+Copilot::client()->rpc()->sessions()->fork(new SessionsForkParams(
+    sessionId: 'source-session-id',
+    toEventId: 'evt-boundary', // オプション: この ID より前のイベントのみ含める
+));
 ```
 
 ## SessionRpc
@@ -150,8 +156,12 @@ $session->rpc()->extensions()->enable(new SessionExtensionsEnableParams(id: 'pro
 $session->rpc()->extensions()->disable(new SessionExtensionsDisableParams(id: 'project:my-ext'));
 $session->rpc()->extensions()->reload();
 
-// compaction
-$session->rpc()->compaction()->compact();
+// compaction → history に名前変更
+$session->rpc()->history()->compact();
+// 特定のイベント以降の履歴を切り詰める
+$session->rpc()->history()->truncate(new SessionHistoryTruncateParams(
+    eventId: 'evt-123', // このイベントとそれ以降のすべてのイベントが削除される
+));
 
 // tools (プロトコルv3+: external_tool.requestedイベントへの応答)
 $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToolCallParams(

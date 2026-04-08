@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingAgent;
 use Revolution\Copilot\Rpc\PendingCommands;
-use Revolution\Copilot\Rpc\PendingCompaction;
+use Revolution\Copilot\Rpc\PendingHistory;
 use Revolution\Copilot\Rpc\PendingExtensions;
 use Revolution\Copilot\Rpc\PendingFleet;
 use Revolution\Copilot\Rpc\PendingLog;
@@ -59,10 +59,10 @@ describe('SessionRpc', function () {
         expect($rpc->agent())->toBeInstanceOf(PendingAgent::class);
     });
 
-    it('returns PendingCompaction from compaction()', function () {
+    it('returns PendingHistory from history()', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
-        expect($rpc->compaction())->toBeInstanceOf(PendingCompaction::class);
+        expect($rpc->history())->toBeInstanceOf(PendingHistory::class);
     });
 
     it('returns PendingSessionTools from tools()', function () {

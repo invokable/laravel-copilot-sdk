@@ -39,6 +39,11 @@ $config = new SessionConfig(
     // configディレクトリを上書き設定
     configDir: '',
 
+    // MCP設定やスキルディレクトリの自動検出を有効化
+    // .mcp.json や .vscode/mcp.json をワーキングディレクトリから自動検出し、
+    // 明示的に指定した mcpServers や skillDirectories とマージする（名前衝突時は明示指定が優先）
+    enableConfigDiscovery: true,
+
     // カスタムツール
     tools: [...],
 

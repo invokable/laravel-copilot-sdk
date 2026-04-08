@@ -26,6 +26,12 @@ readonly class SessionConfig implements Arrayable
      * @param  ModelCapabilitiesOverride|array|null  $modelCapabilities  Per-property overrides for model capabilities, deep-merged over runtime defaults.
      * @param  ?string  $configDir  Override the default configuration directory location.
      *                              When specified, the session will use this directory for storing config and state.
+     * @param  ?bool  $enableConfigDiscovery  When true, automatically discovers MCP server configurations
+     *                                        (e.g. `.mcp.json`, `.vscode/mcp.json`) and skill directories from the
+     *                                        working directory and merges them with any explicitly provided
+     *                                        `mcpServers` and `skillDirectories`, with explicit values taking
+     *                                        precedence on name collision. Custom instruction files are always
+     *                                        loaded regardless of this setting.
      * @param  ?array  $tools  Tools exposed to the CLI server
      * @param  ?array  $commands  Slash commands registered for this session.
      *                            When the CLI has a TUI, each command appears as `/name` for the user to invoke.
@@ -73,6 +79,7 @@ readonly class SessionConfig implements Arrayable
         public ReasoningEffort|string|null $reasoningEffort = null,
         public ModelCapabilitiesOverride|array|null $modelCapabilities = null,
         public ?string $configDir = null,
+        public ?bool $enableConfigDiscovery = null,
         public ?array $tools = null,
         public ?array $commands = null,
         public SystemMessageConfig|array|null $systemMessage = null,
@@ -141,6 +148,7 @@ readonly class SessionConfig implements Arrayable
             reasoningEffort: $data['reasoningEffort'] ?? null,
             modelCapabilities: $modelCapabilities,
             configDir: $data['configDir'] ?? null,
+            enableConfigDiscovery: $data['enableConfigDiscovery'] ?? null,
             tools: $data['tools'] ?? null,
             commands: $data['commands'] ?? null,
             systemMessage: $systemMessage,
@@ -199,6 +207,7 @@ readonly class SessionConfig implements Arrayable
             'reasoningEffort' => $reasoningEffort,
             'modelCapabilities' => $modelCapabilities,
             'configDir' => $this->configDir,
+            'enableConfigDiscovery' => $this->enableConfigDiscovery,
             'tools' => $this->tools,
             'commands' => $this->commands,
             'systemMessage' => $systemMessage,
