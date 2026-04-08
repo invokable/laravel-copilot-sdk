@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Types\Rpc\SessionsForkParams;
 use Revolution\Copilot\Types\Rpc\SessionsForkResult;
-use Revolution\Copilot\Types\Rpc\SessionHistoryTruncateParams;
-use Revolution\Copilot\Types\Rpc\SessionHistoryTruncateResult;
 
 describe('SessionsForkResult', function () {
     it('can be created from array', function () {
