@@ -19,6 +19,7 @@ use Revolution\Copilot\Types\Rpc\PingResult;
  * $client->rpc()->account()->getQuota();
  * $client->rpc()->mcp()->config()->list();
  * $client->rpc()->sessionFs()->setProvider(...);
+ * $client->rpc()->sessions()->fork(...);
  * ```
  */
 class ServerRpc
@@ -77,5 +78,15 @@ class ServerRpc
     public function sessionFs(): PendingServerSessionFs
     {
         return new PendingServerSessionFs($this->client);
+    }
+
+    /**
+     * Sessions RPC operations (fork).
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function sessions(): PendingSessions
+    {
+        return new PendingSessions($this->client);
     }
 }

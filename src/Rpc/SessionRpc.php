@@ -26,7 +26,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->mcp()->list();
  * $session->rpc()->plugins()->list();
  * $session->rpc()->extensions()->list();
- * $session->rpc()->compaction()->compact();
+ * $session->rpc()->history()->compact();
+ * $session->rpc()->history()->truncate(new SessionHistoryTruncateParams(eventId: '...'));
  * $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToolCallParams(requestId: '...', result: 'done'));
  * $session->rpc()->commands()->handlePendingCommand(new SessionCommandsHandlePendingCommandParams(requestId: '...'));
  * $session->rpc()->ui()->elicitation(new SessionUiElicitationParams(message: '...', requestedSchema: [...]));
@@ -129,11 +130,13 @@ class SessionRpc
     }
 
     /**
-     * Compaction RPC operations.
+     * History RPC operations (compaction, truncation).
+     *
+     * @experimental This API group is experimental and may change or be removed.
      */
-    public function compaction(): PendingCompaction
+    public function history(): PendingHistory
     {
-        return new PendingCompaction($this->client, $this->sessionId);
+        return new PendingHistory($this->client, $this->sessionId);
     }
 
     /**

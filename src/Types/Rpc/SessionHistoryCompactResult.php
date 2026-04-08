@@ -7,11 +7,11 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Result of session compaction.
+ * Result of session history compaction.
  *
  * @experimental This type is part of an experimental API and may change or be removed.
  */
-readonly class SessionCompactionCompactResult implements Arrayable
+readonly class SessionHistoryCompactResult implements Arrayable
 {
     /**
      * @param  bool  $success  Whether compaction completed successfully
