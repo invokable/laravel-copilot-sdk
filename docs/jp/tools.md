@@ -119,3 +119,27 @@ Tool::define(
 Protocol v3（現在のデフォルト）では、ツール呼び出しはJSON-RPCリクエストではなくセッションイベント（`external_tool.requested`）としてブロードキャストされます。SDKはこのイベントを内部的に処理して `session.tools.handlePendingToolCall` RPCで応答します。
 
 **`SessionConfig` の使い方は変わりません。** `tools` に定義を渡すだけで、プロトコルの違いはSDKが吸収します。
+
+## MCP CallToolResult の変換
+
+MCPサーバーのツール結果（`CallToolResult`）をCopilot SDKの`ToolResultObject`に変換するには`McpCallToolResult::convert()`を使います。
+MCPツールの結果はtext・image・resourceなどの`content`ブロック配列ですが、Copilot SDKは`ToolResultObject`形式を期待するため変換が必要です。
+
+```php
+use Revolution\Copilot\Support\McpCallToolResult;
+
+// MCP CallToolResult形式
+$mcpResult = [
+    'content' => [
+        ['type' => 'text', 'text' => 'File contents here'],
+        ['type' => 'image', 'data' => 'base64...', 'mimeType' => 'image/png'],
+    ],
+    'isError' => false,
+];
+
+// Copilot SDK ToolResultObject形式に変換
+$toolResult = McpCallToolResult::convert($mcpResult);
+// $toolResult->textResultForLlm => 'File contents here'
+// $toolResult->resultType => 'success'
+// $toolResult->binaryResultsForLlm => [['data' => 'base64...', 'mimeType' => 'image/png', 'type' => 'image']]
+```

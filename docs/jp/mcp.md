@@ -3,14 +3,14 @@
 SessionConfigの`mcpServers`にMCPサーバーを指定すれば使うことができます。
 
 Copilot CLIでLaravel Boostを使う場合は [laravel-boost-copilot-cli](https://github.com/invokable/laravel-boost-copilot-cli) も使いましょう。
-laravel-boost-copilot-cliを作った知見から`'type' => 'local'`と`'tools' => ['*']`が必須なことが分かっています。これがないとMCPサーバーとして認識されません。
+`'type' => 'stdio'`（または`'local'`）と`'tools' => ['*']`が必須なことが分かっています。これがないとMCPサーバーとして認識されません。
 
 ```php
 Artisan::command('copilot:mcp', function () {
     $config = new SessionConfig(
         mcpServers: [
             'laravel-boost' => [
-                'type' => 'local',
+                'type' => 'stdio',
                 'command' => 'php',
                 'args' => ['artisan', 'boost:mcp'],
                 'tools' => ['*'],
@@ -69,7 +69,7 @@ foreach ($result->servers as $name => $config) {
 Copilot::client()->rpc()->mcp()->add(new McpConfigAddParams(
     name: 'laravel-boost',
     config: new McpServerValue(
-        type: 'local',
+        type: 'stdio',
         command: 'php',
         args: ['artisan', 'boost:mcp'],
         tools: ['*'],
@@ -80,7 +80,7 @@ Copilot::client()->rpc()->mcp()->add(new McpConfigAddParams(
 Copilot::client()->rpc()->mcp()->update(new McpConfigUpdateParams(
     name: 'laravel-boost',
     config: new McpServerValue(
-        type: 'local',
+        type: 'stdio',
         command: 'php',
         args: ['artisan', 'boost:mcp', '--verbose'],
         tools: ['*'],

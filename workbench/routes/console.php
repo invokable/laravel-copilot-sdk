@@ -236,7 +236,7 @@ Artisan::command('copilot:mcp', function () {
     $config = new SessionConfig(
         mcpServers: [
             'laravel-boost' => [
-                'type' => 'local',
+                'type' => 'stdio',
                 'command' => './vendor/bin/testbench',
                 'args' => ['boost:mcp'],
                 'tools' => ['*'],
