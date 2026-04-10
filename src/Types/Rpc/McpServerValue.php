@@ -7,16 +7,16 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * MCP server configuration (local/stdio or remote/http).
+ * MCP server configuration (stdio for local/subprocess servers, http/sse for remote servers).
  */
 readonly class McpServerValue implements Arrayable
 {
     /**
-     * @param  ?string  $type  Server type: "local", "stdio", "http", or "sse"
-     * @param  ?string  $command  Command to run (local/stdio servers)
-     * @param  ?array<string>  $args  Arguments for the command (local/stdio servers)
-     * @param  ?string  $cwd  Working directory (local/stdio servers)
-     * @param  ?array<string, string>  $env  Environment variables (local/stdio servers)
+     * @param  ?string  $type  Server type: "stdio" (local subprocess, also accepts "local"), "http", or "sse" (remote). Defaults to "stdio".
+     * @param  ?string  $command  Command to run (stdio servers)
+     * @param  ?array<string>  $args  Arguments for the command (stdio servers)
+     * @param  ?string  $cwd  Working directory (stdio servers)
+     * @param  ?array<string, string>  $env  Environment variables (stdio servers)
      * @param  ?string  $url  URL for HTTP/SSE servers
      * @param  ?array<string, string>  $headers  Headers for HTTP/SSE servers
      * @param  ?string  $oauthClientId  OAuth client ID (HTTP/SSE servers)
