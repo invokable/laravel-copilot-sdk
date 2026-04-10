@@ -3,16 +3,15 @@
         "copilot-cli"
     ],
     "guidelines": true,
-    "herd_mcp": false,
     "mcp": true,
     "nightwatch_mcp": false,
     "packages": [
-        "revolution/laravel-boost-copilot-cli",
-        "laravel/ai"
+        "revolution/laravel-boost-copilot-cli"
     ],
     "sail": false,
     "skills": [
-        "pest-testing",
-        "ai-sdk-development"
+        "laravel-best-practices",
+        "ai-sdk-development",
+        "pest-testing"
     ]
 }
