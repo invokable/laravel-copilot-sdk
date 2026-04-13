@@ -13,7 +13,7 @@ describe('Laravel AI SDK', function () {
 
         $response = agent(
             instructions: 'You are an expert at software development.',
-        )->prompt('Tell me about Laravel');
+        )->prompt('Tell me about Laravel', provider: 'copilot');
 
         AnonymousAgent::assertPrompted(function (AgentPrompt $prompt) {
             return $prompt->contains('Laravel');

@@ -6,24 +6,19 @@ namespace Revolution\Copilot\Ai;
 
 use Illuminate\Contracts\Events\Dispatcher;
 use Laravel\Ai\Contracts\Gateway\TextGateway;
-use Laravel\Ai\Contracts\Providers\FileProvider;
 use Laravel\Ai\Contracts\Providers\TextProvider;
 use Laravel\Ai\Providers\Concerns\GeneratesText;
-use Laravel\Ai\Providers\Concerns\HasFileGateway;
 use Laravel\Ai\Providers\Concerns\HasTextGateway;
-use Laravel\Ai\Providers\Concerns\ManagesFiles;
 use Laravel\Ai\Providers\Concerns\StreamsText;
 use Laravel\Ai\Providers\Provider;
 
 /**
  * Laravel AI SDK Integration.
  */
-class CopilotProvider extends Provider implements FileProvider, TextProvider
+class CopilotProvider extends Provider implements TextProvider
 {
     use GeneratesText;
-    use HasFileGateway;
     use HasTextGateway;
-    use ManagesFiles;
     use StreamsText;
 
     public function __construct(

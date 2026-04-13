@@ -11,14 +11,12 @@ use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Str;
 use Laravel\Ai\Contracts\Gateway\TextGateway;
 use Laravel\Ai\Contracts\Providers\TextProvider;
-use Laravel\Ai\Gateway\Prism\PrismException;
 use Laravel\Ai\Gateway\TextGenerationOptions;
 use Laravel\Ai\Responses\Data\Meta;
 use Laravel\Ai\Responses\Data\Usage;
 use Laravel\Ai\Responses\TextResponse;
 use Laravel\Ai\Streaming\Events\StreamEvent;
 use Laravel\Ai\Streaming\Events\TextDelta;
-use Prism\Prism\Exceptions\PrismException as PrismVendorException;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionConfig;
@@ -80,22 +78,18 @@ class CopilotGateway implements TextGateway
 
         $prompt = last($messages)->content;
 
-        try {
-            $events = Copilot::stream(function (CopilotSession $session) use ($prompt) {
-                foreach ($session->sendAndStream($prompt) as $event) {
-                    yield $event;
-                }
-            }, config: $config);
-
-            foreach ($events as $event) {
-                if (! is_null($event = $this->toLaravelStreamEvent(
-                    $invocationId, $event, $provider->name(), $model,
-                ))) {
-                    yield $event;
-                }
+        $events = Copilot::stream(function (CopilotSession $session) use ($prompt) {
+            foreach ($session->sendAndStream($prompt) as $event) {
+                yield $event;
             }
-        } catch (PrismVendorException $e) {
-            throw PrismException::toAiException($e, $provider, $model);
+        }, config: $config);
+
+        foreach ($events as $event) {
+            if (! is_null($event = $this->toLaravelStreamEvent(
+                $invocationId, $event, $provider->name(), $model,
+            ))) {
+                yield $event;
+            }
         }
     }
 
