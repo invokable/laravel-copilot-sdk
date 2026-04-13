@@ -277,8 +277,3 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 
 ## Debugging
 - パッケージプロジェクトなので`info()`などのログはtestbenchの`vendor/orchestra/testbench-core/laravel/storage/logs/laravel.log`に出力される。
-
-## Custom instructions
-
-Copilot CLIのバグでinstructionsが`＜`で途切れて読み込まれてないのでこれ以降に`＜laravel-boost-guidelines＞`がないなら追加で読み込んでください。
-`.github/instructions/laravel-boost.instructions.md`
