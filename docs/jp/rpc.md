@@ -49,6 +49,14 @@ Copilot::client()->rpc()->mcp()->update(new McpConfigUpdateParams(
 ));
 Copilot::client()->rpc()->mcp()->remove(new McpConfigRemoveParams(name: 'my-server'));
 
+// mcp discover (MCPサーバーの自動検出)
+Copilot::client()->rpc()->mcp()->discover(new McpDiscoverParams(
+    workingDirectory: '/path/to/project',
+));
+// 引数なしで実行可能
+$result = Copilot::client()->rpc()->mcp()->discover();
+// $result->servers は DiscoveredMcpServer の配列
+
 // sessionFs (セッションファイルシステムプロバイダーの登録)
 Copilot::client()->rpc()->sessionFs()->setProvider(new SessionFsSetProviderParams(
     initialCwd: '/path/to/project',
@@ -213,6 +221,14 @@ $session->rpc()->shell()->kill(new SessionShellKillParams(
     processId: $result->processId,
     signal: 'SIGTERM', // SIGTERM（デフォルト）, SIGKILL, SIGINT
 ));
+
+// usage (experimental: セッション使用量メトリクス)
+$metrics = $session->rpc()->usage()->getMetrics();
+// $metrics->totalPremiumRequestCost - プレミアムリクエストの合計コスト
+// $metrics->totalUserRequests - ユーザーリクエストの合計数
+// $metrics->codeChanges - コード変更メトリクス（追加行数、削除行数、変更ファイル数）
+// $metrics->modelMetrics - モデルごとのトークン使用量とリクエスト数
+// $metrics->currentModel - 現在のモデル識別子
 ```
 
 ## SessionFS コールバック型

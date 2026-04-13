@@ -198,4 +198,14 @@ class SessionRpc
     {
         return new PendingShell($this->client, $this->sessionId);
     }
+
+    /**
+     * Usage metrics RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function usage(): PendingUsage
+    {
+        return new PendingUsage($this->client, $this->sessionId);
+    }
 }

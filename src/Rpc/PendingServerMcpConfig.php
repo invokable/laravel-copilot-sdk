@@ -9,6 +9,8 @@ use Revolution\Copilot\Types\Rpc\McpConfigAddParams;
 use Revolution\Copilot\Types\Rpc\McpConfigListResult;
 use Revolution\Copilot\Types\Rpc\McpConfigRemoveParams;
 use Revolution\Copilot\Types\Rpc\McpConfigUpdateParams;
+use Revolution\Copilot\Types\Rpc\McpDiscoverParams;
+use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
 
 /**
  * Pending MCP configuration RPC operations (server-scoped).
@@ -60,5 +62,17 @@ class PendingServerMcpConfig
         $paramsArray = ($params instanceof McpConfigRemoveParams ? $params : McpConfigRemoveParams::fromArray($params))->toArray();
 
         $this->client->request('mcp.config.remove', $paramsArray);
+    }
+
+    /**
+     * Discover MCP servers from all sources.
+     */
+    public function discover(McpDiscoverParams|array $params = []): McpDiscoverResult
+    {
+        $paramsArray = ($params instanceof McpDiscoverParams ? $params : McpDiscoverParams::fromArray($params))->toArray();
+
+        return McpDiscoverResult::fromArray(
+            $this->client->request('mcp.discover', $paramsArray),
+        );
     }
 }
