@@ -7,6 +7,7 @@ use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\Enums\ExtensionSource;
 use Revolution\Copilot\Enums\ExtensionStatus;
 use Revolution\Copilot\Enums\McpServerStatus;
+use Revolution\Copilot\Enums\ServerSource;
 use Revolution\Copilot\Types\Rpc\ExtensionInfo;
 use Revolution\Copilot\Types\Rpc\McpServerInfo;
 use Revolution\Copilot\Types\Rpc\PluginInfo;
@@ -96,7 +97,7 @@ describe('SkillInfo', function () {
 });
 
 describe('McpServerInfo', function () {
-    it('can be created from array', function () {
+    it('can be created from array with known source', function () {
         $info = McpServerInfo::fromArray([
             'name' => 'github',
             'status' => 'connected',
@@ -106,7 +107,17 @@ describe('McpServerInfo', function () {
 
         expect($info->name)->toBe('github')
             ->and($info->status)->toBe(McpServerStatus::CONNECTED)
-            ->and($info->source)->toBe('workspace');
+            ->and($info->source)->toBe(ServerSource::WORKSPACE);
+    });
+
+    it('can be created from array with unknown source as string fallback', function () {
+        $info = McpServerInfo::fromArray([
+            'name' => 'custom',
+            'status' => 'connected',
+            'source' => 'custom-source',
+        ]);
+
+        expect($info->source)->toBe('custom-source');
     });
 
     it('can be created from array with error', function () {
@@ -130,17 +141,31 @@ describe('McpServerInfo', function () {
             ->and($info->error)->toBeNull();
     });
 
-    it('can convert to array', function () {
+    it('can convert to array with enum source', function () {
         $info = new McpServerInfo(
             name: 'github',
             status: McpServerStatus::CONNECTED,
-            source: 'workspace',
+            source: ServerSource::WORKSPACE,
         );
 
         expect($info->toArray())->toBe([
             'name' => 'github',
             'status' => 'connected',
             'source' => 'workspace',
+        ]);
+    });
+
+    it('can convert to array with string source', function () {
+        $info = new McpServerInfo(
+            name: 'github',
+            status: McpServerStatus::CONNECTED,
+            source: 'custom-source',
+        );
+
+        expect($info->toArray())->toBe([
+            'name' => 'github',
+            'status' => 'connected',
+            'source' => 'custom-source',
         ]);
     });
 

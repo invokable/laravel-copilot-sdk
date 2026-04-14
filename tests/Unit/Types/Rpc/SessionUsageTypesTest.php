@@ -74,7 +74,22 @@ describe('ModelMetricUsage', function () {
         expect($usage->inputTokens)->toBe(5000)
             ->and($usage->outputTokens)->toBe(2000)
             ->and($usage->cacheReadTokens)->toBe(1000)
-            ->and($usage->cacheWriteTokens)->toBe(500);
+            ->and($usage->cacheWriteTokens)->toBe(500)
+            ->and($usage->reasoningTokens)->toBeNull();
+    });
+
+    it('can be created from array with reasoningTokens', function () {
+        $usage = ModelMetricUsage::fromArray([
+            'inputTokens' => 5000,
+            'outputTokens' => 2000,
+            'cacheReadTokens' => 1000,
+            'cacheWriteTokens' => 500,
+            'reasoningTokens' => 800,
+        ]);
+
+        expect($usage->inputTokens)->toBe(5000)
+            ->and($usage->outputTokens)->toBe(2000)
+            ->and($usage->reasoningTokens)->toBe(800);
     });
 
     it('converts to array', function () {
@@ -90,6 +105,24 @@ describe('ModelMetricUsage', function () {
             'outputTokens' => 50,
             'cacheReadTokens' => 10,
             'cacheWriteTokens' => 5,
+        ]);
+    });
+
+    it('includes reasoningTokens in toArray when present', function () {
+        $usage = new ModelMetricUsage(
+            inputTokens: 100,
+            outputTokens: 50,
+            cacheReadTokens: 10,
+            cacheWriteTokens: 5,
+            reasoningTokens: 25,
+        );
+
+        expect($usage->toArray())->toBe([
+            'inputTokens' => 100,
+            'outputTokens' => 50,
+            'cacheReadTokens' => 10,
+            'cacheWriteTokens' => 5,
+            'reasoningTokens' => 25,
         ]);
     });
 

@@ -8,6 +8,9 @@ use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * Result of setting session mode.
+ *
+ * @deprecated The session.mode.set RPC now returns void.
+ *             PendingMode::set() no longer returns a result.
  */
 readonly class SessionModeSetResult implements Arrayable
 {
