@@ -4,26 +4,23 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingMode;
-use Revolution\Copilot\Types\Rpc\SessionModeGetResult;
 use Revolution\Copilot\Types\Rpc\SessionModeSetParams;
-use Revolution\Copilot\Types\Rpc\SessionModeSetResult;
 
 describe('PendingMode', function () {
-    it('calls session.mode.get and returns result', function () {
+    it('calls session.mode.get and returns mode string', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
             ->with('session.mode.get', ['sessionId' => 'session-abc'])
-            ->andReturn(['mode' => 'interactive']);
+            ->andReturn('interactive');
 
         $pending = new PendingMode($client, 'session-abc');
         $result = $pending->get();
 
-        expect($result)->toBeInstanceOf(SessionModeGetResult::class)
-            ->and($result->mode)->toBe('interactive');
+        expect($result)->toBe('interactive');
     });
 
-    it('calls session.mode.set with typed params', function () {
+    it('calls session.mode.set with typed params and returns void', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
@@ -32,16 +29,13 @@ describe('PendingMode', function () {
                 Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'
                     && $params['mode'] === 'autopilot'),
             )
-            ->andReturn(['mode' => 'autopilot']);
+            ->andReturn(null);
 
         $pending = new PendingMode($client, 'session-abc');
-        $result = $pending->set(new SessionModeSetParams(mode: 'autopilot'));
-
-        expect($result)->toBeInstanceOf(SessionModeSetResult::class)
-            ->and($result->mode)->toBe('autopilot');
+        $pending->set(new SessionModeSetParams(mode: 'autopilot'));
     });
 
-    it('calls session.mode.set with array params', function () {
+    it('calls session.mode.set with array params and returns void', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
@@ -50,12 +44,9 @@ describe('PendingMode', function () {
                 Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'
                     && $params['mode'] === 'plan'),
             )
-            ->andReturn(['mode' => 'plan']);
+            ->andReturn(null);
 
         $pending = new PendingMode($client, 'session-abc');
-        $result = $pending->set(['mode' => 'plan']);
-
-        expect($result)->toBeInstanceOf(SessionModeSetResult::class)
-            ->and($result->mode)->toBe('plan');
+        $pending->set(['mode' => 'plan']);
     });
 });

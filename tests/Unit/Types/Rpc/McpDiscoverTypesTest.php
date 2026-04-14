@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\McpTransportType;
 use Revolution\Copilot\Enums\ServerSource;
 use Revolution\Copilot\Types\Rpc\DiscoveredMcpServer;
 use Revolution\Copilot\Types\Rpc\McpDiscoverParams;
@@ -53,18 +54,29 @@ describe('McpDiscoverParams', function () {
 });
 
 describe('DiscoveredMcpServer', function () {
-    it('can be created from array with all fields', function () {
+    it('can be created from array with known transport type', function () {
         $server = DiscoveredMcpServer::fromArray([
             'name' => 'github',
-            'type' => 'local',
+            'type' => 'stdio',
             'source' => 'user',
             'enabled' => true,
         ]);
 
         expect($server->name)->toBe('github')
-            ->and($server->type)->toBe('local')
+            ->and($server->type)->toBe(McpTransportType::STDIO)
             ->and($server->source)->toBe(ServerSource::USER)
             ->and($server->enabled)->toBeTrue();
+    });
+
+    it('can be created from array with unknown transport type as fallback string', function () {
+        $server = DiscoveredMcpServer::fromArray([
+            'name' => 'custom',
+            'type' => 'custom-transport',
+            'source' => 'user',
+            'enabled' => true,
+        ]);
+
+        expect($server->type)->toBe('custom-transport');
     });
 
     it('can be created from array without optional type', function () {
@@ -78,12 +90,12 @@ describe('DiscoveredMcpServer', function () {
             ->and($server->source)->toBe(ServerSource::WORKSPACE);
     });
 
-    it('converts to array', function () {
+    it('converts to array with enum type', function () {
         $server = new DiscoveredMcpServer(
             name: 'github',
             source: ServerSource::BUILTIN,
             enabled: true,
-            type: 'stdio',
+            type: McpTransportType::STDIO,
         );
 
         expect($server->toArray())->toBe([
@@ -91,6 +103,22 @@ describe('DiscoveredMcpServer', function () {
             'source' => 'builtin',
             'enabled' => true,
             'type' => 'stdio',
+        ]);
+    });
+
+    it('converts to array with string type', function () {
+        $server = new DiscoveredMcpServer(
+            name: 'github',
+            source: ServerSource::BUILTIN,
+            enabled: true,
+            type: 'custom',
+        );
+
+        expect($server->toArray())->toBe([
+            'name' => 'github',
+            'source' => 'builtin',
+            'enabled' => true,
+            'type' => 'custom',
         ]);
     });
 
@@ -107,6 +135,18 @@ describe('DiscoveredMcpServer', function () {
     it('implements Arrayable interface', function () {
         $server = new DiscoveredMcpServer(name: 'x', source: ServerSource::USER, enabled: true);
         expect($server)->toBeInstanceOf(Arrayable::class);
+    });
+
+    it('resolves all known transport types', function () {
+        foreach (['stdio', 'http', 'sse', 'memory'] as $type) {
+            $server = DiscoveredMcpServer::fromArray([
+                'name' => 'test',
+                'type' => $type,
+                'source' => 'user',
+                'enabled' => true,
+            ]);
+            expect($server->type)->toBeInstanceOf(McpTransportType::class);
+        }
     });
 });
 
@@ -149,7 +189,7 @@ describe('McpDiscoverResult', function () {
 
     it('converts to array', function () {
         $result = new McpDiscoverResult(servers: [
-            new DiscoveredMcpServer(name: 'test', source: ServerSource::BUILTIN, enabled: true, type: 'http'),
+            new DiscoveredMcpServer(name: 'test', source: ServerSource::BUILTIN, enabled: true, type: McpTransportType::HTTP),
         ]);
 
         $array = $result->toArray();

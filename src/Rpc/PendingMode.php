@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionModeGetResult;
 use Revolution\Copilot\Types\Rpc\SessionModeSetParams;
-use Revolution\Copilot\Types\Rpc\SessionModeSetResult;
 
 /**
  * Pending mode RPC operations for a session.
@@ -21,26 +19,26 @@ class PendingMode
 
     /**
      * Get the current mode.
+     *
+     * Returns the session mode string directly (e.g. "interactive", "plan", "autopilot").
      */
-    public function get(): SessionModeGetResult
+    public function get(): string
     {
-        return SessionModeGetResult::fromArray(
-            $this->client->request('session.mode.get', [
-                'sessionId' => $this->sessionId,
-            ]),
-        );
+        return $this->client->request('session.mode.get', [
+            'sessionId' => $this->sessionId,
+        ]);
     }
 
     /**
      * Set the mode.
+     *
+     * @param  SessionModeSetParams|array{mode: string}  $params
      */
-    public function set(SessionModeSetParams|array $params): SessionModeSetResult
+    public function set(SessionModeSetParams|array $params): void
     {
         $paramsArray = ($params instanceof SessionModeSetParams ? $params : SessionModeSetParams::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        return SessionModeSetResult::fromArray(
-            $this->client->request('session.mode.set', $paramsArray),
-        );
+        $this->client->request('session.mode.set', $paramsArray);
     }
 }

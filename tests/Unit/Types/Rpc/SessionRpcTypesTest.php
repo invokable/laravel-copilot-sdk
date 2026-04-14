@@ -11,12 +11,10 @@ use Revolution\Copilot\Types\Rpc\SessionHistoryTruncateParams;
 use Revolution\Copilot\Types\Rpc\SessionHistoryTruncateResult;
 use Revolution\Copilot\Types\Rpc\SessionLogParams;
 use Revolution\Copilot\Types\Rpc\SessionLogResult;
-use Revolution\Copilot\Types\Rpc\SessionModeGetResult;
 use Revolution\Copilot\Types\Rpc\SessionModelGetCurrentResult;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
 use Revolution\Copilot\Types\Rpc\SessionModelSwitchToResult;
 use Revolution\Copilot\Types\Rpc\SessionModeSetParams;
-use Revolution\Copilot\Types\Rpc\SessionModeSetResult;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestResult;
 use Revolution\Copilot\Types\Rpc\SessionPlanReadResult;
@@ -91,29 +89,10 @@ describe('SessionModelSwitchToResult', function () {
     });
 });
 
-describe('SessionModeGetResult', function () {
-    it('can be created from array', function () {
-        $result = SessionModeGetResult::fromArray(['mode' => 'interactive']);
-        expect($result->mode)->toBe('interactive');
-    });
-
-    it('can convert to array', function () {
-        $result = new SessionModeGetResult(mode: 'plan');
-        expect($result->toArray())->toBe(['mode' => 'plan']);
-    });
-});
-
 describe('SessionModeSetParams', function () {
     it('can be created and converted', function () {
         $params = new SessionModeSetParams(mode: 'autopilot');
         expect($params->toArray())->toBe(['mode' => 'autopilot']);
-    });
-});
-
-describe('SessionModeSetResult', function () {
-    it('can be created from array', function () {
-        $result = SessionModeSetResult::fromArray(['mode' => 'plan']);
-        expect($result->mode)->toBe('plan');
     });
 });
 

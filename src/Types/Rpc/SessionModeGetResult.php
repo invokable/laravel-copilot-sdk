@@ -8,6 +8,9 @@ use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * Result of getting session mode.
+ *
+ * @deprecated The session.mode.get RPC now returns the mode string directly.
+ *             Use the string return from PendingMode::get() instead.
  */
 readonly class SessionModeGetResult implements Arrayable
 {
