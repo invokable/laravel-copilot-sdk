@@ -54,9 +54,9 @@ Artisan::command('copilot:mcp', function () {
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Types\Rpc\McpConfigAddParams;
-use Revolution\Copilot\Types\Rpc\McpConfigUpdateParams;
-use Revolution\Copilot\Types\Rpc\McpConfigRemoveParams;
+use Revolution\Copilot\Types\Rpc\McpConfigAddRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
 use Revolution\Copilot\Types\Rpc\McpServerValue;
 
 // 設定済みのMCPサーバー一覧を取得
@@ -66,7 +66,7 @@ foreach ($result->servers as $name => $config) {
 }
 
 // MCPサーバーを追加
-Copilot::client()->rpc()->mcp()->add(new McpConfigAddParams(
+Copilot::client()->rpc()->mcp()->add(new McpConfigAddRequest(
     name: 'laravel-boost',
     config: new McpServerValue(
         type: 'stdio',
@@ -77,7 +77,7 @@ Copilot::client()->rpc()->mcp()->add(new McpConfigAddParams(
 ));
 
 // MCPサーバーの設定を更新
-Copilot::client()->rpc()->mcp()->update(new McpConfigUpdateParams(
+Copilot::client()->rpc()->mcp()->update(new McpConfigUpdateRequest(
     name: 'laravel-boost',
     config: new McpServerValue(
         type: 'stdio',
@@ -88,5 +88,5 @@ Copilot::client()->rpc()->mcp()->update(new McpConfigUpdateParams(
 ));
 
 // MCPサーバーを削除
-Copilot::client()->rpc()->mcp()->remove(new McpConfigRemoveParams(name: 'laravel-boost'));
+Copilot::client()->rpc()->mcp()->remove(new McpConfigRemoveRequest(name: 'laravel-boost'));
 ```

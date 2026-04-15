@@ -314,7 +314,7 @@ $sessions = Copilot::client()->listSessions();
 
 ```php
 Copilot::client()->rpc()->ping();
-Copilot::client()->rpc()->models()->list();       // ModelsListResult
+Copilot::client()->rpc()->models()->list();       // ModelList
 Copilot::client()->rpc()->tools()->list();
 Copilot::client()->rpc()->account()->getQuota();
 ```
@@ -322,35 +322,35 @@ Copilot::client()->rpc()->account()->getQuota();
 ### SessionRpc (Session-scoped)
 
 ```php
-use Revolution\Copilot\Types\Rpc\SessionModeSetParams;
-use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
-use Revolution\Copilot\Types\Rpc\SessionFleetStartParams;
+use Revolution\Copilot\Types\Rpc\ModeSetRequest;
+use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
+use Revolution\Copilot\Types\Rpc\FleetStartRequest;
 
 Copilot::start(function (CopilotSession $session) {
     // Mode: plan, autopilot, etc.
-    $session->rpc()->mode()->set(new SessionModeSetParams(mode: 'plan'));
+    $session->rpc()->mode()->set(new ModeSetRequest(mode: 'plan'));
     $session->sendAndWait(prompt: 'Create a plan for...');
     $plan = $session->rpc()->plan()->read();
 
-    $session->rpc()->mode()->set(new SessionModeSetParams(mode: 'autopilot'));
+    $session->rpc()->mode()->set(new ModeSetRequest(mode: 'autopilot'));
     $session->sendAndWait(prompt: 'Execute the plan');
 
     // Model
     $session->rpc()->model()->getCurrent();
-    $session->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: 'gpt-5.2'));
+    $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'gpt-5.2'));
 
     // Workspace
     $session->rpc()->workspace()->listFiles();
 
     // Fleet (sub-agents)
-    $session->rpc()->fleet()->start(new SessionFleetStartParams(prompt: '...'));
+    $session->rpc()->fleet()->start(new FleetStartRequest(prompt: '...'));
 
     // Agent
     $session->rpc()->agent()->list();
     $session->rpc()->agent()->getCurrent();
 
-    // Compaction
-    $session->rpc()->compaction()->compact();
+    // History (compaction)
+    $session->rpc()->history()->compact();
 });
 ```
 
