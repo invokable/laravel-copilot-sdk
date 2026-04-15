@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingUsage;
-use Revolution\Copilot\Types\Rpc\SessionUsageGetMetricsResult;
+use Revolution\Copilot\Types\Rpc\UsageGetMetricsResult;
 
 describe('PendingUsage', function () {
     it('calls session.usage.getMetrics and returns result', function () {
@@ -44,7 +44,7 @@ describe('PendingUsage', function () {
         $pending = new PendingUsage($client, 'session-abc');
         $result = $pending->getMetrics();
 
-        expect($result)->toBeInstanceOf(SessionUsageGetMetricsResult::class)
+        expect($result)->toBeInstanceOf(UsageGetMetricsResult::class)
             ->and($result->totalPremiumRequestCost)->toBe(3.5)
             ->and($result->totalUserRequests)->toBe(7)
             ->and($result->codeChanges->linesAdded)->toBe(50)

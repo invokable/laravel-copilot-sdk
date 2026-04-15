@@ -12,7 +12,7 @@ use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\InputOptions;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
-use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -41,7 +41,7 @@ interface CopilotSession
      *
      * @throws \RuntimeException if the host does not support elicitation
      */
-    public function elicitation(string $message, array $requestedSchema): SessionUiElicitationResult;
+    public function elicitation(string $message, array $requestedSchema): UIElicitationResponse;
 
     /**
      * Show a confirmation dialog and return the user's boolean answer.

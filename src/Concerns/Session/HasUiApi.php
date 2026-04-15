@@ -6,8 +6,8 @@ namespace Revolution\Copilot\Concerns\Session;
 
 use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\Types\InputOptions;
-use Revolution\Copilot\Types\Rpc\SessionUiElicitationParams;
-use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
+use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use RuntimeException;
 
@@ -45,12 +45,12 @@ trait HasUiApi
      *
      * @throws RuntimeException if the host does not support elicitation
      */
-    public function elicitation(string $message, array $requestedSchema): SessionUiElicitationResult
+    public function elicitation(string $message, array $requestedSchema): UIElicitationResponse
     {
         $this->assertElicitation();
 
         return $this->rpc()->ui()->elicitation(
-            new SessionUiElicitationParams(
+            new UIElicitationRequest(
                 message: $message,
                 requestedSchema: $requestedSchema,
             )
@@ -68,7 +68,7 @@ trait HasUiApi
         $this->assertElicitation();
 
         $result = $this->rpc()->ui()->elicitation(
-            new SessionUiElicitationParams(
+            new UIElicitationRequest(
                 message: $message,
                 requestedSchema: [
                     'type' => 'object',
@@ -97,7 +97,7 @@ trait HasUiApi
         $this->assertElicitation();
 
         $result = $this->rpc()->ui()->elicitation(
-            new SessionUiElicitationParams(
+            new UIElicitationRequest(
                 message: $message,
                 requestedSchema: [
                     'type' => 'object',
@@ -153,7 +153,7 @@ trait HasUiApi
         }
 
         $result = $this->rpc()->ui()->elicitation(
-            new SessionUiElicitationParams(
+            new UIElicitationRequest(
                 message: $message,
                 requestedSchema: [
                     'type' => 'object',

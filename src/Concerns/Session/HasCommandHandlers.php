@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\CommandContext;
 use Revolution\Copilot\Types\CommandDefinition;
-use Revolution\Copilot\Types\Rpc\SessionCommandsHandlePendingCommandParams;
+use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandRequest;
 use Throwable;
 
 /**
@@ -85,7 +85,7 @@ trait HasCommandHandlers
             if ($handler === null) {
                 try {
                     $this->rpc()->commands()->handlePendingCommand(
-                        new SessionCommandsHandlePendingCommandParams(
+                        new CommandsHandlePendingCommandRequest(
                             requestId: $requestId,
                             error: "Unknown command: {$commandName}",
                         ),
@@ -108,7 +108,7 @@ trait HasCommandHandlers
                 $handler($context);
 
                 $this->rpc()->commands()->handlePendingCommand(
-                    new SessionCommandsHandlePendingCommandParams(
+                    new CommandsHandlePendingCommandRequest(
                         requestId: $requestId,
                     ),
                 );
@@ -116,7 +116,7 @@ trait HasCommandHandlers
                 try {
                     logger()->error('Command handler failed', ['command' => $commandName, 'exception' => $e]);
                     $this->rpc()->commands()->handlePendingCommand(
-                        new SessionCommandsHandlePendingCommandParams(
+                        new CommandsHandlePendingCommandRequest(
                             requestId: $requestId,
                             error: 'Command failed',
                         ),

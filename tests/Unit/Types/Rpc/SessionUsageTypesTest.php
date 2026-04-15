@@ -7,7 +7,7 @@ use Revolution\Copilot\Types\Rpc\CodeChanges;
 use Revolution\Copilot\Types\Rpc\ModelMetric;
 use Revolution\Copilot\Types\Rpc\ModelMetricRequests;
 use Revolution\Copilot\Types\Rpc\ModelMetricUsage;
-use Revolution\Copilot\Types\Rpc\SessionUsageGetMetricsResult;
+use Revolution\Copilot\Types\Rpc\UsageGetMetricsResult;
 
 describe('CodeChanges', function () {
     it('can be created from array', function () {
@@ -167,9 +167,9 @@ describe('ModelMetric', function () {
     });
 });
 
-describe('SessionUsageGetMetricsResult', function () {
+describe('UsageGetMetricsResult', function () {
     it('can be created from array with all fields', function () {
-        $result = SessionUsageGetMetricsResult::fromArray([
+        $result = UsageGetMetricsResult::fromArray([
             'totalPremiumRequestCost' => 5.5,
             'totalUserRequests' => 10,
             'totalApiDurationMs' => 12345.6,
@@ -204,7 +204,7 @@ describe('SessionUsageGetMetricsResult', function () {
     });
 
     it('can be created without optional currentModel', function () {
-        $result = SessionUsageGetMetricsResult::fromArray([
+        $result = UsageGetMetricsResult::fromArray([
             'totalPremiumRequestCost' => 0,
             'totalUserRequests' => 0,
             'totalApiDurationMs' => 0,
@@ -237,7 +237,7 @@ describe('SessionUsageGetMetricsResult', function () {
             'currentModel' => 'claude-sonnet-4',
         ];
 
-        $result = SessionUsageGetMetricsResult::fromArray($data);
+        $result = UsageGetMetricsResult::fromArray($data);
         $array = $result->toArray();
 
         expect($array['totalPremiumRequestCost'])->toBe(2.0)
@@ -247,7 +247,7 @@ describe('SessionUsageGetMetricsResult', function () {
     });
 
     it('excludes null currentModel from toArray', function () {
-        $result = SessionUsageGetMetricsResult::fromArray([
+        $result = UsageGetMetricsResult::fromArray([
             'totalPremiumRequestCost' => 0,
             'totalUserRequests' => 0,
             'totalApiDurationMs' => 0,
@@ -262,7 +262,7 @@ describe('SessionUsageGetMetricsResult', function () {
     });
 
     it('implements Arrayable interface', function () {
-        $result = SessionUsageGetMetricsResult::fromArray([
+        $result = UsageGetMetricsResult::fromArray([
             'totalPremiumRequestCost' => 0,
             'totalUserRequests' => 0,
             'totalApiDurationMs' => 0,

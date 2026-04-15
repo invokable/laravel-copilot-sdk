@@ -5,11 +5,11 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingLog;
-use Revolution\Copilot\Types\Rpc\SessionLogParams;
-use Revolution\Copilot\Types\Rpc\SessionLogResult;
+use Revolution\Copilot\Types\Rpc\LogRequest;
+use Revolution\Copilot\Types\Rpc\LogResult;
 
 describe('PendingLog', function () {
-    it('calls session.log with correct params using SessionLogParams', function () {
+    it('calls session.log with correct params using LogRequest', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
@@ -23,9 +23,9 @@ describe('PendingLog', function () {
             ->andReturn(['eventId' => 'evt-123']);
 
         $pending = new PendingLog($client, 'test-session-id');
-        $result = $pending->log(new SessionLogParams(message: 'Processing started'));
+        $result = $pending->log(new LogRequest(message: 'Processing started'));
 
-        expect($result)->toBeInstanceOf(SessionLogResult::class)
+        expect($result)->toBeInstanceOf(LogResult::class)
             ->and($result->eventId)->toBe('evt-123');
     });
 
@@ -43,13 +43,13 @@ describe('PendingLog', function () {
             ->andReturn(['eventId' => 'evt-456']);
 
         $pending = new PendingLog($client, 'test-session-id');
-        $result = $pending->log(new SessionLogParams(
+        $result = $pending->log(new LogRequest(
             message: 'Disk usage high',
             level: LogLevel::WARNING,
             ephemeral: true,
         ));
 
-        expect($result)->toBeInstanceOf(SessionLogResult::class)
+        expect($result)->toBeInstanceOf(LogResult::class)
             ->and($result->eventId)->toBe('evt-456');
     });
 
@@ -71,7 +71,7 @@ describe('PendingLog', function () {
             'level' => 'error',
         ]);
 
-        expect($result)->toBeInstanceOf(SessionLogResult::class)
+        expect($result)->toBeInstanceOf(LogResult::class)
             ->and($result->eventId)->toBe('evt-789');
     });
 
@@ -91,7 +91,7 @@ describe('PendingLog', function () {
             'sessionId' => 'some-other-session',
         ]);
 
-        expect($result)->toBeInstanceOf(SessionLogResult::class)
+        expect($result)->toBeInstanceOf(LogResult::class)
             ->and($result->eventId)->toBe('evt-abc');
     });
 });

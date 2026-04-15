@@ -4,52 +4,52 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ReasoningEffort;
-use Revolution\Copilot\Types\Rpc\SessionFleetStartParams;
-use Revolution\Copilot\Types\Rpc\SessionFleetStartResult;
-use Revolution\Copilot\Types\Rpc\SessionHistoryCompactResult;
-use Revolution\Copilot\Types\Rpc\SessionHistoryTruncateParams;
-use Revolution\Copilot\Types\Rpc\SessionHistoryTruncateResult;
-use Revolution\Copilot\Types\Rpc\SessionLogParams;
-use Revolution\Copilot\Types\Rpc\SessionLogResult;
-use Revolution\Copilot\Types\Rpc\SessionModelGetCurrentResult;
-use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
-use Revolution\Copilot\Types\Rpc\SessionModelSwitchToResult;
-use Revolution\Copilot\Types\Rpc\SessionModeSetParams;
-use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
-use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestResult;
-use Revolution\Copilot\Types\Rpc\SessionPlanReadResult;
-use Revolution\Copilot\Types\Rpc\SessionPlanUpdateParams;
-use Revolution\Copilot\Types\Rpc\SessionShellExecParams;
-use Revolution\Copilot\Types\Rpc\SessionShellExecResult;
-use Revolution\Copilot\Types\Rpc\SessionShellKillParams;
-use Revolution\Copilot\Types\Rpc\SessionShellKillResult;
-use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
-use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallResult;
-use Revolution\Copilot\Types\Rpc\SessionWorkspaceCreateFileParams;
-use Revolution\Copilot\Types\Rpc\SessionWorkspaceListFilesResult;
-use Revolution\Copilot\Types\Rpc\SessionWorkspaceReadFileParams;
-use Revolution\Copilot\Types\Rpc\SessionWorkspaceReadFileResult;
+use Revolution\Copilot\Types\Rpc\CurrentModel;
+use Revolution\Copilot\Types\Rpc\FleetStartRequest;
+use Revolution\Copilot\Types\Rpc\FleetStartResult;
+use Revolution\Copilot\Types\Rpc\HandleToolCallResult;
+use Revolution\Copilot\Types\Rpc\HistoryCompactResult;
+use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
+use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
+use Revolution\Copilot\Types\Rpc\LogRequest;
+use Revolution\Copilot\Types\Rpc\LogResult;
+use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
+use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
+use Revolution\Copilot\Types\Rpc\ModeSetRequest;
+use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
+use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
+use Revolution\Copilot\Types\Rpc\PlanReadResult;
+use Revolution\Copilot\Types\Rpc\PlanUpdateRequest;
+use Revolution\Copilot\Types\Rpc\ShellExecRequest;
+use Revolution\Copilot\Types\Rpc\ShellExecResult;
+use Revolution\Copilot\Types\Rpc\ShellKillRequest;
+use Revolution\Copilot\Types\Rpc\ShellKillResult;
+use Revolution\Copilot\Types\Rpc\ToolsHandlePendingToolCallRequest;
+use Revolution\Copilot\Types\Rpc\WorkspaceCreateFileRequest;
+use Revolution\Copilot\Types\Rpc\WorkspaceListFilesResult;
+use Revolution\Copilot\Types\Rpc\WorkspaceReadFileRequest;
+use Revolution\Copilot\Types\Rpc\WorkspaceReadFileResult;
 
-describe('SessionModelGetCurrentResult', function () {
+describe('CurrentModel', function () {
     it('can be created from array', function () {
-        $result = SessionModelGetCurrentResult::fromArray(['modelId' => 'gpt-4']);
+        $result = CurrentModel::fromArray(['modelId' => 'gpt-4']);
         expect($result->modelId)->toBe('gpt-4');
     });
 
     it('can be created with null modelId', function () {
-        $result = SessionModelGetCurrentResult::fromArray([]);
+        $result = CurrentModel::fromArray([]);
         expect($result->modelId)->toBeNull();
     });
 });
 
-describe('SessionModelSwitchToParams', function () {
+describe('ModelSwitchToRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionModelSwitchToParams(modelId: 'gpt-4');
+        $params = new ModelSwitchToRequest(modelId: 'gpt-4');
         expect($params->toArray())->toBe(['modelId' => 'gpt-4']);
     });
 
     it('can be created with reasoningEffort', function () {
-        $params = new SessionModelSwitchToParams(
+        $params = new ModelSwitchToRequest(
             modelId: 'claude-opus-4',
             reasoningEffort: ReasoningEffort::HIGH,
         );
@@ -60,12 +60,12 @@ describe('SessionModelSwitchToParams', function () {
     });
 
     it('filters null reasoningEffort', function () {
-        $params = new SessionModelSwitchToParams(modelId: 'gpt-4', reasoningEffort: null);
+        $params = new ModelSwitchToRequest(modelId: 'gpt-4', reasoningEffort: null);
         expect($params->toArray())->toBe(['modelId' => 'gpt-4']);
     });
 
     it('can be created from array with reasoningEffort', function () {
-        $params = SessionModelSwitchToParams::fromArray([
+        $params = ModelSwitchToRequest::fromArray([
             'modelId' => 'o1-preview',
             'reasoningEffort' => 'medium',
         ]);
@@ -74,7 +74,7 @@ describe('SessionModelSwitchToParams', function () {
     });
 
     it('can be created from array without reasoningEffort', function () {
-        $params = SessionModelSwitchToParams::fromArray([
+        $params = ModelSwitchToRequest::fromArray([
             'modelId' => 'gpt-4',
         ]);
         expect($params->modelId)->toBe('gpt-4')
@@ -82,23 +82,23 @@ describe('SessionModelSwitchToParams', function () {
     });
 });
 
-describe('SessionModelSwitchToResult', function () {
+describe('ModelSwitchToResult', function () {
     it('can be created from array', function () {
-        $result = SessionModelSwitchToResult::fromArray(['modelId' => 'gpt-4']);
+        $result = ModelSwitchToResult::fromArray(['modelId' => 'gpt-4']);
         expect($result->modelId)->toBe('gpt-4');
     });
 });
 
-describe('SessionModeSetParams', function () {
+describe('ModeSetRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionModeSetParams(mode: 'autopilot');
+        $params = new ModeSetRequest(mode: 'autopilot');
         expect($params->toArray())->toBe(['mode' => 'autopilot']);
     });
 });
 
-describe('SessionPlanReadResult', function () {
+describe('PlanReadResult', function () {
     it('can be created from array with content', function () {
-        $result = SessionPlanReadResult::fromArray([
+        $result = PlanReadResult::fromArray([
             'exists' => true,
             'content' => '# Plan',
         ]);
@@ -109,7 +109,7 @@ describe('SessionPlanReadResult', function () {
     });
 
     it('can be created from array without content', function () {
-        $result = SessionPlanReadResult::fromArray(['exists' => false]);
+        $result = PlanReadResult::fromArray(['exists' => false]);
 
         expect($result->exists)->toBeFalse()
             ->and($result->content)->toBeNull()
@@ -117,7 +117,7 @@ describe('SessionPlanReadResult', function () {
     });
 
     it('can be created from array with path', function () {
-        $result = SessionPlanReadResult::fromArray([
+        $result = PlanReadResult::fromArray([
             'exists' => true,
             'content' => '# Plan',
             'path' => '/workspace/plan.md',
@@ -128,7 +128,7 @@ describe('SessionPlanReadResult', function () {
     });
 
     it('includes path in toArray', function () {
-        $result = new SessionPlanReadResult(exists: true, content: '# Plan', path: '/workspace/plan.md');
+        $result = new PlanReadResult(exists: true, content: '# Plan', path: '/workspace/plan.md');
 
         expect($result->toArray())->toBe([
             'exists' => true,
@@ -138,16 +138,16 @@ describe('SessionPlanReadResult', function () {
     });
 });
 
-describe('SessionPlanUpdateParams', function () {
+describe('PlanUpdateRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionPlanUpdateParams(content: '# Updated Plan');
+        $params = new PlanUpdateRequest(content: '# Updated Plan');
         expect($params->toArray())->toBe(['content' => '# Updated Plan']);
     });
 });
 
-describe('SessionWorkspaceListFilesResult', function () {
+describe('WorkspaceListFilesResult', function () {
     it('can be created from array', function () {
-        $result = SessionWorkspaceListFilesResult::fromArray([
+        $result = WorkspaceListFilesResult::fromArray([
             'files' => ['file1.txt', 'file2.txt'],
         ]);
 
@@ -155,15 +155,15 @@ describe('SessionWorkspaceListFilesResult', function () {
     });
 
     it('handles empty files list', function () {
-        $result = SessionWorkspaceListFilesResult::fromArray([]);
+        $result = WorkspaceListFilesResult::fromArray([]);
 
         expect($result->files)->toBe([]);
     });
 });
 
-describe('SessionWorkspaceReadFileResult', function () {
+describe('WorkspaceReadFileResult', function () {
     it('can be created from array', function () {
-        $result = SessionWorkspaceReadFileResult::fromArray([
+        $result = WorkspaceReadFileResult::fromArray([
             'content' => 'file content',
         ]);
 
@@ -171,42 +171,42 @@ describe('SessionWorkspaceReadFileResult', function () {
     });
 });
 
-describe('SessionWorkspaceReadFileParams', function () {
+describe('WorkspaceReadFileRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionWorkspaceReadFileParams(path: 'test.txt');
+        $params = new WorkspaceReadFileRequest(path: 'test.txt');
         expect($params->toArray())->toBe(['path' => 'test.txt']);
     });
 });
 
-describe('SessionWorkspaceCreateFileParams', function () {
+describe('WorkspaceCreateFileRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionWorkspaceCreateFileParams(path: 'test.txt', content: 'hello');
+        $params = new WorkspaceCreateFileRequest(path: 'test.txt', content: 'hello');
         expect($params->toArray())->toBe(['path' => 'test.txt', 'content' => 'hello']);
     });
 });
 
-describe('SessionFleetStartParams', function () {
+describe('FleetStartRequest', function () {
     it('can be created with prompt', function () {
-        $params = new SessionFleetStartParams(prompt: 'build it');
+        $params = new FleetStartRequest(prompt: 'build it');
         expect($params->toArray())->toBe(['prompt' => 'build it']);
     });
 
     it('filters null prompt', function () {
-        $params = new SessionFleetStartParams;
+        $params = new FleetStartRequest;
         expect($params->toArray())->toBe([]);
     });
 });
 
-describe('SessionFleetStartResult', function () {
+describe('FleetStartResult', function () {
     it('can be created from array', function () {
-        $result = SessionFleetStartResult::fromArray(['started' => true]);
+        $result = FleetStartResult::fromArray(['started' => true]);
         expect($result->started)->toBeTrue();
     });
 });
 
-describe('SessionHistoryCompactResult', function () {
+describe('HistoryCompactResult', function () {
     it('can be created from array', function () {
-        $result = SessionHistoryCompactResult::fromArray([
+        $result = HistoryCompactResult::fromArray([
             'success' => true,
             'tokensRemoved' => 1000,
             'messagesRemoved' => 5,
@@ -218,7 +218,7 @@ describe('SessionHistoryCompactResult', function () {
     });
 
     it('can convert to array', function () {
-        $result = new SessionHistoryCompactResult(
+        $result = new HistoryCompactResult(
             success: true,
             tokensRemoved: 500,
             messagesRemoved: 3,
@@ -232,26 +232,26 @@ describe('SessionHistoryCompactResult', function () {
     });
 });
 
-describe('SessionToolsHandlePendingToolCallResult', function () {
+describe('HandleToolCallResult', function () {
     it('can be created from array', function () {
-        $result = SessionToolsHandlePendingToolCallResult::fromArray(['success' => true]);
+        $result = HandleToolCallResult::fromArray(['success' => true]);
         expect($result->success)->toBeTrue();
     });
 
     it('can convert to array', function () {
-        $result = new SessionToolsHandlePendingToolCallResult(success: false);
+        $result = new HandleToolCallResult(success: false);
         expect($result->toArray())->toBe(['success' => false]);
     });
 });
 
-describe('SessionToolsHandlePendingToolCallParams', function () {
+describe('ToolsHandlePendingToolCallRequest', function () {
     it('can be created with string result', function () {
-        $params = new SessionToolsHandlePendingToolCallParams(requestId: 'req-1', result: 'done');
+        $params = new ToolsHandlePendingToolCallRequest(requestId: 'req-1', result: 'done');
         expect($params->toArray())->toBe(['requestId' => 'req-1', 'result' => 'done']);
     });
 
     it('can be created with structured result', function () {
-        $params = new SessionToolsHandlePendingToolCallParams(
+        $params = new ToolsHandlePendingToolCallRequest(
             requestId: 'req-1',
             result: ['textResultForLlm' => 'output', 'resultType' => 'text'],
         );
@@ -259,17 +259,17 @@ describe('SessionToolsHandlePendingToolCallParams', function () {
     });
 
     it('can be created with error', function () {
-        $params = new SessionToolsHandlePendingToolCallParams(requestId: 'req-1', error: 'failed');
+        $params = new ToolsHandlePendingToolCallRequest(requestId: 'req-1', error: 'failed');
         expect($params->toArray())->toBe(['requestId' => 'req-1', 'error' => 'failed']);
     });
 
     it('omits null fields', function () {
-        $params = new SessionToolsHandlePendingToolCallParams(requestId: 'req-1');
+        $params = new ToolsHandlePendingToolCallRequest(requestId: 'req-1');
         expect($params->toArray())->toBe(['requestId' => 'req-1']);
     });
 
     it('can be created from array', function () {
-        $params = SessionToolsHandlePendingToolCallParams::fromArray([
+        $params = ToolsHandlePendingToolCallRequest::fromArray([
             'requestId' => 'req-2',
             'result' => 'success',
         ]);
@@ -278,21 +278,21 @@ describe('SessionToolsHandlePendingToolCallParams', function () {
     });
 });
 
-describe('SessionPermissionsHandlePendingPermissionRequestResult', function () {
+describe('PermissionRequestResult', function () {
     it('can be created from array', function () {
-        $result = SessionPermissionsHandlePendingPermissionRequestResult::fromArray(['success' => true]);
+        $result = PermissionRequestResult::fromArray(['success' => true]);
         expect($result->success)->toBeTrue();
     });
 
     it('can convert to array', function () {
-        $result = new SessionPermissionsHandlePendingPermissionRequestResult(success: true);
+        $result = new PermissionRequestResult(success: true);
         expect($result->toArray())->toBe(['success' => true]);
     });
 });
 
-describe('SessionPermissionsHandlePendingPermissionRequestParams', function () {
+describe('PermissionDecisionRequest', function () {
     it('can be created with approved result', function () {
-        $params = new SessionPermissionsHandlePendingPermissionRequestParams(
+        $params = new PermissionDecisionRequest(
             requestId: 'perm-1',
             result: ['kind' => 'approved'],
         );
@@ -303,7 +303,7 @@ describe('SessionPermissionsHandlePendingPermissionRequestParams', function () {
     });
 
     it('can be created from array', function () {
-        $params = SessionPermissionsHandlePendingPermissionRequestParams::fromArray([
+        $params = PermissionDecisionRequest::fromArray([
             'requestId' => 'perm-2',
             'result' => ['kind' => 'denied-interactively-by-user'],
         ]);
@@ -312,16 +312,16 @@ describe('SessionPermissionsHandlePendingPermissionRequestParams', function () {
     });
 });
 
-describe('SessionLogParams', function () {
+describe('LogRequest', function () {
     it('can be created with message only', function () {
-        $params = new SessionLogParams(message: 'Processing started');
+        $params = new LogRequest(message: 'Processing started');
         expect($params->message)->toBe('Processing started')
             ->and($params->level)->toBeNull()
             ->and($params->ephemeral)->toBeNull();
     });
 
     it('can be created with all parameters', function () {
-        $params = new SessionLogParams(
+        $params = new LogRequest(
             message: 'Disk usage high',
             level: LogLevel::WARNING,
             ephemeral: true,
@@ -332,12 +332,12 @@ describe('SessionLogParams', function () {
     });
 
     it('converts to array filtering null values', function () {
-        $params = new SessionLogParams(message: 'Hello');
+        $params = new LogRequest(message: 'Hello');
         expect($params->toArray())->toBe(['message' => 'Hello']);
     });
 
     it('converts to array with all values', function () {
-        $params = new SessionLogParams(
+        $params = new LogRequest(
             message: 'Error occurred',
             level: LogLevel::ERROR,
             ephemeral: false,
@@ -350,7 +350,7 @@ describe('SessionLogParams', function () {
     });
 
     it('can be created from array', function () {
-        $params = SessionLogParams::fromArray([
+        $params = LogRequest::fromArray([
             'message' => 'Test message',
             'level' => 'info',
             'ephemeral' => true,
@@ -361,7 +361,7 @@ describe('SessionLogParams', function () {
     });
 
     it('can be created from array with missing optional fields', function () {
-        $params = SessionLogParams::fromArray([
+        $params = LogRequest::fromArray([
             'message' => 'Just a message',
         ]);
         expect($params->message)->toBe('Just a message')
@@ -370,7 +370,7 @@ describe('SessionLogParams', function () {
     });
 
     it('can be created with url', function () {
-        $params = new SessionLogParams(
+        $params = new LogRequest(
             message: 'See details',
             url: 'https://example.com/details',
         );
@@ -378,7 +378,7 @@ describe('SessionLogParams', function () {
     });
 
     it('converts to array with url', function () {
-        $params = new SessionLogParams(
+        $params = new LogRequest(
             message: 'Check logs',
             level: LogLevel::INFO,
             url: 'https://example.com/logs',
@@ -391,7 +391,7 @@ describe('SessionLogParams', function () {
     });
 
     it('can be created from array with url', function () {
-        $params = SessionLogParams::fromArray([
+        $params = LogRequest::fromArray([
             'message' => 'Details here',
             'url' => 'https://example.com/info',
         ]);
@@ -399,31 +399,31 @@ describe('SessionLogParams', function () {
     });
 
     it('filters null url in toArray', function () {
-        $params = new SessionLogParams(message: 'No URL');
+        $params = new LogRequest(message: 'No URL');
         expect($params->toArray())->not->toHaveKey('url');
     });
 });
 
-describe('SessionLogResult', function () {
+describe('LogResult', function () {
     it('can be created with eventId', function () {
-        $result = new SessionLogResult(eventId: 'evt-123');
+        $result = new LogResult(eventId: 'evt-123');
         expect($result->eventId)->toBe('evt-123');
     });
 
     it('can be created from array', function () {
-        $result = SessionLogResult::fromArray(['eventId' => 'evt-456']);
+        $result = LogResult::fromArray(['eventId' => 'evt-456']);
         expect($result->eventId)->toBe('evt-456');
     });
 
     it('can convert to array', function () {
-        $result = new SessionLogResult(eventId: 'evt-789');
+        $result = new LogResult(eventId: 'evt-789');
         expect($result->toArray())->toBe(['eventId' => 'evt-789']);
     });
 });
 
-describe('SessionShellExecParams', function () {
+describe('ShellExecRequest', function () {
     it('can be created with required command only', function () {
-        $params = new SessionShellExecParams(command: 'ls -la');
+        $params = new ShellExecRequest(command: 'ls -la');
 
         expect($params->command)->toBe('ls -la')
             ->and($params->cwd)->toBeNull()
@@ -431,7 +431,7 @@ describe('SessionShellExecParams', function () {
     });
 
     it('can be created with all fields', function () {
-        $params = new SessionShellExecParams(command: 'npm test', cwd: '/app', timeout: 60000);
+        $params = new ShellExecRequest(command: 'npm test', cwd: '/app', timeout: 60000);
 
         expect($params->command)->toBe('npm test')
             ->and($params->cwd)->toBe('/app')
@@ -439,7 +439,7 @@ describe('SessionShellExecParams', function () {
     });
 
     it('can be created from array', function () {
-        $params = SessionShellExecParams::fromArray([
+        $params = ShellExecRequest::fromArray([
             'command' => 'echo hello',
             'cwd' => '/home/user',
             'timeout' => 5000,
@@ -451,7 +451,7 @@ describe('SessionShellExecParams', function () {
     });
 
     it('can be created from array with command only', function () {
-        $params = SessionShellExecParams::fromArray(['command' => 'pwd']);
+        $params = ShellExecRequest::fromArray(['command' => 'pwd']);
 
         expect($params->command)->toBe('pwd')
             ->and($params->cwd)->toBeNull()
@@ -459,13 +459,13 @@ describe('SessionShellExecParams', function () {
     });
 
     it('filters null values in toArray', function () {
-        $params = new SessionShellExecParams(command: 'ls');
+        $params = new ShellExecRequest(command: 'ls');
 
         expect($params->toArray())->toBe(['command' => 'ls']);
     });
 
     it('includes all fields in toArray', function () {
-        $params = new SessionShellExecParams(command: 'npm test', cwd: '/app', timeout: 30000);
+        $params = new ShellExecRequest(command: 'npm test', cwd: '/app', timeout: 30000);
 
         expect($params->toArray())->toBe([
             'command' => 'npm test',
@@ -475,43 +475,43 @@ describe('SessionShellExecParams', function () {
     });
 });
 
-describe('SessionShellExecResult', function () {
+describe('ShellExecResult', function () {
     it('can be created with processId', function () {
-        $result = new SessionShellExecResult(processId: 'proc-123');
+        $result = new ShellExecResult(processId: 'proc-123');
 
         expect($result->processId)->toBe('proc-123');
     });
 
     it('can be created from array', function () {
-        $result = SessionShellExecResult::fromArray(['processId' => 'proc-456']);
+        $result = ShellExecResult::fromArray(['processId' => 'proc-456']);
 
         expect($result->processId)->toBe('proc-456');
     });
 
     it('can convert to array', function () {
-        $result = new SessionShellExecResult(processId: 'proc-789');
+        $result = new ShellExecResult(processId: 'proc-789');
 
         expect($result->toArray())->toBe(['processId' => 'proc-789']);
     });
 });
 
-describe('SessionShellKillParams', function () {
+describe('ShellKillRequest', function () {
     it('can be created with processId only', function () {
-        $params = new SessionShellKillParams(processId: 'proc-123');
+        $params = new ShellKillRequest(processId: 'proc-123');
 
         expect($params->processId)->toBe('proc-123')
             ->and($params->signal)->toBeNull();
     });
 
     it('can be created with signal', function () {
-        $params = new SessionShellKillParams(processId: 'proc-123', signal: 'SIGKILL');
+        $params = new ShellKillRequest(processId: 'proc-123', signal: 'SIGKILL');
 
         expect($params->processId)->toBe('proc-123')
             ->and($params->signal)->toBe('SIGKILL');
     });
 
     it('can be created from array', function () {
-        $params = SessionShellKillParams::fromArray([
+        $params = ShellKillRequest::fromArray([
             'processId' => 'proc-456',
             'signal' => 'SIGTERM',
         ]);
@@ -521,20 +521,20 @@ describe('SessionShellKillParams', function () {
     });
 
     it('can be created from array without signal', function () {
-        $params = SessionShellKillParams::fromArray(['processId' => 'proc-789']);
+        $params = ShellKillRequest::fromArray(['processId' => 'proc-789']);
 
         expect($params->processId)->toBe('proc-789')
             ->and($params->signal)->toBeNull();
     });
 
     it('filters null signal in toArray', function () {
-        $params = new SessionShellKillParams(processId: 'proc-123');
+        $params = new ShellKillRequest(processId: 'proc-123');
 
         expect($params->toArray())->toBe(['processId' => 'proc-123']);
     });
 
     it('includes signal in toArray when set', function () {
-        $params = new SessionShellKillParams(processId: 'proc-123', signal: 'SIGKILL');
+        $params = new ShellKillRequest(processId: 'proc-123', signal: 'SIGKILL');
 
         expect($params->toArray())->toBe([
             'processId' => 'proc-123',
@@ -543,41 +543,41 @@ describe('SessionShellKillParams', function () {
     });
 });
 
-describe('SessionShellKillResult', function () {
+describe('ShellKillResult', function () {
     it('can be created with killed true', function () {
-        $result = new SessionShellKillResult(killed: true);
+        $result = new ShellKillResult(killed: true);
 
         expect($result->killed)->toBeTrue();
     });
 
     it('can be created with killed false', function () {
-        $result = new SessionShellKillResult(killed: false);
+        $result = new ShellKillResult(killed: false);
 
         expect($result->killed)->toBeFalse();
     });
 
     it('can be created from array', function () {
-        $result = SessionShellKillResult::fromArray(['killed' => true]);
+        $result = ShellKillResult::fromArray(['killed' => true]);
 
         expect($result->killed)->toBeTrue();
     });
 
     it('casts killed to bool from truthy value', function () {
-        $result = SessionShellKillResult::fromArray(['killed' => 1]);
+        $result = ShellKillResult::fromArray(['killed' => 1]);
 
         expect($result->killed)->toBeTrue();
     });
 
     it('can convert to array', function () {
-        $result = new SessionShellKillResult(killed: true);
+        $result = new ShellKillResult(killed: true);
 
         expect($result->toArray())->toBe(['killed' => true]);
     });
 });
 
-describe('SessionHistoryTruncateResult', function () {
+describe('HistoryTruncateResult', function () {
     it('can be created from array', function () {
-        $result = SessionHistoryTruncateResult::fromArray([
+        $result = HistoryTruncateResult::fromArray([
             'eventsRemoved' => 7,
         ]);
 
@@ -585,7 +585,7 @@ describe('SessionHistoryTruncateResult', function () {
     });
 
     it('can convert to array', function () {
-        $result = new SessionHistoryTruncateResult(eventsRemoved: 3);
+        $result = new HistoryTruncateResult(eventsRemoved: 3);
 
         expect($result->toArray())->toBe([
             'eventsRemoved' => 3,
@@ -593,9 +593,9 @@ describe('SessionHistoryTruncateResult', function () {
     });
 });
 
-describe('SessionHistoryTruncateParams', function () {
+describe('HistoryTruncateRequest', function () {
     it('can be created from array', function () {
-        $params = SessionHistoryTruncateParams::fromArray([
+        $params = HistoryTruncateRequest::fromArray([
             'eventId' => 'evt-123',
         ]);
 
@@ -603,7 +603,7 @@ describe('SessionHistoryTruncateParams', function () {
     });
 
     it('can convert to array', function () {
-        $params = new SessionHistoryTruncateParams(eventId: 'evt-456');
+        $params = new HistoryTruncateRequest(eventId: 'evt-456');
 
         expect($params->toArray())->toBe([
             'eventId' => 'evt-456',

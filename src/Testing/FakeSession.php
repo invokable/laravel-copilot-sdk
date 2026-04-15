@@ -15,7 +15,7 @@ use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\InputOptions;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
-use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -61,9 +61,9 @@ class FakeSession implements CopilotSession
         return new SessionCapabilities;
     }
 
-    public function elicitation(string $message, array $requestedSchema): SessionUiElicitationResult
+    public function elicitation(string $message, array $requestedSchema): UIElicitationResponse
     {
-        return new SessionUiElicitationResult(action: ElicitationAction::CANCEL);
+        return new UIElicitationResponse(action: ElicitationAction::CANCEL);
     }
 
     public function confirm(string $message): bool

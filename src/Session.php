@@ -31,9 +31,9 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Types\ElicitationContext;
+use Revolution\Copilot\Types\Rpc\LogRequest;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
-use Revolution\Copilot\Types\Rpc\SessionLogParams;
-use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
+use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
 use Throwable;
@@ -640,7 +640,7 @@ class Session implements CopilotSession
             default => null,
         };
 
-        $this->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: $model, reasoningEffort: $reasoningEffort, modelCapabilities: $caps));
+        $this->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: $model, reasoningEffort: $reasoningEffort, modelCapabilities: $caps));
     }
 
     /**
@@ -657,7 +657,7 @@ class Session implements CopilotSession
      */
     public function log(string $message, ?LogLevel $level = null, ?bool $ephemeral = null): string
     {
-        $result = $this->rpc()->log()->log(new SessionLogParams(
+        $result = $this->rpc()->log()->log(new LogRequest(
             message: $message,
             level: $level,
             ephemeral: $ephemeral,

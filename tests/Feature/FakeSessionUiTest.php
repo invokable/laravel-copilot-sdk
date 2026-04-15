@@ -6,7 +6,7 @@ use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\InputOptions;
-use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 
 beforeEach(function () {
@@ -72,7 +72,7 @@ describe('FakeSession UI methods', function () {
         Copilot::start(function (CopilotSession $session) {
             $result = $session->elicitation('msg', ['type' => 'object']);
 
-            expect($result)->toBeInstanceOf(SessionUiElicitationResult::class)
+            expect($result)->toBeInstanceOf(UIElicitationResponse::class)
                 ->and($result->action)->toBe(ElicitationAction::CANCEL);
         });
     });

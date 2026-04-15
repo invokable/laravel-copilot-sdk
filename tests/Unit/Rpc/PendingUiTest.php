@@ -5,10 +5,10 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingUi;
-use Revolution\Copilot\Types\Rpc\SessionUiElicitationParams;
-use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
-use Revolution\Copilot\Types\Rpc\SessionUiHandlePendingElicitationParams;
-use Revolution\Copilot\Types\Rpc\SessionUiHandlePendingElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
+use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
+use Revolution\Copilot\Types\Rpc\UIElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingElicitationRequest;
 
 describe('PendingUi', function () {
     it('calls session.ui.elicitation with typed params', function () {
@@ -24,12 +24,12 @@ describe('PendingUi', function () {
             ->andReturn(['action' => 'accept', 'content' => ['name' => 'John']]);
 
         $pending = new PendingUi($client, 'session-abc');
-        $result = $pending->elicitation(new SessionUiElicitationParams(
+        $result = $pending->elicitation(new UIElicitationRequest(
             message: 'Enter your name',
             requestedSchema: ['type' => 'object'],
         ));
 
-        expect($result)->toBeInstanceOf(SessionUiElicitationResult::class)
+        expect($result)->toBeInstanceOf(UIElicitationResponse::class)
             ->and($result->action)->toBe(ElicitationAction::ACCEPT)
             ->and($result->content)->toBe(['name' => 'John']);
     });
@@ -51,7 +51,7 @@ describe('PendingUi', function () {
             'requestedSchema' => ['type' => 'boolean'],
         ]);
 
-        expect($result)->toBeInstanceOf(SessionUiElicitationResult::class)
+        expect($result)->toBeInstanceOf(UIElicitationResponse::class)
             ->and($result->action)->toBe(ElicitationAction::DECLINE)
             ->and($result->content)->toBeNull();
     });
@@ -67,12 +67,12 @@ describe('PendingUi', function () {
             ->andReturn(['action' => 'cancel']);
 
         $pending = new PendingUi($client, 'session-abc');
-        $result = $pending->elicitation(new SessionUiElicitationParams(
+        $result = $pending->elicitation(new UIElicitationRequest(
             message: 'Choose option',
             requestedSchema: ['type' => 'string'],
         ));
 
-        expect($result)->toBeInstanceOf(SessionUiElicitationResult::class)
+        expect($result)->toBeInstanceOf(UIElicitationResponse::class)
             ->and($result->action)->toBe(ElicitationAction::CANCEL)
             ->and($result->content)->toBeNull();
     });
@@ -91,12 +91,12 @@ describe('PendingUi', function () {
             ->andReturn(['success' => true]);
 
         $pending = new PendingUi($client, 'session-abc');
-        $result = $pending->handlePendingElicitation(new SessionUiHandlePendingElicitationParams(
+        $result = $pending->handlePendingElicitation(new UIHandlePendingElicitationRequest(
             requestId: 'req-123',
             result: ['action' => 'accept', 'content' => ['name' => 'John']],
         ));
 
-        expect($result)->toBeInstanceOf(SessionUiHandlePendingElicitationResult::class)
+        expect($result)->toBeInstanceOf(UIElicitationResult::class)
             ->and($result->success)->toBeTrue();
     });
 
@@ -118,7 +118,7 @@ describe('PendingUi', function () {
             'result' => ['action' => 'cancel'],
         ]);
 
-        expect($result)->toBeInstanceOf(SessionUiHandlePendingElicitationResult::class)
+        expect($result)->toBeInstanceOf(UIElicitationResult::class)
             ->and($result->success)->toBeFalse();
     });
 });

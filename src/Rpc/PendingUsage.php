@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionUsageGetMetricsResult;
+use Revolution\Copilot\Types\Rpc\UsageGetMetricsResult;
 
 /**
  * Pending usage RPC operations for a session.
@@ -22,9 +22,9 @@ class PendingUsage
     /**
      * Get session usage metrics.
      */
-    public function getMetrics(): SessionUsageGetMetricsResult
+    public function getMetrics(): UsageGetMetricsResult
     {
-        return SessionUsageGetMetricsResult::fromArray(
+        return UsageGetMetricsResult::fromArray(
             $this->client->request('session.usage.getMetrics', [
                 'sessionId' => $this->sessionId,
             ]),

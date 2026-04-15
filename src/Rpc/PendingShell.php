@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionShellExecParams;
-use Revolution\Copilot\Types\Rpc\SessionShellExecResult;
-use Revolution\Copilot\Types\Rpc\SessionShellKillParams;
-use Revolution\Copilot\Types\Rpc\SessionShellKillResult;
+use Revolution\Copilot\Types\Rpc\ShellExecRequest;
+use Revolution\Copilot\Types\Rpc\ShellExecResult;
+use Revolution\Copilot\Types\Rpc\ShellKillRequest;
+use Revolution\Copilot\Types\Rpc\ShellKillResult;
 
 /**
  * Pending shell RPC operations for a session.
@@ -26,12 +26,12 @@ class PendingShell
      * Returns a processId that can be used to track streamed output
      * or kill the process with shell()->kill().
      */
-    public function exec(SessionShellExecParams|array $params): SessionShellExecResult
+    public function exec(ShellExecRequest|array $params): ShellExecResult
     {
-        $paramsArray = ($params instanceof SessionShellExecParams ? $params : SessionShellExecParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof ShellExecRequest ? $params : ShellExecRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        return SessionShellExecResult::fromArray(
+        return ShellExecResult::fromArray(
             $this->client->request('session.shell.exec', $paramsArray),
         );
     }
@@ -39,12 +39,12 @@ class PendingShell
     /**
      * Kill a running shell process.
      */
-    public function kill(SessionShellKillParams|array $params): SessionShellKillResult
+    public function kill(ShellKillRequest|array $params): ShellKillResult
     {
-        $paramsArray = ($params instanceof SessionShellKillParams ? $params : SessionShellKillParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof ShellKillRequest ? $params : ShellKillRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        return SessionShellKillResult::fromArray(
+        return ShellKillResult::fromArray(
             $this->client->request('session.shell.kill', $paramsArray),
         );
     }

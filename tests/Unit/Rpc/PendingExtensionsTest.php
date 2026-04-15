@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingExtensions;
-use Revolution\Copilot\Types\Rpc\SessionExtensionsDisableParams;
-use Revolution\Copilot\Types\Rpc\SessionExtensionsEnableParams;
-use Revolution\Copilot\Types\Rpc\SessionExtensionsListResult;
+use Revolution\Copilot\Types\Rpc\ExtensionList;
+use Revolution\Copilot\Types\Rpc\ExtensionsDisableRequest;
+use Revolution\Copilot\Types\Rpc\ExtensionsEnableRequest;
 
 describe('PendingExtensions', function () {
     it('calls session.extensions.list and returns result', function () {
@@ -29,7 +29,7 @@ describe('PendingExtensions', function () {
         $pending = new PendingExtensions($client, 'session-abc');
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(SessionExtensionsListResult::class)
+        expect($result)->toBeInstanceOf(ExtensionList::class)
             ->and($result->extensions)->toHaveCount(1)
             ->and($result->extensions[0]->id)->toBe('project:my-ext');
     });
@@ -44,7 +44,7 @@ describe('PendingExtensions', function () {
         $pending = new PendingExtensions($client, 'session-abc');
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(SessionExtensionsListResult::class)
+        expect($result)->toBeInstanceOf(ExtensionList::class)
             ->and($result->extensions)->toBe([]);
     });
 
@@ -60,7 +60,7 @@ describe('PendingExtensions', function () {
             ->andReturn([]);
 
         $pending = new PendingExtensions($client, 'session-abc');
-        $result = $pending->enable(new SessionExtensionsEnableParams(id: 'project:my-ext'));
+        $result = $pending->enable(new ExtensionsEnableRequest(id: 'project:my-ext'));
 
         expect($result)->toBe([]);
     });
@@ -94,7 +94,7 @@ describe('PendingExtensions', function () {
             ->andReturn([]);
 
         $pending = new PendingExtensions($client, 'session-abc');
-        $result = $pending->disable(new SessionExtensionsDisableParams(id: 'project:my-ext'));
+        $result = $pending->disable(new ExtensionsDisableRequest(id: 'project:my-ext'));
 
         expect($result)->toBe([]);
     });

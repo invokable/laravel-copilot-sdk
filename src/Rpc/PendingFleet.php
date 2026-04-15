@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionFleetStartParams;
-use Revolution\Copilot\Types\Rpc\SessionFleetStartResult;
+use Revolution\Copilot\Types\Rpc\FleetStartRequest;
+use Revolution\Copilot\Types\Rpc\FleetStartResult;
 
 /**
  * Pending fleet RPC operations for a session.
@@ -23,12 +23,12 @@ class PendingFleet
     /**
      * Start fleet mode.
      */
-    public function start(SessionFleetStartParams|array $params = []): SessionFleetStartResult
+    public function start(FleetStartRequest|array $params = []): FleetStartResult
     {
-        $paramsArray = ($params instanceof SessionFleetStartParams ? $params : SessionFleetStartParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof FleetStartRequest ? $params : FleetStartRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        return SessionFleetStartResult::fromArray(
+        return FleetStartResult::fromArray(
             $this->client->request('session.fleet.start', $paramsArray),
         );
     }

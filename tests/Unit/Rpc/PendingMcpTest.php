@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingMcp;
-use Revolution\Copilot\Types\Rpc\SessionMcpDisableParams;
-use Revolution\Copilot\Types\Rpc\SessionMcpEnableParams;
-use Revolution\Copilot\Types\Rpc\SessionMcpListResult;
+use Revolution\Copilot\Types\Rpc\McpDisableRequest;
+use Revolution\Copilot\Types\Rpc\McpEnableRequest;
+use Revolution\Copilot\Types\Rpc\McpServerList;
 
 describe('PendingMcp', function () {
     it('calls session.mcp.list and returns result', function () {
@@ -27,7 +27,7 @@ describe('PendingMcp', function () {
         $pending = new PendingMcp($client, 'session-abc');
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(SessionMcpListResult::class)
+        expect($result)->toBeInstanceOf(McpServerList::class)
             ->and($result->servers)->toHaveCount(1)
             ->and($result->servers[0]->name)->toBe('github');
     });
@@ -42,7 +42,7 @@ describe('PendingMcp', function () {
         $pending = new PendingMcp($client, 'session-abc');
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(SessionMcpListResult::class)
+        expect($result)->toBeInstanceOf(McpServerList::class)
             ->and($result->servers)->toBe([]);
     });
 
@@ -58,7 +58,7 @@ describe('PendingMcp', function () {
             ->andReturn([]);
 
         $pending = new PendingMcp($client, 'session-abc');
-        $result = $pending->enable(new SessionMcpEnableParams(serverName: 'github'));
+        $result = $pending->enable(new McpEnableRequest(serverName: 'github'));
 
         expect($result)->toBe([]);
     });
@@ -92,7 +92,7 @@ describe('PendingMcp', function () {
             ->andReturn([]);
 
         $pending = new PendingMcp($client, 'session-abc');
-        $result = $pending->disable(new SessionMcpDisableParams(serverName: 'github'));
+        $result = $pending->disable(new McpDisableRequest(serverName: 'github'));
 
         expect($result)->toBe([]);
     });

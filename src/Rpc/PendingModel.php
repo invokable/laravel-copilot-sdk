@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionModelGetCurrentResult;
-use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
-use Revolution\Copilot\Types\Rpc\SessionModelSwitchToResult;
+use Revolution\Copilot\Types\Rpc\CurrentModel;
+use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
+use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
 
 /**
  * Pending model RPC operations for a session.
@@ -22,9 +22,9 @@ class PendingModel
     /**
      * Get the current model for this session.
      */
-    public function getCurrent(): SessionModelGetCurrentResult
+    public function getCurrent(): CurrentModel
     {
-        return SessionModelGetCurrentResult::fromArray(
+        return CurrentModel::fromArray(
             $this->client->request('session.model.getCurrent', [
                 'sessionId' => $this->sessionId,
             ]),
@@ -34,12 +34,12 @@ class PendingModel
     /**
      * Switch to a different model.
      */
-    public function switchTo(SessionModelSwitchToParams|array $params): SessionModelSwitchToResult
+    public function switchTo(ModelSwitchToRequest|array $params): ModelSwitchToResult
     {
-        $paramsArray = ($params instanceof SessionModelSwitchToParams ? $params : SessionModelSwitchToParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof ModelSwitchToRequest ? $params : ModelSwitchToRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        return SessionModelSwitchToResult::fromArray(
+        return ModelSwitchToResult::fromArray(
             $this->client->request('session.model.switchTo', $paramsArray),
         );
     }

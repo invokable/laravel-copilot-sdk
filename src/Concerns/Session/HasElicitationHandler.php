@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\Types\ElicitationContext;
-use Revolution\Copilot\Types\Rpc\SessionUiHandlePendingElicitationParams;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingElicitationRequest;
 use Throwable;
 
 /**
@@ -65,7 +65,7 @@ trait HasElicitationHandler
             };
 
             $this->rpc()->ui()->handlePendingElicitation(
-                new SessionUiHandlePendingElicitationParams(
+                new UIHandlePendingElicitationRequest(
                     requestId: $requestId,
                     result: $resultArray,
                 ),
@@ -74,7 +74,7 @@ trait HasElicitationHandler
             // Handler failed — attempt to cancel so the request doesn't hang
             try {
                 $this->rpc()->ui()->handlePendingElicitation(
-                    new SessionUiHandlePendingElicitationParams(
+                    new UIHandlePendingElicitationRequest(
                         requestId: $requestId,
                         result: ['action' => ElicitationAction::CANCEL->value],
                     ),

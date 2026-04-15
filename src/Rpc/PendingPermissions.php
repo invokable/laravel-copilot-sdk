@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
-use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestResult;
+use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
+use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
 
 /**
  * Pending session-scoped permissions RPC operations.
@@ -24,12 +24,12 @@ class PendingPermissions
     /**
      * Handle a pending permission request by approving or denying it.
      */
-    public function handlePendingPermissionRequest(SessionPermissionsHandlePendingPermissionRequestParams|array $params): SessionPermissionsHandlePendingPermissionRequestResult
+    public function handlePendingPermissionRequest(PermissionDecisionRequest|array $params): PermissionRequestResult
     {
-        $paramsArray = ($params instanceof SessionPermissionsHandlePendingPermissionRequestParams ? $params : SessionPermissionsHandlePendingPermissionRequestParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof PermissionDecisionRequest ? $params : PermissionDecisionRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        return SessionPermissionsHandlePendingPermissionRequestResult::fromArray(
+        return PermissionRequestResult::fromArray(
             $this->client->request('session.permissions.handlePendingPermissionRequest', $paramsArray),
         );
     }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionExtensionsDisableParams;
-use Revolution\Copilot\Types\Rpc\SessionExtensionsEnableParams;
-use Revolution\Copilot\Types\Rpc\SessionExtensionsListResult;
+use Revolution\Copilot\Types\Rpc\ExtensionList;
+use Revolution\Copilot\Types\Rpc\ExtensionsDisableRequest;
+use Revolution\Copilot\Types\Rpc\ExtensionsEnableRequest;
 
 /**
  * Pending extensions RPC operations for a session.
@@ -24,9 +24,9 @@ class PendingExtensions
     /**
      * List discovered extensions and their current status.
      */
-    public function list(): SessionExtensionsListResult
+    public function list(): ExtensionList
     {
-        return SessionExtensionsListResult::fromArray(
+        return ExtensionList::fromArray(
             $this->client->request('session.extensions.list', [
                 'sessionId' => $this->sessionId,
             ]),
@@ -36,9 +36,9 @@ class PendingExtensions
     /**
      * Enable an extension.
      */
-    public function enable(SessionExtensionsEnableParams|array $params): array
+    public function enable(ExtensionsEnableRequest|array $params): array
     {
-        $paramsArray = ($params instanceof SessionExtensionsEnableParams ? $params : SessionExtensionsEnableParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof ExtensionsEnableRequest ? $params : ExtensionsEnableRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.extensions.enable', $paramsArray);
@@ -47,9 +47,9 @@ class PendingExtensions
     /**
      * Disable an extension.
      */
-    public function disable(SessionExtensionsDisableParams|array $params): array
+    public function disable(ExtensionsDisableRequest|array $params): array
     {
-        $paramsArray = ($params instanceof SessionExtensionsDisableParams ? $params : SessionExtensionsDisableParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof ExtensionsDisableRequest ? $params : ExtensionsDisableRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.extensions.disable', $paramsArray);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingMode;
-use Revolution\Copilot\Types\Rpc\SessionModeSetParams;
+use Revolution\Copilot\Types\Rpc\ModeSetRequest;
 
 describe('PendingMode', function () {
     it('calls session.mode.get and returns mode string', function () {
@@ -32,7 +32,7 @@ describe('PendingMode', function () {
             ->andReturn(null);
 
         $pending = new PendingMode($client, 'session-abc');
-        $pending->set(new SessionModeSetParams(mode: 'autopilot'));
+        $pending->set(new ModeSetRequest(mode: 'autopilot'));
     });
 
     it('calls session.mode.set with array params and returns void', function () {

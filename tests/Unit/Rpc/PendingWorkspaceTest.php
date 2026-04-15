@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingWorkspace;
-use Revolution\Copilot\Types\Rpc\SessionWorkspaceCreateFileParams;
-use Revolution\Copilot\Types\Rpc\SessionWorkspaceListFilesResult;
-use Revolution\Copilot\Types\Rpc\SessionWorkspaceReadFileParams;
-use Revolution\Copilot\Types\Rpc\SessionWorkspaceReadFileResult;
+use Revolution\Copilot\Types\Rpc\WorkspaceCreateFileRequest;
+use Revolution\Copilot\Types\Rpc\WorkspaceListFilesResult;
+use Revolution\Copilot\Types\Rpc\WorkspaceReadFileRequest;
+use Revolution\Copilot\Types\Rpc\WorkspaceReadFileResult;
 
 describe('PendingWorkspace', function () {
     it('calls session.workspace.listFiles and returns result', function () {
@@ -23,7 +23,7 @@ describe('PendingWorkspace', function () {
         $pending = new PendingWorkspace($client, 'test-session');
         $result = $pending->listFiles();
 
-        expect($result)->toBeInstanceOf(SessionWorkspaceListFilesResult::class)
+        expect($result)->toBeInstanceOf(WorkspaceListFilesResult::class)
             ->and($result->files)->toBe(['README.md', 'src/main.php']);
     });
 
@@ -36,7 +36,7 @@ describe('PendingWorkspace', function () {
         $pending = new PendingWorkspace($client, 'test-session');
         $result = $pending->listFiles();
 
-        expect($result)->toBeInstanceOf(SessionWorkspaceListFilesResult::class)
+        expect($result)->toBeInstanceOf(WorkspaceListFilesResult::class)
             ->and($result->files)->toBe([]);
     });
 
@@ -52,9 +52,9 @@ describe('PendingWorkspace', function () {
             ->andReturn(['content' => '# My Project']);
 
         $pending = new PendingWorkspace($client, 'test-session');
-        $result = $pending->readFile(new SessionWorkspaceReadFileParams(path: 'README.md'));
+        $result = $pending->readFile(new WorkspaceReadFileRequest(path: 'README.md'));
 
-        expect($result)->toBeInstanceOf(SessionWorkspaceReadFileResult::class)
+        expect($result)->toBeInstanceOf(WorkspaceReadFileResult::class)
             ->and($result->content)->toBe('# My Project');
     });
 
@@ -72,7 +72,7 @@ describe('PendingWorkspace', function () {
         $pending = new PendingWorkspace($client, 'test-session');
         $result = $pending->readFile(['path' => 'src/main.php']);
 
-        expect($result)->toBeInstanceOf(SessionWorkspaceReadFileResult::class)
+        expect($result)->toBeInstanceOf(WorkspaceReadFileResult::class)
             ->and($result->content)->toBe('<?php echo "hello";');
     });
 
@@ -89,7 +89,7 @@ describe('PendingWorkspace', function () {
             ->andReturn(['success' => true]);
 
         $pending = new PendingWorkspace($client, 'test-session');
-        $result = $pending->createFile(new SessionWorkspaceCreateFileParams(
+        $result = $pending->createFile(new WorkspaceCreateFileRequest(
             path: 'notes.txt',
             content: 'hello world',
         ));

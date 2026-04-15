@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Types\Rpc\AgentGetCurrentResult;
 use Revolution\Copilot\Types\Rpc\AgentInfo;
-use Revolution\Copilot\Types\Rpc\SessionAgentGetCurrentResult;
-use Revolution\Copilot\Types\Rpc\SessionAgentListResult;
-use Revolution\Copilot\Types\Rpc\SessionAgentSelectParams;
-use Revolution\Copilot\Types\Rpc\SessionAgentSelectResult;
+use Revolution\Copilot\Types\Rpc\AgentList;
+use Revolution\Copilot\Types\Rpc\AgentSelectRequest;
+use Revolution\Copilot\Types\Rpc\AgentSelectResult;
 
 describe('AgentInfo', function () {
     it('can be created from array', function () {
@@ -42,9 +42,9 @@ describe('AgentInfo', function () {
     });
 });
 
-describe('SessionAgentListResult', function () {
+describe('AgentList', function () {
     it('can be created from array', function () {
-        $result = SessionAgentListResult::fromArray([
+        $result = AgentList::fromArray([
             'agents' => [
                 [
                     'name' => 'agent1',
@@ -60,14 +60,14 @@ describe('SessionAgentListResult', function () {
     });
 
     it('handles empty agents list', function () {
-        $result = SessionAgentListResult::fromArray([]);
+        $result = AgentList::fromArray([]);
         expect($result->agents)->toBe([]);
     });
 });
 
-describe('SessionAgentGetCurrentResult', function () {
+describe('AgentGetCurrentResult', function () {
     it('can be created with agent', function () {
-        $result = SessionAgentGetCurrentResult::fromArray([
+        $result = AgentGetCurrentResult::fromArray([
             'agent' => [
                 'name' => 'test',
                 'displayName' => 'Test',
@@ -80,21 +80,21 @@ describe('SessionAgentGetCurrentResult', function () {
     });
 
     it('can be created with null agent', function () {
-        $result = SessionAgentGetCurrentResult::fromArray([]);
+        $result = AgentGetCurrentResult::fromArray([]);
         expect($result->agent)->toBeNull();
     });
 });
 
-describe('SessionAgentSelectParams', function () {
+describe('AgentSelectRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionAgentSelectParams(name: 'my-agent');
+        $params = new AgentSelectRequest(name: 'my-agent');
         expect($params->toArray())->toBe(['name' => 'my-agent']);
     });
 });
 
-describe('SessionAgentSelectResult', function () {
+describe('AgentSelectResult', function () {
     it('can be created from array', function () {
-        $result = SessionAgentSelectResult::fromArray([
+        $result = AgentSelectResult::fromArray([
             'agent' => [
                 'name' => 'selected',
                 'displayName' => 'Selected Agent',
