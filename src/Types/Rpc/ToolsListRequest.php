@@ -7,28 +7,28 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for a ping request.
+ * Request for listing tools.
  */
-readonly class PingParams implements Arrayable
+readonly class ToolsListRequest implements Arrayable
 {
     /**
-     * @param  ?string  $message  Optional message to echo back
+     * @param  ?string  $model  Optional model ID — when provided, the returned tool list reflects model-specific overrides
      */
     public function __construct(
-        public ?string $message = null,
+        public ?string $model = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            message: $data['message'] ?? null,
+            model: $data['model'] ?? null,
         );
     }
 
     public function toArray(): array
     {
         return array_filter([
-            'message' => $this->message,
+            'model' => $this->model,
         ], fn ($v) => $v !== null);
     }
 }

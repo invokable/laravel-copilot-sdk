@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\McpConfigAddParams;
-use Revolution\Copilot\Types\Rpc\McpConfigListResult;
-use Revolution\Copilot\Types\Rpc\McpConfigRemoveParams;
-use Revolution\Copilot\Types\Rpc\McpConfigUpdateParams;
-use Revolution\Copilot\Types\Rpc\McpDiscoverParams;
+use Revolution\Copilot\Types\Rpc\McpConfigAddRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigList;
+use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
+use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
 
 /**
@@ -27,9 +27,9 @@ class PendingServerMcpConfig
     /**
      * List all MCP server configurations.
      */
-    public function list(): McpConfigListResult
+    public function list(): McpConfigList
     {
-        return McpConfigListResult::fromArray(
+        return McpConfigList::fromArray(
             $this->client->request('mcp.config.list', []),
         );
     }
@@ -37,9 +37,9 @@ class PendingServerMcpConfig
     /**
      * Add a new MCP server configuration.
      */
-    public function add(McpConfigAddParams|array $params): void
+    public function add(McpConfigAddRequest|array $params): void
     {
-        $paramsArray = ($params instanceof McpConfigAddParams ? $params : McpConfigAddParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof McpConfigAddRequest ? $params : McpConfigAddRequest::fromArray($params))->toArray();
 
         $this->client->request('mcp.config.add', $paramsArray);
     }
@@ -47,9 +47,9 @@ class PendingServerMcpConfig
     /**
      * Update an existing MCP server configuration.
      */
-    public function update(McpConfigUpdateParams|array $params): void
+    public function update(McpConfigUpdateRequest|array $params): void
     {
-        $paramsArray = ($params instanceof McpConfigUpdateParams ? $params : McpConfigUpdateParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof McpConfigUpdateRequest ? $params : McpConfigUpdateRequest::fromArray($params))->toArray();
 
         $this->client->request('mcp.config.update', $paramsArray);
     }
@@ -57,9 +57,9 @@ class PendingServerMcpConfig
     /**
      * Remove an MCP server configuration.
      */
-    public function remove(McpConfigRemoveParams|array $params): void
+    public function remove(McpConfigRemoveRequest|array $params): void
     {
-        $paramsArray = ($params instanceof McpConfigRemoveParams ? $params : McpConfigRemoveParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof McpConfigRemoveRequest ? $params : McpConfigRemoveRequest::fromArray($params))->toArray();
 
         $this->client->request('mcp.config.remove', $paramsArray);
     }
@@ -67,9 +67,9 @@ class PendingServerMcpConfig
     /**
      * Discover MCP servers from all sources.
      */
-    public function discover(McpDiscoverParams|array $params = []): McpDiscoverResult
+    public function discover(McpDiscoverRequest|array $params = []): McpDiscoverResult
     {
-        $paramsArray = ($params instanceof McpDiscoverParams ? $params : McpDiscoverParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof McpDiscoverRequest ? $params : McpDiscoverRequest::fromArray($params))->toArray();
 
         return McpDiscoverResult::fromArray(
             $this->client->request('mcp.discover', $paramsArray),

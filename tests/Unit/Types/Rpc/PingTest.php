@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
-use Revolution\Copilot\Types\Rpc\PingParams;
+use Revolution\Copilot\Types\Rpc\PingRequest;
 use Revolution\Copilot\Types\Rpc\PingResult;
 
 describe('PingResult', function () {
@@ -39,27 +39,27 @@ describe('PingResult', function () {
     });
 });
 
-describe('PingParams', function () {
+describe('PingRequest', function () {
     it('can be created from array with message', function () {
-        $params = PingParams::fromArray(['message' => 'hello']);
+        $params = PingRequest::fromArray(['message' => 'hello']);
 
         expect($params->message)->toBe('hello');
     });
 
     it('can be created from array without message', function () {
-        $params = PingParams::fromArray([]);
+        $params = PingRequest::fromArray([]);
 
         expect($params->message)->toBeNull();
     });
 
     it('filters null values in toArray', function () {
-        $params = new PingParams;
+        $params = new PingRequest;
 
         expect($params->toArray())->toBe([]);
     });
 
     it('includes message in toArray when set', function () {
-        $params = new PingParams(message: 'hello');
+        $params = new PingRequest(message: 'hello');
 
         expect($params->toArray())->toBe(['message' => 'hello']);
     });

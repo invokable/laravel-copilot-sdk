@@ -6,24 +6,24 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\McpTransportType;
 use Revolution\Copilot\Enums\ServerSource;
 use Revolution\Copilot\Types\Rpc\DiscoveredMcpServer;
-use Revolution\Copilot\Types\Rpc\McpDiscoverParams;
+use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
 
-describe('McpDiscoverParams', function () {
+describe('McpDiscoverRequest', function () {
     it('can be created with working directory', function () {
-        $params = new McpDiscoverParams(workingDirectory: '/workspace/my-project');
+        $params = new McpDiscoverRequest(workingDirectory: '/workspace/my-project');
 
         expect($params->workingDirectory)->toBe('/workspace/my-project');
     });
 
     it('can be created with default values', function () {
-        $params = new McpDiscoverParams;
+        $params = new McpDiscoverRequest;
 
         expect($params->workingDirectory)->toBeNull();
     });
 
     it('can be created from array', function () {
-        $params = McpDiscoverParams::fromArray([
+        $params = McpDiscoverRequest::fromArray([
             'workingDirectory' => '/workspace',
         ]);
 
@@ -31,25 +31,25 @@ describe('McpDiscoverParams', function () {
     });
 
     it('can be created from empty array', function () {
-        $params = McpDiscoverParams::fromArray([]);
+        $params = McpDiscoverRequest::fromArray([]);
 
         expect($params->workingDirectory)->toBeNull();
     });
 
     it('converts to array without null values', function () {
-        $params = new McpDiscoverParams;
+        $params = new McpDiscoverRequest;
 
         expect($params->toArray())->toBe([]);
     });
 
     it('converts to array with working directory', function () {
-        $params = new McpDiscoverParams(workingDirectory: '/workspace');
+        $params = new McpDiscoverRequest(workingDirectory: '/workspace');
 
         expect($params->toArray())->toBe(['workingDirectory' => '/workspace']);
     });
 
     it('implements Arrayable interface', function () {
-        expect(new McpDiscoverParams)->toBeInstanceOf(Arrayable::class);
+        expect(new McpDiscoverRequest)->toBeInstanceOf(Arrayable::class);
     });
 });
 

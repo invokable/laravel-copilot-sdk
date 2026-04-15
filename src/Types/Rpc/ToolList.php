@@ -7,28 +7,28 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for removing an MCP server configuration.
+ * List of available tools.
  */
-readonly class McpConfigRemoveParams implements Arrayable
+readonly class ToolList implements Arrayable
 {
     /**
-     * @param  string  $name  Name of the MCP server to remove
+     * @param  array<array{name: string, namespacedName?: string, description: string, parameters?: array, instructions?: string}>  $tools  List of available built-in tools with metadata
      */
     public function __construct(
-        public string $name,
+        public array $tools,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
+            tools: $data['tools'] ?? [],
         );
     }
 
     public function toArray(): array
     {
         return [
-            'name' => $this->name,
+            'tools' => $this->tools,
         ];
     }
 }

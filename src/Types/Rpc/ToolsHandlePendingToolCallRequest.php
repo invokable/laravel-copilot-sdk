@@ -10,7 +10,7 @@ use Illuminate\Contracts\Support\Arrayable;
  * Parameters for handling a pending tool call.
  *
  * Provide either $result or $error, but not both:
- * - $result: a plain string, or a structured array with textResultForLlm and
+ * - $result: a plain string, or a structured {@see ToolCallResult} with textResultForLlm and
  *   optionally resultType and toolTelemetry
  * - $error: a string describing the error that occurred during tool execution
  */
@@ -18,12 +18,12 @@ readonly class ToolsHandlePendingToolCallRequest implements Arrayable
 {
     /**
      * @param  string  $requestId  The ID of the pending tool call to handle
-     * @param  string|array|null  $result  Plain string result or structured result object
+     * @param  string|ToolCallResult|array|null  $result  Plain string result or structured result object
      * @param  ?string  $error  Error message if tool execution failed
      */
     public function __construct(
         public string $requestId,
-        public string|array|null $result = null,
+        public string|ToolCallResult|array|null $result = null,
         public ?string $error = null,
     ) {}
 
@@ -41,7 +41,9 @@ readonly class ToolsHandlePendingToolCallRequest implements Arrayable
         $arr = ['requestId' => $this->requestId];
 
         if ($this->result !== null) {
-            $arr['result'] = $this->result;
+            $arr['result'] = $this->result instanceof ToolCallResult
+                ? $this->result->toArray()
+                : $this->result;
         }
 
         if ($this->error !== null) {

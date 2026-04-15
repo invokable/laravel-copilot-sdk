@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerSessionFs;
-use Revolution\Copilot\Types\Rpc\SessionFsSetProviderParams;
+use Revolution\Copilot\Types\Rpc\SessionFsSetProviderRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsSetProviderResult;
 
 describe('PendingServerSessionFs', function () {
@@ -21,7 +21,7 @@ describe('PendingServerSessionFs', function () {
             ->andReturn(['success' => true]);
 
         $pending = new PendingServerSessionFs($client);
-        $result = $pending->setProvider(new SessionFsSetProviderParams(
+        $result = $pending->setProvider(new SessionFsSetProviderRequest(
             initialCwd: '/app',
             sessionStatePath: '.copilot/sessions',
             conventions: 'posix',
@@ -60,7 +60,7 @@ describe('PendingServerSessionFs', function () {
             ->andReturn(['success' => false]);
 
         $pending = new PendingServerSessionFs($client);
-        $result = $pending->setProvider(new SessionFsSetProviderParams(
+        $result = $pending->setProvider(new SessionFsSetProviderRequest(
             initialCwd: '/app',
             sessionStatePath: '.state',
         ));

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Types\Rpc\McpConfigAddParams;
-use Revolution\Copilot\Types\Rpc\McpConfigListResult;
-use Revolution\Copilot\Types\Rpc\McpConfigRemoveParams;
-use Revolution\Copilot\Types\Rpc\McpConfigUpdateParams;
+use Revolution\Copilot\Types\Rpc\McpConfigAddRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigList;
+use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
 use Revolution\Copilot\Types\Rpc\McpServerValue;
 
 describe('McpServerValue', function () {
@@ -71,9 +71,9 @@ describe('McpServerValue', function () {
     });
 });
 
-describe('McpConfigListResult', function () {
+describe('McpConfigList', function () {
     it('can be created from array', function () {
-        $result = McpConfigListResult::fromArray([
+        $result = McpConfigList::fromArray([
             'servers' => [
                 'github' => [
                     'type' => 'local',
@@ -94,13 +94,13 @@ describe('McpConfigListResult', function () {
     });
 
     it('handles empty servers', function () {
-        $result = McpConfigListResult::fromArray([]);
+        $result = McpConfigList::fromArray([]);
 
         expect($result->servers)->toBe([]);
     });
 
     it('converts to array', function () {
-        $result = McpConfigListResult::fromArray([
+        $result = McpConfigList::fromArray([
             'servers' => [
                 'test' => ['type' => 'local', 'command' => 'test'],
             ],
@@ -112,9 +112,9 @@ describe('McpConfigListResult', function () {
     });
 });
 
-describe('McpConfigAddParams', function () {
+describe('McpConfigAddRequest', function () {
     it('can be created with typed config', function () {
-        $params = new McpConfigAddParams(
+        $params = new McpConfigAddRequest(
             name: 'my-server',
             config: new McpServerValue(
                 type: 'local',
@@ -128,7 +128,7 @@ describe('McpConfigAddParams', function () {
     });
 
     it('can be created from array', function () {
-        $params = McpConfigAddParams::fromArray([
+        $params = McpConfigAddRequest::fromArray([
             'name' => 'my-server',
             'config' => ['type' => 'http', 'url' => 'https://example.com'],
         ]);
@@ -139,7 +139,7 @@ describe('McpConfigAddParams', function () {
     });
 
     it('converts to array', function () {
-        $params = new McpConfigAddParams(
+        $params = new McpConfigAddRequest(
             name: 'test',
             config: new McpServerValue(type: 'local', command: 'node'),
         );
@@ -150,9 +150,9 @@ describe('McpConfigAddParams', function () {
     });
 });
 
-describe('McpConfigUpdateParams', function () {
+describe('McpConfigUpdateRequest', function () {
     it('can be created with typed config', function () {
-        $params = new McpConfigUpdateParams(
+        $params = new McpConfigUpdateRequest(
             name: 'my-server',
             config: new McpServerValue(type: 'http', url: 'https://new-url.com'),
         );
@@ -162,7 +162,7 @@ describe('McpConfigUpdateParams', function () {
     });
 
     it('can be created from array', function () {
-        $params = McpConfigUpdateParams::fromArray([
+        $params = McpConfigUpdateRequest::fromArray([
             'name' => 'my-server',
             'config' => ['type' => 'local', 'command' => 'php'],
         ]);
@@ -172,7 +172,7 @@ describe('McpConfigUpdateParams', function () {
     });
 
     it('converts to array', function () {
-        $params = new McpConfigUpdateParams(
+        $params = new McpConfigUpdateRequest(
             name: 'test',
             config: new McpServerValue(type: 'sse', url: 'https://sse.example.com'),
         );
@@ -183,21 +183,21 @@ describe('McpConfigUpdateParams', function () {
     });
 });
 
-describe('McpConfigRemoveParams', function () {
+describe('McpConfigRemoveRequest', function () {
     it('can be created', function () {
-        $params = new McpConfigRemoveParams(name: 'my-server');
+        $params = new McpConfigRemoveRequest(name: 'my-server');
 
         expect($params->name)->toBe('my-server');
     });
 
     it('can be created from array', function () {
-        $params = McpConfigRemoveParams::fromArray(['name' => 'old-server']);
+        $params = McpConfigRemoveRequest::fromArray(['name' => 'old-server']);
 
         expect($params->name)->toBe('old-server');
     });
 
     it('converts to array', function () {
-        $params = new McpConfigRemoveParams(name: 'test');
+        $params = new McpConfigRemoveRequest(name: 'test');
 
         expect($params->toArray())->toBe(['name' => 'test']);
     });

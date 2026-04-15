@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\PingParams;
+use Revolution\Copilot\Types\Rpc\PingRequest;
 use Revolution\Copilot\Types\Rpc\PingResult;
 
 /**
@@ -13,7 +13,7 @@ use Revolution\Copilot\Types\Rpc\PingResult;
  *
  * Usage:
  * ```php
- * $client->rpc()->ping(new PingParams(message: 'hello'));
+ * $client->rpc()->ping(new PingRequest(message: 'hello'));
  * $client->rpc()->models()->list();
  * $client->rpc()->tools()->list();
  * $client->rpc()->account()->getQuota();
@@ -31,9 +31,9 @@ class ServerRpc
     /**
      * Send a ping request.
      */
-    public function ping(PingParams|array $params = []): PingResult
+    public function ping(PingRequest|array $params = []): PingResult
     {
-        $paramsArray = $params instanceof PingParams ? $params->toArray() : $params;
+        $paramsArray = $params instanceof PingRequest ? $params->toArray() : $params;
 
         return PingResult::fromArray(
             $this->client->request('ping', $paramsArray),

@@ -7,23 +7,26 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for reading a directory via SessionFs.
+ * Request for renaming/moving a file via SessionFs.
  */
-readonly class SessionFsReaddirParams implements Arrayable
+readonly class SessionFsRenameRequest implements Arrayable
 {
     /**
-     * @param  string  $path  Path using SessionFs conventions
+     * @param  string  $src  Source path using SessionFs conventions
+     * @param  string  $dest  Destination path using SessionFs conventions
      * @param  string  $sessionId  Target session identifier
      */
     public function __construct(
-        public string $path,
+        public string $src,
+        public string $dest,
         public string $sessionId,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            path: $data['path'],
+            src: $data['src'],
+            dest: $data['dest'],
             sessionId: $data['sessionId'],
         );
     }
@@ -31,7 +34,8 @@ readonly class SessionFsReaddirParams implements Arrayable
     public function toArray(): array
     {
         return [
-            'path' => $this->path,
+            'src' => $this->src,
+            'dest' => $this->dest,
             'sessionId' => $this->sessionId,
         ];
     }

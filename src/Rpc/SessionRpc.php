@@ -12,14 +12,14 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * Usage:
  * ```php
  * $session->rpc()->model()->getCurrent();
- * $session->rpc()->model()->switchTo(new SessionModelSwitchToParams(modelId: 'gpt-4'));
+ * $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'gpt-4'));
  * $session->rpc()->mode()->get();
- * $session->rpc()->mode()->set(new SessionModeSetParams(mode: 'plan'));
+ * $session->rpc()->mode()->set(new ModeSetRequest(mode: 'plan'));
  * $session->rpc()->plan()->read();
  * $session->rpc()->workspace()->listFiles();
  * $session->rpc()->fleet()->start();
- * $session->rpc()->log()->log(new SessionLogParams(message: 'Processing started'));
- * $session->rpc()->log()->log(new SessionLogParams(message: 'Disk usage high', level: LogLevel::WARNING));
+ * $session->rpc()->log()->log(new LogRequest(message: 'Processing started'));
+ * $session->rpc()->log()->log(new LogRequest(message: 'Disk usage high', level: LogLevel::WARNING));
  * $session->rpc()->agent()->list();
  * $session->rpc()->agent()->reload();
  * $session->rpc()->skills()->list();
@@ -27,11 +27,11 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->plugins()->list();
  * $session->rpc()->extensions()->list();
  * $session->rpc()->history()->compact();
- * $session->rpc()->history()->truncate(new SessionHistoryTruncateParams(eventId: '...'));
- * $session->rpc()->tools()->handlePendingToolCall(new SessionToolsHandlePendingToolCallParams(requestId: '...', result: 'done'));
- * $session->rpc()->commands()->handlePendingCommand(new SessionCommandsHandlePendingCommandParams(requestId: '...'));
- * $session->rpc()->ui()->elicitation(new SessionUiElicitationParams(message: '...', requestedSchema: [...]));
- * $session->rpc()->permissions()->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(requestId: '...', result: PermissionRequestResultKind::approved()));
+ * $session->rpc()->history()->truncate(new HistoryTruncateRequest(eventId: '...'));
+ * $session->rpc()->tools()->handlePendingToolCall(new ToolsHandlePendingToolCallRequest(requestId: '...', result: 'done'));
+ * $session->rpc()->commands()->handlePendingCommand(new CommandsHandlePendingCommandRequest(requestId: '...'));
+ * $session->rpc()->ui()->elicitation(new UIElicitationRequest(message: '...', requestedSchema: [...]));
+ * $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(requestId: '...', decision: PermissionRequestResultKind::approved()));
  * ```
  */
 class SessionRpc

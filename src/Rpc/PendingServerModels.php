@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\ModelsListResult;
+use Revolution\Copilot\Types\Rpc\ModelList;
 
 /**
  * Pending models RPC operations.
@@ -19,9 +19,9 @@ class PendingServerModels
     /**
      * List available models.
      */
-    public function list(): ModelsListResult
+    public function list(): ModelList
     {
-        return ModelsListResult::fromArray(
+        return ModelList::fromArray(
             $this->client->request('models.list', []),
         );
     }
