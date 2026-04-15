@@ -15,8 +15,11 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'gpt-4'));
  * $session->rpc()->mode()->get();
  * $session->rpc()->mode()->set(new ModeSetRequest(mode: 'plan'));
+ * $session->rpc()->name()->get();
+ * $session->rpc()->name()->set(new NameSetRequest(name: 'my session'));
  * $session->rpc()->plan()->read();
- * $session->rpc()->workspace()->listFiles();
+ * $session->rpc()->workspaces()->getWorkspace();
+ * $session->rpc()->workspaces()->listFiles();
  * $session->rpc()->fleet()->start();
  * $session->rpc()->log()->log(new LogRequest(message: 'Processing started'));
  * $session->rpc()->log()->log(new LogRequest(message: 'Disk usage high', level: LogLevel::WARNING));
@@ -58,6 +61,14 @@ class SessionRpc
     }
 
     /**
+     * Name RPC operations.
+     */
+    public function name(): PendingName
+    {
+        return new PendingName($this->client, $this->sessionId);
+    }
+
+    /**
      * Plan RPC operations.
      */
     public function plan(): PendingPlan
@@ -66,11 +77,11 @@ class SessionRpc
     }
 
     /**
-     * Workspace RPC operations.
+     * Workspaces RPC operations.
      */
-    public function workspace(): PendingWorkspace
+    public function workspaces(): PendingWorkspaces
     {
-        return new PendingWorkspace($this->client, $this->sessionId);
+        return new PendingWorkspaces($this->client, $this->sessionId);
     }
 
     /**
