@@ -12,13 +12,14 @@ use Revolution\Copilot\Rpc\PendingLog;
 use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Rpc\PendingMode;
 use Revolution\Copilot\Rpc\PendingModel;
+use Revolution\Copilot\Rpc\PendingName;
 use Revolution\Copilot\Rpc\PendingPermissions;
 use Revolution\Copilot\Rpc\PendingPlan;
 use Revolution\Copilot\Rpc\PendingPlugins;
 use Revolution\Copilot\Rpc\PendingSkills;
 use Revolution\Copilot\Rpc\PendingTools;
 use Revolution\Copilot\Rpc\PendingUi;
-use Revolution\Copilot\Rpc\PendingWorkspace;
+use Revolution\Copilot\Rpc\PendingWorkspaces;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
 
@@ -41,10 +42,16 @@ describe('SessionRpc', function () {
         expect($rpc->plan())->toBeInstanceOf(PendingPlan::class);
     });
 
-    it('returns PendingWorkspace from workspace()', function () {
+    it('returns PendingName from name()', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
-        expect($rpc->workspace())->toBeInstanceOf(PendingWorkspace::class);
+        expect($rpc->name())->toBeInstanceOf(PendingName::class);
+    });
+
+    it('returns PendingWorkspaces from workspaces()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->workspaces())->toBeInstanceOf(PendingWorkspaces::class);
     });
 
     it('returns PendingFleet from fleet()', function () {

@@ -123,15 +123,20 @@ $session->setModel('gpt-4', modelCapabilities: ['supports' => ['vision' => true]
 $session->rpc()->mode()->get();
 $session->rpc()->mode()->set(new ModeSetRequest(mode: 'plan'));
 
+// name
+$session->rpc()->name()->get();
+$session->rpc()->name()->set(new NameSetRequest(name: 'My Session'));
+
 // plan
 $session->rpc()->plan()->read();
 $session->rpc()->plan()->update(new PlanUpdateRequest(content: '...'));
 $session->rpc()->plan()->delete();
 
-// workspace
-$session->rpc()->workspace()->listFiles();
-$session->rpc()->workspace()->readFile(new WorkspaceReadFileRequest(path: 'file.txt'));
-$session->rpc()->workspace()->createFile(new WorkspaceCreateFileRequest(path: 'file.txt', content: '...'));
+// workspaces
+$session->rpc()->workspaces()->getWorkspace();
+$session->rpc()->workspaces()->listFiles();
+$session->rpc()->workspaces()->readFile(new WorkspacesReadFileRequest(path: 'file.txt'));
+$session->rpc()->workspaces()->createFile(new WorkspacesCreateFileRequest(path: 'file.txt', content: '...'));
 
 // fleet
 $session->rpc()->fleet()->start(new FleetStartRequest(prompt: '...'));
