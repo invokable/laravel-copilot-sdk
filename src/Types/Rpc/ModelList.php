@@ -8,9 +8,9 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\ModelInfo;
 
 /**
- * Result of listing available models.
+ * List of available models.
  */
-readonly class ModelsListResult implements Arrayable
+readonly class ModelList implements Arrayable
 {
     /**
      * @param  array<ModelInfo>  $models  List of available models with full metadata

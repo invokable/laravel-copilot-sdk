@@ -7,28 +7,28 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for listing tools.
+ * Request for discovering MCP servers.
  */
-readonly class ToolsListParams implements Arrayable
+readonly class McpDiscoverRequest implements Arrayable
 {
     /**
-     * @param  ?string  $model  Optional model ID — when provided, the returned tool list reflects model-specific overrides
+     * @param  ?string  $workingDirectory  Working directory used as context for discovery (e.g., plugin resolution)
      */
     public function __construct(
-        public ?string $model = null,
+        public ?string $workingDirectory = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            model: $data['model'] ?? null,
+            workingDirectory: $data['workingDirectory'] ?? null,
         );
     }
 
     public function toArray(): array
     {
         return array_filter([
-            'model' => $this->model,
+            'workingDirectory' => $this->workingDirectory,
         ], fn ($v) => $v !== null);
     }
 }

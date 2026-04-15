@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingSessions;
-use Revolution\Copilot\Types\Rpc\SessionsForkParams;
+use Revolution\Copilot\Types\Rpc\SessionsForkRequest;
 use Revolution\Copilot\Types\Rpc\SessionsForkResult;
 
 describe('PendingSessions', function () {
@@ -22,7 +22,7 @@ describe('PendingSessions', function () {
             ]);
 
         $pending = new PendingSessions($client);
-        $result = $pending->fork(new SessionsForkParams(sessionId: 'source-session'));
+        $result = $pending->fork(new SessionsForkRequest(sessionId: 'source-session'));
 
         expect($result)->toBeInstanceOf(SessionsForkResult::class)
             ->and($result->sessionId)->toBe('forked-session-id');
@@ -42,7 +42,7 @@ describe('PendingSessions', function () {
             ]);
 
         $pending = new PendingSessions($client);
-        $result = $pending->fork(new SessionsForkParams(
+        $result = $pending->fork(new SessionsForkRequest(
             sessionId: 'source-session',
             toEventId: 'evt-boundary',
         ));

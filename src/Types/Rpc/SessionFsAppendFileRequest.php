@@ -7,40 +7,40 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for removing a file or directory via SessionFs.
+ * Request for appending to a file via SessionFs.
  */
-readonly class SessionFsRmParams implements Arrayable
+readonly class SessionFsAppendFileRequest implements Arrayable
 {
     /**
+     * @param  string  $content  Content to append
      * @param  string  $path  Path using SessionFs conventions
      * @param  string  $sessionId  Target session identifier
-     * @param  ?bool  $force  Ignore errors if the path does not exist
-     * @param  ?bool  $recursive  Remove directories and their contents recursively
+     * @param  ?int  $mode  Optional POSIX-style mode for newly created files
      */
     public function __construct(
+        public string $content,
         public string $path,
         public string $sessionId,
-        public ?bool $force = null,
-        public ?bool $recursive = null,
+        public ?int $mode = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
+            content: $data['content'],
             path: $data['path'],
             sessionId: $data['sessionId'],
-            force: $data['force'] ?? null,
-            recursive: $data['recursive'] ?? null,
+            mode: isset($data['mode']) ? (int) $data['mode'] : null,
         );
     }
 
     public function toArray(): array
     {
         return array_filter([
+            'content' => $this->content,
             'path' => $this->path,
             'sessionId' => $this->sessionId,
-            'force' => $this->force,
-            'recursive' => $this->recursive,
+            'mode' => $this->mode,
         ], fn ($v) => $v !== null);
     }
 }

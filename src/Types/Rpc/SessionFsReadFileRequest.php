@@ -7,9 +7,9 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for reading a directory with type information via SessionFs.
+ * Request for reading a file via SessionFs.
  */
-readonly class SessionFsReaddirWithTypesParams implements Arrayable
+readonly class SessionFsReadFileRequest implements Arrayable
 {
     /**
      * @param  string  $path  Path using SessionFs conventions

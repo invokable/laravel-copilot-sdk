@@ -7,9 +7,9 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for setting the session filesystem provider.
+ * Request for setting the session filesystem provider.
  */
-readonly class SessionFsSetProviderParams implements Arrayable
+readonly class SessionFsSetProviderRequest implements Arrayable
 {
     /**
      * @param  string  $initialCwd  Initial working directory for sessions

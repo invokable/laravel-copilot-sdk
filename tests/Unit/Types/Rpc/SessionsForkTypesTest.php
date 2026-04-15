@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Types\Rpc\SessionsForkParams;
+use Revolution\Copilot\Types\Rpc\SessionsForkRequest;
 use Revolution\Copilot\Types\Rpc\SessionsForkResult;
 
 describe('SessionsForkResult', function () {
@@ -23,9 +23,9 @@ describe('SessionsForkResult', function () {
     });
 });
 
-describe('SessionsForkParams', function () {
+describe('SessionsForkRequest', function () {
     it('can be created from array with all fields', function () {
-        $params = SessionsForkParams::fromArray([
+        $params = SessionsForkRequest::fromArray([
             'sessionId' => 'source-session',
             'toEventId' => 'evt-boundary',
         ]);
@@ -35,7 +35,7 @@ describe('SessionsForkParams', function () {
     });
 
     it('can be created from array without optional fields', function () {
-        $params = SessionsForkParams::fromArray([
+        $params = SessionsForkRequest::fromArray([
             'sessionId' => 'source-session',
         ]);
 
@@ -44,7 +44,7 @@ describe('SessionsForkParams', function () {
     });
 
     it('can convert to array with all fields', function () {
-        $params = new SessionsForkParams(
+        $params = new SessionsForkRequest(
             sessionId: 'source-session',
             toEventId: 'evt-boundary',
         );
@@ -56,7 +56,7 @@ describe('SessionsForkParams', function () {
     });
 
     it('excludes null optional fields from array', function () {
-        $params = new SessionsForkParams(sessionId: 'source-session');
+        $params = new SessionsForkRequest(sessionId: 'source-session');
 
         expect($params->toArray())->toBe([
             'sessionId' => 'source-session',

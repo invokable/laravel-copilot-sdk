@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
-use Revolution\Copilot\Types\Rpc\McpConfigAddParams;
-use Revolution\Copilot\Types\Rpc\McpConfigListResult;
-use Revolution\Copilot\Types\Rpc\McpConfigRemoveParams;
-use Revolution\Copilot\Types\Rpc\McpConfigUpdateParams;
-use Revolution\Copilot\Types\Rpc\McpDiscoverParams;
+use Revolution\Copilot\Types\Rpc\McpConfigAddRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigList;
+use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
+use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
 use Revolution\Copilot\Types\Rpc\McpServerValue;
 
@@ -31,7 +31,7 @@ describe('PendingServerMcpConfig', function () {
         $pending = new PendingServerMcpConfig($client);
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(McpConfigListResult::class)
+        expect($result)->toBeInstanceOf(McpConfigList::class)
             ->and($result->servers)->toHaveCount(1)
             ->and($result->servers['github']->command)->toBe('gh');
     });
@@ -46,7 +46,7 @@ describe('PendingServerMcpConfig', function () {
         $pending = new PendingServerMcpConfig($client);
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(McpConfigListResult::class)
+        expect($result)->toBeInstanceOf(McpConfigList::class)
             ->and($result->servers)->toBe([]);
     });
 
@@ -63,7 +63,7 @@ describe('PendingServerMcpConfig', function () {
             ->andReturn([]);
 
         $pending = new PendingServerMcpConfig($client);
-        $pending->add(new McpConfigAddParams(
+        $pending->add(new McpConfigAddRequest(
             name: 'my-server',
             config: new McpServerValue(type: 'local', command: 'php', args: ['artisan', 'mcp']),
         ));
@@ -96,7 +96,7 @@ describe('PendingServerMcpConfig', function () {
             ->andReturn([]);
 
         $pending = new PendingServerMcpConfig($client);
-        $pending->update(new McpConfigUpdateParams(
+        $pending->update(new McpConfigUpdateRequest(
             name: 'my-server',
             config: new McpServerValue(type: 'http', url: 'https://new-url.com'),
         ));
@@ -113,7 +113,7 @@ describe('PendingServerMcpConfig', function () {
             ->andReturn([]);
 
         $pending = new PendingServerMcpConfig($client);
-        $pending->remove(new McpConfigRemoveParams(name: 'old-server'));
+        $pending->remove(new McpConfigRemoveRequest(name: 'old-server'));
     });
 
     it('calls mcp.config.remove with array params', function () {
@@ -155,7 +155,7 @@ describe('PendingServerMcpConfig', function () {
             ]);
 
         $pending = new PendingServerMcpConfig($client);
-        $result = $pending->discover(new McpDiscoverParams(workingDirectory: '/workspace'));
+        $result = $pending->discover(new McpDiscoverRequest(workingDirectory: '/workspace'));
 
         expect($result)->toBeInstanceOf(McpDiscoverResult::class)
             ->and($result->servers)->toHaveCount(2)

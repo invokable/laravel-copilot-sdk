@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionsForkParams;
+use Revolution\Copilot\Types\Rpc\SessionsForkRequest;
 use Revolution\Copilot\Types\Rpc\SessionsForkResult;
 
 /**
@@ -25,9 +25,9 @@ class PendingSessions
      * Creates a new session that includes events from the source session.
      * Optionally, provide a toEventId to include only events before that ID.
      */
-    public function fork(SessionsForkParams|array $params): SessionsForkResult
+    public function fork(SessionsForkRequest|array $params): SessionsForkResult
     {
-        $paramsArray = ($params instanceof SessionsForkParams ? $params : SessionsForkParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof SessionsForkRequest ? $params : SessionsForkRequest::fromArray($params))->toArray();
 
         return SessionsForkResult::fromArray(
             $this->client->request('sessions.fork', $paramsArray),

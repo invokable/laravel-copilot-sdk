@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\ToolsListParams;
-use Revolution\Copilot\Types\Rpc\ToolsListResult;
+use Revolution\Copilot\Types\Rpc\ToolList;
+use Revolution\Copilot\Types\Rpc\ToolsListRequest;
 
 /**
  * Pending tools RPC operations.
@@ -20,11 +20,11 @@ class PendingServerTools
     /**
      * List available tools.
      */
-    public function list(ToolsListParams|array $params = []): ToolsListResult
+    public function list(ToolsListRequest|array $params = []): ToolList
     {
-        $paramsArray = ($params instanceof ToolsListParams ? $params : ToolsListParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof ToolsListRequest ? $params : ToolsListRequest::fromArray($params))->toArray();
 
-        return ToolsListResult::fromArray(
+        return ToolList::fromArray(
             $this->client->request('tools.list', $paramsArray),
         );
     }

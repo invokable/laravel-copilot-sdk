@@ -7,28 +7,28 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for discovering MCP servers.
+ * Request for a ping.
  */
-readonly class McpDiscoverParams implements Arrayable
+readonly class PingRequest implements Arrayable
 {
     /**
-     * @param  ?string  $workingDirectory  Working directory used as context for discovery (e.g., plugin resolution)
+     * @param  ?string  $message  Optional message to echo back
      */
     public function __construct(
-        public ?string $workingDirectory = null,
+        public ?string $message = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            workingDirectory: $data['workingDirectory'] ?? null,
+            message: $data['message'] ?? null,
         );
     }
 
     public function toArray(): array
     {
         return array_filter([
-            'workingDirectory' => $this->workingDirectory,
+            'message' => $this->message,
         ], fn ($v) => $v !== null);
     }
 }

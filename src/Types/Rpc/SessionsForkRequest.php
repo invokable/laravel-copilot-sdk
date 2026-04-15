@@ -7,11 +7,11 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for forking a session.
+ * Request for forking a session.
  *
  * @experimental This type is part of an experimental API and may change or be removed.
  */
-readonly class SessionsForkParams implements Arrayable
+readonly class SessionsForkRequest implements Arrayable
 {
     /**
      * @param  string  $sessionId  Source session ID to fork from

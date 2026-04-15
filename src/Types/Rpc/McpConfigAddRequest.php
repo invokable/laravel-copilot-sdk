@@ -7,12 +7,12 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for updating an MCP server configuration.
+ * Request for adding an MCP server configuration.
  */
-readonly class McpConfigUpdateParams implements Arrayable
+readonly class McpConfigAddRequest implements Arrayable
 {
     /**
-     * @param  string  $name  Name of the MCP server to update
+     * @param  string  $name  Unique name for the MCP server
      * @param  McpServerValue|array  $config  MCP server configuration
      */
     public function __construct(

@@ -7,9 +7,9 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for checking file existence via SessionFs.
+ * Request for getting file stats via SessionFs.
  */
-readonly class SessionFsExistsParams implements Arrayable
+readonly class SessionFsStatRequest implements Arrayable
 {
     /**
      * @param  string  $path  Path using SessionFs conventions

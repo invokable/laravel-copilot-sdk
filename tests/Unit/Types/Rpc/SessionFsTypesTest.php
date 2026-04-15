@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Types\Rpc\SessionFsSetProviderParams;
+use Revolution\Copilot\Types\Rpc\SessionFsSetProviderRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsSetProviderResult;
 
-describe('SessionFsSetProviderParams', function () {
+describe('SessionFsSetProviderRequest', function () {
     it('can be created with all fields', function () {
-        $params = new SessionFsSetProviderParams(
+        $params = new SessionFsSetProviderRequest(
             initialCwd: '/home/user/project',
             sessionStatePath: '.copilot/sessions',
             conventions: 'posix',
@@ -19,7 +19,7 @@ describe('SessionFsSetProviderParams', function () {
     });
 
     it('defaults conventions to posix', function () {
-        $params = new SessionFsSetProviderParams(
+        $params = new SessionFsSetProviderRequest(
             initialCwd: '/app',
             sessionStatePath: '.state',
         );
@@ -28,7 +28,7 @@ describe('SessionFsSetProviderParams', function () {
     });
 
     it('can be created from array', function () {
-        $params = SessionFsSetProviderParams::fromArray([
+        $params = SessionFsSetProviderRequest::fromArray([
             'initialCwd' => 'C:\\Users\\project',
             'sessionStatePath' => '.copilot\\sessions',
             'conventions' => 'windows',
@@ -40,7 +40,7 @@ describe('SessionFsSetProviderParams', function () {
     });
 
     it('converts to array', function () {
-        $params = new SessionFsSetProviderParams(
+        $params = new SessionFsSetProviderRequest(
             initialCwd: '/app',
             sessionStatePath: '.state',
             conventions: 'posix',

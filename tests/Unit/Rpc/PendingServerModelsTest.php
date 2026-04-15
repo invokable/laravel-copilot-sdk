@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerModels;
-use Revolution\Copilot\Types\Rpc\ModelsListResult;
+use Revolution\Copilot\Types\Rpc\ModelList;
 
 describe('PendingServerModels', function () {
     it('calls models.list and returns result', function () {
@@ -28,7 +28,7 @@ describe('PendingServerModels', function () {
         $pending = new PendingServerModels($client);
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(ModelsListResult::class)
+        expect($result)->toBeInstanceOf(ModelList::class)
             ->and($result->models)->toHaveCount(1)
             ->and($result->models[0]->id)->toBe('claude-sonnet-4.5')
             ->and($result->models[0]->name)->toBe('Claude Sonnet 4.5');
@@ -44,7 +44,7 @@ describe('PendingServerModels', function () {
         $pending = new PendingServerModels($client);
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(ModelsListResult::class)
+        expect($result)->toBeInstanceOf(ModelList::class)
             ->and($result->models)->toBeEmpty();
     });
 });

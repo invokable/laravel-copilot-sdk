@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerTools;
-use Revolution\Copilot\Types\Rpc\ToolsListParams;
-use Revolution\Copilot\Types\Rpc\ToolsListResult;
+use Revolution\Copilot\Types\Rpc\ToolList;
+use Revolution\Copilot\Types\Rpc\ToolsListRequest;
 
 describe('PendingServerTools', function () {
     it('calls tools.list with typed params', function () {
@@ -24,9 +24,9 @@ describe('PendingServerTools', function () {
             ]);
 
         $pending = new PendingServerTools($client);
-        $result = $pending->list(new ToolsListParams(model: 'claude-sonnet-4.5'));
+        $result = $pending->list(new ToolsListRequest(model: 'claude-sonnet-4.5'));
 
-        expect($result)->toBeInstanceOf(ToolsListResult::class)
+        expect($result)->toBeInstanceOf(ToolList::class)
             ->and($result->tools)->toHaveCount(2)
             ->and($result->tools[0]['name'])->toBe('read_file');
     });
@@ -44,7 +44,7 @@ describe('PendingServerTools', function () {
         $pending = new PendingServerTools($client);
         $result = $pending->list(['model' => 'gpt-5']);
 
-        expect($result)->toBeInstanceOf(ToolsListResult::class)
+        expect($result)->toBeInstanceOf(ToolList::class)
             ->and($result->tools)->toBeEmpty();
     });
 
@@ -63,7 +63,7 @@ describe('PendingServerTools', function () {
         $pending = new PendingServerTools($client);
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(ToolsListResult::class)
+        expect($result)->toBeInstanceOf(ToolList::class)
             ->and($result->tools)->toHaveCount(1);
     });
 });

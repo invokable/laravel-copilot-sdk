@@ -7,9 +7,9 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Parameters for creating a directory via SessionFs.
+ * Request for creating a directory via SessionFs.
  */
-readonly class SessionFsMkdirParams implements Arrayable
+readonly class SessionFsMkdirRequest implements Arrayable
 {
     /**
      * @param  string  $path  Path using SessionFs conventions

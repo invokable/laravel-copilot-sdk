@@ -7,9 +7,9 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Result of listing MCP server configurations.
+ * List of MCP server configurations.
  */
-readonly class McpConfigListResult implements Arrayable
+readonly class McpConfigList implements Arrayable
 {
     /**
      * @param  array<string, McpServerValue>  $servers  All MCP servers from user config, keyed by name

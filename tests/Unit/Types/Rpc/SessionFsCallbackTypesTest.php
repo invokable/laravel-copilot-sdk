@@ -3,26 +3,26 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\EntryType;
-use Revolution\Copilot\Types\Rpc\SessionFsAppendFileParams;
+use Revolution\Copilot\Types\Rpc\SessionFsAppendFileRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsEntry;
-use Revolution\Copilot\Types\Rpc\SessionFsExistsParams;
+use Revolution\Copilot\Types\Rpc\SessionFsExistsRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsExistsResult;
-use Revolution\Copilot\Types\Rpc\SessionFsMkdirParams;
-use Revolution\Copilot\Types\Rpc\SessionFsReaddirParams;
+use Revolution\Copilot\Types\Rpc\SessionFsMkdirRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsReaddirRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsReaddirResult;
-use Revolution\Copilot\Types\Rpc\SessionFsReaddirWithTypesParams;
+use Revolution\Copilot\Types\Rpc\SessionFsReaddirWithTypesRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsReaddirWithTypesResult;
-use Revolution\Copilot\Types\Rpc\SessionFsReadFileParams;
+use Revolution\Copilot\Types\Rpc\SessionFsReadFileRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsReadFileResult;
-use Revolution\Copilot\Types\Rpc\SessionFsRenameParams;
-use Revolution\Copilot\Types\Rpc\SessionFsRmParams;
-use Revolution\Copilot\Types\Rpc\SessionFsStatParams;
+use Revolution\Copilot\Types\Rpc\SessionFsRenameRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsRmRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsStatRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsStatResult;
-use Revolution\Copilot\Types\Rpc\SessionFsWriteFileParams;
+use Revolution\Copilot\Types\Rpc\SessionFsWriteFileRequest;
 
-describe('SessionFsReadFileParams', function () {
+describe('SessionFsReadFileRequest', function () {
     it('can be created from array', function () {
-        $params = SessionFsReadFileParams::fromArray([
+        $params = SessionFsReadFileRequest::fromArray([
             'path' => '/tmp/test.txt',
             'sessionId' => 'session-123',
         ]);
@@ -32,7 +32,7 @@ describe('SessionFsReadFileParams', function () {
     });
 
     it('converts to array', function () {
-        $params = new SessionFsReadFileParams(path: '/tmp/test.txt', sessionId: 'session-123');
+        $params = new SessionFsReadFileRequest(path: '/tmp/test.txt', sessionId: 'session-123');
 
         expect($params->toArray())->toBe([
             'path' => '/tmp/test.txt',
@@ -55,9 +55,9 @@ describe('SessionFsReadFileResult', function () {
     });
 });
 
-describe('SessionFsWriteFileParams', function () {
+describe('SessionFsWriteFileRequest', function () {
     it('can be created with all fields', function () {
-        $params = SessionFsWriteFileParams::fromArray([
+        $params = SessionFsWriteFileRequest::fromArray([
             'content' => 'file content',
             'path' => '/tmp/output.txt',
             'sessionId' => 'session-456',
@@ -71,7 +71,7 @@ describe('SessionFsWriteFileParams', function () {
     });
 
     it('defaults mode to null', function () {
-        $params = SessionFsWriteFileParams::fromArray([
+        $params = SessionFsWriteFileRequest::fromArray([
             'content' => 'data',
             'path' => '/tmp/file',
             'sessionId' => 'sess',
@@ -81,9 +81,9 @@ describe('SessionFsWriteFileParams', function () {
     });
 });
 
-describe('SessionFsAppendFileParams', function () {
+describe('SessionFsAppendFileRequest', function () {
     it('can be created from array', function () {
-        $params = SessionFsAppendFileParams::fromArray([
+        $params = SessionFsAppendFileRequest::fromArray([
             'content' => 'appended data',
             'path' => '/tmp/log.txt',
             'sessionId' => 'session-789',
@@ -97,9 +97,9 @@ describe('SessionFsAppendFileParams', function () {
     });
 });
 
-describe('SessionFsExistsParams', function () {
+describe('SessionFsExistsRequest', function () {
     it('can be created from array', function () {
-        $params = SessionFsExistsParams::fromArray([
+        $params = SessionFsExistsRequest::fromArray([
             'path' => '/tmp/check.txt',
             'sessionId' => 'session-aaa',
         ]);
@@ -123,9 +123,9 @@ describe('SessionFsExistsResult', function () {
     });
 });
 
-describe('SessionFsStatParams', function () {
+describe('SessionFsStatRequest', function () {
     it('can be created from array', function () {
-        $params = SessionFsStatParams::fromArray([
+        $params = SessionFsStatRequest::fromArray([
             'path' => '/tmp/file.txt',
             'sessionId' => 'session-stat',
         ]);
@@ -181,9 +181,9 @@ describe('SessionFsStatResult', function () {
     });
 });
 
-describe('SessionFsMkdirParams', function () {
+describe('SessionFsMkdirRequest', function () {
     it('can be created with all fields', function () {
-        $params = SessionFsMkdirParams::fromArray([
+        $params = SessionFsMkdirRequest::fromArray([
             'path' => '/tmp/newdir',
             'sessionId' => 'session-mkdir',
             'mode' => 493,
@@ -197,7 +197,7 @@ describe('SessionFsMkdirParams', function () {
     });
 
     it('handles default values', function () {
-        $params = SessionFsMkdirParams::fromArray([
+        $params = SessionFsMkdirRequest::fromArray([
             'path' => '/tmp/dir',
             'sessionId' => 'sess',
         ]);
@@ -207,9 +207,9 @@ describe('SessionFsMkdirParams', function () {
     });
 });
 
-describe('SessionFsReaddirParams', function () {
+describe('SessionFsReaddirRequest', function () {
     it('can be created from array', function () {
-        $params = SessionFsReaddirParams::fromArray([
+        $params = SessionFsReaddirRequest::fromArray([
             'path' => '/tmp/mydir',
             'sessionId' => 'session-readdir',
         ]);
@@ -235,9 +235,9 @@ describe('SessionFsReaddirResult', function () {
     });
 });
 
-describe('SessionFsReaddirWithTypesParams', function () {
+describe('SessionFsReaddirWithTypesRequest', function () {
     it('can be created from array', function () {
-        $params = SessionFsReaddirWithTypesParams::fromArray([
+        $params = SessionFsReaddirWithTypesRequest::fromArray([
             'path' => '/tmp/typedir',
             'sessionId' => 'session-types',
         ]);
@@ -320,9 +320,9 @@ describe('SessionFsEntry', function () {
     });
 });
 
-describe('SessionFsRmParams', function () {
+describe('SessionFsRmRequest', function () {
     it('can be created with all fields', function () {
-        $params = SessionFsRmParams::fromArray([
+        $params = SessionFsRmRequest::fromArray([
             'path' => '/tmp/to-delete',
             'sessionId' => 'session-rm',
             'force' => true,
@@ -336,7 +336,7 @@ describe('SessionFsRmParams', function () {
     });
 
     it('handles default values', function () {
-        $params = SessionFsRmParams::fromArray([
+        $params = SessionFsRmRequest::fromArray([
             'path' => '/tmp/file',
             'sessionId' => 'sess',
         ]);
@@ -346,9 +346,9 @@ describe('SessionFsRmParams', function () {
     });
 });
 
-describe('SessionFsRenameParams', function () {
+describe('SessionFsRenameRequest', function () {
     it('can be created from array', function () {
-        $params = SessionFsRenameParams::fromArray([
+        $params = SessionFsRenameRequest::fromArray([
             'src' => '/tmp/old.txt',
             'dest' => '/tmp/new.txt',
             'sessionId' => 'session-rename',
@@ -360,7 +360,7 @@ describe('SessionFsRenameParams', function () {
     });
 
     it('converts to array', function () {
-        $params = new SessionFsRenameParams(
+        $params = new SessionFsRenameRequest(
             src: '/tmp/a.txt',
             dest: '/tmp/b.txt',
             sessionId: 'sess',
