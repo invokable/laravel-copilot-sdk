@@ -8,25 +8,25 @@ use Revolution\Copilot\Enums\ExtensionSource;
 use Revolution\Copilot\Enums\ExtensionStatus;
 use Revolution\Copilot\Enums\McpServerStatus;
 use Revolution\Copilot\Enums\ServerSource;
+use Revolution\Copilot\Types\Rpc\AgentReloadResult;
+use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandRequest;
+use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandResult;
 use Revolution\Copilot\Types\Rpc\ExtensionInfo;
+use Revolution\Copilot\Types\Rpc\ExtensionList;
+use Revolution\Copilot\Types\Rpc\ExtensionsDisableRequest;
+use Revolution\Copilot\Types\Rpc\ExtensionsEnableRequest;
+use Revolution\Copilot\Types\Rpc\McpDisableRequest;
+use Revolution\Copilot\Types\Rpc\McpEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpServerInfo;
+use Revolution\Copilot\Types\Rpc\McpServerList;
 use Revolution\Copilot\Types\Rpc\PluginInfo;
-use Revolution\Copilot\Types\Rpc\SessionAgentReloadResult;
-use Revolution\Copilot\Types\Rpc\SessionCommandsHandlePendingCommandParams;
-use Revolution\Copilot\Types\Rpc\SessionCommandsHandlePendingCommandResult;
-use Revolution\Copilot\Types\Rpc\SessionExtensionsDisableParams;
-use Revolution\Copilot\Types\Rpc\SessionExtensionsEnableParams;
-use Revolution\Copilot\Types\Rpc\SessionExtensionsListResult;
-use Revolution\Copilot\Types\Rpc\SessionMcpDisableParams;
-use Revolution\Copilot\Types\Rpc\SessionMcpEnableParams;
-use Revolution\Copilot\Types\Rpc\SessionMcpListResult;
-use Revolution\Copilot\Types\Rpc\SessionPluginsListResult;
-use Revolution\Copilot\Types\Rpc\SessionSkillsDisableParams;
-use Revolution\Copilot\Types\Rpc\SessionSkillsEnableParams;
-use Revolution\Copilot\Types\Rpc\SessionSkillsListResult;
-use Revolution\Copilot\Types\Rpc\SessionUiElicitationParams;
-use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
+use Revolution\Copilot\Types\Rpc\PluginList;
 use Revolution\Copilot\Types\Rpc\SkillInfo;
+use Revolution\Copilot\Types\Rpc\SkillList;
+use Revolution\Copilot\Types\Rpc\SkillsDisableRequest;
+use Revolution\Copilot\Types\Rpc\SkillsEnableRequest;
+use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
+use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 
 describe('SkillInfo', function () {
     it('can be created from array', function () {
@@ -288,9 +288,9 @@ describe('ExtensionInfo', function () {
     });
 });
 
-describe('SessionSkillsListResult', function () {
+describe('SkillList', function () {
     it('can be created from array', function () {
-        $result = SessionSkillsListResult::fromArray([
+        $result = SkillList::fromArray([
             'skills' => [
                 [
                     'name' => 'code-review',
@@ -308,12 +308,12 @@ describe('SessionSkillsListResult', function () {
     });
 
     it('handles empty skills list', function () {
-        $result = SessionSkillsListResult::fromArray([]);
+        $result = SkillList::fromArray([]);
         expect($result->skills)->toBe([]);
     });
 
     it('can convert to array', function () {
-        $result = new SessionSkillsListResult(skills: [
+        $result = new SkillList(skills: [
             new SkillInfo(name: 'test', description: 'Testing', source: 'project', userInvocable: true, enabled: true),
         ]);
 
@@ -323,33 +323,33 @@ describe('SessionSkillsListResult', function () {
     });
 });
 
-describe('SessionSkillsEnableParams', function () {
+describe('SkillsEnableRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionSkillsEnableParams(name: 'code-review');
+        $params = new SkillsEnableRequest(name: 'code-review');
         expect($params->toArray())->toBe(['name' => 'code-review']);
     });
 
     it('can be created from array', function () {
-        $params = SessionSkillsEnableParams::fromArray(['name' => 'testing']);
+        $params = SkillsEnableRequest::fromArray(['name' => 'testing']);
         expect($params->name)->toBe('testing');
     });
 });
 
-describe('SessionSkillsDisableParams', function () {
+describe('SkillsDisableRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionSkillsDisableParams(name: 'code-review');
+        $params = new SkillsDisableRequest(name: 'code-review');
         expect($params->toArray())->toBe(['name' => 'code-review']);
     });
 
     it('can be created from array', function () {
-        $params = SessionSkillsDisableParams::fromArray(['name' => 'testing']);
+        $params = SkillsDisableRequest::fromArray(['name' => 'testing']);
         expect($params->name)->toBe('testing');
     });
 });
 
-describe('SessionMcpListResult', function () {
+describe('McpServerList', function () {
     it('can be created from array', function () {
-        $result = SessionMcpListResult::fromArray([
+        $result = McpServerList::fromArray([
             'servers' => [
                 [
                     'name' => 'github',
@@ -365,12 +365,12 @@ describe('SessionMcpListResult', function () {
     });
 
     it('handles empty servers list', function () {
-        $result = SessionMcpListResult::fromArray([]);
+        $result = McpServerList::fromArray([]);
         expect($result->servers)->toBe([]);
     });
 
     it('can convert to array', function () {
-        $result = new SessionMcpListResult(servers: [
+        $result = new McpServerList(servers: [
             new McpServerInfo(name: 'github', status: McpServerStatus::CONNECTED),
         ]);
 
@@ -380,33 +380,33 @@ describe('SessionMcpListResult', function () {
     });
 });
 
-describe('SessionMcpEnableParams', function () {
+describe('McpEnableRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionMcpEnableParams(serverName: 'github');
+        $params = new McpEnableRequest(serverName: 'github');
         expect($params->toArray())->toBe(['serverName' => 'github']);
     });
 
     it('can be created from array', function () {
-        $params = SessionMcpEnableParams::fromArray(['serverName' => 'slack']);
+        $params = McpEnableRequest::fromArray(['serverName' => 'slack']);
         expect($params->serverName)->toBe('slack');
     });
 });
 
-describe('SessionMcpDisableParams', function () {
+describe('McpDisableRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionMcpDisableParams(serverName: 'github');
+        $params = new McpDisableRequest(serverName: 'github');
         expect($params->toArray())->toBe(['serverName' => 'github']);
     });
 
     it('can be created from array', function () {
-        $params = SessionMcpDisableParams::fromArray(['serverName' => 'slack']);
+        $params = McpDisableRequest::fromArray(['serverName' => 'slack']);
         expect($params->serverName)->toBe('slack');
     });
 });
 
-describe('SessionPluginsListResult', function () {
+describe('PluginList', function () {
     it('can be created from array', function () {
-        $result = SessionPluginsListResult::fromArray([
+        $result = PluginList::fromArray([
             'plugins' => [
                 [
                     'name' => 'eslint',
@@ -423,12 +423,12 @@ describe('SessionPluginsListResult', function () {
     });
 
     it('handles empty plugins list', function () {
-        $result = SessionPluginsListResult::fromArray([]);
+        $result = PluginList::fromArray([]);
         expect($result->plugins)->toBe([]);
     });
 
     it('can convert to array', function () {
-        $result = new SessionPluginsListResult(plugins: [
+        $result = new PluginList(plugins: [
             new PluginInfo(name: 'eslint', marketplace: 'npm', enabled: true),
         ]);
 
@@ -438,9 +438,9 @@ describe('SessionPluginsListResult', function () {
     });
 });
 
-describe('SessionExtensionsListResult', function () {
+describe('ExtensionList', function () {
     it('can be created from array', function () {
-        $result = SessionExtensionsListResult::fromArray([
+        $result = ExtensionList::fromArray([
             'extensions' => [
                 [
                     'id' => 'project:my-ext',
@@ -457,12 +457,12 @@ describe('SessionExtensionsListResult', function () {
     });
 
     it('handles empty extensions list', function () {
-        $result = SessionExtensionsListResult::fromArray([]);
+        $result = ExtensionList::fromArray([]);
         expect($result->extensions)->toBe([]);
     });
 
     it('can convert to array', function () {
-        $result = new SessionExtensionsListResult(extensions: [
+        $result = new ExtensionList(extensions: [
             new ExtensionInfo(id: 'project:test', name: 'test', source: ExtensionSource::PROJECT, status: ExtensionStatus::RUNNING),
         ]);
 
@@ -472,49 +472,49 @@ describe('SessionExtensionsListResult', function () {
     });
 });
 
-describe('SessionExtensionsEnableParams', function () {
+describe('ExtensionsEnableRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionExtensionsEnableParams(id: 'project:my-ext');
+        $params = new ExtensionsEnableRequest(id: 'project:my-ext');
         expect($params->toArray())->toBe(['id' => 'project:my-ext']);
     });
 
     it('can be created from array', function () {
-        $params = SessionExtensionsEnableParams::fromArray(['id' => 'user:auth-helper']);
+        $params = ExtensionsEnableRequest::fromArray(['id' => 'user:auth-helper']);
         expect($params->id)->toBe('user:auth-helper');
     });
 });
 
-describe('SessionExtensionsDisableParams', function () {
+describe('ExtensionsDisableRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionExtensionsDisableParams(id: 'project:my-ext');
+        $params = new ExtensionsDisableRequest(id: 'project:my-ext');
         expect($params->toArray())->toBe(['id' => 'project:my-ext']);
     });
 
     it('can be created from array', function () {
-        $params = SessionExtensionsDisableParams::fromArray(['id' => 'user:auth-helper']);
+        $params = ExtensionsDisableRequest::fromArray(['id' => 'user:auth-helper']);
         expect($params->id)->toBe('user:auth-helper');
     });
 });
 
-describe('SessionCommandsHandlePendingCommandParams', function () {
+describe('CommandsHandlePendingCommandRequest', function () {
     it('can be created with requestId only', function () {
-        $params = new SessionCommandsHandlePendingCommandParams(requestId: 'req-123');
+        $params = new CommandsHandlePendingCommandRequest(requestId: 'req-123');
         expect($params->requestId)->toBe('req-123')
             ->and($params->error)->toBeNull();
     });
 
     it('can be created with error', function () {
-        $params = new SessionCommandsHandlePendingCommandParams(requestId: 'req-123', error: 'Command failed');
+        $params = new CommandsHandlePendingCommandRequest(requestId: 'req-123', error: 'Command failed');
         expect($params->toArray())->toBe(['requestId' => 'req-123', 'error' => 'Command failed']);
     });
 
     it('filters null error in toArray', function () {
-        $params = new SessionCommandsHandlePendingCommandParams(requestId: 'req-123');
+        $params = new CommandsHandlePendingCommandRequest(requestId: 'req-123');
         expect($params->toArray())->toBe(['requestId' => 'req-123']);
     });
 
     it('can be created from array', function () {
-        $params = SessionCommandsHandlePendingCommandParams::fromArray([
+        $params = CommandsHandlePendingCommandRequest::fromArray([
             'requestId' => 'req-456',
             'error' => 'Something went wrong',
         ]);
@@ -523,27 +523,27 @@ describe('SessionCommandsHandlePendingCommandParams', function () {
     });
 
     it('can be created from array without error', function () {
-        $params = SessionCommandsHandlePendingCommandParams::fromArray(['requestId' => 'req-789']);
+        $params = CommandsHandlePendingCommandRequest::fromArray(['requestId' => 'req-789']);
         expect($params->requestId)->toBe('req-789')
             ->and($params->error)->toBeNull();
     });
 });
 
-describe('SessionCommandsHandlePendingCommandResult', function () {
+describe('CommandsHandlePendingCommandResult', function () {
     it('can be created from array', function () {
-        $result = SessionCommandsHandlePendingCommandResult::fromArray(['success' => true]);
+        $result = CommandsHandlePendingCommandResult::fromArray(['success' => true]);
         expect($result->success)->toBeTrue();
     });
 
     it('can convert to array', function () {
-        $result = new SessionCommandsHandlePendingCommandResult(success: false);
+        $result = new CommandsHandlePendingCommandResult(success: false);
         expect($result->toArray())->toBe(['success' => false]);
     });
 });
 
-describe('SessionUiElicitationParams', function () {
+describe('UIElicitationRequest', function () {
     it('can be created and converted', function () {
-        $params = new SessionUiElicitationParams(
+        $params = new UIElicitationRequest(
             message: 'Enter your name',
             requestedSchema: ['type' => 'object', 'properties' => ['name' => ['type' => 'string']]],
         );
@@ -555,7 +555,7 @@ describe('SessionUiElicitationParams', function () {
     });
 
     it('can be created from array', function () {
-        $params = SessionUiElicitationParams::fromArray([
+        $params = UIElicitationRequest::fromArray([
             'message' => 'Confirm action',
             'requestedSchema' => ['type' => 'boolean'],
         ]);
@@ -565,9 +565,9 @@ describe('SessionUiElicitationParams', function () {
     });
 });
 
-describe('SessionUiElicitationResult', function () {
+describe('UIElicitationResponse', function () {
     it('can be created with accept action and content', function () {
-        $result = SessionUiElicitationResult::fromArray([
+        $result = UIElicitationResponse::fromArray([
             'action' => 'accept',
             'content' => ['name' => 'John'],
         ]);
@@ -577,21 +577,21 @@ describe('SessionUiElicitationResult', function () {
     });
 
     it('can be created with decline action', function () {
-        $result = SessionUiElicitationResult::fromArray(['action' => 'decline']);
+        $result = UIElicitationResponse::fromArray(['action' => 'decline']);
 
         expect($result->action)->toBe(ElicitationAction::DECLINE)
             ->and($result->content)->toBeNull();
     });
 
     it('can be created with cancel action', function () {
-        $result = SessionUiElicitationResult::fromArray(['action' => 'cancel']);
+        $result = UIElicitationResponse::fromArray(['action' => 'cancel']);
 
         expect($result->action)->toBe(ElicitationAction::CANCEL)
             ->and($result->content)->toBeNull();
     });
 
     it('can convert to array with content', function () {
-        $result = new SessionUiElicitationResult(
+        $result = new UIElicitationResponse(
             action: ElicitationAction::ACCEPT,
             content: ['key' => 'value'],
         );
@@ -603,15 +603,15 @@ describe('SessionUiElicitationResult', function () {
     });
 
     it('filters null content in toArray', function () {
-        $result = new SessionUiElicitationResult(action: ElicitationAction::DECLINE);
+        $result = new UIElicitationResponse(action: ElicitationAction::DECLINE);
 
         expect($result->toArray())->toBe(['action' => 'decline']);
     });
 });
 
-describe('SessionAgentReloadResult', function () {
+describe('AgentReloadResult', function () {
     it('can be created from array', function () {
-        $result = SessionAgentReloadResult::fromArray([
+        $result = AgentReloadResult::fromArray([
             'agents' => [
                 [
                     'name' => 'custom-agent',
@@ -626,12 +626,12 @@ describe('SessionAgentReloadResult', function () {
     });
 
     it('handles empty agents list', function () {
-        $result = SessionAgentReloadResult::fromArray([]);
+        $result = AgentReloadResult::fromArray([]);
         expect($result->agents)->toBe([]);
     });
 
     it('can convert to array', function () {
-        $result = SessionAgentReloadResult::fromArray([
+        $result = AgentReloadResult::fromArray([
             'agents' => [
                 [
                     'name' => 'agent1',

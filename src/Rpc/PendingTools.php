@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
-use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallResult;
+use Revolution\Copilot\Types\Rpc\HandleToolCallResult;
+use Revolution\Copilot\Types\Rpc\ToolsHandlePendingToolCallRequest;
 
 /**
  * Pending session-scoped tools RPC operations.
@@ -24,12 +24,12 @@ class PendingTools
     /**
      * Handle a pending tool call by providing its result or error.
      */
-    public function handlePendingToolCall(SessionToolsHandlePendingToolCallParams|array $params): SessionToolsHandlePendingToolCallResult
+    public function handlePendingToolCall(ToolsHandlePendingToolCallRequest|array $params): HandleToolCallResult
     {
-        $paramsArray = ($params instanceof SessionToolsHandlePendingToolCallParams ? $params : SessionToolsHandlePendingToolCallParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof ToolsHandlePendingToolCallRequest ? $params : ToolsHandlePendingToolCallRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        return SessionToolsHandlePendingToolCallResult::fromArray(
+        return HandleToolCallResult::fromArray(
             $this->client->request('session.tools.handlePendingToolCall', $paramsArray),
         );
     }

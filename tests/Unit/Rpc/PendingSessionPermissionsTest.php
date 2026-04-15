@@ -7,8 +7,8 @@ use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\JsonRpc\JsonRpcMessage;
 use Revolution\Copilot\Rpc\PendingPermissions;
-use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
-use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestResult;
+use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
+use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
 
 /**
  * Build a started JsonRpcClient backed by a mock transport.
@@ -61,7 +61,7 @@ describe('PendingSessionPermissions', function () {
         $client = makePermissionsClient($sentMessages);
 
         $pending = new PendingPermissions($client, 'session-abc');
-        $pending->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
+        $pending->handlePendingPermissionRequest(new PermissionDecisionRequest(
             requestId: 'req-1',
             result: ['kind' => 'approved'],
         ));
@@ -75,7 +75,7 @@ describe('PendingSessionPermissions', function () {
         $client = makePermissionsClient($sentMessages);
 
         $pending = new PendingPermissions($client, 'session-abc');
-        $pending->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
+        $pending->handlePendingPermissionRequest(new PermissionDecisionRequest(
             requestId: 'req-1',
             result: ['kind' => 'approved'],
         ));
@@ -89,7 +89,7 @@ describe('PendingSessionPermissions', function () {
         $client = makePermissionsClient($sentMessages);
 
         $pending = new PendingPermissions($client, 'session-abc');
-        $pending->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
+        $pending->handlePendingPermissionRequest(new PermissionDecisionRequest(
             requestId: 'perm-req-42',
             result: ['kind' => 'denied-interactively-by-user'],
         ));
@@ -99,17 +99,17 @@ describe('PendingSessionPermissions', function () {
             ->and($decoded['params']['result'])->toBe(['kind' => 'denied-interactively-by-user']);
     });
 
-    it('maps the response to SessionPermissionsHandlePendingPermissionRequestResult', function () {
+    it('maps the response to PermissionRequestResult', function () {
         $sentMessages = [];
         $client = makePermissionsClient($sentMessages);
 
         $pending = new PendingPermissions($client, 'session-abc');
-        $result = $pending->handlePendingPermissionRequest(new SessionPermissionsHandlePendingPermissionRequestParams(
+        $result = $pending->handlePendingPermissionRequest(new PermissionDecisionRequest(
             requestId: 'req-1',
             result: ['kind' => 'approved'],
         ));
 
-        expect($result)->toBeInstanceOf(SessionPermissionsHandlePendingPermissionRequestResult::class)
+        expect($result)->toBeInstanceOf(PermissionRequestResult::class)
             ->and($result->success)->toBeTrue();
     });
 
@@ -124,7 +124,7 @@ describe('PendingSessionPermissions', function () {
         ]);
 
         $decoded = decodePermissionsJsonMessage($sentMessages[0]);
-        expect($result)->toBeInstanceOf(SessionPermissionsHandlePendingPermissionRequestResult::class)
+        expect($result)->toBeInstanceOf(PermissionRequestResult::class)
             ->and($decoded['params']['sessionId'])->toBe('session-xyz')
             ->and($decoded['params']['requestId'])->toBe('req-array');
     });

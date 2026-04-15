@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionSkillsDisableParams;
-use Revolution\Copilot\Types\Rpc\SessionSkillsEnableParams;
-use Revolution\Copilot\Types\Rpc\SessionSkillsListResult;
+use Revolution\Copilot\Types\Rpc\SkillList;
+use Revolution\Copilot\Types\Rpc\SkillsDisableRequest;
+use Revolution\Copilot\Types\Rpc\SkillsEnableRequest;
 
 /**
  * Pending skills RPC operations for a session.
@@ -24,9 +24,9 @@ class PendingSkills
     /**
      * List available skills.
      */
-    public function list(): SessionSkillsListResult
+    public function list(): SkillList
     {
-        return SessionSkillsListResult::fromArray(
+        return SkillList::fromArray(
             $this->client->request('session.skills.list', [
                 'sessionId' => $this->sessionId,
             ]),
@@ -36,9 +36,9 @@ class PendingSkills
     /**
      * Enable a skill.
      */
-    public function enable(SessionSkillsEnableParams|array $params): array
+    public function enable(SkillsEnableRequest|array $params): array
     {
-        $paramsArray = ($params instanceof SessionSkillsEnableParams ? $params : SessionSkillsEnableParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof SkillsEnableRequest ? $params : SkillsEnableRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.skills.enable', $paramsArray);
@@ -47,9 +47,9 @@ class PendingSkills
     /**
      * Disable a skill.
      */
-    public function disable(SessionSkillsDisableParams|array $params): array
+    public function disable(SkillsDisableRequest|array $params): array
     {
-        $paramsArray = ($params instanceof SessionSkillsDisableParams ? $params : SessionSkillsDisableParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof SkillsDisableRequest ? $params : SkillsDisableRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.skills.disable', $paramsArray);

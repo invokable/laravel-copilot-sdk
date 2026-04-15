@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionMcpDisableParams;
-use Revolution\Copilot\Types\Rpc\SessionMcpEnableParams;
-use Revolution\Copilot\Types\Rpc\SessionMcpListResult;
+use Revolution\Copilot\Types\Rpc\McpDisableRequest;
+use Revolution\Copilot\Types\Rpc\McpEnableRequest;
+use Revolution\Copilot\Types\Rpc\McpServerList;
 
 /**
  * Pending MCP server RPC operations for a session.
@@ -24,9 +24,9 @@ class PendingMcp
     /**
      * List configured MCP servers.
      */
-    public function list(): SessionMcpListResult
+    public function list(): McpServerList
     {
-        return SessionMcpListResult::fromArray(
+        return McpServerList::fromArray(
             $this->client->request('session.mcp.list', [
                 'sessionId' => $this->sessionId,
             ]),
@@ -36,9 +36,9 @@ class PendingMcp
     /**
      * Enable an MCP server.
      */
-    public function enable(SessionMcpEnableParams|array $params): array
+    public function enable(McpEnableRequest|array $params): array
     {
-        $paramsArray = ($params instanceof SessionMcpEnableParams ? $params : SessionMcpEnableParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof McpEnableRequest ? $params : McpEnableRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.mcp.enable', $paramsArray);
@@ -47,9 +47,9 @@ class PendingMcp
     /**
      * Disable an MCP server.
      */
-    public function disable(SessionMcpDisableParams|array $params): array
+    public function disable(McpDisableRequest|array $params): array
     {
-        $paramsArray = ($params instanceof SessionMcpDisableParams ? $params : SessionMcpDisableParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof McpDisableRequest ? $params : McpDisableRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.mcp.disable', $paramsArray);

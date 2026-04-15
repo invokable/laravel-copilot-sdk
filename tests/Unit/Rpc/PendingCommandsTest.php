@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingCommands;
-use Revolution\Copilot\Types\Rpc\SessionCommandsHandlePendingCommandParams;
-use Revolution\Copilot\Types\Rpc\SessionCommandsHandlePendingCommandResult;
+use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandRequest;
+use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandResult;
 
 describe('PendingCommands', function () {
     it('calls session.commands.handlePendingCommand with typed params', function () {
@@ -20,9 +20,9 @@ describe('PendingCommands', function () {
             ->andReturn(['success' => true]);
 
         $pending = new PendingCommands($client, 'session-abc');
-        $result = $pending->handlePendingCommand(new SessionCommandsHandlePendingCommandParams(requestId: 'req-123'));
+        $result = $pending->handlePendingCommand(new CommandsHandlePendingCommandRequest(requestId: 'req-123'));
 
-        expect($result)->toBeInstanceOf(SessionCommandsHandlePendingCommandResult::class)
+        expect($result)->toBeInstanceOf(CommandsHandlePendingCommandResult::class)
             ->and($result->success)->toBeTrue();
     });
 
@@ -40,7 +40,7 @@ describe('PendingCommands', function () {
         $pending = new PendingCommands($client, 'session-abc');
         $result = $pending->handlePendingCommand(['requestId' => 'req-456']);
 
-        expect($result)->toBeInstanceOf(SessionCommandsHandlePendingCommandResult::class)
+        expect($result)->toBeInstanceOf(CommandsHandlePendingCommandResult::class)
             ->and($result->success)->toBeTrue();
     });
 
@@ -57,12 +57,12 @@ describe('PendingCommands', function () {
             ->andReturn(['success' => false]);
 
         $pending = new PendingCommands($client, 'session-abc');
-        $result = $pending->handlePendingCommand(new SessionCommandsHandlePendingCommandParams(
+        $result = $pending->handlePendingCommand(new CommandsHandlePendingCommandRequest(
             requestId: 'req-789',
             error: 'Command failed',
         ));
 
-        expect($result)->toBeInstanceOf(SessionCommandsHandlePendingCommandResult::class)
+        expect($result)->toBeInstanceOf(CommandsHandlePendingCommandResult::class)
             ->and($result->success)->toBeFalse();
     });
 });

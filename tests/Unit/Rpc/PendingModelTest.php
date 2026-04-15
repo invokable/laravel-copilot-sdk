@@ -5,9 +5,9 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingModel;
-use Revolution\Copilot\Types\Rpc\SessionModelGetCurrentResult;
-use Revolution\Copilot\Types\Rpc\SessionModelSwitchToParams;
-use Revolution\Copilot\Types\Rpc\SessionModelSwitchToResult;
+use Revolution\Copilot\Types\Rpc\CurrentModel;
+use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
+use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
 
 describe('PendingModel', function () {
     it('calls session.model.getCurrent and returns result', function () {
@@ -20,7 +20,7 @@ describe('PendingModel', function () {
         $pending = new PendingModel($client, 'session-xyz');
         $result = $pending->getCurrent();
 
-        expect($result)->toBeInstanceOf(SessionModelGetCurrentResult::class)
+        expect($result)->toBeInstanceOf(CurrentModel::class)
             ->and($result->modelId)->toBe('gpt-4o');
     });
 
@@ -34,7 +34,7 @@ describe('PendingModel', function () {
         $pending = new PendingModel($client, 'session-xyz');
         $result = $pending->getCurrent();
 
-        expect($result)->toBeInstanceOf(SessionModelGetCurrentResult::class)
+        expect($result)->toBeInstanceOf(CurrentModel::class)
             ->and($result->modelId)->toBeNull();
     });
 
@@ -50,9 +50,9 @@ describe('PendingModel', function () {
             ->andReturn(['modelId' => 'claude-opus-4']);
 
         $pending = new PendingModel($client, 'session-xyz');
-        $result = $pending->switchTo(new SessionModelSwitchToParams(modelId: 'claude-opus-4'));
+        $result = $pending->switchTo(new ModelSwitchToRequest(modelId: 'claude-opus-4'));
 
-        expect($result)->toBeInstanceOf(SessionModelSwitchToResult::class)
+        expect($result)->toBeInstanceOf(ModelSwitchToResult::class)
             ->and($result->modelId)->toBe('claude-opus-4');
     });
 
@@ -69,12 +69,12 @@ describe('PendingModel', function () {
             ->andReturn(['modelId' => 'o1-preview']);
 
         $pending = new PendingModel($client, 'session-xyz');
-        $result = $pending->switchTo(new SessionModelSwitchToParams(
+        $result = $pending->switchTo(new ModelSwitchToRequest(
             modelId: 'o1-preview',
             reasoningEffort: ReasoningEffort::HIGH,
         ));
 
-        expect($result)->toBeInstanceOf(SessionModelSwitchToResult::class)
+        expect($result)->toBeInstanceOf(ModelSwitchToResult::class)
             ->and($result->modelId)->toBe('o1-preview');
     });
 
@@ -92,7 +92,7 @@ describe('PendingModel', function () {
         $pending = new PendingModel($client, 'session-xyz');
         $result = $pending->switchTo(['modelId' => 'gpt-5']);
 
-        expect($result)->toBeInstanceOf(SessionModelSwitchToResult::class)
+        expect($result)->toBeInstanceOf(ModelSwitchToResult::class)
             ->and($result->modelId)->toBe('gpt-5');
     });
 });

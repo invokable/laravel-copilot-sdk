@@ -6,7 +6,7 @@ namespace Revolution\Copilot\Concerns\Session;
 
 use Closure;
 use Revolution\Copilot\Support\PermissionRequestResultKind;
-use Revolution\Copilot\Types\Rpc\SessionPermissionsHandlePendingPermissionRequestParams;
+use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
 use Throwable;
 
 /**
@@ -70,7 +70,7 @@ trait HasPermissionHandler
                 }
 
                 $this->rpc()->permissions()->handlePendingPermissionRequest(
-                    new SessionPermissionsHandlePendingPermissionRequestParams(
+                    new PermissionDecisionRequest(
                         requestId: $requestId,
                         result: $result,
                     )
@@ -78,7 +78,7 @@ trait HasPermissionHandler
             } catch (Throwable) {
                 try {
                     $this->rpc()->permissions()->handlePendingPermissionRequest(
-                        new SessionPermissionsHandlePendingPermissionRequestParams(
+                        new PermissionDecisionRequest(
                             requestId: $requestId,
                             result: PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser(),
                         )

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionAgentGetCurrentResult;
-use Revolution\Copilot\Types\Rpc\SessionAgentListResult;
-use Revolution\Copilot\Types\Rpc\SessionAgentReloadResult;
-use Revolution\Copilot\Types\Rpc\SessionAgentSelectParams;
-use Revolution\Copilot\Types\Rpc\SessionAgentSelectResult;
+use Revolution\Copilot\Types\Rpc\AgentGetCurrentResult;
+use Revolution\Copilot\Types\Rpc\AgentList;
+use Revolution\Copilot\Types\Rpc\AgentReloadResult;
+use Revolution\Copilot\Types\Rpc\AgentSelectRequest;
+use Revolution\Copilot\Types\Rpc\AgentSelectResult;
 
 /**
  * Pending agent RPC operations for a session.
@@ -26,9 +26,9 @@ class PendingAgent
     /**
      * List available agents.
      */
-    public function list(): SessionAgentListResult
+    public function list(): AgentList
     {
-        return SessionAgentListResult::fromArray(
+        return AgentList::fromArray(
             $this->client->request('session.agent.list', [
                 'sessionId' => $this->sessionId,
             ]),
@@ -38,9 +38,9 @@ class PendingAgent
     /**
      * Get the current agent.
      */
-    public function getCurrent(): SessionAgentGetCurrentResult
+    public function getCurrent(): AgentGetCurrentResult
     {
-        return SessionAgentGetCurrentResult::fromArray(
+        return AgentGetCurrentResult::fromArray(
             $this->client->request('session.agent.getCurrent', [
                 'sessionId' => $this->sessionId,
             ]),
@@ -50,12 +50,12 @@ class PendingAgent
     /**
      * Select an agent.
      */
-    public function select(SessionAgentSelectParams|array $params): SessionAgentSelectResult
+    public function select(AgentSelectRequest|array $params): AgentSelectResult
     {
-        $paramsArray = ($params instanceof SessionAgentSelectParams ? $params : SessionAgentSelectParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof AgentSelectRequest ? $params : AgentSelectRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        return SessionAgentSelectResult::fromArray(
+        return AgentSelectResult::fromArray(
             $this->client->request('session.agent.select', $paramsArray),
         );
     }
@@ -73,9 +73,9 @@ class PendingAgent
     /**
      * Reload custom agents.
      */
-    public function reload(): SessionAgentReloadResult
+    public function reload(): AgentReloadResult
     {
-        return SessionAgentReloadResult::fromArray(
+        return AgentReloadResult::fromArray(
             $this->client->request('session.agent.reload', [
                 'sessionId' => $this->sessionId,
             ]),

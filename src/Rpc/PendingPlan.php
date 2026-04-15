@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionPlanReadResult;
-use Revolution\Copilot\Types\Rpc\SessionPlanUpdateParams;
+use Revolution\Copilot\Types\Rpc\PlanReadResult;
+use Revolution\Copilot\Types\Rpc\PlanUpdateRequest;
 
 /**
  * Pending plan RPC operations for a session.
@@ -21,9 +21,9 @@ class PendingPlan
     /**
      * Read the plan.
      */
-    public function read(): SessionPlanReadResult
+    public function read(): PlanReadResult
     {
-        return SessionPlanReadResult::fromArray(
+        return PlanReadResult::fromArray(
             $this->client->request('session.plan.read', [
                 'sessionId' => $this->sessionId,
             ]),
@@ -33,9 +33,9 @@ class PendingPlan
     /**
      * Update the plan.
      */
-    public function update(SessionPlanUpdateParams|array $params): array
+    public function update(PlanUpdateRequest|array $params): array
     {
-        $paramsArray = ($params instanceof SessionPlanUpdateParams ? $params : SessionPlanUpdateParams::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof PlanUpdateRequest ? $params : PlanUpdateRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.plan.update', $paramsArray);

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingShell;
-use Revolution\Copilot\Types\Rpc\SessionShellExecParams;
-use Revolution\Copilot\Types\Rpc\SessionShellExecResult;
-use Revolution\Copilot\Types\Rpc\SessionShellKillParams;
-use Revolution\Copilot\Types\Rpc\SessionShellKillResult;
+use Revolution\Copilot\Types\Rpc\ShellExecRequest;
+use Revolution\Copilot\Types\Rpc\ShellExecResult;
+use Revolution\Copilot\Types\Rpc\ShellKillRequest;
+use Revolution\Copilot\Types\Rpc\ShellKillResult;
 
 describe('PendingShell', function () {
     it('calls session.shell.exec with typed params', function () {
@@ -24,9 +24,9 @@ describe('PendingShell', function () {
             ->andReturn(['processId' => 'proc-123']);
 
         $pending = new PendingShell($client, 'test-session-id');
-        $result = $pending->exec(new SessionShellExecParams(command: 'ls -la'));
+        $result = $pending->exec(new ShellExecRequest(command: 'ls -la'));
 
-        expect($result)->toBeInstanceOf(SessionShellExecResult::class)
+        expect($result)->toBeInstanceOf(ShellExecResult::class)
             ->and($result->processId)->toBe('proc-123');
     });
 
@@ -44,13 +44,13 @@ describe('PendingShell', function () {
             ->andReturn(['processId' => 'proc-456']);
 
         $pending = new PendingShell($client, 'test-session-id');
-        $result = $pending->exec(new SessionShellExecParams(
+        $result = $pending->exec(new ShellExecRequest(
             command: 'npm test',
             cwd: '/app',
             timeout: 60000,
         ));
 
-        expect($result)->toBeInstanceOf(SessionShellExecResult::class)
+        expect($result)->toBeInstanceOf(ShellExecResult::class)
             ->and($result->processId)->toBe('proc-456');
     });
 
@@ -68,7 +68,7 @@ describe('PendingShell', function () {
         $pending = new PendingShell($client, 'test-session-id');
         $result = $pending->exec(['command' => 'echo hello']);
 
-        expect($result)->toBeInstanceOf(SessionShellExecResult::class)
+        expect($result)->toBeInstanceOf(ShellExecResult::class)
             ->and($result->processId)->toBe('proc-789');
     });
 
@@ -85,9 +85,9 @@ describe('PendingShell', function () {
             ->andReturn(['killed' => true]);
 
         $pending = new PendingShell($client, 'test-session-id');
-        $result = $pending->kill(new SessionShellKillParams(processId: 'proc-123'));
+        $result = $pending->kill(new ShellKillRequest(processId: 'proc-123'));
 
-        expect($result)->toBeInstanceOf(SessionShellKillResult::class)
+        expect($result)->toBeInstanceOf(ShellKillResult::class)
             ->and($result->killed)->toBeTrue();
     });
 
@@ -104,12 +104,12 @@ describe('PendingShell', function () {
             ->andReturn(['killed' => true]);
 
         $pending = new PendingShell($client, 'test-session-id');
-        $result = $pending->kill(new SessionShellKillParams(
+        $result = $pending->kill(new ShellKillRequest(
             processId: 'proc-456',
             signal: 'SIGKILL',
         ));
 
-        expect($result)->toBeInstanceOf(SessionShellKillResult::class)
+        expect($result)->toBeInstanceOf(ShellKillResult::class)
             ->and($result->killed)->toBeTrue();
     });
 
@@ -127,7 +127,7 @@ describe('PendingShell', function () {
         $pending = new PendingShell($client, 'test-session-id');
         $result = $pending->kill(['processId' => 'proc-789']);
 
-        expect($result)->toBeInstanceOf(SessionShellKillResult::class)
+        expect($result)->toBeInstanceOf(ShellKillResult::class)
             ->and($result->killed)->toBeFalse();
     });
 
@@ -147,6 +147,6 @@ describe('PendingShell', function () {
             'sessionId' => 'some-other-session',
         ]);
 
-        expect($result)->toBeInstanceOf(SessionShellExecResult::class);
+        expect($result)->toBeInstanceOf(ShellExecResult::class);
     });
 });

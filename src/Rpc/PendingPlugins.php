@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionPluginsListResult;
+use Revolution\Copilot\Types\Rpc\PluginList;
 
 /**
  * Pending plugins RPC operations for a session.
@@ -22,9 +22,9 @@ class PendingPlugins
     /**
      * List installed plugins.
      */
-    public function list(): SessionPluginsListResult
+    public function list(): PluginList
     {
-        return SessionPluginsListResult::fromArray(
+        return PluginList::fromArray(
             $this->client->request('session.plugins.list', [
                 'sessionId' => $this->sessionId,
             ]),

@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
-use Revolution\Copilot\Types\Rpc\SessionUiHandlePendingElicitationParams;
-use Revolution\Copilot\Types\Rpc\SessionUiHandlePendingElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingElicitationRequest;
 
-describe('SessionUiHandlePendingElicitationParams', function () {
+describe('UIHandlePendingElicitationRequest', function () {
     it('can be created from array', function () {
-        $params = SessionUiHandlePendingElicitationParams::fromArray([
+        $params = UIHandlePendingElicitationRequest::fromArray([
             'requestId' => 'req-123',
             'result' => ['action' => 'accept', 'content' => ['name' => 'John']],
         ]);
@@ -18,7 +18,7 @@ describe('SessionUiHandlePendingElicitationParams', function () {
     });
 
     it('converts to array', function () {
-        $params = new SessionUiHandlePendingElicitationParams(
+        $params = new UIHandlePendingElicitationRequest(
             requestId: 'req-456',
             result: ['action' => 'decline'],
         );
@@ -30,7 +30,7 @@ describe('SessionUiHandlePendingElicitationParams', function () {
     });
 
     it('supports cancel action', function () {
-        $params = SessionUiHandlePendingElicitationParams::fromArray([
+        $params = UIHandlePendingElicitationRequest::fromArray([
             'requestId' => 'req-789',
             'result' => ['action' => 'cancel'],
         ]);
@@ -40,7 +40,7 @@ describe('SessionUiHandlePendingElicitationParams', function () {
     });
 
     it('implements Arrayable', function () {
-        $params = new SessionUiHandlePendingElicitationParams(
+        $params = new UIHandlePendingElicitationRequest(
             requestId: 'req-1',
             result: ['action' => 'accept'],
         );
@@ -49,27 +49,27 @@ describe('SessionUiHandlePendingElicitationParams', function () {
     });
 });
 
-describe('SessionUiHandlePendingElicitationResult', function () {
+describe('UIElicitationResult', function () {
     it('can be created from array with success true', function () {
-        $result = SessionUiHandlePendingElicitationResult::fromArray(['success' => true]);
+        $result = UIElicitationResult::fromArray(['success' => true]);
 
         expect($result->success)->toBeTrue();
     });
 
     it('can be created from array with success false', function () {
-        $result = SessionUiHandlePendingElicitationResult::fromArray(['success' => false]);
+        $result = UIElicitationResult::fromArray(['success' => false]);
 
         expect($result->success)->toBeFalse();
     });
 
     it('converts to array', function () {
-        $result = new SessionUiHandlePendingElicitationResult(success: true);
+        $result = new UIElicitationResult(success: true);
 
         expect($result->toArray())->toBe(['success' => true]);
     });
 
     it('implements Arrayable', function () {
-        $result = new SessionUiHandlePendingElicitationResult(success: true);
+        $result = new UIElicitationResult(success: true);
 
         expect($result)->toBeInstanceOf(Arrayable::class);
     });

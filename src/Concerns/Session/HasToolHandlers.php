@@ -6,7 +6,7 @@ namespace Revolution\Copilot\Concerns\Session;
 
 use Closure;
 use Revolution\Copilot\Support\TraceContext;
-use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
+use Revolution\Copilot\Types\Rpc\ToolsHandlePendingToolCallRequest;
 use Revolution\Copilot\Types\ToolResultObject;
 use Throwable;
 
@@ -92,14 +92,14 @@ trait HasToolHandlers
                 // Send failure via error param for consistent server-side formatting
                 if (is_array($result) && ($result['resultType'] ?? null) === 'failure' && isset($result['error'])) {
                     $this->rpc()->tools()->handlePendingToolCall(
-                        new SessionToolsHandlePendingToolCallParams(
+                        new ToolsHandlePendingToolCallRequest(
                             requestId: $requestId,
                             error: $result['error'],
                         )
                     );
                 } else {
                     $this->rpc()->tools()->handlePendingToolCall(
-                        new SessionToolsHandlePendingToolCallParams(
+                        new ToolsHandlePendingToolCallRequest(
                             requestId: $requestId,
                             result: $result,
                         )
@@ -108,7 +108,7 @@ trait HasToolHandlers
             } catch (Throwable $e) {
                 try {
                     $this->rpc()->tools()->handlePendingToolCall(
-                        new SessionToolsHandlePendingToolCallParams(
+                        new ToolsHandlePendingToolCallRequest(
                             requestId: $requestId,
                             error: $e->getMessage(),
                         )

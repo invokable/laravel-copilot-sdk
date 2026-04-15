@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingPlugins;
-use Revolution\Copilot\Types\Rpc\SessionPluginsListResult;
+use Revolution\Copilot\Types\Rpc\PluginList;
 
 describe('PendingPlugins', function () {
     it('calls session.plugins.list and returns result', function () {
@@ -26,7 +26,7 @@ describe('PendingPlugins', function () {
         $pending = new PendingPlugins($client, 'session-abc');
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(SessionPluginsListResult::class)
+        expect($result)->toBeInstanceOf(PluginList::class)
             ->and($result->plugins)->toHaveCount(1)
             ->and($result->plugins[0]->name)->toBe('eslint');
     });
@@ -41,7 +41,7 @@ describe('PendingPlugins', function () {
         $pending = new PendingPlugins($client, 'session-abc');
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(SessionPluginsListResult::class)
+        expect($result)->toBeInstanceOf(PluginList::class)
             ->and($result->plugins)->toBe([]);
     });
 });

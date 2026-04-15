@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingAgent;
-use Revolution\Copilot\Types\Rpc\SessionAgentGetCurrentResult;
-use Revolution\Copilot\Types\Rpc\SessionAgentListResult;
-use Revolution\Copilot\Types\Rpc\SessionAgentReloadResult;
-use Revolution\Copilot\Types\Rpc\SessionAgentSelectParams;
-use Revolution\Copilot\Types\Rpc\SessionAgentSelectResult;
+use Revolution\Copilot\Types\Rpc\AgentGetCurrentResult;
+use Revolution\Copilot\Types\Rpc\AgentList;
+use Revolution\Copilot\Types\Rpc\AgentReloadResult;
+use Revolution\Copilot\Types\Rpc\AgentSelectRequest;
+use Revolution\Copilot\Types\Rpc\AgentSelectResult;
 
 describe('PendingAgent', function () {
     it('calls session.agent.list and returns result', function () {
@@ -29,7 +29,7 @@ describe('PendingAgent', function () {
         $pending = new PendingAgent($client, 'session-abc');
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(SessionAgentListResult::class)
+        expect($result)->toBeInstanceOf(AgentList::class)
             ->and($result->agents)->toHaveCount(1)
             ->and($result->agents[0]->name)->toBe('test-agent');
     });
@@ -50,7 +50,7 @@ describe('PendingAgent', function () {
         $pending = new PendingAgent($client, 'session-abc');
         $result = $pending->getCurrent();
 
-        expect($result)->toBeInstanceOf(SessionAgentGetCurrentResult::class)
+        expect($result)->toBeInstanceOf(AgentGetCurrentResult::class)
             ->and($result->agent->name)->toBe('current-agent');
     });
 
@@ -72,9 +72,9 @@ describe('PendingAgent', function () {
             ]);
 
         $pending = new PendingAgent($client, 'session-abc');
-        $result = $pending->select(new SessionAgentSelectParams(name: 'my-agent'));
+        $result = $pending->select(new AgentSelectRequest(name: 'my-agent'));
 
-        expect($result)->toBeInstanceOf(SessionAgentSelectResult::class)
+        expect($result)->toBeInstanceOf(AgentSelectResult::class)
             ->and($result->agent->name)->toBe('my-agent');
     });
 
@@ -109,7 +109,7 @@ describe('PendingAgent', function () {
         $pending = new PendingAgent($client, 'session-abc');
         $result = $pending->reload();
 
-        expect($result)->toBeInstanceOf(SessionAgentReloadResult::class)
+        expect($result)->toBeInstanceOf(AgentReloadResult::class)
             ->and($result->agents)->toHaveCount(1)
             ->and($result->agents[0]->name)->toBe('reloaded-agent');
     });
@@ -124,7 +124,7 @@ describe('PendingAgent', function () {
         $pending = new PendingAgent($client, 'session-abc');
         $result = $pending->reload();
 
-        expect($result)->toBeInstanceOf(SessionAgentReloadResult::class)
+        expect($result)->toBeInstanceOf(AgentReloadResult::class)
             ->and($result->agents)->toBe([]);
     });
 });

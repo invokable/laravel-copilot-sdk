@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingTools;
-use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallParams;
-use Revolution\Copilot\Types\Rpc\SessionToolsHandlePendingToolCallResult;
+use Revolution\Copilot\Types\Rpc\HandleToolCallResult;
+use Revolution\Copilot\Types\Rpc\ToolsHandlePendingToolCallRequest;
 
 describe('PendingSessionTools', function () {
     it('calls session.tools.handlePendingToolCall with correct params', function () {
@@ -22,10 +22,10 @@ describe('PendingSessionTools', function () {
 
         $pending = new PendingTools($client, 'test-session-id');
         $result = $pending->handlePendingToolCall(
-            new SessionToolsHandlePendingToolCallParams(requestId: 'req-1', result: 'tool output'),
+            new ToolsHandlePendingToolCallRequest(requestId: 'req-1', result: 'tool output'),
         );
 
-        expect($result)->toBeInstanceOf(SessionToolsHandlePendingToolCallResult::class)
+        expect($result)->toBeInstanceOf(HandleToolCallResult::class)
             ->and($result->success)->toBeTrue();
     });
 
@@ -46,7 +46,7 @@ describe('PendingSessionTools', function () {
             'sessionId' => 'some-other-session',
         ]);
 
-        expect($result)->toBeInstanceOf(SessionToolsHandlePendingToolCallResult::class)
+        expect($result)->toBeInstanceOf(HandleToolCallResult::class)
             ->and($result->success)->toBeTrue();
     });
 
@@ -65,10 +65,10 @@ describe('PendingSessionTools', function () {
 
         $pending = new PendingTools($client, 'test-session-id');
         $result = $pending->handlePendingToolCall(
-            new SessionToolsHandlePendingToolCallParams(requestId: 'req-3', error: 'something went wrong'),
+            new ToolsHandlePendingToolCallRequest(requestId: 'req-3', error: 'something went wrong'),
         );
 
-        expect($result)->toBeInstanceOf(SessionToolsHandlePendingToolCallResult::class)
+        expect($result)->toBeInstanceOf(HandleToolCallResult::class)
             ->and($result->success)->toBeFalse();
     });
 });

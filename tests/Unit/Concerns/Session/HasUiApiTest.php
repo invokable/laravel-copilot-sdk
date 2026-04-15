@@ -6,7 +6,7 @@ use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Session;
 use Revolution\Copilot\Types\InputOptions;
-use Revolution\Copilot\Types\Rpc\SessionUiElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 
 describe('HasUiApi', function () {
@@ -209,7 +209,7 @@ describe('HasUiApi', function () {
             expect($session->input('Enter name'))->toBeNull();
         });
 
-        it('raw elicitation returns SessionUiElicitationResult', function () {
+        it('raw elicitation returns UIElicitationResponse', function () {
             $schema = ['type' => 'object', 'properties' => ['age' => ['type' => 'integer']]];
 
             $mockClient = Mockery::mock(JsonRpcClient::class);
@@ -228,7 +228,7 @@ describe('HasUiApi', function () {
 
             $result = $session->elicitation('Enter details', $schema);
 
-            expect($result)->toBeInstanceOf(SessionUiElicitationResult::class)
+            expect($result)->toBeInstanceOf(UIElicitationResponse::class)
                 ->and($result->action)->toBe(ElicitationAction::ACCEPT)
                 ->and($result->content)->toBe(['age' => 30]);
         });

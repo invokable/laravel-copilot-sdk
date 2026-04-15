@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingFleet;
-use Revolution\Copilot\Types\Rpc\SessionFleetStartParams;
-use Revolution\Copilot\Types\Rpc\SessionFleetStartResult;
+use Revolution\Copilot\Types\Rpc\FleetStartRequest;
+use Revolution\Copilot\Types\Rpc\FleetStartResult;
 
 describe('PendingFleet', function () {
     it('calls session.fleet.start with typed params', function () {
@@ -20,9 +20,9 @@ describe('PendingFleet', function () {
             ->andReturn(['started' => true]);
 
         $pending = new PendingFleet($client, 'session-fleet');
-        $result = $pending->start(new SessionFleetStartParams(prompt: 'Run all tests'));
+        $result = $pending->start(new FleetStartRequest(prompt: 'Run all tests'));
 
-        expect($result)->toBeInstanceOf(SessionFleetStartResult::class)
+        expect($result)->toBeInstanceOf(FleetStartResult::class)
             ->and($result->started)->toBeTrue();
     });
 
@@ -40,7 +40,7 @@ describe('PendingFleet', function () {
         $pending = new PendingFleet($client, 'session-fleet');
         $result = $pending->start(['prompt' => 'Deploy']);
 
-        expect($result)->toBeInstanceOf(SessionFleetStartResult::class)
+        expect($result)->toBeInstanceOf(FleetStartResult::class)
             ->and($result->started)->toBeTrue();
     });
 
@@ -58,7 +58,7 @@ describe('PendingFleet', function () {
         $pending = new PendingFleet($client, 'session-fleet');
         $result = $pending->start();
 
-        expect($result)->toBeInstanceOf(SessionFleetStartResult::class)
+        expect($result)->toBeInstanceOf(FleetStartResult::class)
             ->and($result->started)->toBeFalse();
     });
 });

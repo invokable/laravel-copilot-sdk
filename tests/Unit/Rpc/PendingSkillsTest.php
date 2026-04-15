@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingSkills;
-use Revolution\Copilot\Types\Rpc\SessionSkillsDisableParams;
-use Revolution\Copilot\Types\Rpc\SessionSkillsEnableParams;
-use Revolution\Copilot\Types\Rpc\SessionSkillsListResult;
+use Revolution\Copilot\Types\Rpc\SkillList;
+use Revolution\Copilot\Types\Rpc\SkillsDisableRequest;
+use Revolution\Copilot\Types\Rpc\SkillsEnableRequest;
 
 describe('PendingSkills', function () {
     it('calls session.skills.list and returns result', function () {
@@ -29,7 +29,7 @@ describe('PendingSkills', function () {
         $pending = new PendingSkills($client, 'session-abc');
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(SessionSkillsListResult::class)
+        expect($result)->toBeInstanceOf(SkillList::class)
             ->and($result->skills)->toHaveCount(1)
             ->and($result->skills[0]->name)->toBe('code-review');
     });
@@ -44,7 +44,7 @@ describe('PendingSkills', function () {
         $pending = new PendingSkills($client, 'session-abc');
         $result = $pending->list();
 
-        expect($result)->toBeInstanceOf(SessionSkillsListResult::class)
+        expect($result)->toBeInstanceOf(SkillList::class)
             ->and($result->skills)->toBe([]);
     });
 
@@ -60,7 +60,7 @@ describe('PendingSkills', function () {
             ->andReturn([]);
 
         $pending = new PendingSkills($client, 'session-abc');
-        $result = $pending->enable(new SessionSkillsEnableParams(name: 'code-review'));
+        $result = $pending->enable(new SkillsEnableRequest(name: 'code-review'));
 
         expect($result)->toBe([]);
     });
@@ -94,7 +94,7 @@ describe('PendingSkills', function () {
             ->andReturn([]);
 
         $pending = new PendingSkills($client, 'session-abc');
-        $result = $pending->disable(new SessionSkillsDisableParams(name: 'code-review'));
+        $result = $pending->disable(new SkillsDisableRequest(name: 'code-review'));
 
         expect($result)->toBe([]);
     });

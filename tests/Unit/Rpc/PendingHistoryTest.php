@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingHistory;
-use Revolution\Copilot\Types\Rpc\SessionHistoryCompactResult;
-use Revolution\Copilot\Types\Rpc\SessionHistoryTruncateParams;
-use Revolution\Copilot\Types\Rpc\SessionHistoryTruncateResult;
+use Revolution\Copilot\Types\Rpc\HistoryCompactResult;
+use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
+use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
 
 describe('PendingHistory', function () {
     it('calls session.history.compact and returns result', function () {
@@ -26,7 +26,7 @@ describe('PendingHistory', function () {
         $pending = new PendingHistory($client, 'session-abc');
         $result = $pending->compact();
 
-        expect($result)->toBeInstanceOf(SessionHistoryCompactResult::class)
+        expect($result)->toBeInstanceOf(HistoryCompactResult::class)
             ->and($result->success)->toBeTrue()
             ->and($result->tokensRemoved)->toBe(1500)
             ->and($result->messagesRemoved)->toBe(10);
@@ -46,9 +46,9 @@ describe('PendingHistory', function () {
             ]);
 
         $pending = new PendingHistory($client, 'session-abc');
-        $result = $pending->truncate(new SessionHistoryTruncateParams(eventId: 'evt-123'));
+        $result = $pending->truncate(new HistoryTruncateRequest(eventId: 'evt-123'));
 
-        expect($result)->toBeInstanceOf(SessionHistoryTruncateResult::class)
+        expect($result)->toBeInstanceOf(HistoryTruncateResult::class)
             ->and($result->eventsRemoved)->toBe(5);
     });
 
@@ -68,7 +68,7 @@ describe('PendingHistory', function () {
         $pending = new PendingHistory($client, 'session-abc');
         $result = $pending->truncate(['eventId' => 'evt-456']);
 
-        expect($result)->toBeInstanceOf(SessionHistoryTruncateResult::class)
+        expect($result)->toBeInstanceOf(HistoryTruncateResult::class)
             ->and($result->eventsRemoved)->toBe(3);
     });
 });
