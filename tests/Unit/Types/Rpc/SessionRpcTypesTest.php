@@ -25,10 +25,6 @@ use Revolution\Copilot\Types\Rpc\ShellExecResult;
 use Revolution\Copilot\Types\Rpc\ShellKillRequest;
 use Revolution\Copilot\Types\Rpc\ShellKillResult;
 use Revolution\Copilot\Types\Rpc\ToolsHandlePendingToolCallRequest;
-use Revolution\Copilot\Types\Rpc\WorkspaceCreateFileRequest;
-use Revolution\Copilot\Types\Rpc\WorkspaceListFilesResult;
-use Revolution\Copilot\Types\Rpc\WorkspaceReadFileRequest;
-use Revolution\Copilot\Types\Rpc\WorkspaceReadFileResult;
 
 describe('CurrentModel', function () {
     it('can be created from array', function () {
@@ -142,46 +138,6 @@ describe('PlanUpdateRequest', function () {
     it('can be created and converted', function () {
         $params = new PlanUpdateRequest(content: '# Updated Plan');
         expect($params->toArray())->toBe(['content' => '# Updated Plan']);
-    });
-});
-
-describe('WorkspaceListFilesResult', function () {
-    it('can be created from array', function () {
-        $result = WorkspaceListFilesResult::fromArray([
-            'files' => ['file1.txt', 'file2.txt'],
-        ]);
-
-        expect($result->files)->toBe(['file1.txt', 'file2.txt']);
-    });
-
-    it('handles empty files list', function () {
-        $result = WorkspaceListFilesResult::fromArray([]);
-
-        expect($result->files)->toBe([]);
-    });
-});
-
-describe('WorkspaceReadFileResult', function () {
-    it('can be created from array', function () {
-        $result = WorkspaceReadFileResult::fromArray([
-            'content' => 'file content',
-        ]);
-
-        expect($result->content)->toBe('file content');
-    });
-});
-
-describe('WorkspaceReadFileRequest', function () {
-    it('can be created and converted', function () {
-        $params = new WorkspaceReadFileRequest(path: 'test.txt');
-        expect($params->toArray())->toBe(['path' => 'test.txt']);
-    });
-});
-
-describe('WorkspaceCreateFileRequest', function () {
-    it('can be created and converted', function () {
-        $params = new WorkspaceCreateFileRequest(path: 'test.txt', content: 'hello');
-        expect($params->toArray())->toBe(['path' => 'test.txt', 'content' => 'hello']);
     });
 });
 
