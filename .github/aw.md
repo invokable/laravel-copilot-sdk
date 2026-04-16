@@ -16,5 +16,5 @@ gh aw compile
 ```
 
 ```shell
-cd ../ && gh extension upgrade github/gh-aw && gh aw upgrade && gh aw compile
+cd ../ && gh extension upgrade github/gh-aw && gh aw upgrade --approve-updates && gh aw compile --approve-updates
 ```
