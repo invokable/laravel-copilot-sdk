@@ -75,6 +75,8 @@ describe('Workspace', function () {
             'mc_session_id' => 'sess-1',
             'mc_last_event_id' => 'evt-1',
             'session_sync_level' => 'repo_and_user',
+            'pr_create_sync_dismissed' => true,
+            'chronicle_sync_dismissed' => false,
         ]);
 
         expect($ws->id)->toBe('ws-123')
@@ -91,7 +93,9 @@ describe('Workspace', function () {
             ->and($ws->mcTaskId)->toBe('task-1')
             ->and($ws->mcSessionId)->toBe('sess-1')
             ->and($ws->mcLastEventId)->toBe('evt-1')
-            ->and($ws->sessionSyncLevel)->toBe('repo_and_user');
+            ->and($ws->sessionSyncLevel)->toBe('repo_and_user')
+            ->and($ws->prCreateSyncDismissed)->toBeTrue()
+            ->and($ws->chronicleSyncDismissed)->toBeFalse();
     });
 
     it('handles minimal data', function () {
@@ -101,7 +105,9 @@ describe('Workspace', function () {
             ->and($ws->cwd)->toBeNull()
             ->and($ws->branch)->toBeNull()
             ->and($ws->hostType)->toBeNull()
-            ->and($ws->sessionSyncLevel)->toBeNull();
+            ->and($ws->sessionSyncLevel)->toBeNull()
+            ->and($ws->prCreateSyncDismissed)->toBeNull()
+            ->and($ws->chronicleSyncDismissed)->toBeNull();
     });
 
     it('converts to array with snake_case keys', function () {

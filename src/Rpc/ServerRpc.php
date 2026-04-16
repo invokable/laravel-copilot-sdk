@@ -89,4 +89,12 @@ class ServerRpc
     {
         return new PendingSessions($this->client);
     }
+
+    /**
+     * Server-level skills RPC operations.
+     */
+    public function skills(): PendingServerSkills
+    {
+        return new PendingServerSkills($this->client);
+    }
 }
