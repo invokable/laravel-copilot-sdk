@@ -241,7 +241,7 @@ describe('CopilotManager', function () {
 
         $mockSession = Mockery::mock(CopilotSession::class);
         $mockSession->shouldReceive('sendAndWait')
-            ->with('test prompt', null, null, 60.0)
+            ->with('test prompt', null, null, 60.0, null)
             ->once()
             ->andReturn($mockEvent);
         $mockSession->shouldReceive('disconnect')->once();
@@ -265,7 +265,7 @@ describe('CopilotManager', function () {
     it('run uses configured timeout', function () {
         $mockSession = Mockery::mock(CopilotSession::class);
         $mockSession->shouldReceive('sendAndWait')
-            ->with('prompt', null, null, 120.0) // Custom timeout
+            ->with('prompt', null, null, 120.0, null) // Custom timeout
             ->once()
             ->andReturn(null);
         $mockSession->shouldReceive('disconnect')->once();
@@ -279,6 +279,29 @@ describe('CopilotManager', function () {
 
         $manager = new CopilotManager(['timeout' => 120.0]);
         $manager->run('prompt');
+
+        $manager->stop();
+    });
+
+    it('run passes request headers', function () {
+        $requestHeaders = ['x-test-header' => 'test-value'];
+
+        $mockSession = Mockery::mock(CopilotSession::class);
+        $mockSession->shouldReceive('sendAndWait')
+            ->with('prompt', null, null, 120.0, $requestHeaders)
+            ->once()
+            ->andReturn(null);
+        $mockSession->shouldReceive('disconnect')->once();
+
+        $mockClient = Mockery::mock(CopilotClient::class);
+        $mockClient->shouldReceive('start')->once();
+        $mockClient->shouldReceive('createSession')->once()->andReturn($mockSession);
+        $mockClient->shouldReceive('stop')->andReturn([]);
+
+        $this->app->bind(Client::class, fn () => $mockClient);
+
+        $manager = new CopilotManager(['timeout' => 120.0]);
+        $manager->run('prompt', requestHeaders: $requestHeaders);
 
         $manager->stop();
     });

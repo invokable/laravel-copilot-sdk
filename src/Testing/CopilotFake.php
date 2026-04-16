@@ -92,13 +92,14 @@ class CopilotFake implements Factory
     /**
      * Run a single prompt and return the response.
      */
-    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, SessionConfig|array $config = []): ?SessionEvent
+    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, SessionConfig|array $config = [], ?array $requestHeaders = null): ?SessionEvent
     {
         return $this->start(
             fn (CopilotSession $session) => $session->sendAndWait(
                 prompt: $prompt,
                 attachments: $attachments,
                 mode: $mode,
+                requestHeaders: $requestHeaders,
             ),
             config: $config,
         );
