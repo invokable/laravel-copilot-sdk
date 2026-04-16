@@ -69,6 +69,21 @@ Copilot::client()->rpc()->sessions()->fork(new SessionsForkRequest(
     sessionId: 'source-session-id',
     toEventId: 'evt-boundary', // オプション: この ID より前のイベントのみ含める
 ));
+
+// skills (サーバーレベルのスキル管理)
+// スキルの探索
+$result = Copilot::client()->rpc()->skills()->discover();
+// $result->skills は ServerSkill の配列
+// オプションでプロジェクトパスを指定
+$result = Copilot::client()->rpc()->skills()->discover(new SkillsDiscoverRequest(
+    projectPaths: ['/path/to/project'],
+    skillDirectories: ['/custom/skills'],
+));
+
+// 無効化するスキルの設定
+Copilot::client()->rpc()->skills()->config()->setDisabledSkills(
+    new SkillsConfigSetDisabledSkillsRequest(disabledSkills: ['skill-name'])
+);
 ```
 
 ## SessionRpc

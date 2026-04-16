@@ -133,10 +133,11 @@ class Session implements CopilotSession
      * @param  string  $prompt  The prompt/message to send
      * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments. type: "file" | "directory"
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
+     * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      *
      * @throws JsonRpcException
      */
-    public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string
+    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, ?array $requestHeaders = null): string
     {
         $response = $this->client->request('session.send', array_filter([
             ...TraceContext::get(),
@@ -144,6 +145,7 @@ class Session implements CopilotSession
             'prompt' => $prompt,
             'attachments' => $attachments,
             'mode' => $mode,
+            'requestHeaders' => $requestHeaders,
         ], fn ($v) => $v !== null));
 
         MessageSend::dispatch($this->sessionId, $response['messageId'] ?? '', $prompt, $attachments, $mode);
@@ -158,15 +160,16 @@ class Session implements CopilotSession
      * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments. type: "file" | "directory"
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
      * @param  ?float  $timeout  Maximum time to wait for idle state, in seconds
+     * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      */
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): ?SessionEvent
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null, ?array $requestHeaders = null): ?SessionEvent
     {
         $timeout = $timeout ?? config('copilot.timeout', 60.0);
 
         $this->prepareWait();
 
         try {
-            $this->send($prompt, $attachments, $mode);
+            $this->send($prompt, $attachments, $mode, $requestHeaders);
             $this->wait($timeout);
 
             MessageSendAndWait::dispatch($this->sessionId, $this->waitLastAssistantMessage, $prompt, $attachments, $mode);
@@ -365,11 +368,12 @@ class Session implements CopilotSession
      * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
      * @param  float|null  $timeout  Maximum time to wait for idle state, in seconds
+     * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      * @return iterable<SessionEvent>
      */
-    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): iterable
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null, ?array $requestHeaders = null): iterable
     {
-        $this->send($prompt, $attachments, $mode);
+        $this->send($prompt, $attachments, $mode, $requestHeaders);
 
         yield from $this->stream($timeout);
     }

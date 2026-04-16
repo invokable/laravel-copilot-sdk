@@ -20,6 +20,7 @@ readonly class ProviderConfig implements Arrayable
      *                                Use this for services requiring bearer token auth instead of API key.
      *                                Takes precedence over apiKey when both are set.
      * @param  ?array  $azure  Azure-specific options
+     * @param  ?array<string, string>  $headers  Custom HTTP headers to include in outbound provider requests.
      */
     public function __construct(
         public string $baseUrl,
@@ -28,6 +29,7 @@ readonly class ProviderConfig implements Arrayable
         public ?string $apiKey = null,
         public ?string $bearerToken = null,
         public ?array $azure = null,
+        public ?array $headers = null,
     ) {}
 
     /**
@@ -42,6 +44,7 @@ readonly class ProviderConfig implements Arrayable
             apiKey: $data['apiKey'] ?? null,
             bearerToken: $data['bearerToken'] ?? null,
             azure: $data['azure'] ?? null,
+            headers: $data['headers'] ?? null,
         );
     }
 
@@ -57,6 +60,7 @@ readonly class ProviderConfig implements Arrayable
             'apiKey' => $this->apiKey,
             'bearerToken' => $this->bearerToken,
             'azure' => $this->azure,
+            'headers' => $this->headers,
         ], fn ($value) => $value !== null);
     }
 }

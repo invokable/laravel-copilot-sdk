@@ -47,11 +47,12 @@ class CopilotManager implements Factory
      * @param  string  $prompt  The prompt/message to send
      * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments. type: "file" | "directory"
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
+     * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      */
-    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, SessionConfig|array $config = []): ?SessionEvent
+    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, ?array $requestHeaders = null, SessionConfig|array $config = []): ?SessionEvent
     {
         if ($this->isFake()) {
-            return $this->fake->run($prompt, $attachments, $mode, $config);
+            return $this->fake->run($prompt, $attachments, $mode, $requestHeaders, $config);
         }
 
         return $this->start(
@@ -60,6 +61,7 @@ class CopilotManager implements Factory
                 attachments: $attachments,
                 mode: $mode,
                 timeout: $this->config['timeout'] ?? null,
+                requestHeaders: $requestHeaders,
             ),
             config: $config,
         );

@@ -91,7 +91,7 @@ class FakeSession implements CopilotSession
         return '';
     }
 
-    public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string
+    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, ?array $requestHeaders = null): string
     {
         $this->recorded[] = [
             'prompt' => $prompt,
@@ -102,7 +102,7 @@ class FakeSession implements CopilotSession
         return 'fake-message-id';
     }
 
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): ?SessionEvent
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null, ?array $requestHeaders = null): ?SessionEvent
     {
         $this->recorded[] = [
             'prompt' => $prompt,
@@ -123,7 +123,7 @@ class FakeSession implements CopilotSession
         // No-op in fake
     }
 
-    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): iterable
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null, ?array $requestHeaders = null): iterable
     {
         $this->recorded[] = [
             'prompt' => $prompt,

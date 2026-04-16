@@ -7,6 +7,7 @@ use Revolution\Copilot\Rpc\PendingServerAccount;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Rpc\PendingServerModels;
 use Revolution\Copilot\Rpc\PendingServerSessionFs;
+use Revolution\Copilot\Rpc\PendingServerSkills;
 use Revolution\Copilot\Rpc\PendingServerTools;
 use Revolution\Copilot\Rpc\PendingSessions;
 use Revolution\Copilot\Rpc\ServerRpc;
@@ -47,6 +48,12 @@ describe('ServerRpc', function () {
         $rpc = new ServerRpc(createMockRpcClient());
 
         expect($rpc->sessions())->toBeInstanceOf(PendingSessions::class);
+    });
+
+    it('returns PendingServerSkills from skills()', function () {
+        $rpc = new ServerRpc(createMockRpcClient());
+
+        expect($rpc->skills())->toBeInstanceOf(PendingServerSkills::class);
     });
 });
 

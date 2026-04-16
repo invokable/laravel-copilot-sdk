@@ -91,12 +91,12 @@ interface CopilotSession
     /**
      * Send a message to this session.
      */
-    public function send(string $prompt, ?array $attachments = null, ?string $mode = null): string;
+    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, ?array $requestHeaders = null): string;
 
     /**
      * Send a message and wait until the session becomes idle.
      */
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): ?SessionEvent;
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null, ?array $requestHeaders = null): ?SessionEvent;
 
     /**
      * Subscribe to events from this session.
@@ -122,7 +122,7 @@ interface CopilotSession
      *
      * @return iterable<SessionEvent>
      */
-    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null): iterable;
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null, ?array $requestHeaders = null): iterable;
 
     /**
      * Yield events as a Generator until the session becomes idle.
