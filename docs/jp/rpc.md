@@ -105,7 +105,7 @@ Copilot::start(function (CopilotSession $session) {
 $session->rpc()->model()->getCurrent();
 $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'gpt-4'));
 // reasoningEffortを指定する場合（対応モデルのみ）
-$session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'claude-opus-4.6', reasoningEffort: ReasoningEffort::HIGH));
+$session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'claude-opus-4.7', reasoningEffort: ReasoningEffort::HIGH));
 // modelCapabilitiesをオーバーライドする場合
 $session->rpc()->model()->switchTo(new ModelSwitchToRequest(
     modelId: 'gpt-4',
@@ -115,8 +115,8 @@ $session->rpc()->model()->switchTo(new ModelSwitchToRequest(
 ));
 
 // setModel()ヘルパーでも同様にreasoningEffortやmodelCapabilitiesを指定可能
-$session->setModel('claude-opus-4.6', ReasoningEffort::HIGH);
-$session->setModel('claude-opus-4.6', 'high'); // 文字列でも指定可能
+$session->setModel('claude-opus-4.7', ReasoningEffort::HIGH);
+$session->setModel('claude-opus-4.7', 'high'); // 文字列でも指定可能
 $session->setModel('gpt-4', modelCapabilities: ['supports' => ['vision' => true]]); // 配列でも指定可能
 
 // mode

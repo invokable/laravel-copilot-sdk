@@ -93,7 +93,7 @@ use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Enums\ReasoningEffort;
 
 $config = new SessionConfig(
-    model: 'claude-opus-4.6',
+    model: 'claude-opus-4.7',
     reasoningEffort: ReasoningEffort::HIGH,
     systemMessage: new SystemMessageConfig(
         content: 'You are a helpful assistant for Laravel developers.',

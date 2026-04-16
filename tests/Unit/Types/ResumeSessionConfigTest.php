@@ -18,7 +18,7 @@ describe('ResumeSessionConfig', function () {
 
         $config = ResumeSessionConfig::fromArray([
             'clientName' => 'my-app',
-            'model' => 'claude-opus-4.6',
+            'model' => 'claude-opus-4.7',
             'reasoningEffort' => ReasoningEffort::XHIGH,
             'configDir' => './src',
             'tools' => [['name' => 'test_tool']],
@@ -42,7 +42,7 @@ describe('ResumeSessionConfig', function () {
 
         expect($config->tools)->toBe([['name' => 'test_tool']])
             ->and($config->clientName)->toBe('my-app')
-            ->and($config->model)->toBe('claude-opus-4.6')
+            ->and($config->model)->toBe('claude-opus-4.7')
             ->and($config->reasoningEffort)->toBe(ReasoningEffort::XHIGH)
             ->and($config->systemMessage->content)->toBe('Instructions')
             ->and($config->provider)->toBeInstanceOf(ProviderConfig::class)
@@ -103,7 +103,7 @@ describe('ResumeSessionConfig', function () {
 
         $config = new ResumeSessionConfig(
             clientName: 'my-app',
-            model: 'claude-opus-4.6',
+            model: 'claude-opus-4.7',
             reasoningEffort: ReasoningEffort::XHIGH,
             configDir: './src',
             tools: [['name' => 'tool1']],
