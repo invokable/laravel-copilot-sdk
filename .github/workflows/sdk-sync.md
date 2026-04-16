@@ -51,6 +51,7 @@ safe-outputs:
 network:
   allowed:
     - defaults
+    - github
     - php
 ---
 
