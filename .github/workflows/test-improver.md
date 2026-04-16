@@ -25,7 +25,6 @@ permissions:
 
 engine:
   id: copilot
-  version: "1.0.21"
   model: claude-sonnet-4.6
 
 checkout:
