@@ -18,7 +18,7 @@ interface Factory
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      */
-    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, SessionConfig|array $config = [], ?array $requestHeaders = null): ?SessionEvent;
+    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, ?array $requestHeaders = null, SessionConfig|array $config = []): ?SessionEvent;
 
     /**
      * Start a session and execute a callback.
