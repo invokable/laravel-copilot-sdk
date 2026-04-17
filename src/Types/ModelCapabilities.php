@@ -28,8 +28,8 @@ readonly class ModelCapabilities implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            supports: $data['supports'],
-            limits: $data['limits'],
+            supports: $data['supports'] ?? [],
+            limits: $data['limits'] ?? [],
         );
     }
 
@@ -62,7 +62,7 @@ readonly class ModelCapabilities implements Arrayable
      */
     public function maxContextWindowTokens(): int
     {
-        return $this->limits['max_context_window_tokens'];
+        return $this->limits['max_context_window_tokens'] ?? 0;
     }
 
     /**
