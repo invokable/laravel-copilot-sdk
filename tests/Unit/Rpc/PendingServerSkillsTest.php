@@ -206,4 +206,87 @@ describe('PendingServerSkills', function () {
 
         expect($pending->config())->toBeInstanceOf(PendingServerSkillsConfig::class);
     });
+
+    it('discover() calls skills.discover and returns ServerSkillList', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('skills.discover', Mockery::any())
+            ->andReturn([
+                'skills' => [
+                    [
+                        'name' => 'test-skill',
+                        'description' => 'A test skill',
+                        'source' => 'project',
+                        'userInvocable' => true,
+                        'enabled' => true,
+                    ],
+                ],
+            ]);
+
+        $pending = new PendingServerSkills($client);
+        $result = $pending->discover();
+
+        expect($result)->toBeInstanceOf(ServerSkillList::class)
+            ->and($result->skills)->toHaveCount(1)
+            ->and($result->skills[0]->name)->toBe('test-skill');
+    });
+
+    it('discover() with SkillsDiscoverRequest passes params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'skills.discover',
+                Mockery::on(fn ($p) => isset($p['projectPaths']) && $p['projectPaths'] === ['/my/project']),
+            )
+            ->andReturn(['skills' => []]);
+
+        $pending = new PendingServerSkills($client);
+        $result = $pending->discover(new SkillsDiscoverRequest(projectPaths: ['/my/project']));
+
+        expect($result)->toBeInstanceOf(ServerSkillList::class)
+            ->and($result->skills)->toBeEmpty();
+    });
+});
+
+describe('PendingServerSkillsConfig', function () {
+    it('setDisabledSkills() calls skills.config.setDisabledSkills with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'skills.config.setDisabledSkills',
+                Mockery::on(fn ($p) => $p === ['disabledSkills' => ['skill-a', 'skill-b']]),
+            );
+
+        $config = new PendingServerSkillsConfig($client);
+        $config->setDisabledSkills(['disabledSkills' => ['skill-a', 'skill-b']]);
+    });
+
+    it('setDisabledSkills() accepts SkillsConfigSetDisabledSkillsRequest object', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'skills.config.setDisabledSkills',
+                Mockery::on(fn ($p) => $p === ['disabledSkills' => ['skill-x']]),
+            );
+
+        $config = new PendingServerSkillsConfig($client);
+        $config->setDisabledSkills(new SkillsConfigSetDisabledSkillsRequest(disabledSkills: ['skill-x']));
+    });
+
+    it('setDisabledSkills() with empty list disables nothing', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'skills.config.setDisabledSkills',
+                ['disabledSkills' => []],
+            );
+
+        $config = new PendingServerSkillsConfig($client);
+        $config->setDisabledSkills(new SkillsConfigSetDisabledSkillsRequest(disabledSkills: []));
+    });
 });
