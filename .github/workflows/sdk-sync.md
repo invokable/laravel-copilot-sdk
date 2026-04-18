@@ -52,6 +52,7 @@ network:
   allowed:
     - defaults
     - github
+    - threat-detection
     - php
 ---
 
