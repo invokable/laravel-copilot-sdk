@@ -557,23 +557,23 @@ describe('Client', function () {
         fclose($stdout);
     });
 
-    it('usingListModels returns the client instance', function () {
+    it('listModelsUsing returns the client instance', function () {
         $client = new Client;
 
-        expect($client->usingListModels(fn () => []))->toBe($client);
+        expect($client->listModelsUsing(fn () => []))->toBe($client);
     });
 
-    it('usingListModels with null clears the handler', function () {
+    it('listModelsUsing with null clears the handler', function () {
         $client = new Client;
-        $client->usingListModels(fn () => []);
-        $client->usingListModels(null);
+        $client->listModelsUsing(fn () => []);
+        $client->listModelsUsing(null);
 
-        expect($client->usingListModels(null))->toBe($client);
+        expect($client->listModelsUsing(null))->toBe($client);
     });
 
-    it('listModels calls custom handler set via usingListModels', function () {
+    it('listModels calls custom handler set via listModelsUsing', function () {
         $client = new Client;
-        $client->usingListModels(fn () => [
+        $client->listModelsUsing(fn () => [
             [
                 'id' => 'my-model',
                 'name' => 'My Model',
@@ -594,7 +594,7 @@ describe('Client', function () {
 
     it('listModels returns empty array when custom handler returns empty', function () {
         $client = new Client;
-        $client->usingListModels(fn () => []);
+        $client->listModelsUsing(fn () => []);
 
         $models = $client->listModels();
 
