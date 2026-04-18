@@ -29,10 +29,10 @@ trait ManagesModels
      * Pass null to remove the handler and revert to the default CLI server behaviour.
      *
      * ```php
-     * $models = Copilot::client()->usingListModels(fn() => [])->listModels();
+     * $models = Copilot::client()->listModelsUsing(fn() => [])->listModels();
      * ```
      */
-    public function usingListModels(?callable $callback = null): static
+    public function listModelsUsing(?callable $callback = null): static
     {
         $this->onListModels = $callback;
 
@@ -42,7 +42,7 @@ trait ManagesModels
     /**
      * List available models with their metadata.
      *
-     * If a handler was provided via usingListModels(), it is called instead of
+     * If a handler was provided via listModelsUsing(), it is called instead of
      * querying the CLI server. Useful in BYOK mode to return models available
      * from your custom provider.
      *

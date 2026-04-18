@@ -78,7 +78,7 @@ interface CopilotClient
      * When set, listModels() calls this callback instead of querying the CLI server.
      * Pass null to remove the handler and revert to the default CLI server behaviour.
      */
-    public function usingListModels(?callable $callback = null): static;
+    public function listModelsUsing(?callable $callback = null): static;
 
     /**
      * List available models with their metadata.
