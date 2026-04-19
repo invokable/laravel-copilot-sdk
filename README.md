@@ -221,9 +221,14 @@ Only JSON-RPC requests are prevented, so starting a client is not prevented.
 
 ## Documentation
 
-Most of the English documentation is included in the official SDK, so we won't provide much here. README and [Getting Started Guide](./docs/getting-started.md) are provided in English.
+### English
 
-Only Japanese documentation is available in [docs/jp](./docs/jp). **Ask Copilot!!**
+- [Laravel Copilot SDK Documentation](https://kawax.biz/en/packages/laravel-copilot-sdk)
+- [Getting Started Guide](./docs/getting-started.md)
+
+### Japanese
+
+- [docs/jp](./docs/jp)
 
 ## Our other packages
 - [laravel-boost-copilot-cli](https://github.com/invokable/laravel-boost-copilot-cli)
