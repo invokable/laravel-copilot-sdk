@@ -349,99 +349,132 @@ Copilot decides when to call your tool based on the user's question. When it doe
 
 ---
 
-## Session Configuration Options
+## What's Next?
 
-The `SessionConfig` class supports many options:
+Now that you've got the basics, here are more powerful features to explore:
+
+### Connect to MCP Servers
+
+MCP (Model Context Protocol) servers provide pre-built tools. Connect to GitHub's MCP server to give Copilot access to repositories, issues, and pull requests:
 
 ```php
 use Revolution\Copilot\Types\SessionConfig;
-use Revolution\Copilot\Types\SystemMessageConfig;
-use Revolution\Copilot\Types\InfiniteSessionConfig;
-use Revolution\Copilot\Types\UserInputRequest;
-use Revolution\Copilot\Enums\ReasoningEffort;
 
 $config = new SessionConfig(
-    // Specify a model
-    model: 'claude-opus-4.5',
-
-    // Reasoning effort level for models that support it.
-    reasoningEffort: ReasoningEffort::HIGH,
-
-    // Custom tools
-    tools: [...],
-
-    // System message configuration
-    systemMessage: new SystemMessageConfig(
-        content: 'You are a helpful assistant for Laravel developers.',
-    ),
-
-    onPermissionRequest: function (array $request) {
-        // Handle permission requests
-    },
-
-    onUserInputRequest: function (UserInputRequest $request) {
-        // Handle user input requests
-    },
-
-    // Session Hooks
-    hooks: [],
-
-    // Enable streaming
-    streaming: true,
-
-    // Limit available built-in tools
-    availableTools: ['read_file', 'write_file'],
-
-    // Or exclude specific tools
-    excludedTools: ['shell'],
-
-    // MCP server configurations
     mcpServers: [
         'github' => [
             'type' => 'http',
             'url' => 'https://api.githubcopilot.com/mcp/',
         ],
     ],
+);
+```
 
-    // Custom agents
+### Create Custom Agents
+
+Define specialized AI personas for specific tasks:
+
+```php
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
     customAgents: [
         [
-            'name' => 'reviewer',
-            'displayName' => 'Code Reviewer',
-            'description' => 'Reviews code for best practices',
-            'prompt' => 'You are an expert code reviewer.',
+            'name' => 'pr-reviewer',
+            'displayName' => 'PR Reviewer',
+            'description' => 'Reviews pull requests for best practices',
+            'prompt' => 'You are an expert code reviewer. Focus on security, performance, and maintainability.',
         ],
     ],
-
-    /**
-     * Directories to load skills from.
-     */
-    skillDirectories: [],
-
-    /**
-     * List of skill names to disable.
-     */
-    disabledSkills: [],
-
-    // Infinite session configuration (enabled by default)
-    infiniteSessions: new InfiniteSessionConfig(
-        enabled: true,
-        backgroundCompactionThreshold: 0.80, // Start compacting at 80% context usage
-        bufferExhaustionThreshold: 0.95,     // Block at 95% until compaction completes
-    ),
-
-    // Disable infinite sessions
-    // infiniteSessions: new InfiniteSessionConfig(enabled: false),
 );
+```
+
+> **Tip:** You can set `agent: 'pr-reviewer'` in `SessionConfig` to pre-select the agent from the start.
+
+### Customize the System Message
+
+Control the AI's behavior and personality by appending instructions:
+
+```php
+use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\SystemMessageConfig;
+
+$config = new SessionConfig(
+    systemMessage: new SystemMessageConfig(
+        content: 'You are a helpful assistant for our engineering team. Always be concise.',
+    ),
+);
+```
+
+For more fine-grained control, use `mode: 'customize'` to override individual sections of the system prompt while preserving the rest.
+
+---
+
+## Connecting to an External CLI Server
+
+By default, the SDK automatically manages the Copilot CLI process lifecycle. You can also run the CLI separately in server mode and connect the SDK to it.
+
+This is useful for:
+
+- **Debugging**: Keep the CLI running between SDK restarts
+- **Resource sharing**: Multiple SDK clients can connect to the same CLI server
+- **Development**: Run the CLI with custom settings or in a different environment
+
+### Running the CLI in Server Mode
+
+```bash
+copilot --headless --port 4321
+```
+
+### Connecting the SDK to the External Server
+
+Set `COPILOT_URL` in your environment:
+
+```dotenv
+COPILOT_URL=tcp://127.0.0.1:4321
+```
+
+When `COPILOT_URL` is set, the SDK connects to the existing server instead of starting a new CLI process. (`tcp://` is explicit and recommended.)
+
+---
+
+## Telemetry & Observability
+
+The SDK supports OpenTelemetry for distributed tracing. Add a `telemetry` configuration to enable trace export from the CLI process.
+
+```php
+// config/copilot.php
+'telemetry' => [
+    'otlpEndpoint' => 'http://localhost:4318',
+],
+```
+
+Or configure it directly:
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\TelemetryConfig;
+
+Copilot::useStdio([
+    'telemetry' => new TelemetryConfig(
+        otlpEndpoint: 'http://localhost:4318',
+    ),
+]);
 ```
 
 ---
 
-## What's Next?
+## Learn More
 
-Now that you've got the basics, explore more features:
+Deep dives for the topics above and additional references:
 
-- **[Official SDK Documentation](https://github.com/github/copilot-sdk)** - Full reference
+- [Authentication](https://kawax.biz/en/packages/laravel-copilot-sdk/auth)
+- [MCP](https://kawax.biz/en/packages/laravel-copilot-sdk/mcp)
+- [Custom Providers](https://kawax.biz/en/packages/laravel-copilot-sdk/custom-providers)
+- [Telemetry](https://kawax.biz/en/packages/laravel-copilot-sdk/telemetry)
+- [SessionConfig](https://kawax.biz/en/packages/laravel-copilot-sdk/session-config)
+- [SessionEvent](https://kawax.biz/en/packages/laravel-copilot-sdk/session-event)
+- [Official SDK Documentation](https://github.com/github/copilot-sdk)
 
 ---
 
