@@ -1,5 +1,7 @@
 # Models list
 
+The available models may change depending on Copilot CLI updates and your organization's policies.
+
 ```plaintext
  ┌───────────────────┬───────────────────┬────────────────────┬────────────────┬───────────────────────────┬─────────────────────────────┐
  │ ID                │ Display Name      │ Max Context Tokens │ Vision Support │ Supports Reasoning Effort │ Supports Structured Outputs │
