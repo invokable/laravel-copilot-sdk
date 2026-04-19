@@ -160,6 +160,7 @@ use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\Tool;
+use Revolution\Copilot\Types\ToolResultObject;
 
 public function handle()
 {
@@ -182,16 +183,16 @@ public function handle()
                 name: 'lookup_fact',
                 description: 'Returns a fun fact about a given topic.',
                 parameters: $parameters,
-                handler: function (array $params) use ($facts): array {
+                handler: function (array $params) use ($facts) {
                     $topic = $params['topic'] ?? '';
                     $fact = $facts[$topic] ?? "Sorry, I don't have a fact about {$topic}.";
 
-                    return [
-                        'textResultForLlm' => $fact,
-                        'resultType' => 'success',
-                        'sessionLog' => "lookup_fact: served {$topic}",
-                        'toolTelemetry' => [],
-                    ];
+                    return new ToolResultObject(
+                        textResultForLlm: $fact,
+                        resultType: 'success',
+                        sessionLog: "lookup_fact: served {$topic}",
+                        toolTelemetry: [],
+                    );
                 },
             ),
         ],
@@ -227,6 +228,7 @@ use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\Tool;
+use Revolution\Copilot\Types\ToolResultObject;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\note;
@@ -259,16 +261,16 @@ class CopilotAssistant extends Command
                     name: 'lookup_fact',
                     description: 'Returns a fun fact about a given topic.',
                     parameters: $parameters,
-                    handler: function (array $params) use ($facts): array {
+                    handler: function (array $params) use ($facts) {
                         $topic = $params['topic'] ?? '';
                         $fact = $facts[$topic] ?? "No fact available for {$topic}.";
 
-                        return [
-                            'textResultForLlm' => $fact,
-                            'resultType' => 'success',
-                            'sessionLog' => "lookup_fact: {$topic}",
-                            'toolTelemetry' => [],
-                        ];
+                        return new ToolResultObject(
+                            textResultForLlm: $fact,
+                            resultType: 'success',
+                            sessionLog: "lookup_fact: {$topic}",
+                            toolTelemetry: [],
+                        );
                     },
                 ),
             ],
