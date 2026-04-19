@@ -2,6 +2,8 @@
 
 Pure PHPっぽい使い方ができるようにした上でLaravelらしい使い心地を提供しています。
 
+「Facadeの下では公式SDKを再現していて同じ使い方もできます」を説明しているだけなので基本はFacadeを使うのが推奨です。
+
 ```php
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Session;
