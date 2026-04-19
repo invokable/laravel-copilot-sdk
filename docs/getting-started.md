@@ -431,10 +431,10 @@ copilot --headless --port 4321
 Set `COPILOT_URL` in your environment:
 
 ```dotenv
-COPILOT_URL=127.0.0.1:4321
+COPILOT_URL=tcp://127.0.0.1:4321
 ```
 
-When `COPILOT_URL` is set, the SDK connects to the existing server instead of starting a new CLI process.
+When `COPILOT_URL` is set, the SDK connects to the existing server instead of starting a new CLI process. (`tcp://` is explicit and recommended.)
 
 ---
 
@@ -465,6 +465,8 @@ Copilot::useStdio([
 ---
 
 ## Learn More
+
+Deep dives for the topics above and additional references:
 
 - [Authentication](https://kawax.biz/en/packages/laravel-copilot-sdk/auth)
 - [MCP](https://kawax.biz/en/packages/laravel-copilot-sdk/mcp)
