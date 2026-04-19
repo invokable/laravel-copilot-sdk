@@ -88,7 +88,7 @@ return $response->tap(function (SessionEvent $event) {
 これだけはSessionEventの`$data`プロパティに対する機能なので注意してください。  
 
 `all()`, `has()`, `only()`, `collect()`などよく見るメソッドが揃っています。  
-https://github.com/laravel/framework/blob/12.x/src/Illuminate/Support/Traits/InteractsWithData.php
+https://kawax.biz/jp/advanced/interacts-with-data
 
 SessionEventはEventTypeによって`$data`プロパティの中身が異なるので、EventTypeに応じたデータアクセスを行う場合に便利です。
 
