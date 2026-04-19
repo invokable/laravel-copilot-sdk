@@ -474,6 +474,7 @@ Deep dives for the topics above and additional references:
 - [Telemetry](https://kawax.biz/en/packages/laravel-copilot-sdk/telemetry)
 - [SessionConfig](https://kawax.biz/en/packages/laravel-copilot-sdk/session-config)
 - [SessionEvent](https://kawax.biz/en/packages/laravel-copilot-sdk/session-event)
+- [Laravel Copilot SDK Documentation](https://kawax.biz/en/packages/laravel-copilot-sdk)
 - [Official SDK Documentation](https://github.com/github/copilot-sdk)
 
 ---
