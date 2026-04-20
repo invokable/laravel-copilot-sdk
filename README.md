@@ -229,6 +229,7 @@ Only JSON-RPC requests are prevented, so starting a client is not prevented.
 ### Japanese
 
 - [docs/jp](./docs/jp)
+- [Laravel Copilot SDK Documentation](https://kawax.biz/jp/packages/laravel-copilot-sdk)
 
 ## Our other packages
 - [laravel-boost-copilot-cli](https://github.com/invokable/laravel-boost-copilot-cli)
