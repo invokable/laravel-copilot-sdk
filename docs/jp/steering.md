@@ -90,6 +90,6 @@ Copilot::start(function (CopilotSession $session) {
 
 ## 参考
 
-- [基本的な使い方](./basic-usage.md)
+- [基本的な使い方](bare-usage.md)
 - [Streaming](./streaming.md)
 - [send-on](./send-on.md)
