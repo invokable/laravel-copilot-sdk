@@ -96,6 +96,9 @@ $config = new SessionConfig(
     // ストリーミングを有効化
     streaming: true,
 
+    // サブエージェントのストリーミングイベントをメインストリームに含めるか (デフォルト: true)
+    includeSubAgentStreamingEvents: true,
+
     // 使用可能なビルトインツール
     availableTools: ['read_file', 'write_file'],
 

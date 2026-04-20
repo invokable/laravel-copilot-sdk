@@ -31,6 +31,7 @@ describe('SessionConfig', function () {
             'hooks' => ['onPreToolUse' => $preToolUseHook],
             'workingDirectory' => '/home/user/project',
             'streaming' => true,
+            'includeSubAgentStreamingEvents' => false,
             'mcpServers' => ['server1' => ['command' => 'npx']],
             'customAgents' => [['name' => 'agent1']],
             'skillDirectories' => ['/path/to/skills'],
@@ -54,6 +55,7 @@ describe('SessionConfig', function () {
             ->and($config->hooks->onPreToolUse)->toBe($preToolUseHook)
             ->and($config->workingDirectory)->toBe('/home/user/project')
             ->and($config->streaming)->toBeTrue()
+            ->and($config->includeSubAgentStreamingEvents)->toBeFalse()
             ->and($config->mcpServers)->toBe(['server1' => ['command' => 'npx']])
             ->and($config->customAgents)->toBe([['name' => 'agent1']])
             ->and($config->skillDirectories)->toBe(['/path/to/skills'])
@@ -81,6 +83,7 @@ describe('SessionConfig', function () {
             ->and($config->hooks)->toBeNull()
             ->and($config->workingDirectory)->toBeNull()
             ->and($config->streaming)->toBeNull()
+            ->and($config->includeSubAgentStreamingEvents)->toBeNull()
             ->and($config->mcpServers)->toBeNull()
             ->and($config->customAgents)->toBeNull()
             ->and($config->skillDirectories)->toBeNull()
@@ -127,6 +130,7 @@ describe('SessionConfig', function () {
             hooks: new SessionHooks(onPreToolUse: $preToolUseHook),
             workingDirectory: '/home/user',
             streaming: false,
+            includeSubAgentStreamingEvents: true,
             mcpServers: ['server1' => ['command' => 'test']],
             customAgents: [['name' => 'agent1']],
             skillDirectories: ['/skills'],
@@ -151,6 +155,7 @@ describe('SessionConfig', function () {
             ->and($array['hooks'])->toBe(['onPreToolUse' => $preToolUseHook])
             ->and($array['workingDirectory'])->toBe('/home/user')
             ->and($array['streaming'])->toBeFalse()
+            ->and($array['includeSubAgentStreamingEvents'])->toBeTrue()
             ->and($array['mcpServers'])->toBe(['server1' => ['command' => 'test']])
             ->and($array['customAgents'])->toBe([['name' => 'agent1']])
             ->and($array['skillDirectories'])->toBe(['/skills'])

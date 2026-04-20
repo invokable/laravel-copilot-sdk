@@ -114,6 +114,20 @@ $json = $response->toJson();
 $collect = collect($response->toArray());
 ```
 
+## agentId
+
+サブエージェントのインスタンス識別子。ルート（メイン）エージェントおよびセッションレベルのイベントでは `null` になります。  
+サブエージェントからのイベントには `agentId` が設定されています。
+
+```php
+if ($event->agentId !== null) {
+    // サブエージェントからのイベント
+    info("Sub-agent event: {$event->agentId}");
+}
+```
+
+サブエージェントのストリーミングイベントの受信は `SessionConfig` の `includeSubAgentStreamingEvents` で制御できます。
+
 ## broadcast() / broadcastNow()
 
 Laravel AI SDKの`StreamEvent`と同じインターフェースでブロードキャストできます。AI SDKではストリーミング時の機能ですが、SessionEventではどのEventTypeでも使用可能です。

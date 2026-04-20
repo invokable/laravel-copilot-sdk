@@ -32,6 +32,7 @@ readonly class SessionEvent implements Arrayable, Jsonable
      * @param  SessionEventType  $type  Type of the session event
      * @param  array  $data  Event data payload specific to the event type
      * @param  bool  $ephemeral  When true, the event is transient and not persisted to the session event log on disk
+     * @param  ?string  $agentId  Sub-agent instance identifier. Absent for events from the root/main agent and session-level events.
      * @param  ?Throwable  $exception  Exception associated with this event, if any
      */
     public function __construct(
@@ -41,6 +42,7 @@ readonly class SessionEvent implements Arrayable, Jsonable
         public SessionEventType $type,
         public array $data,
         public bool $ephemeral = false,
+        public ?string $agentId = null,
         protected ?Throwable $exception = null,
     ) {
         //
@@ -58,6 +60,7 @@ readonly class SessionEvent implements Arrayable, Jsonable
             type: SessionEventType::tryFrom($event['type'] ?? '') ?? SessionEventType::SESSION_INFO,
             data: $event['data'] ?? [],
             ephemeral: $event['ephemeral'] ?? false,
+            agentId: $event['agentId'] ?? null,
         );
     }
 
@@ -214,6 +217,7 @@ readonly class SessionEvent implements Arrayable, Jsonable
             'type' => $this->type->value,
             'data' => $this->data,
             'ephemeral' => $this->ephemeral,
+            'agentId' => $this->agentId,
         ];
     }
 
