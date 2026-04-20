@@ -55,6 +55,12 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?bool  $streaming  Enable streaming of assistant message and reasoning chunks.
      *                            When true, ephemeral assistant.message_delta and assistant.reasoning_delta
      *                            events are sent as the response is generated.
+     * @param  ?bool  $includeSubAgentStreamingEvents  Include sub-agent streaming events in the event stream.
+     *                                                  When true, streaming delta events from sub-agents (e.g., assistant.message_delta,
+     *                                                  assistant.reasoning_delta, assistant.streaming_delta with agentId set)
+     *                                                  are forwarded to this connection. When false, only non-streaming sub-agent
+     *                                                  events and subagent.* lifecycle events are forwarded; streaming deltas from
+     *                                                  sub-agents are suppressed. Defaults to true.
      * @param  ?array  $mcpServers  MCP server configurations for the session. Keys are server names, values are server configurations.
      * @param  ?array  $customAgents  Custom agent configurations for the session
      * @param  ?string  $agent  Name of the custom agent to activate when the session resumes.
@@ -91,6 +97,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public SessionHooks|array|null $hooks = null,
         public ?string $workingDirectory = null,
         public ?bool $streaming = null,
+        public ?bool $includeSubAgentStreamingEvents = null,
         public ?array $mcpServers = null,
         public ?array $customAgents = null,
         public ?string $agent = null,
@@ -160,6 +167,7 @@ readonly class ResumeSessionConfig implements Arrayable
             hooks: $hooks,
             workingDirectory: $data['workingDirectory'] ?? null,
             streaming: $data['streaming'] ?? null,
+            includeSubAgentStreamingEvents: $data['includeSubAgentStreamingEvents'] ?? null,
             mcpServers: $data['mcpServers'] ?? null,
             customAgents: $data['customAgents'] ?? null,
             agent: $data['agent'] ?? null,
@@ -219,6 +227,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'hooks' => $hooks,
             'workingDirectory' => $this->workingDirectory,
             'streaming' => $this->streaming,
+            'includeSubAgentStreamingEvents' => $this->includeSubAgentStreamingEvents,
             'mcpServers' => $this->mcpServers,
             'customAgents' => $this->customAgents,
             'agent' => $this->agent,

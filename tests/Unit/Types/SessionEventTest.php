@@ -17,6 +17,7 @@ describe('SessionEvent', function () {
             'type' => 'assistant.message',
             'data' => ['content' => 'Hello World'],
             'ephemeral' => false,
+            'agentId' => 'sub-agent-1',
         ]);
 
         expect($event->id)->toBe('test-id')
@@ -24,7 +25,8 @@ describe('SessionEvent', function () {
             ->and($event->parentId)->toBe('parent-id')
             ->and($event->type)->toBe(SessionEventType::ASSISTANT_MESSAGE)
             ->and($event->data)->toBe(['content' => 'Hello World'])
-            ->and($event->ephemeral)->toBeFalse();
+            ->and($event->ephemeral)->toBeFalse()
+            ->and($event->agentId)->toBe('sub-agent-1');
     });
 
     it('handles missing fields with defaults', function () {
@@ -35,7 +37,8 @@ describe('SessionEvent', function () {
             ->and($event->parentId)->toBeNull()
             ->and($event->type)->toBe(SessionEventType::SESSION_INFO)
             ->and($event->data)->toBe([])
-            ->and($event->ephemeral)->toBeFalse();
+            ->and($event->ephemeral)->toBeFalse()
+            ->and($event->agentId)->toBeNull();
     });
 
     it('can check if is assistant message', function () {
@@ -116,6 +119,7 @@ describe('SessionEvent', function () {
             'type' => 'assistant.message',
             'data' => ['content' => 'Test'],
             'ephemeral' => true,
+            'agentId' => null,
         ]);
     });
 });
