@@ -57,11 +57,11 @@ readonly class SessionConfig implements Arrayable
      *                            When true, ephemeral assistant.message_delta and assistant.reasoning_delta
      *                            events are sent as the response is generated.
      * @param  ?bool  $includeSubAgentStreamingEvents  Include sub-agent streaming events in the event stream.
-     *                                                  When true, streaming delta events from sub-agents (e.g., assistant.message_delta,
-     *                                                  assistant.reasoning_delta, assistant.streaming_delta with agentId set)
-     *                                                  are forwarded to this connection. When false, only non-streaming sub-agent
-     *                                                  events and subagent.* lifecycle events are forwarded; streaming deltas from
-     *                                                  sub-agents are suppressed. Defaults to true.
+     *                                                 When true, streaming delta events from sub-agents (e.g., assistant.message_delta,
+     *                                                 assistant.reasoning_delta, assistant.streaming_delta with agentId set)
+     *                                                 are forwarded to this connection. When false, only non-streaming sub-agent
+     *                                                 events and subagent.* lifecycle events are forwarded; streaming deltas from
+     *                                                 sub-agents are suppressed. Defaults to true.
      * @param  ?array  $mcpServers  MCP server configurations for the session. Keys are server names, values are server configurations.
      * @param  ?array  $customAgents  Custom agent configurations for the session
      * @param  ?string  $agent  Name of the custom agent to activate when the session starts.
