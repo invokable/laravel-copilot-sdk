@@ -81,3 +81,39 @@ Copilot::start(function (CopilotSession $session) {
     $response = $session->sendAndWait(prompt: 'Tell me something about Laravel.');
 });
 ```
+
+## 最後のセッションを再開
+
+セッションが存在しない場合は`getLastSessionId()`は`null`を返すので自動的に新規セッションとして開始されます。SessionConfigの切り替えもできます。
+
+```php
+use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Facades\Copilot;
+
+$session_id = Copilot::client()->getLastSessionId();
+
+if (empty($session_id)) {
+    $config = new SessionConfig();
+} else {
+    $config = new ResumeSessionConfig();
+}
+
+Copilot::start(function (CopilotSession $session) {
+    dump('Starting Copilot session: '.$session->id());
+
+    $response = $session->sendAndWait(prompt: 'Tell me something about Laravel.');
+}, config: $config, resume: $session_id);
+```
+
+## SessionMetadataを使う
+
+`getSessionMetadata()`もセッションが存在しなければ`null`を返すので同様に新規セッションとして開始されます。セッションの作成日時や更新日時なども取得できます。
+
+```php
+use Revolution\Copilot\Types\SessionMetadata;
+use Revolution\Copilot\Facades\Copilot;
+
+$meta = Copilot::client()->getSessionMetadata('user-123-conversation');
+```
