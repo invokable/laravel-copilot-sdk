@@ -183,6 +183,6 @@ grep -c "assistant.turn_start" ~/.copilot/session-state/<sessionId>/events.jsonl
 
 ## 関連ドキュメント
 
-- [Streaming Events Reference](./streaming.md) — 各イベントタイプのフィールドレベル参照
+- [Streaming Events Reference](./streaming-events.md) — 各イベントタイプのフィールドレベル参照
 - [Session Persistence](./resume.md) — セッション保存と再開
 - [Hooks](./hooks.md) — ループ内イベントのインターセプト（権限・ツール）
