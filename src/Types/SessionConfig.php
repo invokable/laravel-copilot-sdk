@@ -64,6 +64,10 @@ readonly class SessionConfig implements Arrayable
      *                                                 sub-agents are suppressed. Defaults to true.
      * @param  ?array  $mcpServers  MCP server configurations for the session. Keys are server names, values are server configurations.
      * @param  ?array  $customAgents  Custom agent configurations for the session
+     * @param  ?array  $defaultAgent  Configuration for the default agent (the built-in agent that handles
+     *                                turns when no custom agent is selected). Use `excludedTools` to hide
+     *                                specific tools from the default agent while keeping them available to
+     *                                custom sub-agents. Example: `['excludedTools' => ['tool_name']]`
      * @param  ?string  $agent  Name of the custom agent to activate when the session starts.
      *                          Must match the `name` of one of the agents in `customAgents`.
      *                          Equivalent to calling `session.rpc.agent.select({ name })` after creation.
@@ -101,6 +105,7 @@ readonly class SessionConfig implements Arrayable
         public ?bool $includeSubAgentStreamingEvents = null,
         public ?array $mcpServers = null,
         public ?array $customAgents = null,
+        public ?array $defaultAgent = null,
         public ?string $agent = null,
         public ?array $skillDirectories = null,
         public ?array $disabledSkills = null,
@@ -171,6 +176,7 @@ readonly class SessionConfig implements Arrayable
             includeSubAgentStreamingEvents: $data['includeSubAgentStreamingEvents'] ?? null,
             mcpServers: $data['mcpServers'] ?? null,
             customAgents: $data['customAgents'] ?? null,
+            defaultAgent: $data['defaultAgent'] ?? null,
             agent: $data['agent'] ?? null,
             skillDirectories: $data['skillDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
@@ -231,6 +237,7 @@ readonly class SessionConfig implements Arrayable
             'includeSubAgentStreamingEvents' => $this->includeSubAgentStreamingEvents,
             'mcpServers' => $this->mcpServers,
             'customAgents' => $this->customAgents,
+            'defaultAgent' => $this->defaultAgent,
             'agent' => $this->agent,
             'skillDirectories' => $this->skillDirectories,
             'disabledSkills' => $this->disabledSkills,

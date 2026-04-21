@@ -15,16 +15,20 @@ readonly class QuotaSnapshot implements Arrayable
      * @param  int  $entitlementRequests  Number of requests included in the entitlement
      * @param  int  $usedRequests  Number of requests used so far this period
      * @param  float  $remainingPercentage  Percentage of entitlement remaining
-     * @param  int  $overage  Number of overage requests made this period
+     * @param  float  $overage  Number of overage requests made this period
      * @param  bool  $overageAllowedWithExhaustedQuota  Whether pay-per-request usage is allowed when quota is exhausted
+     * @param  bool  $isUnlimitedEntitlement  Whether the user has an unlimited usage entitlement
+     * @param  bool  $usageAllowedWithExhaustedQuota  Whether usage is still permitted after quota exhaustion
      * @param  ?string  $resetDate  Date when the quota resets (ISO 8601)
      */
     public function __construct(
         public int $entitlementRequests,
         public int $usedRequests,
         public float $remainingPercentage,
-        public int $overage,
+        public float $overage,
         public bool $overageAllowedWithExhaustedQuota,
+        public bool $isUnlimitedEntitlement = false,
+        public bool $usageAllowedWithExhaustedQuota = false,
         public ?string $resetDate = null,
     ) {}
 
@@ -36,6 +40,8 @@ readonly class QuotaSnapshot implements Arrayable
             remainingPercentage: $data['remainingPercentage'],
             overage: $data['overage'],
             overageAllowedWithExhaustedQuota: $data['overageAllowedWithExhaustedQuota'],
+            isUnlimitedEntitlement: $data['isUnlimitedEntitlement'] ?? false,
+            usageAllowedWithExhaustedQuota: $data['usageAllowedWithExhaustedQuota'] ?? false,
             resetDate: $data['resetDate'] ?? null,
         );
     }
@@ -48,6 +54,8 @@ readonly class QuotaSnapshot implements Arrayable
             'remainingPercentage' => $this->remainingPercentage,
             'overage' => $this->overage,
             'overageAllowedWithExhaustedQuota' => $this->overageAllowedWithExhaustedQuota,
+            'isUnlimitedEntitlement' => $this->isUnlimitedEntitlement,
+            'usageAllowedWithExhaustedQuota' => $this->usageAllowedWithExhaustedQuota,
             'resetDate' => $this->resetDate,
         ], fn ($v) => $v !== null);
     }

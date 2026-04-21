@@ -153,6 +153,10 @@ $session->rpc()->workspaces()->listFiles();
 $session->rpc()->workspaces()->readFile(new WorkspacesReadFileRequest(path: 'file.txt'));
 $session->rpc()->workspaces()->createFile(new WorkspacesCreateFileRequest(path: 'file.txt', content: '...'));
 
+// instructions (セッションのインストラクションソースを取得)
+$result = $session->rpc()->instructions()->getSources();
+// $result->sources - InstructionsSources の配列
+
 // fleet
 $session->rpc()->fleet()->start(new FleetStartRequest(prompt: '...'));
 
