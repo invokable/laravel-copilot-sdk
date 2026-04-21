@@ -11,16 +11,20 @@ describe('QuotaSnapshot', function () {
             'entitlementRequests' => 100,
             'usedRequests' => 50,
             'remainingPercentage' => 50.0,
-            'overage' => 0,
+            'overage' => 0.0,
             'overageAllowedWithExhaustedQuota' => true,
+            'isUnlimitedEntitlement' => false,
+            'usageAllowedWithExhaustedQuota' => true,
             'resetDate' => '2026-03-01T00:00:00Z',
         ]);
 
         expect($snapshot->entitlementRequests)->toBe(100)
             ->and($snapshot->usedRequests)->toBe(50)
             ->and($snapshot->remainingPercentage)->toBe(50.0)
-            ->and($snapshot->overage)->toBe(0)
+            ->and($snapshot->overage)->toBe(0.0)
             ->and($snapshot->overageAllowedWithExhaustedQuota)->toBeTrue()
+            ->and($snapshot->isUnlimitedEntitlement)->toBeFalse()
+            ->and($snapshot->usageAllowedWithExhaustedQuota)->toBeTrue()
             ->and($snapshot->resetDate)->toBe('2026-03-01T00:00:00Z');
     });
 
@@ -29,11 +33,13 @@ describe('QuotaSnapshot', function () {
             'entitlementRequests' => 100,
             'usedRequests' => 50,
             'remainingPercentage' => 50.0,
-            'overage' => 0,
+            'overage' => 0.0,
             'overageAllowedWithExhaustedQuota' => false,
         ]);
 
-        expect($snapshot->resetDate)->toBeNull();
+        expect($snapshot->resetDate)->toBeNull()
+            ->and($snapshot->isUnlimitedEntitlement)->toBeFalse()
+            ->and($snapshot->usageAllowedWithExhaustedQuota)->toBeFalse();
     });
 
     it('filters null values in toArray', function () {
@@ -41,7 +47,7 @@ describe('QuotaSnapshot', function () {
             entitlementRequests: 100,
             usedRequests: 50,
             remainingPercentage: 50.0,
-            overage: 0,
+            overage: 0.0,
             overageAllowedWithExhaustedQuota: false,
         );
 

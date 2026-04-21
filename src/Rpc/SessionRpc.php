@@ -20,6 +20,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->plan()->read();
  * $session->rpc()->workspaces()->getWorkspace();
  * $session->rpc()->workspaces()->listFiles();
+ * $session->rpc()->instructions()->getSources();
  * $session->rpc()->fleet()->start();
  * $session->rpc()->log()->log(new LogRequest(message: 'Processing started'));
  * $session->rpc()->log()->log(new LogRequest(message: 'Disk usage high', level: LogLevel::WARNING));
@@ -82,6 +83,14 @@ class SessionRpc
     public function workspaces(): PendingWorkspaces
     {
         return new PendingWorkspaces($this->client, $this->sessionId);
+    }
+
+    /**
+     * Instructions RPC operations.
+     */
+    public function instructions(): PendingInstructions
+    {
+        return new PendingInstructions($this->client, $this->sessionId);
     }
 
     /**

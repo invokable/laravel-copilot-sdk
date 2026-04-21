@@ -123,6 +123,11 @@ $config = new SessionConfig(
         ],
     ],
 
+    // デフォルトエージェントの設定。カスタムエージェントが選択されていない場合に使用されるビルトインエージェントの設定。
+    // excludedTools: デフォルトエージェントから除外するツールのリスト。
+    // カスタムサブエージェントには引き続き利用可能。
+    defaultAgent: ['excludedTools' => ['tool_name']],
+
     // セッション開始時にアクティブにするエージェントを指定。customAgentsのnameと一致する必要がある。
     agent: 'reviewer',
 
