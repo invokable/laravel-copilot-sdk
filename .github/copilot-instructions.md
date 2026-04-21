@@ -243,9 +243,11 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 ## ドキュメント
 - README.md: パッケージの概要と基本的な使い方。英語。`Copilot::run` `Copilot::start` Testing機能はLaravel版特有なのでこれをメインに説明。
 - `docs/getting-started.md` 公式SDKのgetting-started.mdと同様のLaravel版。英語。
-- `docs/jp/`以下に日本語ドキュメントを配置。英語の詳細なドキュメントは公式SDKにあるので日本語を中心に用意する。読めない言語でもCopilotに聞けばいいんだから。公式SDKのドキュメントとは関係なく細かい機能のドキュメントを書いていく。いずれまとめて英訳。
+- `docs/jp/`以下に日本語ドキュメントを配置。英語の詳細なドキュメントは公式SDKにあるので日本語を中心に用意する。読めない言語でもCopilotに聞けばいいんだから。公式SDKのドキュメントとは関係なく細かい機能のドキュメントを書いていく。
+- https://kawax.biz/en/packages/laravel-copilot-sdk で英語版を公開。
 
 ### docs/jp/
+- `agent-loop.md`(AI): エージェントループ。公式から翻訳。
 - `ai-sdk.md`: Laravel AI SDK Integration
 - `ask-user.md`(AI): User Input Requests。公式から翻訳。
 - `attachments.md`: File Attachments用のヘルパー。
@@ -253,6 +255,7 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `bare-usage.md`: Laravel流ではない公式SDKに沿った使い方
 - `bundle-cli.md`: Laravelプロジェクト内でCopilot CLIをバンドルして管理する方法
 - `currency.md`: Laravel の Concurrency を使った並行実行
+- `custom-agents.md`(AI): カスタムエージェント。公式から翻訳。
 - `custom-providers.md`(AI): カスタムプロバイダー（BYOK - Bring Your Own Key）の使い方。公式から翻訳。
 - `events.md`: Laravel Event
 - `fake.md`: テスト用機能の使い方
@@ -271,6 +274,7 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `session-event.md`: Laravel用に強化したSessionEventクラスの詳細
 - `session-lifecycle.md`(AI): セッションライフサイクルイベント
 - `streaming.md`: Streamingの使い方
+- `streaming-events.md`(AI): 公式から翻訳。
 - `tcp-mode.md`(AI): TCPモードの使い方
 - `telemetry.md`(AI): OpenTelemetryの使い方
 - `tools.md`: ツールの使い方
