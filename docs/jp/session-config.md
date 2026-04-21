@@ -159,3 +159,5 @@ $response = Copilot::run('...', config: $config);
 ```
 
 セッション再開時には`ResumeSessionConfig`クラスを使用します。`SessionConfig`とほとんど同じですが少しだけ違います。ResumeSessionConfigは設定を変えたい項目のみ指定します。他は新規セッション開始時の設定が引き継がれます。
+
+カスタムエージェントの使い方は [Custom Agents](./custom-agents.md) を参照。
