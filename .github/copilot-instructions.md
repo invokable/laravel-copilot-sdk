@@ -272,7 +272,7 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `session-config.md`: SessionConfigクラスの詳細
 - `session-context.md`(AI): SessionContext
 - `session-event.md`: Laravel用に強化したSessionEventクラスの詳細
-- `session-lifecycle.md`(AI): セッションライフサイクルイベント
+- `session-lifecycle-event.md`(AI): セッションライフサイクルイベント
 - `streaming.md`: Streamingの使い方
 - `streaming-events.md`(AI): 公式から翻訳。
 - `tcp-mode.md`(AI): TCPモードの使い方
