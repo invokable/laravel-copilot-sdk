@@ -127,6 +127,7 @@ Copilot::start(function (CopilotSession $session) {
 - `onPreToolUse` で許可ツールを allow-list 方式にする
 - 破壊的操作は `permissionDecision: 'ask'` で人間承認
 - `permissionDecisionReason` で拒否理由を明示
+- `toolName` の候補は [Tools](./tools.md) の一覧で確認する（例: `view`, `glob`, `bash`）
 
 ### 2) Auditing / Compliance（監査）
 
