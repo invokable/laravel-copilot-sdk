@@ -152,3 +152,4 @@ $client->onLifecycle(function (SessionLifecycleEvent $event) {
 - `session.foreground` と `session.background` イベントは、TUI+サーバーモードでのみ発生します
 - セッション削除時（`session.deleted`）には `metadata` プロパティは `null` になります
 - `onLifecycle()` は購読解除用のコールバック関数を返します
+- [Session Hooks](hooks.md)の`onSessionStart`や`onSessionEnd`とは別の機能です。
