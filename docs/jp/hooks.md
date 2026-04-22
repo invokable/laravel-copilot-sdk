@@ -187,13 +187,13 @@ Copilot::start(function (CopilotSession $session) {
 |---|---|---|
 | `toolName` | `string` | 実行済みツール名 |
 | `toolArgs` | `mixed` | 実行時引数 |
-| `toolResult` | `ToolResultObject|array` | ツール結果 |
+| `toolResult` | `ToolResultObject\|array` | ツール結果 |
 
 ### `PostToolUseHookOutput`
 
 | プロパティ | 型 | 説明 |
 |---|---|---|
-| `modifiedResult` | `ToolResultObject|array|null` | 改変後の結果 |
+| `modifiedResult` | `ToolResultObject\|array\|null` | 改変後の結果 |
 | `additionalContext` | `?string` | 追加コンテキスト |
 | `suppressOutput` | `?bool` | ツール結果表示を抑制 |
 
