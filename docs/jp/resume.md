@@ -117,3 +117,21 @@ use Revolution\Copilot\Facades\Copilot;
 
 $meta = Copilot::client()->getSessionMetadata('user-123-conversation');
 ```
+
+## セッションのアイドルタイムアウト
+
+デフォルトではセッションは無期限に保持されます。`session_idle_timeout_seconds`（または環境変数`COPILOT_SESSION_IDLE_TIMEOUT`）を設定すると、指定秒数間アクティビティがないセッションは自動的にクリーンアップされます。
+
+```php
+// config/copilot.php
+'session_idle_timeout_seconds' => (int) env('COPILOT_SESSION_IDLE_TIMEOUT', 0),
+```
+
+```php
+// useStdio()で直接指定することもできる
+use Revolution\Copilot\Facades\Copilot;
+
+Copilot::useStdio(['session_idle_timeout_seconds' => 3600]); // 1時間
+```
+
+> **Note:** このオプションはSDKがCLIプロセスを起動する場合のみ有効です。`url`でTCPサーバーに接続している場合（外部サーバー）は無視されます。

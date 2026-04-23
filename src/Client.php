@@ -94,6 +94,7 @@ class Client implements CopilotClient
             'githubToken' => data_get($options, 'github_token'),
             'useLoggedInUser' => data_get($options, 'use_logged_in_user'),
             'telemetry' => data_get($options, 'telemetry'),
+            'sessionIdleTimeoutSeconds' => data_get($options, 'session_idle_timeout_seconds', 0),
         ]);
     }
 

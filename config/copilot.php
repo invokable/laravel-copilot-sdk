@@ -133,4 +133,19 @@ return [
     |
     */
     'telemetry' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Session Idle Timeout
+    |--------------------------------------------------------------------------
+    |
+    | Server-wide idle timeout for sessions in seconds. Sessions without
+    | activity for this duration are automatically cleaned up.
+    | Set to 0 (default) to disable — sessions will live indefinitely.
+    | Any positive value is accepted.
+    |
+    | Note: This option is ignored when 'url' is set (TCP mode).
+    |
+    */
+    'session_idle_timeout_seconds' => (int) env('COPILOT_SESSION_IDLE_TIMEOUT', 0),
 ];

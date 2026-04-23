@@ -46,6 +46,7 @@ class ProcessManager
         protected ?string $githubToken = null,
         protected ?bool $useLoggedInUser = null,
         protected TelemetryConfig|array|null $telemetry = null,
+        protected int $sessionIdleTimeoutSeconds = 0,
     ) {
         $this->cwd ??= getcwd() ?: null;
     }
@@ -200,6 +201,11 @@ class ProcessManager
         $useLoggedInUser = $this->useLoggedInUser ?? ($this->githubToken === null);
         if (! $useLoggedInUser) {
             $args[] = '--no-auto-login';
+        }
+
+        if ($this->sessionIdleTimeoutSeconds > 0) {
+            $args[] = '--session-idle-timeout';
+            $args[] = (string) $this->sessionIdleTimeoutSeconds;
         }
 
         $command = array_merge(
