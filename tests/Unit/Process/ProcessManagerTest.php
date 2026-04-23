@@ -92,3 +92,26 @@ describe('ProcessManager Auth Options', function () {
             ->and($userProperty->getValue($manager))->toBeTrue();
     });
 });
+
+describe('ProcessManager Session Idle Timeout', function () {
+    it('defaults sessionIdleTimeoutSeconds to 0', function () {
+        $manager = new ProcessManager(cliPath: '/test/copilot');
+
+        $reflection = new ReflectionClass($manager);
+        $property = $reflection->getProperty('sessionIdleTimeoutSeconds');
+
+        expect($property->getValue($manager))->toBe(0);
+    });
+
+    it('accepts a positive sessionIdleTimeoutSeconds', function () {
+        $manager = new ProcessManager(
+            cliPath: '/test/copilot',
+            sessionIdleTimeoutSeconds: 600,
+        );
+
+        $reflection = new ReflectionClass($manager);
+        $property = $reflection->getProperty('sessionIdleTimeoutSeconds');
+
+        expect($property->getValue($manager))->toBe(600);
+    });
+});
