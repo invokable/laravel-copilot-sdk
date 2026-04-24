@@ -9,6 +9,9 @@ use Revolution\Copilot\JsonRpc\JsonRpcMessage;
 use Revolution\Copilot\Rpc\PendingPermissions;
 use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
 use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
+use Revolution\Copilot\Types\Rpc\PermissionsResetSessionApprovalsResult;
+use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllRequest;
+use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllResult;
 
 /**
  * Build a started JsonRpcClient backed by a mock transport.
@@ -127,5 +130,44 @@ describe('PendingSessionPermissions', function () {
         expect($result)->toBeInstanceOf(PermissionRequestResult::class)
             ->and($decoded['params']['sessionId'])->toBe('session-xyz')
             ->and($decoded['params']['requestId'])->toBe('req-array');
+    });
+
+    it('setApproveAll sends correct method and returns result', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $pending = new PendingPermissions($client, 'session-abc');
+        $result = $pending->setApproveAll(new PermissionsSetApproveAllRequest(enabled: true));
+
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+        expect($result)->toBeInstanceOf(PermissionsSetApproveAllResult::class)
+            ->and($decoded['method'])->toBe('session.permissions.setApproveAll')
+            ->and($decoded['params']['sessionId'])->toBe('session-abc')
+            ->and($decoded['params']['enabled'])->toBeTrue();
+    });
+
+    it('setApproveAll accepts array params', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $pending = new PendingPermissions($client, 'session-abc');
+        $result = $pending->setApproveAll(['enabled' => false]);
+
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+        expect($result)->toBeInstanceOf(PermissionsSetApproveAllResult::class)
+            ->and($decoded['params']['enabled'])->toBeFalse();
+    });
+
+    it('resetSessionApprovals sends correct method and returns result', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $pending = new PendingPermissions($client, 'session-abc');
+        $result = $pending->resetSessionApprovals();
+
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+        expect($result)->toBeInstanceOf(PermissionsResetSessionApprovalsResult::class)
+            ->and($decoded['method'])->toBe('session.permissions.resetSessionApprovals')
+            ->and($decoded['params']['sessionId'])->toBe('session-abc');
     });
 });

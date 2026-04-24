@@ -43,3 +43,20 @@ $config = [
 ```
 
 `github_token`なしで`use_logged_in_user`を`false`にすると、`--no-auto-login`フラグが追加され、CLIは自動ログインを行いません。
+
+## セッションごとのGitHubトークン（v0.3.0+）
+
+`SessionConfig`の`gitHubToken`フィールドを使うと、同一CLIプロセス内でセッションごとに異なるGitHubトークンを指定できます（マルチテナント対応）。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\SessionConfig;
+
+$response = Copilot::run(
+    prompt: '...',
+    config: new SessionConfig(gitHubToken: $user->github_token),
+);
+```
+
+クライアントレベルの`github_token`（CLIプロセス起動時のトークン）とは別に機能します。  
+セッション単位でユーザートークンを切り替えたい場合に使用してください。

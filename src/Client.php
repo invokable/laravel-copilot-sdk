@@ -288,6 +288,7 @@ class Client implements CopilotClient
             'skillDirectories' => $config['skillDirectories'] ?? null,
             'disabledSkills' => $config['disabledSkills'] ?? null,
             'infiniteSessions' => $config['infiniteSessions'] ?? null,
+            'gitHubToken' => $config['gitHubToken'] ?? null,
         ], fn ($v) => $v !== null));
 
         $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
@@ -388,6 +389,7 @@ class Client implements CopilotClient
             'skillDirectories' => $config['skillDirectories'] ?? null,
             'disabledSkills' => $config['disabledSkills'] ?? null,
             'disableResume' => $config['disableResume'] ?? null,
+            'gitHubToken' => $config['gitHubToken'] ?? null,
         ], fn ($v) => $v !== null));
 
         $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');

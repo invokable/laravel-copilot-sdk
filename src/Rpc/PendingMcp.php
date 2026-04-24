@@ -7,6 +7,8 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\McpDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpEnableRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
 use Revolution\Copilot\Types\Rpc\McpServerList;
 
 /**
@@ -63,5 +65,18 @@ class PendingMcp
         return $this->client->request('session.mcp.reload', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Initiate MCP OAuth login for a remote server.
+     */
+    public function login(McpOauthLoginRequest|array $params): McpOauthLoginResult
+    {
+        $paramsArray = ($params instanceof McpOauthLoginRequest ? $params : McpOauthLoginRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return McpOauthLoginResult::fromArray(
+            $this->client->request('session.mcp.oauth.login', $paramsArray),
+        );
     }
 }

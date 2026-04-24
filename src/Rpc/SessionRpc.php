@@ -36,6 +36,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->commands()->handlePendingCommand(new CommandsHandlePendingCommandRequest(requestId: '...'));
  * $session->rpc()->ui()->elicitation(new UIElicitationRequest(message: '...', requestedSchema: [...]));
  * $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(requestId: '...', decision: PermissionRequestResultKind::approved()));
+ * $session->rpc()->auth()->getStatus();
  * ```
  */
 class SessionRpc
@@ -227,5 +228,13 @@ class SessionRpc
     public function usage(): PendingUsage
     {
         return new PendingUsage($this->client, $this->sessionId);
+    }
+
+    /**
+     * Session authentication RPC operations.
+     */
+    public function auth(): PendingSessionAuth
+    {
+        return new PendingSessionAuth($this->client, $this->sessionId);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerAccount;
+use Revolution\Copilot\Types\Rpc\AccountGetQuotaRequest;
 use Revolution\Copilot\Types\Rpc\AccountGetQuotaResult;
 use Revolution\Copilot\Types\Rpc\QuotaSnapshot;
 
@@ -49,5 +50,31 @@ describe('PendingServerAccount', function () {
 
         expect($result)->toBeInstanceOf(AccountGetQuotaResult::class)
             ->and($result->quotaSnapshots)->toBeEmpty();
+    });
+
+    it('calls account.getQuota with gitHubToken param', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('account.getQuota', ['gitHubToken' => 'ghs_abc'])
+            ->andReturn(['quotaSnapshots' => []]);
+
+        $pending = new PendingServerAccount($client);
+        $result = $pending->getQuota(new AccountGetQuotaRequest(gitHubToken: 'ghs_abc'));
+
+        expect($result)->toBeInstanceOf(AccountGetQuotaResult::class);
+    });
+
+    it('calls account.getQuota with array param containing gitHubToken', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('account.getQuota', ['gitHubToken' => 'ghs_xyz'])
+            ->andReturn(['quotaSnapshots' => []]);
+
+        $pending = new PendingServerAccount($client);
+        $result = $pending->getQuota(['gitHubToken' => 'ghs_xyz']);
+
+        expect($result)->toBeInstanceOf(AccountGetQuotaResult::class);
     });
 });

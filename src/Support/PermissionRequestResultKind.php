@@ -8,11 +8,15 @@ final readonly class PermissionRequestResultKind
 {
     public const string APPROVED = 'approved';
 
+    public const string APPROVE_ONCE = 'approve-once';
+
     public const string NO_RESULT = 'no-result';
 
     public const string DENIED_BY_RULES = 'denied-by-rules';
 
     public const string DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER = 'denied-no-approval-rule-and-could-not-request-from-user';
+
+    public const string USER_NOT_AVAILABLE = 'user-not-available';
 
     public const string DENIED_INTERACTIVELY_BY_USER = 'denied-interactively-by-user';
 
@@ -23,6 +27,14 @@ final readonly class PermissionRequestResultKind
     public static function approved(): array
     {
         return ['kind' => self::APPROVED];
+    }
+
+    /**
+     * Approve the request once (preferred over approved() for one-time approvals).
+     */
+    public static function approveOnce(): array
+    {
+        return ['kind' => self::APPROVE_ONCE];
     }
 
     /**
@@ -42,6 +54,14 @@ final readonly class PermissionRequestResultKind
     public static function deniedNoApprovalRuleAndCouldNotRequestFromUser(): array
     {
         return ['kind' => self::DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER];
+    }
+
+    /**
+     * The user is not available to handle the permission request.
+     */
+    public static function userNotAvailable(): array
+    {
+        return ['kind' => self::USER_NOT_AVAILABLE];
     }
 
     public static function deniedInteractivelyByUser(?string $feedback = null): array
@@ -86,8 +106,10 @@ final readonly class PermissionRequestResultKind
     {
         return [
             self::APPROVED => __('Approved'),
+            self::APPROVE_ONCE => __('Approve Once'),
             self::DENIED_BY_RULES => __('Denied by Rules'),
             self::DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER => __('Denied No Approval Rule and Could Not Request from User'),
+            self::USER_NOT_AVAILABLE => __('User Not Available'),
             self::DENIED_INTERACTIVELY_BY_USER => __('Denied Interactively by User'),
             self::DENIED_BY_CONTENT_EXCLUSION_POLICY => __('Denied by Content Exclusion Policy'),
             self::DENIED_BY_PERMISSION_REQUEST_HOOK => __('Denied by Permission Request Hook'),

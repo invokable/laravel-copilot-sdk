@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Types\Rpc\McpConfigAddRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigDisableRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigList;
 use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
@@ -191,5 +193,57 @@ describe('PendingServerMcpConfig', function () {
         $result = $pending->discover(['workingDirectory' => '/project']);
 
         expect($result)->toBeInstanceOf(McpDiscoverResult::class);
+    });
+
+    it('calls mcp.config.enable with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('mcp.config.enable', ['names' => ['server1', 'server2']])
+            ->andReturn([]);
+
+        $pending = new PendingServerMcpConfig($client);
+        $pending->enable(new McpConfigEnableRequest(names: ['server1', 'server2']));
+
+        expect(true)->toBeTrue();
+    });
+
+    it('calls mcp.config.enable with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('mcp.config.enable', ['names' => ['server1']])
+            ->andReturn([]);
+
+        $pending = new PendingServerMcpConfig($client);
+        $pending->enable(['names' => ['server1']]);
+
+        expect(true)->toBeTrue();
+    });
+
+    it('calls mcp.config.disable with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('mcp.config.disable', ['names' => ['server1']])
+            ->andReturn([]);
+
+        $pending = new PendingServerMcpConfig($client);
+        $pending->disable(new McpConfigDisableRequest(names: ['server1']));
+
+        expect(true)->toBeTrue();
+    });
+
+    it('calls mcp.config.disable with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('mcp.config.disable', ['names' => ['a', 'b']])
+            ->andReturn([]);
+
+        $pending = new PendingServerMcpConfig($client);
+        $pending->disable(['names' => ['a', 'b']]);
+
+        expect(true)->toBeTrue();
     });
 });

@@ -72,4 +72,14 @@ describe('SessionEventType', function () {
     it('can create remote steerable changed from string', function () {
         expect(SessionEventType::from('session.remote_steerable_changed'))->toBe(SessionEventType::SESSION_REMOTE_STEERABLE_CHANGED);
     });
+
+    it('has auto mode switch event types', function () {
+        expect(SessionEventType::AUTO_MODE_SWITCH_REQUESTED->value)->toBe('auto_mode_switch.requested')
+            ->and(SessionEventType::AUTO_MODE_SWITCH_COMPLETED->value)->toBe('auto_mode_switch.completed');
+    });
+
+    it('can create auto mode switch event types from string', function () {
+        expect(SessionEventType::from('auto_mode_switch.requested'))->toBe(SessionEventType::AUTO_MODE_SWITCH_REQUESTED)
+            ->and(SessionEventType::from('auto_mode_switch.completed'))->toBe(SessionEventType::AUTO_MODE_SWITCH_COMPLETED);
+    });
 });

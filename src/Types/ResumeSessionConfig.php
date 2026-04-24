@@ -72,6 +72,9 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                                              Set to `new InfiniteSessionConfig(enabled: false)` to disable.
      * @param  ?bool  $disableResume  When true, skips emitting the session.resume event.
      *                                Useful for reconnecting to a session without triggering resume-related side effects.
+     * @param  ?string  $gitHubToken  GitHub token for per-session authentication.
+     *                                When provided, the runtime resolves this token into a full GitHub identity
+     *                                (login, Copilot plan, endpoints) and stores it on the session.
      * @param  ?Closure  $onEvent  Optional event handler registered on the session before the session.resume RPC is issued.
      *                             This guarantees that early events emitted by the CLI during session resumption
      *                             are delivered to the handler.
@@ -105,6 +108,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $disabledSkills = null,
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
         public ?bool $disableResume = null,
+        public ?string $gitHubToken = null,
         public ?Closure $onEvent = null,
     ) {}
 
@@ -175,6 +179,7 @@ readonly class ResumeSessionConfig implements Arrayable
             disabledSkills: $data['disabledSkills'] ?? null,
             infiniteSessions: $infiniteSessions,
             disableResume: $data['disableResume'] ?? null,
+            gitHubToken: $data['gitHubToken'] ?? null,
             onEvent: $data['onEvent'] ?? null,
         );
     }
@@ -235,6 +240,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'disabledSkills' => $this->disabledSkills,
             'infiniteSessions' => $infiniteSessions,
             'disableResume' => $this->disableResume,
+            'gitHubToken' => $this->gitHubToken,
             'onEvent' => $this->onEvent,
         ], fn ($value) => $value !== null);
     }
