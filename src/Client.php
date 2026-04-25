@@ -91,7 +91,7 @@ class Client implements CopilotClient
             'cwd' => data_get($options, 'cwd'),
             'logLevel' => data_get($options, 'log_level', 'info'),
             'env' => data_get($options, 'env'),
-            'githubToken' => data_get($options, 'github_token'),
+            'gitHubToken' => data_get($options, 'github_token'),
             'useLoggedInUser' => data_get($options, 'use_logged_in_user'),
             'telemetry' => data_get($options, 'telemetry'),
             'sessionIdleTimeoutSeconds' => data_get($options, 'session_idle_timeout_seconds', 0),

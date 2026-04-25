@@ -45,11 +45,11 @@ describe('ProcessManager Auth Options', function () {
     it('accepts github_token option', function () {
         $manager = new ProcessManager(
             cliPath: '/test/copilot',
-            githubToken: 'gho_test_token',
+            gitHubToken: 'gho_test_token',
         );
 
         $reflection = new ReflectionClass($manager);
-        $property = $reflection->getProperty('githubToken');
+        $property = $reflection->getProperty('gitHubToken');
 
         expect($property->getValue($manager))->toBe('gho_test_token');
     });
@@ -80,12 +80,12 @@ describe('ProcessManager Auth Options', function () {
     it('allows explicit use_logged_in_user true with github_token', function () {
         $manager = new ProcessManager(
             cliPath: '/test/copilot',
-            githubToken: 'gho_test_token',
+            gitHubToken: 'gho_test_token',
             useLoggedInUser: true,
         );
 
         $reflection = new ReflectionClass($manager);
-        $tokenProperty = $reflection->getProperty('githubToken');
+        $tokenProperty = $reflection->getProperty('gitHubToken');
         $userProperty = $reflection->getProperty('useLoggedInUser');
 
         expect($tokenProperty->getValue($manager))->toBe('gho_test_token')

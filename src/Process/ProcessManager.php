@@ -43,7 +43,7 @@ class ProcessManager
         protected ?string $cwd = null,
         protected string $logLevel = 'info',
         protected ?array $env = null,
-        protected ?string $githubToken = null,
+        protected ?string $gitHubToken = null,
         protected ?bool $useLoggedInUser = null,
         protected TelemetryConfig|array|null $telemetry = null,
         protected int $sessionIdleTimeoutSeconds = 0,
@@ -185,20 +185,20 @@ class ProcessManager
         }
 
         // Set auth token in environment if provided
-        if (filled($this->githubToken)) {
-            $env['COPILOT_SDK_AUTH_TOKEN'] = $this->githubToken;
+        if (filled($this->gitHubToken)) {
+            $env['COPILOT_SDK_AUTH_TOKEN'] = $this->gitHubToken;
         }
 
         $args = ['--headless', '--stdio', '--log-level', $this->logLevel];
 
         // Add auth-related flags
-        if (filled($this->githubToken)) {
+        if (filled($this->gitHubToken)) {
             $args[] = '--auth-token-env';
             $args[] = 'COPILOT_SDK_AUTH_TOKEN';
         }
 
         // Default useLoggedInUser to false when githubToken is provided
-        $useLoggedInUser = $this->useLoggedInUser ?? ($this->githubToken === null);
+        $useLoggedInUser = $this->useLoggedInUser ?? ($this->gitHubToken === null);
         if (! $useLoggedInUser) {
             $args[] = '--no-auto-login';
         }
