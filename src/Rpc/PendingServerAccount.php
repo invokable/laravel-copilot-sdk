@@ -21,7 +21,7 @@ class PendingServerAccount
      * Get account quota.
      *
      * @param  AccountGetQuotaRequest|array|null  $params  Optional params. When gitHubToken is provided,
-     *                                                      resolves that token for per-user quota instead of global auth.
+     *                                                     resolves that token for per-user quota instead of global auth.
      */
     public function getQuota(AccountGetQuotaRequest|array|null $params = null): AccountGetQuotaResult
     {

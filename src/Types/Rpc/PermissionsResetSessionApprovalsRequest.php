@@ -15,7 +15,7 @@ readonly class PermissionsResetSessionApprovalsRequest implements Arrayable
 
     public static function fromArray(array $data): self
     {
-        return new self();
+        return new self;
     }
 
     public function toArray(): array

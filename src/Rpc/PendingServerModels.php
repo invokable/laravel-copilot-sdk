@@ -21,7 +21,7 @@ class PendingServerModels
      * List available models.
      *
      * @param  ModelsListRequest|array|null  $params  Optional params. When gitHubToken is provided,
-     *                                                 resolves that token for per-user model listing.
+     *                                                resolves that token for per-user model listing.
      */
     public function list(ModelsListRequest|array|null $params = null): ModelList
     {
