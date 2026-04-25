@@ -214,7 +214,7 @@ $session->rpc()->tools()->handlePendingToolCall(new ToolsHandlePendingToolCallRe
 // permissions (プロトコルv3+: permission.requestedイベントへの応答)
 $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(
     requestId: '...',
-    result: PermissionRequestResultKind::approved(),
+    result: PermissionRequestResultKind::approveOnce(),
 ));
 // セッション内のすべての権限リクエストを自動承認
 $session->rpc()->permissions()->setApproveAll(new PermissionsSetApproveAllRequest(enabled: true));

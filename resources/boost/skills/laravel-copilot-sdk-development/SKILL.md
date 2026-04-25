@@ -374,16 +374,16 @@ $config = new SessionConfig(
         switch ($request['kind'] ?? null) {
             case 'shell':
             case 'write':
-                // High-risk operations: require explicit application-level authorization or deny by default.
-                return PermissionRequestResultKind::deniedInteractivelyByUser();
+                // High-risk operations: deny by default.
+                return PermissionRequestResultKind::reject();
 
             case 'read':
             case 'url':
             case 'mcp':
             case 'custom-tool':
             default:
-                // Lower-risk operations: adjust this to your own policies (per-user confirmation, permissions, etc.).
-                return PermissionRequestResultKind::approved();
+                // Lower-risk operations: approve once (adjust to your own policies).
+                return PermissionRequestResultKind::approveOnce();
         }
     },
 );
@@ -532,4 +532,4 @@ The SDK dispatches Laravel events for logging and debugging:
 | `Attachment`                  | `Attachment::file()`, `Attachment::directory()`, `Attachment::selection()`                                                               |
 | `ServerRpc` / `SessionRpc`    | Typed RPC layer                                                                                                                          |
 | `PermissionHandler`           | `PermissionHandler::approveAll()`, `PermissionHandler::approveSafety()`, `PermissionHandler::denyAll()`                                  |
-| `PermissionRequestResultKind` | `approved()`, `deniedInteractivelyByUser()`, `select()`                                                                                  |
+| `PermissionRequestResultKind` | `approveOnce()`, `approveForSession()`, `approveForLocation()`, `reject()`, `userNotAvailable()`, `noResult()`, `select()`               |
