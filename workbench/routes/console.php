@@ -217,6 +217,7 @@ Artisan::command('copilot:models', function () {
             return [
                 'id' => $model->id,
                 'name' => $model->name,
+                'multiplier' => $model->billing->multiplier ?? '',
                 'maxContextTokens' => $model->capabilities->maxContextWindowTokens() ?? 'N/A',
                 'visionSupport' => $model->capabilities->supportsVision() ? 'Yes' : 'No',
                 'supportsReasoningEffort' => $model->capabilities->supportsReasoningEffort() ? 'Yes' : 'No',
@@ -226,7 +227,7 @@ Artisan::command('copilot:models', function () {
 
     // config: ['model' => ''] でモデルを指定する時はIDを使う。
     table(
-        headers: ['ID', 'Display Name', 'Max Context Tokens', 'Vision Support', 'Supports Reasoning Effort', 'Supports Structured Outputs'],
+        headers: ['ID', 'Display Name', 'Multiplier', 'Max Context Tokens', 'Vision Support', 'Supports Reasoning Effort', 'Supports Structured Outputs'],
         rows: $models,
     );
 })->purpose('List available Copilot models');
