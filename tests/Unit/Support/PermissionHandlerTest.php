@@ -12,11 +12,11 @@ describe('PermissionHandler', function () {
         expect($handler)->toBeInstanceOf(Closure::class);
     });
 
-    it('approveAll closure returns approved kind', function () {
+    it('approveAll closure returns approve-once kind', function () {
         $handler = PermissionHandler::approveAll();
         $result = $handler(['kind' => 'shell'], ['sessionId' => 'test-session']);
 
-        expect($result)->toBe(['kind' => 'approved']);
+        expect($result)->toBe(['kind' => 'approve-once']);
     });
 
     it('approveSafety returns a closure', function () {
@@ -25,24 +25,24 @@ describe('PermissionHandler', function () {
         expect($handler)->toBeInstanceOf(Closure::class);
     });
 
-    it('approveSafety closure returns denied kind', function () {
+    it('approveSafety closure returns reject kind for shell', function () {
         $handler = PermissionHandler::approveSafety();
         $result = $handler(['kind' => 'shell'], ['sessionId' => 'test-session']);
 
-        expect($result)->toBe(['kind' => PermissionRequestResultKind::DENIED_INTERACTIVELY_BY_USER]);
+        expect($result)->toBe(['kind' => PermissionRequestResultKind::REJECT]);
     });
 
-    it('approveSafety closure returns approved kind', function () {
+    it('approveSafety closure returns approve-once kind for read', function () {
         $handler = PermissionHandler::approveSafety();
         $result = $handler(['kind' => 'read'], ['sessionId' => 'test-session']);
 
-        expect($result)->toBe(['kind' => 'approved']);
+        expect($result)->toBe(['kind' => 'approve-once']);
     });
 
     it('denyAll', function () {
         $handler = PermissionHandler::denyAll();
         $result = $handler(['kind' => 'read'], ['sessionId' => 'test-session']);
 
-        expect($result)->toBe(['kind' => PermissionRequestResultKind::DENIED_INTERACTIVELY_BY_USER]);
+        expect($result)->toBe(['kind' => PermissionRequestResultKind::REJECT]);
     });
 });

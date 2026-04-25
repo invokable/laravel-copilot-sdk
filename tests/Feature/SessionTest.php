@@ -363,7 +363,7 @@ describe('Session', function () {
 
         $result = $session->handlePermissionRequest(['toolName' => 'bash']);
 
-        expect($result)->toBe(['kind' => 'denied-no-approval-rule-and-could-not-request-from-user']);
+        expect($result)->toBe(['kind' => 'user-not-available']);
     });
 
     it('handlePermissionRequest returns denied on handler error', function () {
@@ -376,7 +376,7 @@ describe('Session', function () {
 
         $result = $session->handlePermissionRequest(['toolName' => 'bash']);
 
-        expect($result)->toBe(['kind' => 'denied-no-approval-rule-and-could-not-request-from-user']);
+        expect($result)->toBe(['kind' => 'user-not-available']);
     });
 
     it('sendAndWait returns event with exception on session error', function () {

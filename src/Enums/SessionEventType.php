@@ -75,6 +75,8 @@ enum SessionEventType: string
     case COMMAND_EXECUTE = 'command.execute';
     case COMMAND_QUEUED = 'command.queued';
     case COMMAND_COMPLETED = 'command.completed';
+    case AUTO_MODE_SWITCH_REQUESTED = 'auto_mode_switch.requested';
+    case AUTO_MODE_SWITCH_COMPLETED = 'auto_mode_switch.completed';
     case COMMANDS_CHANGED = 'commands.changed';
 
     // Exit plan mode events (protocol v3+)

@@ -7,6 +7,9 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
 use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
+use Revolution\Copilot\Types\Rpc\PermissionsResetSessionApprovalsResult;
+use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllRequest;
+use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllResult;
 
 /**
  * Pending session-scoped permissions RPC operations.
@@ -31,6 +34,31 @@ class PendingPermissions
 
         return PermissionRequestResult::fromArray(
             $this->client->request('session.permissions.handlePendingPermissionRequest', $paramsArray),
+        );
+    }
+
+    /**
+     * Set approve-all mode for this session's permissions.
+     */
+    public function setApproveAll(PermissionsSetApproveAllRequest|array $params): PermissionsSetApproveAllResult
+    {
+        $paramsArray = ($params instanceof PermissionsSetApproveAllRequest ? $params : PermissionsSetApproveAllRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return PermissionsSetApproveAllResult::fromArray(
+            $this->client->request('session.permissions.setApproveAll', $paramsArray),
+        );
+    }
+
+    /**
+     * Reset all session-scoped permission approvals.
+     */
+    public function resetSessionApprovals(): PermissionsResetSessionApprovalsResult
+    {
+        return PermissionsResetSessionApprovalsResult::fromArray(
+            $this->client->request('session.permissions.resetSessionApprovals', [
+                'sessionId' => $this->sessionId,
+            ]),
         );
     }
 }

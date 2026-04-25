@@ -6,6 +6,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Types\Rpc\McpDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpEnableRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
 use Revolution\Copilot\Types\Rpc\McpServerList;
 
 describe('PendingMcp', function () {
@@ -125,5 +127,40 @@ describe('PendingMcp', function () {
         $result = $pending->reload();
 
         expect($result)->toBe([]);
+    });
+
+    it('calls session.mcp.oauth.login with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.mcp.oauth.login',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'
+                    && $params['serverName'] === 'my-mcp-server'),
+            )
+            ->andReturn(['authorizationUrl' => 'https://github.com/login/oauth/authorize?client_id=abc']);
+
+        $pending = new PendingMcp($client, 'session-abc');
+        $result = $pending->login(new McpOauthLoginRequest(serverName: 'my-mcp-server'));
+
+        expect($result)->toBeInstanceOf(McpOauthLoginResult::class)
+            ->and($result->authorizationUrl)->toContain('github.com');
+    });
+
+    it('calls session.mcp.oauth.login with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.mcp.oauth.login',
+                Mockery::on(fn ($params) => $params['serverName'] === 'remote-server'),
+            )
+            ->andReturn([]);
+
+        $pending = new PendingMcp($client, 'session-abc');
+        $result = $pending->login(['serverName' => 'remote-server']);
+
+        expect($result)->toBeInstanceOf(McpOauthLoginResult::class)
+            ->and($result->authorizationUrl)->toBeNull();
     });
 });

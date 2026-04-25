@@ -37,7 +37,7 @@ describe('ensurePermissionHandler', function () {
 
         // Verify it actually denies
         $response = ($result['onPermissionRequest'])(['kind' => 'read'], ['sessionId' => 'x']);
-        expect($response['kind'])->not->toBe('approved');
+        expect($response['kind'])->toBe('reject');
     });
 
     it('injects approveSafety handler for approve-safety setting', function () use ($callEnsure) {
@@ -46,10 +46,10 @@ describe('ensurePermissionHandler', function () {
         expect($result)->toHaveKey('onPermissionRequest');
 
         $response = ($result['onPermissionRequest'])(['kind' => 'read'], ['sessionId' => 'x']);
-        expect($response['kind'])->toBe('approved');
+        expect($response['kind'])->toBe('approve-once');
 
         $response = ($result['onPermissionRequest'])(['kind' => 'shell'], ['sessionId' => 'x']);
-        expect($response['kind'])->not->toBe('approved');
+        expect($response['kind'])->toBe('reject');
     });
 
     it('injects approveAll handler for approve-all setting', function () use ($callEnsure) {
@@ -58,7 +58,7 @@ describe('ensurePermissionHandler', function () {
         expect($result)->toHaveKey('onPermissionRequest');
 
         $response = ($result['onPermissionRequest'])(['kind' => 'shell'], ['sessionId' => 'x']);
-        expect($response['kind'])->toBe('approved');
+        expect($response['kind'])->toBe('approve-once');
     });
 
     it('injects approveAll handler for legacy true setting', function () use ($callEnsure) {
@@ -67,7 +67,7 @@ describe('ensurePermissionHandler', function () {
         expect($result)->toHaveKey('onPermissionRequest');
 
         $response = ($result['onPermissionRequest'])(['kind' => 'shell'], ['sessionId' => 'x']);
-        expect($response['kind'])->toBe('approved');
+        expect($response['kind'])->toBe('approve-once');
     });
 
     it('does not inject handler when setting is false', function () use ($callEnsure) {

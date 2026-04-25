@@ -6,23 +6,56 @@ namespace Revolution\Copilot\Support;
 
 final readonly class PermissionRequestResultKind
 {
-    public const string APPROVED = 'approved';
+    public const string APPROVE_ONCE = 'approve-once';
+
+    public const string APPROVE_FOR_SESSION = 'approve-for-session';
+
+    public const string APPROVE_FOR_LOCATION = 'approve-for-location';
+
+    public const string REJECT = 'reject';
+
+    public const string USER_NOT_AVAILABLE = 'user-not-available';
 
     public const string NO_RESULT = 'no-result';
 
-    public const string DENIED_BY_RULES = 'denied-by-rules';
-
-    public const string DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER = 'denied-no-approval-rule-and-could-not-request-from-user';
-
-    public const string DENIED_INTERACTIVELY_BY_USER = 'denied-interactively-by-user';
-
-    public const string DENIED_BY_CONTENT_EXCLUSION_POLICY = 'denied-by-content-exclusion-policy';
-
-    public const string DENIED_BY_PERMISSION_REQUEST_HOOK = 'denied-by-permission-request-hook';
-
-    public static function approved(): array
+    /**
+     * Approve the request once.
+     */
+    public static function approveOnce(): array
     {
-        return ['kind' => self::APPROVED];
+        return ['kind' => self::APPROVE_ONCE];
+    }
+
+    /**
+     * Approve all requests from this session.
+     */
+    public static function approveForSession(): array
+    {
+        return ['kind' => self::APPROVE_FOR_SESSION];
+    }
+
+    /**
+     * Approve all requests from this location.
+     */
+    public static function approveForLocation(): array
+    {
+        return ['kind' => self::APPROVE_FOR_LOCATION];
+    }
+
+    /**
+     * Reject the permission request.
+     */
+    public static function reject(): array
+    {
+        return ['kind' => self::REJECT];
+    }
+
+    /**
+     * The user is not available to handle the permission request.
+     */
+    public static function userNotAvailable(): array
+    {
+        return ['kind' => self::USER_NOT_AVAILABLE];
     }
 
     /**
@@ -34,63 +67,18 @@ final readonly class PermissionRequestResultKind
         return ['kind' => self::NO_RESULT];
     }
 
-    public static function deniedByRules(): array
-    {
-        return ['kind' => self::DENIED_BY_RULES];
-    }
-
-    public static function deniedNoApprovalRuleAndCouldNotRequestFromUser(): array
-    {
-        return ['kind' => self::DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER];
-    }
-
-    public static function deniedInteractivelyByUser(?string $feedback = null): array
-    {
-        $result = ['kind' => self::DENIED_INTERACTIVELY_BY_USER];
-
-        if ($feedback !== null) {
-            $result['feedback'] = $feedback;
-        }
-
-        return $result;
-    }
-
-    public static function deniedByContentExclusionPolicy(string $path, string $message): array
-    {
-        return [
-            'kind' => self::DENIED_BY_CONTENT_EXCLUSION_POLICY,
-            'path' => $path,
-            'message' => $message,
-        ];
-    }
-
-    public static function deniedByPermissionRequestHook(?string $message = null, ?bool $interrupt = null): array
-    {
-        $result = ['kind' => self::DENIED_BY_PERMISSION_REQUEST_HOOK];
-
-        if ($message !== null) {
-            $result['message'] = $message;
-        }
-
-        if ($interrupt !== null) {
-            $result['interrupt'] = $interrupt;
-        }
-
-        return $result;
-    }
-
     /**
      * Array for Laravel\Prompts\select.
+     * These are the choices available when responding to a permission request interactively.
      */
     public static function select(): array
     {
         return [
-            self::APPROVED => __('Approved'),
-            self::DENIED_BY_RULES => __('Denied by Rules'),
-            self::DENIED_NO_APPROVAL_RULE_AND_COULD_NOT_REQUEST_FROM_USER => __('Denied No Approval Rule and Could Not Request from User'),
-            self::DENIED_INTERACTIVELY_BY_USER => __('Denied Interactively by User'),
-            self::DENIED_BY_CONTENT_EXCLUSION_POLICY => __('Denied by Content Exclusion Policy'),
-            self::DENIED_BY_PERMISSION_REQUEST_HOOK => __('Denied by Permission Request Hook'),
+            self::APPROVE_FOR_LOCATION => __('Approve for Location'),
+            self::APPROVE_FOR_SESSION => __('Approve for Session'),
+            self::APPROVE_ONCE => __('Approve Once'),
+            self::REJECT => __('Reject'),
+            self::USER_NOT_AVAILABLE => __('User Not Available'),
         ];
     }
 }

@@ -6,6 +6,8 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\McpConfigAddRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigDisableRequest;
+use Revolution\Copilot\Types\Rpc\McpConfigEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigList;
 use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
@@ -74,5 +76,25 @@ class PendingServerMcpConfig
         return McpDiscoverResult::fromArray(
             $this->client->request('mcp.discover', $paramsArray),
         );
+    }
+
+    /**
+     * Enable MCP servers globally (removes them from the disabled list).
+     */
+    public function enable(McpConfigEnableRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof McpConfigEnableRequest ? $params : McpConfigEnableRequest::fromArray($params))->toArray();
+
+        $this->client->request('mcp.config.enable', $paramsArray);
+    }
+
+    /**
+     * Disable MCP servers globally (adds them to the disabled list).
+     */
+    public function disable(McpConfigDisableRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof McpConfigDisableRequest ? $params : McpConfigDisableRequest::fromArray($params))->toArray();
+
+        $this->client->request('mcp.config.disable', $paramsArray);
     }
 }

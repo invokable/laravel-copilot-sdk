@@ -110,6 +110,7 @@ $session = $client->createSession([
 use Illuminate\Support\Facades\Artisan;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Support\PermissionRequestResultKind;
 use Revolution\Copilot\Types\SessionConfig;
 
 use function Laravel\Prompts\{confirm, note, spin, text};
@@ -121,9 +122,9 @@ Artisan::command('copilot:chat', function () {
                 label: 'Do you accept the requested permissions?',
             );
             if ($confirm) {
-                return ['kind' => 'approved'];
+                return PermissionRequestResultKind::approveOnce();
             } else {
-                return ['kind' => 'denied-interactively-by-user'];
+                return PermissionRequestResultKind::reject();
             }
         },
     );
@@ -186,8 +187,8 @@ kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool"
 許可・拒否の結果を配列で返します。`PermissionRequestResultKind` クラスを使うと便利です。
 
 ```php
-return PermissionRequestResultKind::approved();
-return PermissionRequestResultKind::deniedInteractivelyByUser();
+return PermissionRequestResultKind::approveOnce();
+return PermissionRequestResultKind::reject();
 ```
 
 ## プロトコルの詳細
@@ -198,7 +199,7 @@ Protocol v3（現在のデフォルト）では、パーミッションリクエ
 
 ## PermissionRequestResultKind
 
-`['kind' => 'approved']`の形式で返せばよいですが分かりにくいので`PermissionRequestResultKind`クラスも用意しています。
+`['kind' => 'approve-once']`の形式で返せばよいですが分かりにくいので`PermissionRequestResultKind`クラスも用意しています。
 
 ```php
 use Revolution\Copilot\Support\PermissionRequestResultKind;
@@ -208,13 +209,24 @@ $confirm = confirm(
 );
 
 if ($confirm) {
-    return PermissionRequestResultKind::approved();
+    return PermissionRequestResultKind::approveOnce();
 } else {
-    return PermissionRequestResultKind::deniedInteractivelyByUser();
+    return PermissionRequestResultKind::reject();
 }
 ```
 
-`Laravel\Prompts\confirm`ではなく`Laravel\Prompts\select`を使いたい場合は`PermissionRequestResultKind::select()`で選択肢を取得できます。
+### 利用可能なメソッド
+
+| メソッド | 値 | 説明 |
+|---|---|---|
+| `approveOnce()` | `approve-once` | 今回のリクエストのみ許可 |
+| `approveForSession()` | `approve-for-session` | このセッション中の同種リクエストをすべて許可 |
+| `approveForLocation()` | `approve-for-location` | この場所（ファイルパス等）からの同種リクエストをすべて許可 |
+| `reject()` | `reject` | リクエストを拒否 |
+| `userNotAvailable()` | `user-not-available` | ユーザーが応答できない状態（非インタラクティブ環境など） |
+| `noResult()` | `no-result` | ハンドラが結果を返せない場合（RPC呼び出しをスキップ） |
+
+`Laravel\Prompts\select`を使いたい場合は`PermissionRequestResultKind::select()`で選択肢を取得できます。ユーザーに提示する5つの`PermissionDecisionKind`の選択肢が含まれています。
 
 ```php
 use Revolution\Copilot\Support\PermissionRequestResultKind;
@@ -235,16 +247,5 @@ return ['kind' => $select];
 ```php
 return PermissionRequestResultKind::noResult();
 // または ['kind' => 'no-result']
-```
-
-### denied-by-permission-request-hook
-
-`permissionRequest`フックによって既に解決済みのパーミッションリクエストには、SDKが自動的に`resolvedByHook`フラグを検出して`onPermissionRequest`ハンドラの呼び出しをスキップします。
-
-手動でこの結果を返す場合は`deniedByPermissionRequestHook()`を使います。オプションで`message`と`interrupt`を指定できます。
-
-```php
-return PermissionRequestResultKind::deniedByPermissionRequestHook();
-return PermissionRequestResultKind::deniedByPermissionRequestHook(message: 'Blocked by hook', interrupt: true);
 ```
 

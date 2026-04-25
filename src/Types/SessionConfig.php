@@ -76,6 +76,10 @@ readonly class SessionConfig implements Arrayable
      * @param  InfiniteSessionConfig|array|null  $infiniteSessions  Infinite session configuration for persistent workspaces and automatic compaction.
      *                                                              When enabled (default), sessions automatically manage context limits and persist state.
      *                                                              Set to `new InfiniteSessionConfig(enabled: false)` to disable.
+     * @param  ?string  $gitHubToken  GitHub token for per-session authentication.
+     *                                When provided, the runtime resolves this token into a full GitHub identity
+     *                                (login, Copilot plan, endpoints) and stores it on the session.
+     *                                This enables multitenancy — different sessions can have different GitHub identities.
      * @param  ?Closure  $onEvent  Optional event handler registered on the session before the session.create RPC is issued.
      *                             This guarantees that early events emitted by the CLI during session creation (e.g. session.start)
      *                             are delivered to the handler.
@@ -110,6 +114,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $skillDirectories = null,
         public ?array $disabledSkills = null,
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
+        public ?string $gitHubToken = null,
         public ?Closure $onEvent = null,
     ) {}
 
@@ -181,6 +186,7 @@ readonly class SessionConfig implements Arrayable
             skillDirectories: $data['skillDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
             infiniteSessions: $infiniteSessions,
+            gitHubToken: $data['gitHubToken'] ?? null,
             onEvent: $data['onEvent'] ?? null,
         );
     }
@@ -242,6 +248,7 @@ readonly class SessionConfig implements Arrayable
             'skillDirectories' => $this->skillDirectories,
             'disabledSkills' => $this->disabledSkills,
             'infiniteSessions' => $infiniteSessions,
+            'gitHubToken' => $this->gitHubToken,
             'onEvent' => $this->onEvent,
         ], fn ($value) => $value !== null);
     }

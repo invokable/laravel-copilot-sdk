@@ -30,12 +30,16 @@ Copilot::client()->rpc()->ping();
 
 // models
 Copilot::client()->rpc()->models()->list();
+// セッションごとのGitHubトークンで取得
+Copilot::client()->rpc()->models()->list(new ModelsListRequest(gitHubToken: $token));
 
 // tools
 Copilot::client()->rpc()->tools()->list();
 
 // account
 Copilot::client()->rpc()->account()->getQuota();
+// セッションごとのGitHubトークンで取得
+Copilot::client()->rpc()->account()->getQuota(new AccountGetQuotaRequest(gitHubToken: $token));
 
 // mcp config (MCPサーバー設定の管理)
 Copilot::client()->rpc()->mcp()->list();
@@ -48,6 +52,9 @@ Copilot::client()->rpc()->mcp()->update(new McpConfigUpdateRequest(
     config: new McpServerValue(type: 'http', url: 'https://mcp.example.com'),
 ));
 Copilot::client()->rpc()->mcp()->remove(new McpConfigRemoveRequest(name: 'my-server'));
+// MCPサーバーを有効化/無効化（グローバル設定）
+Copilot::client()->rpc()->mcp()->enable(new McpConfigEnableRequest(names: ['my-server']));
+Copilot::client()->rpc()->mcp()->disable(new McpConfigDisableRequest(names: ['my-server']));
 
 // mcp discover (MCPサーバーの自動検出)
 Copilot::client()->rpc()->mcp()->discover(new McpDiscoverRequest(
@@ -178,6 +185,9 @@ $session->rpc()->mcp()->list();
 $session->rpc()->mcp()->enable(new McpEnableRequest(serverName: 'server-name'));
 $session->rpc()->mcp()->disable(new McpDisableRequest(serverName: 'server-name'));
 $session->rpc()->mcp()->reload();
+// MCP OAuthログイン（認証が必要なMCPサーバー向け）
+$result = $session->rpc()->mcp()->login(new McpOauthLoginRequest(serverName: 'my-server'));
+// $result->authorizationUrl - OAuthフローのURL（認証が必要な場合）
 
 // plugins (experimental: プラグインの一覧)
 $session->rpc()->plugins()->list();
@@ -204,8 +214,12 @@ $session->rpc()->tools()->handlePendingToolCall(new ToolsHandlePendingToolCallRe
 // permissions (プロトコルv3+: permission.requestedイベントへの応答)
 $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(
     requestId: '...',
-    result: PermissionRequestResultKind::approved(),
+    result: PermissionRequestResultKind::approveOnce(),
 ));
+// セッション内のすべての権限リクエストを自動承認
+$session->rpc()->permissions()->setApproveAll(new PermissionsSetApproveAllRequest(enabled: true));
+// セッションスコープの権限承認をリセット
+$session->rpc()->permissions()->resetSessionApprovals();
 
 // commands: コマンド呼び出しイベントへの応答
 $session->rpc()->commands()->handlePendingCommand(new CommandsHandlePendingCommandRequest(
@@ -253,6 +267,15 @@ $metrics = $session->rpc()->usage()->getMetrics();
 // $metrics->codeChanges - コード変更メトリクス（追加行数、削除行数、変更ファイル数）
 // $metrics->modelMetrics - モデルごとのトークン使用量とリクエスト数
 // $metrics->currentModel - 現在のモデル識別子
+
+// auth: セッションの認証状態を取得
+$status = $session->rpc()->auth()->getStatus();
+// $status->isAuthenticated - 認証済みかどうか
+// $status->authType - 認証タイプ（AuthInfoType enum: gh-cli, token, env など）
+// $status->login - GitHubログイン名
+// $status->host - GitHubホスト
+// $status->copilotPlan - Copilotプラン（individual, business など）
+// $status->statusMessage - 認証状態のメッセージ
 ```
 
 ## SessionFS コールバック型

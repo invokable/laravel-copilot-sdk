@@ -72,6 +72,10 @@ $config = new SessionConfig(
     // カスタムプロバイダー
     provider: new ProviderConfig(),
 
+    // セッションごとのGitHubトークン（マルチテナント対応）
+    // クライアントレベルのgithub_tokenとは別に、セッション単位でトークンを指定できる
+    gitHubToken: $user->github_token,
+
     onPermissionRequest: function (array $request) {
         // 権限リクエストを処理
     },
