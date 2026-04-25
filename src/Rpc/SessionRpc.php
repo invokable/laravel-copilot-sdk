@@ -35,7 +35,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->tools()->handlePendingToolCall(new ToolsHandlePendingToolCallRequest(requestId: '...', result: 'done'));
  * $session->rpc()->commands()->handlePendingCommand(new CommandsHandlePendingCommandRequest(requestId: '...'));
  * $session->rpc()->ui()->elicitation(new UIElicitationRequest(message: '...', requestedSchema: [...]));
- * $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(requestId: '...', decision: PermissionRequestResultKind::approved()));
+ * $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(requestId: '...', decision: PermissionRequestResultKind::approveOnce()));
  * $session->rpc()->auth()->getStatus();
  * ```
  */

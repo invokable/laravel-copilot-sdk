@@ -66,7 +66,7 @@ describe('PendingSessionPermissions', function () {
         $pending = new PendingPermissions($client, 'session-abc');
         $pending->handlePendingPermissionRequest(new PermissionDecisionRequest(
             requestId: 'req-1',
-            result: ['kind' => 'approved'],
+            result: ['kind' => 'approve-once'],
         ));
 
         expect($sentMessages)->toHaveCount(1)
@@ -80,7 +80,7 @@ describe('PendingSessionPermissions', function () {
         $pending = new PendingPermissions($client, 'session-abc');
         $pending->handlePendingPermissionRequest(new PermissionDecisionRequest(
             requestId: 'req-1',
-            result: ['kind' => 'approved'],
+            result: ['kind' => 'approve-once'],
         ));
 
         $decoded = decodePermissionsJsonMessage($sentMessages[0]);
@@ -94,12 +94,12 @@ describe('PendingSessionPermissions', function () {
         $pending = new PendingPermissions($client, 'session-abc');
         $pending->handlePendingPermissionRequest(new PermissionDecisionRequest(
             requestId: 'perm-req-42',
-            result: ['kind' => 'denied-interactively-by-user'],
+            result: ['kind' => 'reject'],
         ));
 
         $decoded = decodePermissionsJsonMessage($sentMessages[0]);
         expect($decoded['params']['requestId'])->toBe('perm-req-42')
-            ->and($decoded['params']['result'])->toBe(['kind' => 'denied-interactively-by-user']);
+            ->and($decoded['params']['result'])->toBe(['kind' => 'reject']);
     });
 
     it('maps the response to PermissionRequestResult', function () {
@@ -109,7 +109,7 @@ describe('PendingSessionPermissions', function () {
         $pending = new PendingPermissions($client, 'session-abc');
         $result = $pending->handlePendingPermissionRequest(new PermissionDecisionRequest(
             requestId: 'req-1',
-            result: ['kind' => 'approved'],
+            result: ['kind' => 'approve-once'],
         ));
 
         expect($result)->toBeInstanceOf(PermissionRequestResult::class)
@@ -123,7 +123,7 @@ describe('PendingSessionPermissions', function () {
         $pending = new PendingPermissions($client, 'session-xyz');
         $result = $pending->handlePendingPermissionRequest([
             'requestId' => 'req-array',
-            'result' => ['kind' => 'approved'],
+            'result' => ['kind' => 'approve-once'],
         ]);
 
         $decoded = decodePermissionsJsonMessage($sentMessages[0]);

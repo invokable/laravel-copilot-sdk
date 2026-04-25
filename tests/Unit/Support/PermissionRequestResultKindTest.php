@@ -5,65 +5,48 @@ declare(strict_types=1);
 use Revolution\Copilot\Support\PermissionRequestResultKind;
 
 describe('PermissionRequestResultKind', function () {
-    it('approved', function () {
-        expect(PermissionRequestResultKind::approved())->toContain('approved');
+    it('approveOnce', function () {
+        expect(PermissionRequestResultKind::approveOnce())->toBe(['kind' => 'approve-once']);
     });
 
-    it('deniedByRules', function () {
-        expect(PermissionRequestResultKind::deniedByRules())->toContain('denied-by-rules');
+    it('approveForSession', function () {
+        expect(PermissionRequestResultKind::approveForSession())->toBe(['kind' => 'approve-for-session']);
     });
 
-    it('deniedNoApprovalRuleAndCouldNotRequestFromUser', function () {
-        expect(PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser()['kind'])->toBe('denied-no-approval-rule-and-could-not-request-from-user');
+    it('approveForLocation', function () {
+        expect(PermissionRequestResultKind::approveForLocation())->toBe(['kind' => 'approve-for-location']);
     });
 
-    it('deniedInteractivelyByUser', function () {
-        expect(PermissionRequestResultKind::deniedInteractivelyByUser()['kind'])->toBe('denied-interactively-by-user');
+    it('reject', function () {
+        expect(PermissionRequestResultKind::reject())->toBe(['kind' => 'reject']);
     });
 
-    it('deniedInteractivelyByUser with feedback', function () {
-        $result = PermissionRequestResultKind::deniedInteractivelyByUser('Too risky');
-        expect($result['kind'])->toBe('denied-interactively-by-user')
-            ->and($result['feedback'])->toBe('Too risky');
+    it('userNotAvailable', function () {
+        expect(PermissionRequestResultKind::userNotAvailable())->toBe(['kind' => 'user-not-available']);
     });
 
-    it('deniedByContentExclusionPolicy', function () {
-        $result = PermissionRequestResultKind::deniedByContentExclusionPolicy('/secret/file.txt', 'Excluded by policy');
-        expect($result['kind'])->toBe('denied-by-content-exclusion-policy')
-            ->and($result['path'])->toBe('/secret/file.txt')
-            ->and($result['message'])->toBe('Excluded by policy');
+    it('noResult', function () {
+        expect(PermissionRequestResultKind::noResult())->toBe(['kind' => 'no-result']);
     });
 
-    it('deniedByPermissionRequestHook', function () {
-        $result = PermissionRequestResultKind::deniedByPermissionRequestHook();
-        expect($result['kind'])->toBe('denied-by-permission-request-hook')
-            ->and($result)->not->toHaveKey('message')
-            ->and($result)->not->toHaveKey('interrupt');
+    it('select contains PermissionDecisionKind choices', function () {
+        $select = PermissionRequestResultKind::select();
+
+        expect($select)->toHaveKeys([
+            'approve-for-location',
+            'approve-for-session',
+            'approve-once',
+            'reject',
+            'user-not-available',
+        ]);
     });
 
-    it('deniedByPermissionRequestHook with message', function () {
-        $result = PermissionRequestResultKind::deniedByPermissionRequestHook('Blocked by hook');
-        expect($result['kind'])->toBe('denied-by-permission-request-hook')
-            ->and($result['message'])->toBe('Blocked by hook')
-            ->and($result)->not->toHaveKey('interrupt');
-    });
+    it('select does not contain old deprecated values', function () {
+        $select = PermissionRequestResultKind::select();
 
-    it('deniedByPermissionRequestHook with message and interrupt', function () {
-        $result = PermissionRequestResultKind::deniedByPermissionRequestHook('Blocked', true);
-        expect($result['kind'])->toBe('denied-by-permission-request-hook')
-            ->and($result['message'])->toBe('Blocked')
-            ->and($result['interrupt'])->toBeTrue();
-    });
-
-    it('select includes content exclusion policy', function () {
-        expect(PermissionRequestResultKind::select())->toHaveKey('denied-by-content-exclusion-policy');
-    });
-
-    it('select includes permission request hook', function () {
-        expect(PermissionRequestResultKind::select())->toHaveKey('denied-by-permission-request-hook');
-    });
-
-    it('select', function () {
-        expect(PermissionRequestResultKind::select())->toHaveKeys(['approved', 'denied-interactively-by-user']);
+        expect($select)
+            ->not->toHaveKey('approved')
+            ->not->toHaveKey('denied-by-rules')
+            ->not->toHaveKey('denied-interactively-by-user');
     });
 });

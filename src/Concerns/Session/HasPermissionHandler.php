@@ -43,13 +43,13 @@ trait HasPermissionHandler
     public function handlePermissionRequest(array $request): array
     {
         if ($this->permissionHandler === null) {
-            return PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser();
+            return PermissionRequestResultKind::userNotAvailable();
         }
 
         try {
             return ($this->permissionHandler)($request, ['sessionId' => $this->sessionId]);
         } catch (Throwable) {
-            return PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser();
+            return PermissionRequestResultKind::userNotAvailable();
         }
     }
 
@@ -80,7 +80,7 @@ trait HasPermissionHandler
                     $this->rpc()->permissions()->handlePendingPermissionRequest(
                         new PermissionDecisionRequest(
                             requestId: $requestId,
-                            result: PermissionRequestResultKind::deniedNoApprovalRuleAndCouldNotRequestFromUser(),
+                            result: PermissionRequestResultKind::userNotAvailable(),
                         )
                     );
                 } catch (Throwable) {
