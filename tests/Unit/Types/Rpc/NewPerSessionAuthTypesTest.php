@@ -29,7 +29,7 @@ describe('AccountGetQuotaRequest', function () {
     });
 
     it('serializes to array omitting null token', function () {
-        $req = new AccountGetQuotaRequest();
+        $req = new AccountGetQuotaRequest;
 
         expect($req->toArray())->toBe([]);
     });
@@ -131,7 +131,7 @@ describe('McpOauthLoginResult', function () {
     });
 
     it('serializes empty when no url', function () {
-        $result = new McpOauthLoginResult();
+        $result = new McpOauthLoginResult;
 
         expect($result->toArray())->toBe([]);
     });
@@ -151,7 +151,7 @@ describe('ModelsListRequest', function () {
     });
 
     it('serializes omitting null token', function () {
-        $req = new ModelsListRequest();
+        $req = new ModelsListRequest;
 
         expect($req->toArray())->toBe([]);
     });
@@ -165,7 +165,7 @@ describe('PermissionsResetSessionApprovalsRequest', function () {
     });
 
     it('serializes to empty array', function () {
-        $req = new PermissionsResetSessionApprovalsRequest();
+        $req = new PermissionsResetSessionApprovalsRequest;
 
         expect($req->toArray())->toBe([]);
     });
