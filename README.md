@@ -23,7 +23,7 @@ composer require revolution/laravel-copilot-sdk
 ```
 
 <details>
-<summary>Optional operation</summary>
+<summary>Optional</summary>
 
 ### .env (Optional)
 
@@ -48,7 +48,7 @@ copilot --headless --port 12345
 Configure your `.env`:
 
 ```dotenv
-COPILOT_URL=127.0.0.1:12345
+COPILOT_URL=tcp://127.0.0.1:12345
 ```
 
 When `COPILOT_URL` is set, the SDK will connect to the existing server instead of starting a new CLI process.
