@@ -19,6 +19,7 @@ use Revolution\Copilot\Rpc\PendingPlan;
 use Revolution\Copilot\Rpc\PendingPlugins;
 use Revolution\Copilot\Rpc\PendingSkills;
 use Revolution\Copilot\Rpc\PendingTools;
+use Revolution\Copilot\Rpc\PendingTasks;
 use Revolution\Copilot\Rpc\PendingUi;
 use Revolution\Copilot\Rpc\PendingWorkspaces;
 use Revolution\Copilot\Rpc\SessionRpc;
@@ -131,6 +132,12 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->instructions())->toBeInstanceOf(PendingInstructions::class);
+    });
+
+    it('returns PendingTasks from tasks()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->tasks())->toBeInstanceOf(PendingTasks::class);
     });
 });
 
