@@ -19,10 +19,22 @@ describe('AgentInfo', function () {
 
         expect($agent->name)->toBe('test-agent')
             ->and($agent->displayName)->toBe('Test Agent')
-            ->and($agent->description)->toBe('A test agent');
+            ->and($agent->description)->toBe('A test agent')
+            ->and($agent->path)->toBeNull();
     });
 
-    it('can convert to array', function () {
+    it('can be created from array with path', function () {
+        $agent = AgentInfo::fromArray([
+            'name' => 'file-agent',
+            'displayName' => 'File Agent',
+            'description' => 'A file-based agent',
+            'path' => '/home/user/.copilot/agents/my-agent.yml',
+        ]);
+
+        expect($agent->path)->toBe('/home/user/.copilot/agents/my-agent.yml');
+    });
+
+    it('can convert to array without path when null', function () {
         $agent = new AgentInfo(
             name: 'test',
             displayName: 'Test',
@@ -33,7 +45,19 @@ describe('AgentInfo', function () {
             'name' => 'test',
             'displayName' => 'Test',
             'description' => 'Testing',
-        ]);
+        ])
+            ->and($agent->toArray())->not->toHaveKey('path');
+    });
+
+    it('can convert to array with path', function () {
+        $agent = new AgentInfo(
+            name: 'test',
+            displayName: 'Test',
+            description: 'Testing',
+            path: '/agents/test.yml',
+        );
+
+        expect($agent->toArray())->toHaveKey('path', '/agents/test.yml');
     });
 
     it('implements Arrayable interface', function () {

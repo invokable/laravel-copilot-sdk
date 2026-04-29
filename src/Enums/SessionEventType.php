@@ -122,4 +122,7 @@ enum SessionEventType: string
 
     // System notification (agent/shell completion notifications)
     case SYSTEM_NOTIFICATION = 'system.notification';
+
+    // Model events
+    case MODEL_CALL_FAILURE = 'model.call_failure';
 }

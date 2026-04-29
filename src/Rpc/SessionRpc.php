@@ -39,6 +39,11 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->permissions()->setApproveAll(new PermissionsSetApproveAllRequest(enabled: true));
  * $session->rpc()->permissions()->resetSessionApprovals();
  * $session->rpc()->auth()->getStatus();
+ * $session->rpc()->tasks()->startAgent(new TasksStartAgentRequest(agentType: 'explore', prompt: '...', name: 'my-task'));
+ * $session->rpc()->tasks()->list();
+ * $session->rpc()->tasks()->cancel(new TasksCancelRequest(id: 'task-id'));
+ * $session->rpc()->tasks()->promoteToBackground(new TasksPromoteToBackgroundRequest(id: 'task-id'));
+ * $session->rpc()->tasks()->remove(new TasksRemoveRequest(id: 'task-id'));
  * ```
  */
 class SessionRpc
@@ -238,5 +243,15 @@ class SessionRpc
     public function auth(): PendingSessionAuth
     {
         return new PendingSessionAuth($this->client, $this->sessionId);
+    }
+
+    /**
+     * Tasks RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function tasks(): PendingTasks
+    {
+        return new PendingTasks($this->client, $this->sessionId);
     }
 }

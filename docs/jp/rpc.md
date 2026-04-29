@@ -276,6 +276,47 @@ $status = $session->rpc()->auth()->getStatus();
 // $status->host - GitHubホスト
 // $status->copilotPlan - Copilotプラン（individual, business など）
 // $status->statusMessage - 認証状態のメッセージ
+
+// tasks (experimental: バックグラウンドエージェントタスク管理)
+// エージェントタスクを開始してIDを取得
+use Revolution\Copilot\Types\Rpc\TasksStartAgentRequest;
+
+$result = $session->rpc()->tasks()->startAgent(new TasksStartAgentRequest(
+    agentType: 'explore',
+    prompt: 'Search for all TODO comments in the codebase',
+    name: 'todo-search',
+    description: 'Find TODO items', // 任意
+    model: 'gpt-4o', // 任意
+));
+// $result->agentId - バックグラウンドタスクのID
+
+// 現在のタスク一覧を取得
+$list = $session->rpc()->tasks()->list();
+// $list->tasks - TaskAgentInfo または TaskShellInfo の配列
+
+// タスクをバックグラウンドモードに移行（同期待ちを解除）
+use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundRequest;
+
+$promoted = $session->rpc()->tasks()->promoteToBackground(
+    new TasksPromoteToBackgroundRequest(id: $result->agentId)
+);
+// $promoted->promoted - 移行に成功したかどうか
+
+// タスクをキャンセル
+use Revolution\Copilot\Types\Rpc\TasksCancelRequest;
+
+$cancelled = $session->rpc()->tasks()->cancel(
+    new TasksCancelRequest(id: $result->agentId)
+);
+// $cancelled->cancelled - キャンセルに成功したかどうか
+
+// 完了またはキャンセル済みのタスクを削除
+use Revolution\Copilot\Types\Rpc\TasksRemoveRequest;
+
+$removed = $session->rpc()->tasks()->remove(
+    new TasksRemoveRequest(id: $result->agentId)
+);
+// $removed->removed - 削除に成功したかどうか
 ```
 
 ## SessionFS コールバック型
