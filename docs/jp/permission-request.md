@@ -153,7 +153,7 @@ Artisan::command('copilot:chat', function () {
 
 `kind`と`toolCallId`以外はkindによって内容が異なります。
 ```
-kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool"
+kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool" | "memory" | "hook"
 ```
 
 ```php
@@ -226,7 +226,7 @@ if ($confirm) {
 | `userNotAvailable()` | `user-not-available` | ユーザーが応答できない状態（非インタラクティブ環境など） |
 | `noResult()` | `no-result` | ハンドラが結果を返せない場合（RPC呼び出しをスキップ） |
 
-`Laravel\Prompts\select`を使いたい場合は`PermissionRequestResultKind::select()`で選択肢を取得できます。ユーザーに提示する5つの`PermissionDecisionKind`の選択肢が含まれています。
+`Laravel\Prompts\select`を使いたい場合は`PermissionRequestResultKind::select()`で選択肢を取得できます。ユーザーに提示する選択肢が含まれています。
 
 ```php
 use Revolution\Copilot\Support\PermissionRequestResultKind;

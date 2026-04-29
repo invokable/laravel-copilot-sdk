@@ -74,11 +74,10 @@ final readonly class PermissionRequestResultKind
     public static function select(): array
     {
         return [
-            self::APPROVE_FOR_LOCATION => __('Approve for Location'),
-            self::APPROVE_FOR_SESSION => __('Approve for Session'),
             self::APPROVE_ONCE => __('Approve Once'),
+            self::APPROVE_FOR_SESSION => __('Approve for Session'),
+            self::APPROVE_FOR_LOCATION => __('Approve for Location'),
             self::REJECT => __('Reject'),
-            self::USER_NOT_AVAILABLE => __('User Not Available'),
         ];
     }
 }
