@@ -33,11 +33,10 @@ describe('PermissionRequestResultKind', function () {
         $select = PermissionRequestResultKind::select();
 
         expect($select)->toHaveKeys([
-            'approve-for-location',
-            'approve-for-session',
             'approve-once',
+            'approve-for-session',
+            'approve-for-location',
             'reject',
-            'user-not-available',
         ]);
     });
 
