@@ -7,7 +7,7 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
 use Revolution\Copilot\Types\Rpc\FleetStartRequest;
 use Revolution\Copilot\Types\Rpc\FleetStartResult;
-use Revolution\Copilot\Types\Rpc\HandleToolCallResult;
+use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
 use Revolution\Copilot\Types\Rpc\HistoryCompactResult;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
@@ -188,14 +188,14 @@ describe('HistoryCompactResult', function () {
     });
 });
 
-describe('HandleToolCallResult', function () {
+describe('HandlePendingToolCallResult', function () {
     it('can be created from array', function () {
-        $result = HandleToolCallResult::fromArray(['success' => true]);
+        $result = HandlePendingToolCallResult::fromArray(['success' => true]);
         expect($result->success)->toBeTrue();
     });
 
     it('can convert to array', function () {
-        $result = new HandleToolCallResult(success: false);
+        $result = new HandlePendingToolCallResult(success: false);
         expect($result->toArray())->toBe(['success' => false]);
     });
 });

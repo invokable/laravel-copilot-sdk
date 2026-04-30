@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingTools;
-use Revolution\Copilot\Types\Rpc\HandleToolCallResult;
+use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
 use Revolution\Copilot\Types\Rpc\ToolsHandlePendingToolCallRequest;
 
 describe('PendingSessionTools', function () {
@@ -25,7 +25,7 @@ describe('PendingSessionTools', function () {
             new ToolsHandlePendingToolCallRequest(requestId: 'req-1', result: 'tool output'),
         );
 
-        expect($result)->toBeInstanceOf(HandleToolCallResult::class)
+        expect($result)->toBeInstanceOf(HandlePendingToolCallResult::class)
             ->and($result->success)->toBeTrue();
     });
 
@@ -46,7 +46,7 @@ describe('PendingSessionTools', function () {
             'sessionId' => 'some-other-session',
         ]);
 
-        expect($result)->toBeInstanceOf(HandleToolCallResult::class)
+        expect($result)->toBeInstanceOf(HandlePendingToolCallResult::class)
             ->and($result->success)->toBeTrue();
     });
 
@@ -68,7 +68,7 @@ describe('PendingSessionTools', function () {
             new ToolsHandlePendingToolCallRequest(requestId: 'req-3', error: 'something went wrong'),
         );
 
-        expect($result)->toBeInstanceOf(HandleToolCallResult::class)
+        expect($result)->toBeInstanceOf(HandlePendingToolCallResult::class)
             ->and($result->success)->toBeFalse();
     });
 });
