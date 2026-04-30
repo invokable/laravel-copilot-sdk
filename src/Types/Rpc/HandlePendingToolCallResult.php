@@ -9,7 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 /**
  * Result of handling a pending tool call.
  */
-readonly class HandleToolCallResult implements Arrayable
+readonly class HandlePendingToolCallResult implements Arrayable
 {
     /**
      * @param  bool  $success  Whether the tool call was handled successfully

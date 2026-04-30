@@ -389,6 +389,7 @@ class Client implements CopilotClient
             'skillDirectories' => $config['skillDirectories'] ?? null,
             'disabledSkills' => $config['disabledSkills'] ?? null,
             'disableResume' => $config['disableResume'] ?? null,
+            'continuePendingWork' => $config['continuePendingWork'] ?? null,
             'gitHubToken' => $config['gitHubToken'] ?? null,
         ], fn ($v) => $v !== null));
 

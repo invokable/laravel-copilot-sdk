@@ -72,6 +72,10 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                                              Set to `new InfiniteSessionConfig(enabled: false)` to disable.
      * @param  ?bool  $disableResume  When true, skips emitting the session.resume event.
      *                                Useful for reconnecting to a session without triggering resume-related side effects.
+     * @param  ?bool  $continuePendingWork  When true, tool calls and permission requests left in flight by the previous session lifetime
+     *                                      remain pending after resume and the agentic loop awaits their results.
+     *                                      When false (the default), any such tool calls and permission requests are immediately
+     *                                      marked as interrupted on resume.
      * @param  ?string  $gitHubToken  GitHub token for per-session authentication.
      *                                When provided, the runtime resolves this token into a full GitHub identity
      *                                (login, Copilot plan, endpoints) and stores it on the session.
@@ -108,6 +112,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $disabledSkills = null,
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
         public ?bool $disableResume = null,
+        public ?bool $continuePendingWork = null,
         public ?string $gitHubToken = null,
         public ?Closure $onEvent = null,
     ) {}
@@ -179,6 +184,7 @@ readonly class ResumeSessionConfig implements Arrayable
             disabledSkills: $data['disabledSkills'] ?? null,
             infiniteSessions: $infiniteSessions,
             disableResume: $data['disableResume'] ?? null,
+            continuePendingWork: $data['continuePendingWork'] ?? null,
             gitHubToken: $data['gitHubToken'] ?? null,
             onEvent: $data['onEvent'] ?? null,
         );
@@ -240,6 +246,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'disabledSkills' => $this->disabledSkills,
             'infiniteSessions' => $infiniteSessions,
             'disableResume' => $this->disableResume,
+            'continuePendingWork' => $this->continuePendingWork,
             'gitHubToken' => $this->gitHubToken,
             'onEvent' => $this->onEvent,
         ], fn ($value) => $value !== null);

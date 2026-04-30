@@ -12,6 +12,8 @@ final readonly class PermissionRequestResultKind
 
     public const string APPROVE_FOR_LOCATION = 'approve-for-location';
 
+    public const string APPROVE_PERMANENTLY = 'approve-permanently';
+
     public const string REJECT = 'reject';
 
     public const string USER_NOT_AVAILABLE = 'user-not-available';
@@ -40,6 +42,16 @@ final readonly class PermissionRequestResultKind
     public static function approveForLocation(): array
     {
         return ['kind' => self::APPROVE_FOR_LOCATION];
+    }
+
+    /**
+     * Approve the request permanently (persisted across sessions).
+     *
+     * @param  string  $domain  The URL domain to approve permanently
+     */
+    public static function approvePermanently(string $domain): array
+    {
+        return ['kind' => self::APPROVE_PERMANENTLY, 'domain' => $domain];
     }
 
     /**

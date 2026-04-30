@@ -222,6 +222,7 @@ if ($confirm) {
 | `approveOnce()` | `approve-once` | 今回のリクエストのみ許可 |
 | `approveForSession()` | `approve-for-session` | このセッション中の同種リクエストをすべて許可 |
 | `approveForLocation()` | `approve-for-location` | この場所（ファイルパス等）からの同種リクエストをすべて許可 |
+| `approvePermanently($domain)` | `approve-permanently` | 指定ドメインへのリクエストをセッションを超えて永続的に許可 |
 | `reject()` | `reject` | リクエストを拒否 |
 | `userNotAvailable()` | `user-not-available` | ユーザーが応答できない状態（非インタラクティブ環境など） |
 | `noResult()` | `no-result` | ハンドラが結果を返せない場合（RPC呼び出しをスキップ） |
