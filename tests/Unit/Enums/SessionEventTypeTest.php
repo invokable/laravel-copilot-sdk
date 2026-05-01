@@ -82,4 +82,12 @@ describe('SessionEventType', function () {
         expect(SessionEventType::from('auto_mode_switch.requested'))->toBe(SessionEventType::AUTO_MODE_SWITCH_REQUESTED)
             ->and(SessionEventType::from('auto_mode_switch.completed'))->toBe(SessionEventType::AUTO_MODE_SWITCH_COMPLETED);
     });
+
+    it('has assistant message start event type', function () {
+        expect(SessionEventType::ASSISTANT_MESSAGE_START->value)->toBe('assistant.message_start');
+    });
+
+    it('can create assistant message start from string', function () {
+        expect(SessionEventType::from('assistant.message_start'))->toBe(SessionEventType::ASSISTANT_MESSAGE_START);
+    });
 });

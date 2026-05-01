@@ -139,6 +139,17 @@ describe('SessionRpc', function () {
 
         expect($rpc->tasks())->toBeInstanceOf(PendingTasks::class);
     });
+
+    it('calls session.suspend via suspend()', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.suspend', ['sessionId' => 'test-session'])
+            ->andReturn([]);
+
+        $rpc = new SessionRpc($client, 'test-session');
+        $rpc->suspend();
+    });
 });
 
 function createMockSessionRpcClient(): JsonRpcClient

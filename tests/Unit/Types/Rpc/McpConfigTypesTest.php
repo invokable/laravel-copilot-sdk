@@ -38,13 +38,15 @@ describe('McpServerValue', function () {
             'headers' => ['Authorization' => 'Bearer token'],
             'oauthClientId' => 'client-123',
             'oauthPublicClient' => true,
+            'oauthGrantType' => 'authorization_code',
         ]);
 
         expect($data->type)->toBe('http')
             ->and($data->url)->toBe('https://mcp.example.com')
             ->and($data->headers)->toBe(['Authorization' => 'Bearer token'])
             ->and($data->oauthClientId)->toBe('client-123')
-            ->and($data->oauthPublicClient)->toBeTrue();
+            ->and($data->oauthPublicClient)->toBeTrue()
+            ->and($data->oauthGrantType)->toBe('authorization_code');
     });
 
     it('handles default values', function () {
