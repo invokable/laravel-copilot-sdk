@@ -21,6 +21,7 @@ readonly class McpServerValue implements Arrayable
      * @param  ?array<string, string>  $headers  Headers for HTTP/SSE servers
      * @param  ?string  $oauthClientId  OAuth client ID (HTTP/SSE servers)
      * @param  ?bool  $oauthPublicClient  OAuth public client flag (HTTP/SSE servers)
+     * @param  ?string  $oauthGrantType  OAuth grant type (HTTP/SSE servers): "authorization_code" or "client_credentials"
      * @param  ?array<string>  $tools  Tools to include (defaults to all)
      * @param  ?bool  $isDefaultServer  Whether this is a default server
      * @param  mixed  $filterMapping  Filter mapping configuration
@@ -36,6 +37,7 @@ readonly class McpServerValue implements Arrayable
         public ?array $headers = null,
         public ?string $oauthClientId = null,
         public ?bool $oauthPublicClient = null,
+        public ?string $oauthGrantType = null,
         public ?array $tools = null,
         public ?bool $isDefaultServer = null,
         public mixed $filterMapping = null,
@@ -54,6 +56,7 @@ readonly class McpServerValue implements Arrayable
             headers: $data['headers'] ?? null,
             oauthClientId: $data['oauthClientId'] ?? null,
             oauthPublicClient: $data['oauthPublicClient'] ?? null,
+            oauthGrantType: $data['oauthGrantType'] ?? null,
             tools: $data['tools'] ?? null,
             isDefaultServer: $data['isDefaultServer'] ?? null,
             filterMapping: $data['filterMapping'] ?? null,
@@ -73,6 +76,7 @@ readonly class McpServerValue implements Arrayable
             'headers' => $this->headers,
             'oauthClientId' => $this->oauthClientId,
             'oauthPublicClient' => $this->oauthPublicClient,
+            'oauthGrantType' => $this->oauthGrantType,
             'tools' => $this->tools,
             'isDefaultServer' => $this->isDefaultServer,
             'filterMapping' => $this->filterMapping,

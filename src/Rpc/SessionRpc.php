@@ -44,6 +44,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->tasks()->cancel(new TasksCancelRequest(id: 'task-id'));
  * $session->rpc()->tasks()->promoteToBackground(new TasksPromoteToBackgroundRequest(id: 'task-id'));
  * $session->rpc()->tasks()->remove(new TasksRemoveRequest(id: 'task-id'));
+ * $session->rpc()->suspend();
  * ```
  */
 class SessionRpc
@@ -253,5 +254,17 @@ class SessionRpc
     public function tasks(): PendingTasks
     {
         return new PendingTasks($this->client, $this->sessionId);
+    }
+
+    /**
+     * Suspend the current session.
+     *
+     * Suspends the session, pausing its execution until resumed.
+     */
+    public function suspend(): void
+    {
+        $this->client->request('session.suspend', [
+            'sessionId' => $this->sessionId,
+        ]);
     }
 }
