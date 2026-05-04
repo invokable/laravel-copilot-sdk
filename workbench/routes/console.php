@@ -28,10 +28,10 @@ use function Laravel\Prompts\note;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\stream;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
-use function Laravel\Prompts\stream;
 use function Revolution\Copilot\copilot;
 
 // Artisan::command('inspire', function () {
