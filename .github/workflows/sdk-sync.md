@@ -137,7 +137,6 @@ Follow these conventions strictly:
 - Do not modify `src/CopilotSdkServiceProvider.php` unless new bindings are needed.
 - Do not modify `src/Ai/` (Laravel AI SDK integration) unless Copilot's core API changes affect it.
 - Do not add Copilot CLI binary bundling.
-- Do not change `config/copilot.php` unless new configuration options are genuinely needed.
 
 ## Step 4: Implement Changes
 
