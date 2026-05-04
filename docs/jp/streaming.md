@@ -38,7 +38,44 @@ Copilot::start(function (CopilotSession $session) {
 
 ### Artisanコマンド
 
-上記のように`echo`もしくは`$this->output->write()`で直接出力します。Copilot CLIを直接使った場合と同じ表示なので理解しやすいです。
+上記のように`echo`もしくは`$this->output->write()`で直接出力します。Copilot CLIを直接使った場合と同じ表示なので理解しやすいです。Laravel Promptsの`stream()`を使うとフェードイン効果付きでの表示もできます。
+
+```php
+use function Laravel\Prompts\stream;
+
+Artisan::command('copilot:streaming {--resume=}', function () {
+    $config = new SessionConfig(
+        streaming: true,
+    );
+
+    Copilot::start(function (CopilotSession $session) {
+        info('Starting Copilot with streaming: '.$session->id());
+
+        $stream = stream();
+
+        $session->on(function (SessionEvent $event) use ($stream) {
+            if ($event->isAssistantMessageDelta()) {
+                // deltaで小分けにされたメッセージが届く。Laravel Promptsのstream()を使ってフェードインの効果付きで流暢に表示。
+                $stream->append($event->deltaContent());
+            } elseif ($event->isIdle()) {
+                // idleまで完了したらclose。同じセッション中に複数回プロンプトを送信しても正常に動作するので再度の`$stream = stream()`は不要。
+                $stream->close();
+            }
+        });
+
+        while (true) {
+            $prompt = text(
+                label: 'Enter your prompt',
+                placeholder: 'Ask me anything...',
+                required: true,
+                hint: 'Ctrl+C to exit',
+            );
+
+            $session->sendAndWait($prompt);
+        }
+    }, config: $config, resume: $this->option('resume'));
+})->purpose('Copilot streaming');
+```
 
 ### WebページでServer-Sent Events (SSE)として配信
 
