@@ -20,19 +20,7 @@ GitHub Agentic Workflowsで自動的に同期を実行している。
 
 自動同期とは別に人間が手動でコーディングしてることも多いのでコミットログやプルリクのコメントに書いてあるファイルが見つからない時は現在のプロジェクト内で検索し直す。
 
-### GitHub Agentic Workflowsのアップデート手順
-
-GitHubコーディングエージェント環境では
-```shell
-# awを更新
-gh extension upgrade github/gh-aw
-# workflowを更新
-gh aw upgrade
-# upgradeで更新されないファイルを更新
-gh aw compile
-```
-
-ローカルPCでの手動アップデートは`.github/aw.md`の手順で更新。
+公式SDKはそろそろv1.0なので大きな変更は減るはず。
 
 ## Technology Stack
 
