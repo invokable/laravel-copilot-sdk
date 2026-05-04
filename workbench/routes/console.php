@@ -31,6 +31,7 @@ use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
+use function Laravel\Prompts\stream;
 use function Revolution\Copilot\copilot;
 
 // Artisan::command('inspire', function () {
@@ -373,10 +374,15 @@ Artisan::command('copilot:streaming {--resume=}', function () {
     Copilot::start(function (CopilotSession $session) {
         info('Starting Copilot with streaming: '.$session->id());
 
-        $session->on(function (SessionEvent $event): void {
+        $stream = stream();
+
+        $session->on(function (SessionEvent $event) use ($stream) {
             if ($event->isAssistantMessageDelta()) {
-                // deltaで小分けにされたメッセージが届くので改行など何も追加せずにそのまま表示。流暢な表示が実現できる。
-                echo $event->deltaContent();
+                // deltaで小分けにされたメッセージが届く。Laravel Promptsのstream()を使ってフェードインの効果付きで流暢に表示。
+                $stream->append($event->deltaContent());
+            } elseif ($event->isIdle()) {
+                // idleまで完了したらclose。同じセッション中に複数回プロンプトを送信しても正常に動作するので再度の`$stream = stream()`は不要。
+                $stream->close();
             }
         });
 
@@ -388,7 +394,6 @@ Artisan::command('copilot:streaming {--resume=}', function () {
                 hint: 'Ctrl+C to exit',
             );
 
-            // streaming=trueの場合はspinは使わない。delta間で余計なスピナーやメッセージを表示してしまう。
             $session->sendAndWait($prompt);
         }
     }, config: $config, resume: $this->option('resume'));
