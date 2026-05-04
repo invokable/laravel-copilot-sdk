@@ -35,6 +35,7 @@ describe('SessionConfig', function () {
             'mcpServers' => ['server1' => ['command' => 'npx']],
             'customAgents' => [['name' => 'agent1']],
             'skillDirectories' => ['/path/to/skills'],
+            'instructionDirectories' => ['/path/to/instructions'],
             'disabledSkills' => ['skill1'],
             'infiniteSessions' => ['enabled' => true, 'backgroundCompactionThreshold' => 0.80],
             'agent' => 'reviewer',
@@ -59,6 +60,7 @@ describe('SessionConfig', function () {
             ->and($config->mcpServers)->toBe(['server1' => ['command' => 'npx']])
             ->and($config->customAgents)->toBe([['name' => 'agent1']])
             ->and($config->skillDirectories)->toBe(['/path/to/skills'])
+            ->and($config->instructionDirectories)->toBe(['/path/to/instructions'])
             ->and($config->disabledSkills)->toBe(['skill1'])
             ->and($config->infiniteSessions)->toBeInstanceOf(InfiniteSessionConfig::class)
             ->and($config->infiniteSessions->enabled)->toBeTrue()
@@ -87,6 +89,7 @@ describe('SessionConfig', function () {
             ->and($config->mcpServers)->toBeNull()
             ->and($config->customAgents)->toBeNull()
             ->and($config->skillDirectories)->toBeNull()
+            ->and($config->instructionDirectories)->toBeNull()
             ->and($config->disabledSkills)->toBeNull()
             ->and($config->infiniteSessions)->toBeNull()
             ->and($config->agent)->toBeNull();

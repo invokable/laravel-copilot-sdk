@@ -138,6 +138,9 @@ $config = new SessionConfig(
     // スキルディレクトリ
     skillDirectories: [],
 
+    // カスタム指示ファイルを検索する追加ディレクトリ
+    instructionDirectories: [],
+
     // 無効なスキル
     disabledSkills: [],
 

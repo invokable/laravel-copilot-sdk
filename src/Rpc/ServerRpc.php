@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\ConnectRequest;
+use Revolution\Copilot\Types\Rpc\ConnectResult;
 use Revolution\Copilot\Types\Rpc\PingRequest;
 use Revolution\Copilot\Types\Rpc\PingResult;
 
@@ -37,6 +39,20 @@ class ServerRpc
 
         return PingResult::fromArray(
             $this->client->request('ping', $paramsArray),
+        );
+    }
+
+    /**
+     * Send a connect handshake request.
+     *
+     * @internal Part of the SDK's internal surface.
+     */
+    public function connect(ConnectRequest|array $params = []): ConnectResult
+    {
+        $paramsArray = $params instanceof ConnectRequest ? $params->toArray() : $params;
+
+        return ConnectResult::fromArray(
+            $this->client->request('connect', $paramsArray),
         );
     }
 

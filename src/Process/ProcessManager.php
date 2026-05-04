@@ -47,6 +47,7 @@ class ProcessManager
         protected ?bool $useLoggedInUser = null,
         protected TelemetryConfig|array|null $telemetry = null,
         protected int $sessionIdleTimeoutSeconds = 0,
+        protected ?string $copilotHome = null,
     ) {
         $this->cwd ??= getcwd() ?: null;
     }
@@ -187,6 +188,11 @@ class ProcessManager
         // Set auth token in environment if provided
         if (filled($this->gitHubToken)) {
             $env['COPILOT_SDK_AUTH_TOKEN'] = $this->gitHubToken;
+        }
+
+        // Set COPILOT_HOME if specified
+        if (filled($this->copilotHome)) {
+            $env['COPILOT_HOME'] = $this->copilotHome;
         }
 
         $args = ['--headless', '--stdio', '--log-level', $this->logLevel];

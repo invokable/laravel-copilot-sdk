@@ -66,6 +66,7 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?string  $agent  Name of the custom agent to activate when the session resumes.
      *                          Must match the `name` of one of the agents in `customAgents`.
      * @param  ?array  $skillDirectories  Directories to load skills from
+     * @param  ?array  $instructionDirectories  Additional directories to search for custom instruction files.
      * @param  ?array  $disabledSkills  List of skill names to disable
      * @param  InfiniteSessionConfig|array|null  $infiniteSessions  Infinite session configuration for persistent workspaces and automatic compaction.
      *                                                              When enabled (default), sessions automatically manage context limits and persist state.
@@ -109,6 +110,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $customAgents = null,
         public ?string $agent = null,
         public ?array $skillDirectories = null,
+        public ?array $instructionDirectories = null,
         public ?array $disabledSkills = null,
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
         public ?bool $disableResume = null,
@@ -181,6 +183,7 @@ readonly class ResumeSessionConfig implements Arrayable
             customAgents: $data['customAgents'] ?? null,
             agent: $data['agent'] ?? null,
             skillDirectories: $data['skillDirectories'] ?? null,
+            instructionDirectories: $data['instructionDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
             infiniteSessions: $infiniteSessions,
             disableResume: $data['disableResume'] ?? null,
@@ -243,6 +246,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'customAgents' => $this->customAgents,
             'agent' => $this->agent,
             'skillDirectories' => $this->skillDirectories,
+            'instructionDirectories' => $this->instructionDirectories,
             'disabledSkills' => $this->disabledSkills,
             'infiniteSessions' => $infiniteSessions,
             'disableResume' => $this->disableResume,
