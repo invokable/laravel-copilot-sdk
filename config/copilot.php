@@ -100,7 +100,8 @@ return [
     | Base directory for Copilot data (session state, config, etc.).
     | Sets the COPILOT_HOME environment variable on the spawned CLI process.
     | When not set, the CLI defaults to ~/.copilot.
-    | This option is only used when the SDK spawns the CLI process; it is ignored when 'url' is set (TCP mode) since the CLI is managed separately.
+    | This option is only used when the SDK spawns the CLI process;
+    | it is ignored when 'url' is set (TCP mode).
     |
     */
     'copilot_home' => env('COPILOT_HOME'),
