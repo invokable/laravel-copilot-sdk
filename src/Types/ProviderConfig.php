@@ -21,6 +21,15 @@ readonly class ProviderConfig implements Arrayable
      *                                Takes precedence over apiKey when both are set.
      * @param  ?array  $azure  Azure-specific options
      * @param  ?array<string, string>  $headers  Custom HTTP headers to include in outbound provider requests.
+     * @param  ?string  $modelId  Well-known model name used by the runtime to look up agent configuration
+     *                            and default token limits. Falls back to SessionConfig::$model.
+     * @param  ?string  $wireModel  Model name sent to the provider API for inference. Use when the
+     *                              provider's model name differs from modelId (e.g. Azure deployment name).
+     *                              Falls back to modelId, then SessionConfig::$model.
+     * @param  ?int  $maxInputTokens  Overrides the resolved model's default max prompt tokens. The runtime
+     *                                triggers conversation compaction before this limit is exceeded.
+     *                                Sent to the wire as `maxPromptTokens`.
+     * @param  ?int  $maxOutputTokens  Overrides the resolved model's default max output tokens.
      */
     public function __construct(
         public string $baseUrl,
@@ -30,6 +39,10 @@ readonly class ProviderConfig implements Arrayable
         public ?string $bearerToken = null,
         public ?array $azure = null,
         public ?array $headers = null,
+        public ?string $modelId = null,
+        public ?string $wireModel = null,
+        public ?int $maxInputTokens = null,
+        public ?int $maxOutputTokens = null,
     ) {}
 
     /**
@@ -45,6 +58,10 @@ readonly class ProviderConfig implements Arrayable
             bearerToken: $data['bearerToken'] ?? null,
             azure: $data['azure'] ?? null,
             headers: $data['headers'] ?? null,
+            modelId: $data['modelId'] ?? null,
+            wireModel: $data['wireModel'] ?? null,
+            maxInputTokens: $data['maxInputTokens'] ?? $data['maxPromptTokens'] ?? null,
+            maxOutputTokens: $data['maxOutputTokens'] ?? null,
         );
     }
 
@@ -61,6 +78,10 @@ readonly class ProviderConfig implements Arrayable
             'bearerToken' => $this->bearerToken,
             'azure' => $this->azure,
             'headers' => $this->headers,
+            'modelId' => $this->modelId,
+            'wireModel' => $this->wireModel,
+            'maxPromptTokens' => $this->maxInputTokens,
+            'maxOutputTokens' => $this->maxOutputTokens,
         ], fn ($value) => $value !== null);
     }
 }
