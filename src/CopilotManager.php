@@ -216,6 +216,7 @@ class CopilotManager implements Factory
                     'telemetry' => $this->config['telemetry'] ?? null,
                     'session_idle_timeout_seconds' => $this->config['session_idle_timeout_seconds'] ?? 0,
                     'copilot_home' => $this->config['copilot_home'] ?? null,
+                    'remote' => $this->config['remote'] ?? false,
                 ];
             }
 
@@ -246,7 +247,7 @@ class CopilotManager implements Factory
     /**
      * Configure the client to use stdio transport with given options.
      *
-     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string}  $config  Configuration options for stdio transport.
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, remote?: bool}  $config  Configuration options for stdio transport.
      */
     public function useStdio(?array $config = null): static
     {
@@ -265,6 +266,7 @@ class CopilotManager implements Factory
             'telemetry',
             'session_idle_timeout_seconds',
             'copilot_home',
+            'remote',
         ]));
 
         return $this;

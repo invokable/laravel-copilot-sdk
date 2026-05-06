@@ -96,6 +96,7 @@ class Client implements CopilotClient
             'telemetry' => data_get($options, 'telemetry'),
             'sessionIdleTimeoutSeconds' => data_get($options, 'session_idle_timeout_seconds', 0),
             'copilotHome' => data_get($options, 'copilot_home'),
+            'remote' => data_get($options, 'remote', false),
         ]);
     }
 

@@ -44,6 +44,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->tasks()->cancel(new TasksCancelRequest(id: 'task-id'));
  * $session->rpc()->tasks()->promoteToBackground(new TasksPromoteToBackgroundRequest(id: 'task-id'));
  * $session->rpc()->tasks()->remove(new TasksRemoveRequest(id: 'task-id'));
+ * $session->rpc()->remote()->enable();
+ * $session->rpc()->remote()->disable();
  * $session->rpc()->suspend();
  * ```
  */
@@ -254,6 +256,16 @@ class SessionRpc
     public function tasks(): PendingTasks
     {
         return new PendingTasks($this->client, $this->sessionId);
+    }
+
+    /**
+     * Remote session RPC operations (Mission Control integration).
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function remote(): PendingRemote
+    {
+        return new PendingRemote($this->client, $this->sessionId);
     }
 
     /**

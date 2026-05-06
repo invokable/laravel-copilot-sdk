@@ -15,6 +15,8 @@ enum SessionEventType: string
     case SESSION_ERROR = 'session.error';
     case SESSION_IDLE = 'session.idle';
     case SESSION_TITLE_CHANGED = 'session.title_changed';
+    case SESSION_SCHEDULE_CREATED = 'session.schedule_created';
+    case SESSION_SCHEDULE_CANCELLED = 'session.schedule_cancelled';
     case SESSION_INFO = 'session.info';
     case SESSION_WARNING = 'session.warning';
     case SESSION_MODEL_CHANGE = 'session.model_change';
