@@ -28,7 +28,8 @@ $config = new SessionConfig(
     onPermissionRequest: PermissionHandler::approveAll(),
 );
 
-$stdioConfig = array_merge(config('copilot'), ['remote' => true]);
+$stdioConfig = config('copilot');
+$stdioConfig['remote'] = true;
 
 Copilot::useStdio($stdioConfig)->start(function (CopilotSession $session): void {
     $session->on(SessionEventType::SESSION_INFO, function (SessionEvent $event): void {
