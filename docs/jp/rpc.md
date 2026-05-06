@@ -335,6 +335,8 @@ $result = $session->rpc()->remote()->enable();
 $session->rpc()->remote()->disable();
 ```
 
+詳細は [Remote Sessions](./remote-sessions.md) を参照してください。
+
 ## SessionFS コールバック型
 
 セッションスコープのファイルシステム操作のためのコールバック型（Request/Result）が定義されています。これらはCopilot CLIがクライアントにコールバックする際のリクエスト/レスポンスの型です。
