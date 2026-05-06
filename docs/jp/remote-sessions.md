@@ -28,11 +28,13 @@ $config = new SessionConfig(
     onPermissionRequest: PermissionHandler::approveAll(),
 );
 
-Copilot::useStdio(array_merge(config('copilot'), ['remote' => true]))->start(function (CopilotSession $session): void {
+$stdioConfig = array_merge(config('copilot'), ['remote' => true]);
+
+Copilot::useStdio($stdioConfig)->start(function (CopilotSession $session): void {
     $session->on(SessionEventType::SESSION_INFO, function (SessionEvent $event): void {
         $data = $event->all();
 
-        if (($data['infoType'] ?? null) === 'remote') {
+        if (($data['infoType'] ?? '') === 'remote') {
             echo 'Remote URL: '.($data['url'] ?? '').PHP_EOL;
         }
     });
