@@ -254,6 +254,7 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `mcp.md`: MCPサーバーの使い方
 - `models.md`: 利用可能なモデル一覧
 - `permission-requests.md`: Permission Requests
+- `remote-sessions.md`: リモートセッション
 - `resume.md`: セッションの再開方法
 - `rpc.md`: RPCクラスの説明
 - `send-on.md`: Session `on()`で途中のメッセージを受け取る

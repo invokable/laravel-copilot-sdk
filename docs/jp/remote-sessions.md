@@ -33,10 +33,8 @@ $stdioConfig['remote'] = true;
 
 Copilot::useStdio($stdioConfig)->start(function (CopilotSession $session): void {
     $session->on(SessionEventType::SESSION_INFO, function (SessionEvent $event): void {
-        $data = $event->all();
-
-        if (($data['infoType'] ?? '') === 'remote') {
-            echo 'Remote URL: '.($data['url'] ?? '').PHP_EOL;
+        if ($event->data('infoType') === 'remote') {
+            echo 'Remote URL: '.$event->data('url').PHP_EOL;
         }
     });
 }, config: $config);
