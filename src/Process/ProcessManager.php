@@ -48,6 +48,7 @@ class ProcessManager
         protected TelemetryConfig|array|null $telemetry = null,
         protected int $sessionIdleTimeoutSeconds = 0,
         protected ?string $copilotHome = null,
+        protected bool $remote = false,
     ) {
         $this->cwd ??= getcwd() ?: null;
     }
@@ -212,6 +213,10 @@ class ProcessManager
         if ($this->sessionIdleTimeoutSeconds > 0) {
             $args[] = '--session-idle-timeout';
             $args[] = (string) $this->sessionIdleTimeoutSeconds;
+        }
+
+        if ($this->remote) {
+            $args[] = '--remote';
         }
 
         $command = array_merge(

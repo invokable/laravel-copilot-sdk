@@ -90,4 +90,14 @@ describe('SessionEventType', function () {
     it('can create assistant message start from string', function () {
         expect(SessionEventType::from('assistant.message_start'))->toBe(SessionEventType::ASSISTANT_MESSAGE_START);
     });
+
+    it('has schedule event types', function () {
+        expect(SessionEventType::SESSION_SCHEDULE_CREATED->value)->toBe('session.schedule_created')
+            ->and(SessionEventType::SESSION_SCHEDULE_CANCELLED->value)->toBe('session.schedule_cancelled');
+    });
+
+    it('can create schedule event types from string', function () {
+        expect(SessionEventType::from('session.schedule_created'))->toBe(SessionEventType::SESSION_SCHEDULE_CREATED)
+            ->and(SessionEventType::from('session.schedule_cancelled'))->toBe(SessionEventType::SESSION_SCHEDULE_CANCELLED);
+    });
 });

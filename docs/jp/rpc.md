@@ -319,6 +319,22 @@ $removed = $session->rpc()->tasks()->remove(
 // $removed->removed - 削除に成功したかどうか
 ```
 
+### remote (experimental: リモートセッションサポート)
+
+```php
+use Revolution\Copilot\Types\Rpc\RemoteEnableResult;
+
+// リモートセッションを有効化（Mission Control連携）
+// GitHubリポジトリのワーキングディレクトリで実行すると、
+// GitHub WebやモバイルからセッションにアクセスできるURLが返される
+$result = $session->rpc()->remote()->enable();
+// $result->remoteSteerable - リモートステアリングが有効かどうか
+// $result->url - Mission Control フロントエンドURL（nullの場合あり）
+
+// リモートセッションを無効化
+$session->rpc()->remote()->disable();
+```
+
 ## SessionFS コールバック型
 
 セッションスコープのファイルシステム操作のためのコールバック型（Request/Result）が定義されています。これらはCopilot CLIがクライアントにコールバックする際のリクエスト/レスポンスの型です。
