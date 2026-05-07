@@ -7,6 +7,7 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
 use Revolution\Copilot\Types\Rpc\FleetStartRequest;
 use Revolution\Copilot\Types\Rpc\FleetStartResult;
+use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
 use Revolution\Copilot\Types\Rpc\HistoryCompactResult;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
@@ -24,7 +25,6 @@ use Revolution\Copilot\Types\Rpc\ShellExecRequest;
 use Revolution\Copilot\Types\Rpc\ShellExecResult;
 use Revolution\Copilot\Types\Rpc\ShellKillRequest;
 use Revolution\Copilot\Types\Rpc\ShellKillResult;
-use Revolution\Copilot\Types\Rpc\ToolsHandlePendingToolCallRequest;
 
 describe('CurrentModel', function () {
     it('can be created from array', function () {
@@ -200,14 +200,14 @@ describe('HandlePendingToolCallResult', function () {
     });
 });
 
-describe('ToolsHandlePendingToolCallRequest', function () {
+describe('HandlePendingToolCallRequest', function () {
     it('can be created with string result', function () {
-        $params = new ToolsHandlePendingToolCallRequest(requestId: 'req-1', result: 'done');
+        $params = new HandlePendingToolCallRequest(requestId: 'req-1', result: 'done');
         expect($params->toArray())->toBe(['requestId' => 'req-1', 'result' => 'done']);
     });
 
     it('can be created with structured result', function () {
-        $params = new ToolsHandlePendingToolCallRequest(
+        $params = new HandlePendingToolCallRequest(
             requestId: 'req-1',
             result: ['textResultForLlm' => 'output', 'resultType' => 'text'],
         );
@@ -215,17 +215,17 @@ describe('ToolsHandlePendingToolCallRequest', function () {
     });
 
     it('can be created with error', function () {
-        $params = new ToolsHandlePendingToolCallRequest(requestId: 'req-1', error: 'failed');
+        $params = new HandlePendingToolCallRequest(requestId: 'req-1', error: 'failed');
         expect($params->toArray())->toBe(['requestId' => 'req-1', 'error' => 'failed']);
     });
 
     it('omits null fields', function () {
-        $params = new ToolsHandlePendingToolCallRequest(requestId: 'req-1');
+        $params = new HandlePendingToolCallRequest(requestId: 'req-1');
         expect($params->toArray())->toBe(['requestId' => 'req-1']);
     });
 
     it('can be created from array', function () {
-        $params = ToolsHandlePendingToolCallRequest::fromArray([
+        $params = HandlePendingToolCallRequest::fromArray([
             'requestId' => 'req-2',
             'result' => 'success',
         ]);

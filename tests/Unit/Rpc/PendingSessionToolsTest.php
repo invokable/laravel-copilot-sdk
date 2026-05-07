@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingTools;
+use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
-use Revolution\Copilot\Types\Rpc\ToolsHandlePendingToolCallRequest;
 
 describe('PendingSessionTools', function () {
     it('calls session.tools.handlePendingToolCall with correct params', function () {
@@ -22,7 +22,7 @@ describe('PendingSessionTools', function () {
 
         $pending = new PendingTools($client, 'test-session-id');
         $result = $pending->handlePendingToolCall(
-            new ToolsHandlePendingToolCallRequest(requestId: 'req-1', result: 'tool output'),
+            new HandlePendingToolCallRequest(requestId: 'req-1', result: 'tool output'),
         );
 
         expect($result)->toBeInstanceOf(HandlePendingToolCallResult::class)
@@ -65,7 +65,7 @@ describe('PendingSessionTools', function () {
 
         $pending = new PendingTools($client, 'test-session-id');
         $result = $pending->handlePendingToolCall(
-            new ToolsHandlePendingToolCallRequest(requestId: 'req-3', error: 'something went wrong'),
+            new HandlePendingToolCallRequest(requestId: 'req-3', error: 'something went wrong'),
         );
 
         expect($result)->toBeInstanceOf(HandlePendingToolCallResult::class)

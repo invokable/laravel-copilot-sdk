@@ -32,7 +32,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->extensions()->list();
  * $session->rpc()->history()->compact();
  * $session->rpc()->history()->truncate(new HistoryTruncateRequest(eventId: '...'));
- * $session->rpc()->tools()->handlePendingToolCall(new ToolsHandlePendingToolCallRequest(requestId: '...', result: 'done'));
+ * $session->rpc()->tools()->handlePendingToolCall(new HandlePendingToolCallRequest(requestId: '...', result: 'done'));
  * $session->rpc()->commands()->handlePendingCommand(new CommandsHandlePendingCommandRequest(requestId: '...'));
  * $session->rpc()->ui()->elicitation(new UIElicitationRequest(message: '...', requestedSchema: [...]));
  * $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(requestId: '...', decision: PermissionRequestResultKind::approveOnce()));

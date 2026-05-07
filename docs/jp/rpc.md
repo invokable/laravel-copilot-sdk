@@ -206,7 +206,7 @@ $session->rpc()->history()->truncate(new HistoryTruncateRequest(
 ));
 
 // tools (プロトコルv3+: external_tool.requestedイベントへの応答)
-$session->rpc()->tools()->handlePendingToolCall(new ToolsHandlePendingToolCallRequest(
+$session->rpc()->tools()->handlePendingToolCall(new HandlePendingToolCallRequest(
     requestId: '...',
     result: 'ツールの実行結果',
 ));
