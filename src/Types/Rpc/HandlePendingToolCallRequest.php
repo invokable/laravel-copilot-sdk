@@ -14,7 +14,7 @@ use Illuminate\Contracts\Support\Arrayable;
  *   optionally resultType, sessionLog, toolTelemetry, and contents
  * - $error: a string describing the error that occurred during tool execution
  */
-readonly class ToolsHandlePendingToolCallRequest implements Arrayable
+readonly class HandlePendingToolCallRequest implements Arrayable
 {
     /**
      * @param  string  $requestId  The ID of the pending tool call to handle
