@@ -9,9 +9,11 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
 use Revolt\EventLoop;
+use Revolution\Copilot\Concerns\Session\HasAutoModeSwitchHandler;
 use Revolution\Copilot\Concerns\Session\HasCommandHandlers;
 use Revolution\Copilot\Concerns\Session\HasDeprecated;
 use Revolution\Copilot\Concerns\Session\HasElicitationHandler;
+use Revolution\Copilot\Concerns\Session\HasExitPlanModeHandler;
 use Revolution\Copilot\Concerns\Session\HasHooks;
 use Revolution\Copilot\Concerns\Session\HasPermissionHandler;
 use Revolution\Copilot\Concerns\Session\HasToolHandlers;
@@ -30,7 +32,9 @@ use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\TraceContext;
+use Revolution\Copilot\Types\AutoModeSwitchRequest;
 use Revolution\Copilot\Types\ElicitationContext;
+use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\Rpc\LogRequest;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
@@ -44,9 +48,11 @@ use Throwable;
 class Session implements CopilotSession
 {
     use Conditionable;
+    use HasAutoModeSwitchHandler;
     use HasCommandHandlers;
     use HasDeprecated;
     use HasElicitationHandler;
+    use HasExitPlanModeHandler;
     use HasHooks;
     use HasPermissionHandler;
     use HasToolHandlers;
@@ -566,6 +572,30 @@ class Session implements CopilotSession
 
                 $this->handleElicitationRequest($context, $requestId);
             }
+        } elseif ($event->is(SessionEventType::EXIT_PLAN_MODE_REQUESTED)) {
+            if ($this->exitPlanModeHandler !== null) {
+                $requestId = $event->data['requestId'] ?? null;
+
+                if ($requestId === null) {
+                    return;
+                }
+
+                $request = ExitPlanModeRequest::fromArray($event->data);
+
+                $this->handleExitPlanModeRequest($request, $requestId);
+            }
+        } elseif ($event->is(SessionEventType::AUTO_MODE_SWITCH_REQUESTED)) {
+            if ($this->autoModeSwitchHandler !== null) {
+                $requestId = $event->data['requestId'] ?? null;
+
+                if ($requestId === null) {
+                    return;
+                }
+
+                $request = AutoModeSwitchRequest::fromArray($event->data);
+
+                $this->handleAutoModeSwitchRequest($request, $requestId);
+            }
         } elseif ($event->is(SessionEventType::CAPABILITIES_CHANGED)) {
             $this->mergeCapabilities($event->data);
         }
@@ -626,6 +656,8 @@ class Session implements CopilotSession
             $this->permissionHandler = null;
             $this->userInputHandler = null;
             $this->elicitationHandler = null;
+            $this->exitPlanModeHandler = null;
+            $this->autoModeSwitchHandler = null;
             $this->hooks = null;
             $this->capabilities = new SessionCapabilities;
         }

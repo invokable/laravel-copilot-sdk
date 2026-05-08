@@ -91,6 +91,25 @@ $config = new SessionConfig(
         return ['action' => 'accept', 'content' => ['field' => 'value']];
     },
 
+    // プランモード終了リクエストのハンドラー
+    // 設定するとエージェントがプランモードを終了する際のリクエストを受け取れる
+    onExitPlanMode: function (ExitPlanModeRequest $request) {
+        // プラン内容を確認して承認・却下
+        return new ExitPlanModeResult(approved: true, selectedAction: $request->recommendedAction);
+    },
+
+    // 自動モード切替リクエストのハンドラー
+    // レートリミット到達時にautoモードへの切替を許可するか選択できる
+    onAutoModeSwitch: function (AutoModeSwitchRequest $request) {
+        // "yes", "yes_always", "no" のいずれかを返す
+        return 'yes';
+    },
+
+    // セッション内部テレメトリの有効/無効化（デフォルト: null = 有効）
+    // falseに設定するとこのセッションのテレメトリを無効化
+    // カスタムプロバイダー（BYOK）設定時は常に無効
+    enableSessionTelemetry: true,
+
     // セッションフック
     hooks: [],
 
