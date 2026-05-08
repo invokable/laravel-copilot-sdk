@@ -277,6 +277,8 @@ class Client implements CopilotClient
             'requestPermission' => true,
             'requestUserInput' => isset($config['onUserInputRequest']),
             'requestElicitation' => isset($config['onElicitationRequest']),
+            'requestExitPlanMode' => isset($config['onExitPlanMode']),
+            'requestAutoModeSwitch' => isset($config['onAutoModeSwitch']),
             'hooks' => $hasHooks,
             'workingDirectory' => $config['workingDirectory'] ?? null,
             'streaming' => $config['streaming'] ?? null,
@@ -290,6 +292,7 @@ class Client implements CopilotClient
             'skillDirectories' => $config['skillDirectories'] ?? null,
             'disabledSkills' => $config['disabledSkills'] ?? null,
             'infiniteSessions' => $config['infiniteSessions'] ?? null,
+            'enableSessionTelemetry' => $config['enableSessionTelemetry'] ?? null,
             'gitHubToken' => $config['gitHubToken'] ?? null,
         ], fn ($v) => $v !== null));
 
@@ -313,6 +316,14 @@ class Client implements CopilotClient
 
         if (isset($config['onElicitationRequest']) && is_callable($config['onElicitationRequest'])) {
             $session->registerElicitationHandler($config['onElicitationRequest']);
+        }
+
+        if (isset($config['onExitPlanMode']) && is_callable($config['onExitPlanMode'])) {
+            $session->registerExitPlanModeHandler($config['onExitPlanMode']);
+        }
+
+        if (isset($config['onAutoModeSwitch']) && is_callable($config['onAutoModeSwitch'])) {
+            $session->registerAutoModeSwitchHandler($config['onAutoModeSwitch']);
         }
 
         if ($hooks !== null) {
@@ -378,6 +389,8 @@ class Client implements CopilotClient
             'requestPermission' => true,
             'requestUserInput' => isset($config['onUserInputRequest']),
             'requestElicitation' => isset($config['onElicitationRequest']),
+            'requestExitPlanMode' => isset($config['onExitPlanMode']),
+            'requestAutoModeSwitch' => isset($config['onAutoModeSwitch']),
             'hooks' => $hasHooks,
             'workingDirectory' => $config['workingDirectory'] ?? null,
             'streaming' => $config['streaming'] ?? null,
@@ -392,6 +405,7 @@ class Client implements CopilotClient
             'disabledSkills' => $config['disabledSkills'] ?? null,
             'disableResume' => $config['disableResume'] ?? null,
             'continuePendingWork' => $config['continuePendingWork'] ?? null,
+            'enableSessionTelemetry' => $config['enableSessionTelemetry'] ?? null,
             'gitHubToken' => $config['gitHubToken'] ?? null,
         ], fn ($v) => $v !== null));
 
@@ -415,6 +429,14 @@ class Client implements CopilotClient
 
         if (isset($config['onElicitationRequest']) && is_callable($config['onElicitationRequest'])) {
             $session->registerElicitationHandler($config['onElicitationRequest']);
+        }
+
+        if (isset($config['onExitPlanMode']) && is_callable($config['onExitPlanMode'])) {
+            $session->registerExitPlanModeHandler($config['onExitPlanMode']);
+        }
+
+        if (isset($config['onAutoModeSwitch']) && is_callable($config['onAutoModeSwitch'])) {
+            $session->registerAutoModeSwitchHandler($config['onAutoModeSwitch']);
         }
 
         if ($hooks !== null) {

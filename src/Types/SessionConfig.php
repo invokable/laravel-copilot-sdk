@@ -50,6 +50,15 @@ readonly class SessionConfig implements Arrayable
      * @param  ?Closure  $onElicitationRequest  Handler for elicitation requests from the agent.
      *                                          When provided, the server calls back to this client for form-based UI dialogs.
      *                                          Also enables the `elicitation` capability on the session.
+     * @param  ?Closure  $onExitPlanMode  Handler for exit-plan-mode requests from the agent.
+     *                                   When provided, enables `exit_plan_mode.requested` callbacks.
+     * @param  ?Closure  $onAutoModeSwitch  Handler for auto-mode-switch requests from the agent.
+     *                                     When provided, enables `auto_mode_switch.requested` callbacks.
+     * @param  ?bool  $enableSessionTelemetry  Enables or disables internal session telemetry.
+     *                                         When false, disables session telemetry. When omitted or true,
+     *                                         telemetry is enabled for GitHub-authenticated sessions.
+     *                                         When a custom provider (BYOK) is configured, session telemetry
+     *                                         is always disabled regardless of this setting.
      * @param  SessionHooks|array|null  $hooks  Hook handlers for intercepting session lifecycle events.
      *                                          When provided, enables hooks callback allowing custom logic at various points.
      * @param  ?string  $workingDirectory  Working directory for the session. Tool operations will be relative to this directory.
@@ -104,6 +113,9 @@ readonly class SessionConfig implements Arrayable
         public ?Closure $onPermissionRequest = null,
         public ?Closure $onUserInputRequest = null,
         public ?Closure $onElicitationRequest = null,
+        public ?Closure $onExitPlanMode = null,
+        public ?Closure $onAutoModeSwitch = null,
+        public ?bool $enableSessionTelemetry = null,
         public SessionHooks|array|null $hooks = null,
         public ?string $workingDirectory = null,
         public ?bool $streaming = null,
@@ -177,6 +189,9 @@ readonly class SessionConfig implements Arrayable
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
             onUserInputRequest: $data['onUserInputRequest'] ?? null,
             onElicitationRequest: $data['onElicitationRequest'] ?? null,
+            onExitPlanMode: $data['onExitPlanMode'] ?? null,
+            onAutoModeSwitch: $data['onAutoModeSwitch'] ?? null,
+            enableSessionTelemetry: $data['enableSessionTelemetry'] ?? null,
             hooks: $hooks,
             workingDirectory: $data['workingDirectory'] ?? null,
             streaming: $data['streaming'] ?? null,
@@ -240,6 +255,9 @@ readonly class SessionConfig implements Arrayable
             'onPermissionRequest' => $this->onPermissionRequest,
             'onUserInputRequest' => $this->onUserInputRequest,
             'onElicitationRequest' => $this->onElicitationRequest,
+            'onExitPlanMode' => $this->onExitPlanMode,
+            'onAutoModeSwitch' => $this->onAutoModeSwitch,
+            'enableSessionTelemetry' => $this->enableSessionTelemetry,
             'hooks' => $hooks,
             'workingDirectory' => $this->workingDirectory,
             'streaming' => $this->streaming,
