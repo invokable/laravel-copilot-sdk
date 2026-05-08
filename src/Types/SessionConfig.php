@@ -51,9 +51,9 @@ readonly class SessionConfig implements Arrayable
      *                                          When provided, the server calls back to this client for form-based UI dialogs.
      *                                          Also enables the `elicitation` capability on the session.
      * @param  ?Closure  $onExitPlanMode  Handler for exit-plan-mode requests from the agent.
-     *                                   When provided, enables `exit_plan_mode.requested` callbacks.
+     *                                    When provided, enables `exit_plan_mode.requested` callbacks.
      * @param  ?Closure  $onAutoModeSwitch  Handler for auto-mode-switch requests from the agent.
-     *                                     When provided, enables `auto_mode_switch.requested` callbacks.
+     *                                      When provided, enables `auto_mode_switch.requested` callbacks.
      * @param  ?bool  $enableSessionTelemetry  Enables or disables internal session telemetry.
      *                                         When false, disables session telemetry. When omitted or true,
      *                                         telemetry is enabled for GitHub-authenticated sessions.
