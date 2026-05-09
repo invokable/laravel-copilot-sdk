@@ -38,8 +38,7 @@ tools:
 
 safe-outputs:
   create-pull-request:
-    title-prefix: "[test-improver] "
-    labels: [test-improver, automated]
+    labels: [test-improver, copilot]
     reviewers: [kawax]
     draft: true
     expires: 14d

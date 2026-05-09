@@ -43,8 +43,7 @@ tools:
 
 safe-outputs:
   create-pull-request:
-    title-prefix: "[sdk-sync] "
-    labels: [sdk-sync, automated]
+    labels: [sdk-sync, copilot]
     reviewers: [kawax]
     draft: true
     fallback-as-issue: false
