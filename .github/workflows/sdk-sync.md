@@ -9,16 +9,20 @@ on:
     - cron: weekly on friday around 5:00 utc+9
   workflow_dispatch:
 
-steps:
-  - name: Set up PHP
-    uses: shivammathur/setup-php@2.37.0
-    with:
-      php-version: 8.5
-      extensions: mbstring
-      coverage: xdebug
-
-  - name: Install Composer dependencies
-    run: composer install --no-interaction --prefer-dist --optimize-autoloader
+jobs:
+    setup-php:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+            - name: Set up PHP
+              uses: shivammathur/setup-php@2.37.0
+              with:
+                  php-version: 8.5
+                  extensions: mbstring, dom
+                  coverage: xdebug
+            - name: Install Composer dependencies
+              run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
 permissions:
   contents: read
