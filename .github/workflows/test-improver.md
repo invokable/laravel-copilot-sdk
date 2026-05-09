@@ -31,7 +31,7 @@ checkout:
 
 tools:
   github:
-    mode: remote
+    mode: gh-proxy
     toolsets: [default]
   cache-memory: true
 
