@@ -184,8 +184,6 @@ readonly class ResumeSessionConfig implements Arrayable
             provider: $provider,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
             onUserInputRequest: $data['onUserInputRequest'] ?? null,
-            onPermissionRequest: $data['onPermissionRequest'] ?? null,
-            onUserInputRequest: $data['onUserInputRequest'] ?? null,
             onElicitationRequest: $data['onElicitationRequest'] ?? null,
             onExitPlanMode: $data['onExitPlanMode'] ?? null,
             onAutoModeSwitch: $data['onAutoModeSwitch'] ?? null,
