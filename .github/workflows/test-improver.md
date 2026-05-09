@@ -6,20 +6,15 @@ on:
   schedule: weekly on saturday around 6:00 utc+9 # 日本時間で日曜午前6時頃
   workflow_dispatch:
 
-jobs:
-    setup-php:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v6
-            - name: Set up PHP
-              uses: shivammathur/setup-php@2.37.0
-              with:
-                  php-version: 8.5
-                  extensions: mbstring, dom
-                  coverage: xdebug
-            - name: Install Composer dependencies
-              run: composer install --no-interaction --prefer-dist --optimize-autoloader
+steps:
+    -   name: Set up PHP
+        uses: shivammathur/setup-php@2.37.0
+        with:
+            php-version: 8.5
+            extensions: mbstring, dom
+            coverage: xdebug
+    -   name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
 permissions:
   contents: read
