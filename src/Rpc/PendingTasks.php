@@ -12,6 +12,8 @@ use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundRequest;
 use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundResult;
 use Revolution\Copilot\Types\Rpc\TasksRemoveRequest;
 use Revolution\Copilot\Types\Rpc\TasksRemoveResult;
+use Revolution\Copilot\Types\Rpc\TasksSendMessageRequest;
+use Revolution\Copilot\Types\Rpc\TasksSendMessageResult;
 use Revolution\Copilot\Types\Rpc\TasksStartAgentRequest;
 use Revolution\Copilot\Types\Rpc\TasksStartAgentResult;
 
@@ -88,6 +90,19 @@ class PendingTasks
 
         return TasksRemoveResult::fromArray(
             $this->client->request('session.tasks.remove', $paramsArray),
+        );
+    }
+
+    /**
+     * Send a message to a running agent task.
+     */
+    public function sendMessage(TasksSendMessageRequest|array $params): TasksSendMessageResult
+    {
+        $paramsArray = ($params instanceof TasksSendMessageRequest ? $params : TasksSendMessageRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return TasksSendMessageResult::fromArray(
+            $this->client->request('session.tasks.sendMessage', $paramsArray),
         );
     }
 }

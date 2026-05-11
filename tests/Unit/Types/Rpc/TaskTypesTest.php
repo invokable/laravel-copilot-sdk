@@ -15,6 +15,8 @@ use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundRequest;
 use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundResult;
 use Revolution\Copilot\Types\Rpc\TasksRemoveRequest;
 use Revolution\Copilot\Types\Rpc\TasksRemoveResult;
+use Revolution\Copilot\Types\Rpc\TasksSendMessageRequest;
+use Revolution\Copilot\Types\Rpc\TasksSendMessageResult;
 use Revolution\Copilot\Types\Rpc\TasksStartAgentRequest;
 use Revolution\Copilot\Types\Rpc\TasksStartAgentResult;
 
@@ -302,3 +304,99 @@ describe('TasksRemoveResult', function () {
         expect($result->removed)->toBeFalse();
     });
 });
+
+describe('TasksSendMessageRequest', function () {
+    it('can be created with required fields', function () {
+        $req = new TasksSendMessageRequest(id: 'task-1', message: 'hello agent');
+
+        expect($req->id)->toBe('task-1')
+            ->and($req->message)->toBe('hello agent')
+            ->and($req->fromAgentId)->toBeNull();
+    });
+
+    it('can be created with all fields', function () {
+        $req = new TasksSendMessageRequest(id: 'task-2', message: 'steer this', fromAgentId: 'agent-99');
+
+        expect($req->fromAgentId)->toBe('agent-99');
+    });
+
+    it('converts to array omitting null fromAgentId', function () {
+        $req = new TasksSendMessageRequest(id: 'task-3', message: 'go');
+        $array = $req->toArray();
+
+        expect($array)->toBe(['id' => 'task-3', 'message' => 'go'])
+            ->and($array)->not->toHaveKey('fromAgentId');
+    });
+
+    it('converts to array including fromAgentId when set', function () {
+        $req = new TasksSendMessageRequest(id: 'task-4', message: 'redirect', fromAgentId: 'agent-1');
+        $array = $req->toArray();
+
+        expect($array)->toHaveKey('fromAgentId', 'agent-1');
+    });
+
+    it('can be created from array', function () {
+        $req = TasksSendMessageRequest::fromArray([
+            'id' => 'task-5',
+            'message' => 'hi',
+            'fromAgentId' => 'agent-2',
+        ]);
+
+        expect($req->id)->toBe('task-5')
+            ->and($req->message)->toBe('hi')
+            ->and($req->fromAgentId)->toBe('agent-2');
+    });
+
+    it('handles default values from empty array', function () {
+        $req = TasksSendMessageRequest::fromArray([]);
+
+        expect($req->id)->toBe('')
+            ->and($req->message)->toBe('')
+            ->and($req->fromAgentId)->toBeNull();
+    });
+
+    it('implements Arrayable', function () {
+        $req = new TasksSendMessageRequest(id: 'x', message: 'y');
+        expect($req)->toBeInstanceOf(Arrayable::class);
+    });
+});
+
+describe('TasksSendMessageResult', function () {
+    it('can be created from array', function () {
+        $result = TasksSendMessageResult::fromArray(['sent' => true]);
+        expect($result->sent)->toBeTrue()
+            ->and($result->error)->toBeNull();
+    });
+
+    it('can be created with error', function () {
+        $result = TasksSendMessageResult::fromArray(['sent' => false, 'error' => 'Task not found']);
+        expect($result->sent)->toBeFalse()
+            ->and($result->error)->toBe('Task not found');
+    });
+
+    it('defaults sent to false', function () {
+        $result = TasksSendMessageResult::fromArray([]);
+        expect($result->sent)->toBeFalse();
+    });
+
+    it('converts to array omitting null error', function () {
+        $result = new TasksSendMessageResult(sent: true);
+        $array = $result->toArray();
+
+        expect($array)->toBe(['sent' => true])
+            ->and($array)->not->toHaveKey('error');
+    });
+
+    it('converts to array including error when set', function () {
+        $result = new TasksSendMessageResult(sent: false, error: 'oops');
+        $array = $result->toArray();
+
+        expect($array)->toHaveKey('error', 'oops');
+    });
+
+    it('implements Arrayable', function () {
+        $result = new TasksSendMessageResult(sent: true);
+        expect($result)->toBeInstanceOf(Arrayable::class);
+    });
+});
+
