@@ -74,7 +74,6 @@ describe('Workspace', function () {
             'mc_task_id' => 'task-1',
             'mc_session_id' => 'sess-1',
             'mc_last_event_id' => 'evt-1',
-            'session_sync_level' => 'repo_and_user',
             'pr_create_sync_dismissed' => true,
             'chronicle_sync_dismissed' => false,
         ]);
@@ -93,7 +92,6 @@ describe('Workspace', function () {
             ->and($ws->mcTaskId)->toBe('task-1')
             ->and($ws->mcSessionId)->toBe('sess-1')
             ->and($ws->mcLastEventId)->toBe('evt-1')
-            ->and($ws->sessionSyncLevel)->toBe('repo_and_user')
             ->and($ws->prCreateSyncDismissed)->toBeTrue()
             ->and($ws->chronicleSyncDismissed)->toBeFalse();
     });
@@ -105,7 +103,6 @@ describe('Workspace', function () {
             ->and($ws->cwd)->toBeNull()
             ->and($ws->branch)->toBeNull()
             ->and($ws->hostType)->toBeNull()
-            ->and($ws->sessionSyncLevel)->toBeNull()
             ->and($ws->prCreateSyncDismissed)->toBeNull()
             ->and($ws->chronicleSyncDismissed)->toBeNull();
     });
@@ -115,7 +112,6 @@ describe('Workspace', function () {
             'id' => 'ws-1',
             'git_root' => '/root',
             'host_type' => 'ado',
-            'session_sync_level' => 'local',
         ]);
 
         $arr = $ws->toArray();
@@ -123,7 +119,7 @@ describe('Workspace', function () {
         expect($arr)->toHaveKey('id', 'ws-1')
             ->and($arr)->toHaveKey('git_root', '/root')
             ->and($arr)->toHaveKey('host_type', 'ado')
-            ->and($arr)->toHaveKey('session_sync_level', 'local');
+            ->and($arr)->not->toHaveKey('session_sync_level');
     });
 });
 

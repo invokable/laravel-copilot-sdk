@@ -26,7 +26,6 @@ readonly class Workspace implements Arrayable
         public ?string $mcTaskId = null,
         public ?string $mcSessionId = null,
         public ?string $mcLastEventId = null,
-        public ?string $sessionSyncLevel = null,
         public ?bool $prCreateSyncDismissed = null,
         public ?bool $chronicleSyncDismissed = null,
     ) {}
@@ -48,7 +47,6 @@ readonly class Workspace implements Arrayable
             mcTaskId: $data['mc_task_id'] ?? null,
             mcSessionId: $data['mc_session_id'] ?? null,
             mcLastEventId: $data['mc_last_event_id'] ?? null,
-            sessionSyncLevel: $data['session_sync_level'] ?? null,
             prCreateSyncDismissed: $data['pr_create_sync_dismissed'] ?? null,
             chronicleSyncDismissed: $data['chronicle_sync_dismissed'] ?? null,
         );
@@ -71,7 +69,6 @@ readonly class Workspace implements Arrayable
             'mc_task_id' => $this->mcTaskId,
             'mc_session_id' => $this->mcSessionId,
             'mc_last_event_id' => $this->mcLastEventId,
-            'session_sync_level' => $this->sessionSyncLevel,
             'pr_create_sync_dismissed' => $this->prCreateSyncDismissed,
             'chronicle_sync_dismissed' => $this->chronicleSyncDismissed,
         ];
