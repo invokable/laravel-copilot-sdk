@@ -15,7 +15,7 @@ readonly class ModelBilling implements Arrayable
      * @param  float  $multiplier  Billing multiplier
      */
     public function __construct(
-        public float $multiplier,
+        public ?float $multiplier = null,
     ) {}
 
     /**
@@ -26,7 +26,7 @@ readonly class ModelBilling implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            multiplier: (float) $data['multiplier'],
+            multiplier: (float) $data['multiplier'] ?? null,
         );
     }
 
