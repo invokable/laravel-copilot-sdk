@@ -61,9 +61,9 @@ Artisan::command('copilot:chat {--resume}', function () {
             );
 
             if ($confirm) {
-                return PermissionRequestResultKind::approved();
+                return PermissionRequestResultKind::approveOnce();
             } else {
-                return PermissionRequestResultKind::deniedInteractivelyByUser();
+                return PermissionRequestResultKind::reject();
             }
         },
         mcpServers: $mcp,
