@@ -399,4 +399,3 @@ describe('TasksSendMessageResult', function () {
         expect($result)->toBeInstanceOf(Arrayable::class);
     });
 });
-
