@@ -226,6 +226,12 @@ $session->rpc()->commands()->handlePendingCommand(new CommandsHandlePendingComma
     requestId: '...',
 ));
 
+// commands: キューに入ったコマンドへの応答
+$session->rpc()->commands()->respondToQueuedCommand(new CommandsRespondToQueuedCommandRequest(
+    requestId: '...',
+    result: new QueuedCommandResult(handled: true),
+));
+
 // ui: UIエリシテーションリクエストへの応答
 $session->rpc()->ui()->elicitation(new UIElicitationRequest(
     message: 'ユーザーへの質問',
