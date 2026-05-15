@@ -106,6 +106,9 @@ enum SessionEventType: string
     case MCP_OAUTH_REQUIRED = 'mcp.oauth_required';
     case MCP_OAUTH_COMPLETED = 'mcp.oauth_completed';
 
+    // Custom notification events
+    case SESSION_CUSTOM_NOTIFICATION = 'session.custom_notification';
+
     // Skill events
     case SKILL_INVOKED = 'skill.invoked';
 

@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Types;
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 
 /**
@@ -87,6 +88,10 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?string  $gitHubToken  GitHub token for per-session authentication.
      *                                When provided, the runtime resolves this token into a full GitHub identity
      *                                (login, Copilot plan, endpoints) and stores it on the session.
+     * @param  RemoteSessionMode|string|null  $remoteSession  Per-session remote behavior control:
+     *                                                        - `"off"` — local only, no remote export (default)
+     *                                                        - `"export"` — export session events to GitHub without enabling remote steering
+     *                                                        - `"on"` — export to GitHub AND enable remote steering
      * @param  ?Closure  $onEvent  Optional event handler registered on the session before the session.resume RPC is issued.
      *                             This guarantees that early events emitted by the CLI during session resumption
      *                             are delivered to the handler.
@@ -126,6 +131,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?bool $disableResume = null,
         public ?bool $continuePendingWork = null,
         public ?string $gitHubToken = null,
+        public RemoteSessionMode|string|null $remoteSession = null,
         public ?Closure $onEvent = null,
     ) {}
 
@@ -202,6 +208,7 @@ readonly class ResumeSessionConfig implements Arrayable
             disableResume: $data['disableResume'] ?? null,
             continuePendingWork: $data['continuePendingWork'] ?? null,
             gitHubToken: $data['gitHubToken'] ?? null,
+            remoteSession: $data['remoteSession'] ?? null,
             onEvent: $data['onEvent'] ?? null,
         );
     }
@@ -234,6 +241,10 @@ readonly class ResumeSessionConfig implements Arrayable
         $modelCapabilities = $this->modelCapabilities instanceof ModelCapabilitiesOverride
             ? $this->modelCapabilities->toArray()
             : $this->modelCapabilities;
+
+        $remoteSession = $this->remoteSession instanceof RemoteSessionMode
+            ? $this->remoteSession->value
+            : $this->remoteSession;
 
         return array_filter([
             'clientName' => $this->clientName,
@@ -268,6 +279,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'disableResume' => $this->disableResume,
             'continuePendingWork' => $this->continuePendingWork,
             'gitHubToken' => $this->gitHubToken,
+            'remoteSession' => $remoteSession,
             'onEvent' => $this->onEvent,
         ], fn ($value) => $value !== null);
     }

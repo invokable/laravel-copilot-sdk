@@ -76,6 +76,12 @@ $config = new SessionConfig(
     // クライアントレベルのgithub_tokenとは別に、セッション単位でトークンを指定できる
     gitHubToken: $user->github_token,
 
+    // リモートセッションの動作モード
+    // 'off' - ローカルのみ（デフォルト）
+    // 'export' - セッションイベントをGitHubにエクスポート（リモートステアリングなし）
+    // 'on' - エクスポートとリモートステアリングを両方有効化
+    remoteSession: \Revolution\Copilot\Enums\RemoteSessionMode::Export,
+
     onPermissionRequest: function (array $request) {
         // 権限リクエストを処理
     },

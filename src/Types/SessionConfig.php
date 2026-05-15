@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Types;
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 
 /**
@@ -90,6 +91,10 @@ readonly class SessionConfig implements Arrayable
      *                                When provided, the runtime resolves this token into a full GitHub identity
      *                                (login, Copilot plan, endpoints) and stores it on the session.
      *                                This enables multitenancy — different sessions can have different GitHub identities.
+     * @param  RemoteSessionMode|string|null  $remoteSession  Per-session remote behavior control:
+     *                                                        - `"off"` — local only, no remote export (default)
+     *                                                        - `"export"` — export session events to GitHub without enabling remote steering
+     *                                                        - `"on"` — export to GitHub AND enable remote steering
      * @param  ?Closure  $onEvent  Optional event handler registered on the session before the session.create RPC is issued.
      *                             This guarantees that early events emitted by the CLI during session creation (e.g. session.start)
      *                             are delivered to the handler.
@@ -129,6 +134,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $disabledSkills = null,
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
         public ?string $gitHubToken = null,
+        public RemoteSessionMode|string|null $remoteSession = null,
         public ?Closure $onEvent = null,
     ) {}
 
@@ -205,6 +211,7 @@ readonly class SessionConfig implements Arrayable
             disabledSkills: $data['disabledSkills'] ?? null,
             infiniteSessions: $infiniteSessions,
             gitHubToken: $data['gitHubToken'] ?? null,
+            remoteSession: $data['remoteSession'] ?? null,
             onEvent: $data['onEvent'] ?? null,
         );
     }
@@ -237,6 +244,10 @@ readonly class SessionConfig implements Arrayable
         $modelCapabilities = $this->modelCapabilities instanceof ModelCapabilitiesOverride
             ? $this->modelCapabilities->toArray()
             : $this->modelCapabilities;
+
+        $remoteSession = $this->remoteSession instanceof RemoteSessionMode
+            ? $this->remoteSession->value
+            : $this->remoteSession;
 
         return array_filter([
             'sessionId' => $this->sessionId,
@@ -271,6 +282,7 @@ readonly class SessionConfig implements Arrayable
             'disabledSkills' => $this->disabledSkills,
             'infiniteSessions' => $infiniteSessions,
             'gitHubToken' => $this->gitHubToken,
+            'remoteSession' => $remoteSession,
             'onEvent' => $this->onEvent,
         ], fn ($value) => $value !== null);
     }
