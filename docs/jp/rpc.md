@@ -221,6 +221,30 @@ $session->rpc()->permissions()->setApproveAll(new PermissionsSetApproveAllReques
 // セッションスコープの権限承認をリセット
 $session->rpc()->permissions()->resetSessionApprovals();
 
+// commands: セッションで利用可能なスラッシュコマンド一覧を取得
+use Revolution\Copilot\Types\Rpc\CommandsListRequest;
+
+$list = $session->rpc()->commands()->list();
+// $list->commands - SlashCommandInfo の配列
+// $list->commands[0]->name - コマンド名（スラッシュなし）
+// $list->commands[0]->description - コマンド説明
+// $list->commands[0]->kind - コマンドカテゴリ（builtin, skill, client）
+// $list->commands[0]->allowDuringAgentExecution - エージェント実行中に使用可能かどうか
+
+// フィルターを指定して一覧取得
+$list = $session->rpc()->commands()->list(new CommandsListRequest(
+    includeBuiltins: true,
+    includeSkills: false,
+));
+
+// commands: スラッシュコマンドを呼び出す
+use Revolution\Copilot\Types\Rpc\CommandsInvokeRequest;
+
+$result = $session->rpc()->commands()->invoke(new CommandsInvokeRequest(
+    name: 'help',
+    input: 'optional input text',
+));
+
 // commands: コマンド呼び出しイベントへの応答
 $session->rpc()->commands()->handlePendingCommand(new CommandsHandlePendingCommandRequest(
     requestId: '...',
@@ -328,20 +352,39 @@ $removed = $session->rpc()->tasks()->remove(
 ### remote (experimental: リモートセッションサポート)
 
 ```php
+use Revolution\Copilot\Enums\RemoteSessionMode;
+use Revolution\Copilot\Types\Rpc\RemoteEnableRequest;
 use Revolution\Copilot\Types\Rpc\RemoteEnableResult;
 
-// リモートセッションを有効化（Mission Control連携）
+// リモートセッションを有効化
 // GitHubリポジトリのワーキングディレクトリで実行すると、
 // GitHub WebやモバイルからセッションにアクセスできるURLが返される
 $result = $session->rpc()->remote()->enable();
 // $result->remoteSteerable - リモートステアリングが有効かどうか
-// $result->url - Mission Control フロントエンドURL（nullの場合あり）
+// $result->url - GitHub フロントエンドURL（nullの場合あり）
+
+// モードを指定して有効化
+// RemoteSessionMode::Off - ローカルのみ（デフォルト）
+// RemoteSessionMode::Export - セッションイベントをGitHubにエクスポート（リモートステアリングなし）
+// RemoteSessionMode::On - エクスポートとリモートステアリングを両方有効化
+$result = $session->rpc()->remote()->enable(new RemoteEnableRequest(
+    mode: RemoteSessionMode::Export,
+));
 
 // リモートセッションを無効化
 $session->rpc()->remote()->disable();
+
+// リモートセッションに接続（experimental）
+use Revolution\Copilot\Types\Rpc\ConnectRemoteSessionParams;
+
+$connected = $session->rpc()->remote()->connectRemoteSession(new ConnectRemoteSessionParams(
+    sessionId: 'remote-session-id',
+));
+// $connected->sessionId - 接続したセッションのID
+// $connected->metadata - ConnectedRemoteSessionMetadata オブジェクト
 ```
 
-詳細は [Remote Sessions](./remote-sessions.md) を参照してください。
+詳細は [Remote Sessions](./remote-sessions.md) を参照してください.
 
 ## SessionFS コールバック型
 

@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\ConnectRemoteSessionParams;
+use Revolution\Copilot\Types\Rpc\RemoteEnableRequest;
 use Revolution\Copilot\Types\Rpc\RemoteEnableResult;
+use Revolution\Copilot\Types\Rpc\RemoteSessionConnectionResult;
 
 /**
  * Pending remote RPC operations for a session.
@@ -20,17 +23,25 @@ class PendingRemote
     ) {}
 
     /**
-     * Enable remote session support (Mission Control integration).
+     * Enable remote session support.
      *
      * When enabled, sessions in a GitHub repository working directory are
      * accessible from GitHub web and mobile.
+     *
+     * @param  RemoteEnableRequest|array|null  $params  Optional remote session mode ("off", "export", or "on").
      */
-    public function enable(): RemoteEnableResult
+    public function enable(RemoteEnableRequest|array|null $params = null): RemoteEnableResult
     {
+        $paramsArray = [];
+
+        if ($params !== null) {
+            $paramsArray = ($params instanceof RemoteEnableRequest ? $params : RemoteEnableRequest::fromArray($params))->toArray();
+        }
+
+        $paramsArray['sessionId'] = $this->sessionId;
+
         return RemoteEnableResult::fromArray(
-            $this->client->request('session.remote.enable', [
-                'sessionId' => $this->sessionId,
-            ]),
+            $this->client->request('session.remote.enable', $paramsArray),
         );
     }
 
@@ -42,5 +53,20 @@ class PendingRemote
         $this->client->request('session.remote.disable', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Connect to a remote session.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function connectRemoteSession(ConnectRemoteSessionParams|array $params): RemoteSessionConnectionResult
+    {
+        $paramsArray = ($params instanceof ConnectRemoteSessionParams ? $params : ConnectRemoteSessionParams::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return RemoteSessionConnectionResult::fromArray(
+            $this->client->request('session.remote.connectRemoteSession', $paramsArray),
+        );
     }
 }
