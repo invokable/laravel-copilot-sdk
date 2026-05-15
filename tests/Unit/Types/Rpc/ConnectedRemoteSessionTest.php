@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\ConnectedRemoteSessionMetadataKind;
+use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Types\Rpc\ConnectedRemoteSessionMetadata;
 use Revolution\Copilot\Types\Rpc\ConnectedRemoteSessionMetadataRepository;
 use Revolution\Copilot\Types\Rpc\ConnectRemoteSessionParams;
 use Revolution\Copilot\Types\Rpc\RemoteEnableRequest;
 use Revolution\Copilot\Types\Rpc\RemoteSessionConnectionResult;
-use Revolution\Copilot\Enums\RemoteSessionMode;
 
 describe('ConnectRemoteSessionParams', function () {
     it('can be created from array', function () {
@@ -160,7 +160,7 @@ describe('RemoteEnableRequest', function () {
     });
 
     it('converts to array without null mode', function () {
-        $req = new RemoteEnableRequest();
+        $req = new RemoteEnableRequest;
         $array = $req->toArray();
 
         expect($array)->not->toHaveKey('mode');
