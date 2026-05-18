@@ -10,6 +10,7 @@ namespace Revolution\Copilot\Types\Hooks;
 readonly class SessionEndHookInput extends BaseHookInput
 {
     /**
+     * @param  string  $sessionId  The runtime session ID of the session that triggered the hook
      * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
      * @param  string  $cwd  Current working directory
      * @param  string  $reason  Reason for ending: "complete", "error", "abort", "timeout", or "user_exit"
@@ -17,13 +18,14 @@ readonly class SessionEndHookInput extends BaseHookInput
      * @param  ?string  $error  Error message, if any
      */
     public function __construct(
+        string $sessionId,
         int $timestamp,
         string $cwd,
         public string $reason,
         public ?string $finalMessage = null,
         public ?string $error = null,
     ) {
-        parent::__construct($timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd);
     }
 
     /**
@@ -32,6 +34,7 @@ readonly class SessionEndHookInput extends BaseHookInput
     public static function fromArray(array $data): static
     {
         return new static(
+            sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
             cwd: $data['cwd'] ?? '',
             reason: $data['reason'] ?? 'complete',

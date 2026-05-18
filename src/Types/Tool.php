@@ -16,7 +16,8 @@ readonly class Tool implements Arrayable
      * @param  string  $name  Tool name
      * @param  ?string  $description  Tool description
      * @param  ?array  $parameters  Tool parameter schema
-     * @param  Closure  $handler  Tool handler function
+     * @param  ?Closure  $handler  Tool handler function. When omitted, the tool is declaration-only and
+     *                             must be resolved by the consumer via pending external tool request RPCs.
      * @param  bool  $overridesBuiltInTool  Whether this tool overrides a built-in tool with the same name
      * @param  bool  $skipPermission  Whether to skip permission prompt for this tool
      */
@@ -24,7 +25,7 @@ readonly class Tool implements Arrayable
         public string $name,
         public ?string $description,
         public ?array $parameters,
-        public Closure $handler,
+        public ?Closure $handler = null,
         public bool $overridesBuiltInTool = false,
         public bool $skipPermission = false,
     ) {}
@@ -36,7 +37,7 @@ readonly class Tool implements Arrayable
         string $name,
         ?string $description,
         ?array $parameters,
-        Closure $handler,
+        ?Closure $handler = null,
         bool $overridesBuiltInTool = false,
         bool $skipPermission = false,
     ): array {
@@ -46,7 +47,7 @@ readonly class Tool implements Arrayable
     /**
      * Create from array.
      *
-     * @param  array{name: string, description?: string, parameters?: array, handler: callable, overridesBuiltInTool?: bool, skipPermission?: bool}  $data
+     * @param  array{name: string, description?: string, parameters?: array, handler?: callable, overridesBuiltInTool?: bool, skipPermission?: bool}  $data
      */
     public static function fromArray(array $data): self
     {
@@ -54,7 +55,7 @@ readonly class Tool implements Arrayable
             name: $data['name'],
             description: $data['description'] ?? null,
             parameters: $data['parameters'] ?? null,
-            handler: $data['handler'],
+            handler: $data['handler'] ?? null,
             overridesBuiltInTool: $data['overridesBuiltInTool'] ?? false,
             skipPermission: $data['skipPermission'] ?? false,
         );

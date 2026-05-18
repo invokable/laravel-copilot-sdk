@@ -184,4 +184,35 @@ describe('Tool', function () {
 
         expect($tool)->toBeInstanceOf(Arrayable::class);
     });
+
+    it('can be created without a handler for declaration-only tools', function () {
+        $tool = new Tool(
+            name: 'declaration_tool',
+            description: 'A declaration-only tool',
+            parameters: ['type' => 'object'],
+        );
+
+        expect($tool->handler)->toBeNull();
+    });
+
+    it('can be created from array without handler', function () {
+        $tool = Tool::fromArray([
+            'name' => 'declaration_tool',
+            'description' => 'A declaration-only tool',
+        ]);
+
+        expect($tool->name)->toBe('declaration_tool')
+            ->and($tool->handler)->toBeNull();
+    });
+
+    it('can define a declaration-only tool', function () {
+        $toolArray = Tool::define(
+            name: 'read_only_tool',
+            description: 'Exposed without a handler',
+            parameters: null,
+        );
+
+        expect($toolArray['name'])->toBe('read_only_tool')
+            ->and($toolArray['handler'])->toBeNull();
+    });
 });

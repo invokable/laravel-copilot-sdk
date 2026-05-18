@@ -82,6 +82,16 @@ $config = new SessionConfig(
     // 'on' - エクスポートとリモートステアリングを両方有効化
     remoteSession: \Revolution\Copilot\Enums\RemoteSessionMode::Export,
 
+    // クラウドセッション（ローカルではなくクラウドでセッションを作成）
+    // オプションでリポジトリ情報を関連付けられる
+    cloud: new \Revolution\Copilot\Types\CloudSessionOptions(
+        repository: new \Revolution\Copilot\Types\CloudSessionRepository(
+            owner: 'myorg',
+            name: 'myrepo',
+            branch: 'main',
+        ),
+    ),
+
     onPermissionRequest: function (array $request) {
         // 権限リクエストを処理
     },

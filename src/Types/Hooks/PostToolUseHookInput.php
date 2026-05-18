@@ -12,6 +12,7 @@ use Revolution\Copilot\Types\ToolResultObject;
 readonly class PostToolUseHookInput extends BaseHookInput
 {
     /**
+     * @param  string  $sessionId  The runtime session ID of the session that triggered the hook
      * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
      * @param  string  $cwd  Current working directory
      * @param  string  $toolName  Name of the tool that was executed
@@ -19,13 +20,14 @@ readonly class PostToolUseHookInput extends BaseHookInput
      * @param  ToolResultObject|array  $toolResult  Result returned by the tool
      */
     public function __construct(
+        string $sessionId,
         int $timestamp,
         string $cwd,
         public string $toolName,
         public mixed $toolArgs,
         public ToolResultObject|array $toolResult,
     ) {
-        parent::__construct($timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd);
     }
 
     /**
@@ -39,6 +41,7 @@ readonly class PostToolUseHookInput extends BaseHookInput
         }
 
         return new static(
+            sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
             cwd: $data['cwd'] ?? '',
             toolName: $data['toolName'] ?? '',

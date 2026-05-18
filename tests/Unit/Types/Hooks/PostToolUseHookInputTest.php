@@ -14,6 +14,7 @@ describe('PostToolUseHookInput', function () {
         );
 
         $input = new PostToolUseHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/home/user/project',
             toolName: 'bash',
@@ -21,7 +22,8 @@ describe('PostToolUseHookInput', function () {
             toolResult: $toolResult,
         );
 
-        expect($input->timestamp)->toBe(1706600000)
+        expect($input->sessionId)->toBe('session-abc')
+            ->and($input->timestamp)->toBe(1706600000)
             ->and($input->cwd)->toBe('/home/user/project')
             ->and($input->toolName)->toBe('bash')
             ->and($input->toolArgs)->toBe(['command' => 'ls'])
@@ -30,6 +32,7 @@ describe('PostToolUseHookInput', function () {
 
     it('can be created from array with toolResult as array', function () {
         $input = PostToolUseHookInput::fromArray([
+            'sessionId' => 'session-abc',
             'timestamp' => 1706600000,
             'cwd' => '/var/www',
             'toolName' => 'edit',
@@ -40,7 +43,8 @@ describe('PostToolUseHookInput', function () {
             ],
         ]);
 
-        expect($input->toolName)->toBe('edit')
+        expect($input->sessionId)->toBe('session-abc')
+            ->and($input->toolName)->toBe('edit')
             ->and($input->toolResult)->toBeInstanceOf(ToolResultObject::class)
             ->and($input->toolResult->textResultForLlm)->toBe('File updated');
     });
@@ -48,7 +52,8 @@ describe('PostToolUseHookInput', function () {
     it('can be created from array with defaults', function () {
         $input = PostToolUseHookInput::fromArray([]);
 
-        expect($input->timestamp)->toBe(0)
+        expect($input->sessionId)->toBe('')
+            ->and($input->timestamp)->toBe(0)
             ->and($input->cwd)->toBe('')
             ->and($input->toolName)->toBe('')
             ->and($input->toolArgs)->toBeNull()
@@ -62,6 +67,7 @@ describe('PostToolUseHookInput', function () {
         );
 
         $input = new PostToolUseHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/tmp',
             toolName: 'view',
@@ -71,7 +77,8 @@ describe('PostToolUseHookInput', function () {
 
         $array = $input->toArray();
 
-        expect($array['timestamp'])->toBe(1706600000)
+        expect($array['sessionId'])->toBe('session-abc')
+            ->and($array['timestamp'])->toBe(1706600000)
             ->and($array['cwd'])->toBe('/tmp')
             ->and($array['toolName'])->toBe('view')
             ->and($array['toolArgs'])->toBe(['path' => '/test'])

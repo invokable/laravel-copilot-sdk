@@ -10,16 +10,18 @@ namespace Revolution\Copilot\Types\Hooks;
 readonly class UserPromptSubmittedHookInput extends BaseHookInput
 {
     /**
+     * @param  string  $sessionId  The runtime session ID of the session that triggered the hook
      * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
      * @param  string  $cwd  Current working directory
      * @param  string  $prompt  The user's submitted prompt
      */
     public function __construct(
+        string $sessionId,
         int $timestamp,
         string $cwd,
         public string $prompt,
     ) {
-        parent::__construct($timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd);
     }
 
     /**
@@ -28,6 +30,7 @@ readonly class UserPromptSubmittedHookInput extends BaseHookInput
     public static function fromArray(array $data): static
     {
         return new static(
+            sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
             cwd: $data['cwd'] ?? '',
             prompt: $data['prompt'] ?? '',

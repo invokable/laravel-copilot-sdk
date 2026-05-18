@@ -161,6 +161,7 @@ Copilot::start(function (CopilotSession $session) {
 
 | プロパティ | 型 | 説明 |
 |---|---|---|
+| `sessionId` | `string` | フックを発火させたセッションのランタイムID（サブエージェントの場合は呼び出し元セッションIDと異なる場合がある） |
 | `timestamp` | `int` | フック発火時刻（Unix ms） |
 | `cwd` | `string` | 現在の作業ディレクトリ |
 

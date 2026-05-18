@@ -95,6 +95,8 @@ readonly class SessionConfig implements Arrayable
      *                                                        - `"off"` — local only, no remote export (default)
      *                                                        - `"export"` — export session events to GitHub without enabling remote steering
      *                                                        - `"on"` — export to GitHub AND enable remote steering
+     * @param  CloudSessionOptions|array|null  $cloud  Creates a remote session in the cloud instead of a local session.
+     *                                                 The optional repository is associated with the cloud session.
      * @param  ?Closure  $onEvent  Optional event handler registered on the session before the session.create RPC is issued.
      *                             This guarantees that early events emitted by the CLI during session creation (e.g. session.start)
      *                             are delivered to the handler.
@@ -135,6 +137,7 @@ readonly class SessionConfig implements Arrayable
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
         public ?string $gitHubToken = null,
         public RemoteSessionMode|string|null $remoteSession = null,
+        public CloudSessionOptions|array|null $cloud = null,
         public ?Closure $onEvent = null,
     ) {}
 
@@ -178,6 +181,13 @@ readonly class SessionConfig implements Arrayable
                 : ModelCapabilitiesOverride::fromArray($data['modelCapabilities']);
         }
 
+        $cloud = null;
+        if (isset($data['cloud'])) {
+            $cloud = $data['cloud'] instanceof CloudSessionOptions
+                ? $data['cloud']
+                : CloudSessionOptions::fromArray($data['cloud']);
+        }
+
         return new self(
             sessionId: $data['sessionId'] ?? null,
             clientName: $data['clientName'] ?? null,
@@ -212,6 +222,7 @@ readonly class SessionConfig implements Arrayable
             infiniteSessions: $infiniteSessions,
             gitHubToken: $data['gitHubToken'] ?? null,
             remoteSession: $data['remoteSession'] ?? null,
+            cloud: $cloud,
             onEvent: $data['onEvent'] ?? null,
         );
     }
@@ -249,6 +260,10 @@ readonly class SessionConfig implements Arrayable
             ? $this->remoteSession->value
             : $this->remoteSession;
 
+        $cloud = $this->cloud instanceof CloudSessionOptions
+            ? $this->cloud->toArray()
+            : $this->cloud;
+
         return array_filter([
             'sessionId' => $this->sessionId,
             'clientName' => $this->clientName,
@@ -283,6 +298,7 @@ readonly class SessionConfig implements Arrayable
             'infiniteSessions' => $infiniteSessions,
             'gitHubToken' => $this->gitHubToken,
             'remoteSession' => $remoteSession,
+            'cloud' => $cloud,
             'onEvent' => $this->onEvent,
         ], fn ($value) => $value !== null);
     }
