@@ -10,6 +10,7 @@ namespace Revolution\Copilot\Types\Hooks;
 readonly class ErrorOccurredHookInput extends BaseHookInput
 {
     /**
+     * @param  string  $sessionId  The runtime session ID of the session that triggered the hook
      * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
      * @param  string  $cwd  Current working directory
      * @param  string  $error  Error message
@@ -17,13 +18,14 @@ readonly class ErrorOccurredHookInput extends BaseHookInput
      * @param  bool  $recoverable  Whether the error is recoverable
      */
     public function __construct(
+        string $sessionId,
         int $timestamp,
         string $cwd,
         public string $error,
         public string $errorContext,
         public bool $recoverable,
     ) {
-        parent::__construct($timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd);
     }
 
     /**
@@ -32,6 +34,7 @@ readonly class ErrorOccurredHookInput extends BaseHookInput
     public static function fromArray(array $data): static
     {
         return new static(
+            sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
             cwd: $data['cwd'] ?? '',
             error: $data['error'] ?? '',

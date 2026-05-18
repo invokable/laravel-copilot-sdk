@@ -8,6 +8,7 @@ use Revolution\Copilot\Types\Hooks\ErrorOccurredHookInput;
 describe('ErrorOccurredHookInput', function () {
     it('can be created with all fields', function () {
         $input = new ErrorOccurredHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/home/user/project',
             error: 'Connection failed',
@@ -15,7 +16,8 @@ describe('ErrorOccurredHookInput', function () {
             recoverable: true,
         );
 
-        expect($input->timestamp)->toBe(1706600000)
+        expect($input->sessionId)->toBe('session-abc')
+            ->and($input->timestamp)->toBe(1706600000)
             ->and($input->cwd)->toBe('/home/user/project')
             ->and($input->error)->toBe('Connection failed')
             ->and($input->errorContext)->toBe('model_call')
@@ -24,6 +26,7 @@ describe('ErrorOccurredHookInput', function () {
 
     it('can be created with tool_execution context', function () {
         $input = new ErrorOccurredHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/tmp',
             error: 'Tool crashed',
@@ -37,6 +40,7 @@ describe('ErrorOccurredHookInput', function () {
 
     it('can be created from array', function () {
         $input = ErrorOccurredHookInput::fromArray([
+            'sessionId' => 'session-abc',
             'timestamp' => 1706600000,
             'cwd' => '/var/www',
             'error' => 'System error',
@@ -44,7 +48,8 @@ describe('ErrorOccurredHookInput', function () {
             'recoverable' => false,
         ]);
 
-        expect($input->error)->toBe('System error')
+        expect($input->sessionId)->toBe('session-abc')
+            ->and($input->error)->toBe('System error')
             ->and($input->errorContext)->toBe('system')
             ->and($input->recoverable)->toBeFalse();
     });
@@ -52,7 +57,8 @@ describe('ErrorOccurredHookInput', function () {
     it('can be created from array with defaults', function () {
         $input = ErrorOccurredHookInput::fromArray([]);
 
-        expect($input->timestamp)->toBe(0)
+        expect($input->sessionId)->toBe('')
+            ->and($input->timestamp)->toBe(0)
             ->and($input->cwd)->toBe('')
             ->and($input->error)->toBe('')
             ->and($input->errorContext)->toBe('system')
@@ -61,6 +67,7 @@ describe('ErrorOccurredHookInput', function () {
 
     it('can convert to array', function () {
         $input = new ErrorOccurredHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/tmp',
             error: 'User input error',
@@ -69,6 +76,7 @@ describe('ErrorOccurredHookInput', function () {
         );
 
         expect($input->toArray())->toBe([
+            'sessionId' => 'session-abc',
             'timestamp' => 1706600000,
             'cwd' => '/tmp',
             'error' => 'User input error',

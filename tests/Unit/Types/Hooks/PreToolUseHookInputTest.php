@@ -8,13 +8,15 @@ use Revolution\Copilot\Types\Hooks\PreToolUseHookInput;
 describe('PreToolUseHookInput', function () {
     it('can be created with all fields', function () {
         $input = new PreToolUseHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/home/user/project',
             toolName: 'bash',
             toolArgs: ['command' => 'ls -la'],
         );
 
-        expect($input->timestamp)->toBe(1706600000)
+        expect($input->sessionId)->toBe('session-abc')
+            ->and($input->timestamp)->toBe(1706600000)
             ->and($input->cwd)->toBe('/home/user/project')
             ->and($input->toolName)->toBe('bash')
             ->and($input->toolArgs)->toBe(['command' => 'ls -la']);
@@ -22,20 +24,23 @@ describe('PreToolUseHookInput', function () {
 
     it('can be created from array', function () {
         $input = PreToolUseHookInput::fromArray([
+            'sessionId' => 'session-abc',
             'timestamp' => 1706600000,
             'cwd' => '/var/www',
             'toolName' => 'edit',
             'toolArgs' => ['path' => '/file.txt', 'content' => 'test'],
         ]);
 
-        expect($input->toolName)->toBe('edit')
+        expect($input->sessionId)->toBe('session-abc')
+            ->and($input->toolName)->toBe('edit')
             ->and($input->toolArgs)->toBe(['path' => '/file.txt', 'content' => 'test']);
     });
 
     it('can be created from array with defaults', function () {
         $input = PreToolUseHookInput::fromArray([]);
 
-        expect($input->timestamp)->toBe(0)
+        expect($input->sessionId)->toBe('')
+            ->and($input->timestamp)->toBe(0)
             ->and($input->cwd)->toBe('')
             ->and($input->toolName)->toBe('')
             ->and($input->toolArgs)->toBeNull();
@@ -43,6 +48,7 @@ describe('PreToolUseHookInput', function () {
 
     it('can convert to array', function () {
         $input = new PreToolUseHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/tmp',
             toolName: 'view',
@@ -50,6 +56,7 @@ describe('PreToolUseHookInput', function () {
         );
 
         expect($input->toArray())->toBe([
+            'sessionId' => 'session-abc',
             'timestamp' => 1706600000,
             'cwd' => '/tmp',
             'toolName' => 'view',
@@ -59,6 +66,7 @@ describe('PreToolUseHookInput', function () {
 
     it('extends BaseHookInput', function () {
         $input = new PreToolUseHookInput(
+            sessionId: '',
             timestamp: 0,
             cwd: '',
             toolName: '',

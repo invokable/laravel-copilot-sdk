@@ -10,18 +10,20 @@ namespace Revolution\Copilot\Types\Hooks;
 readonly class PreToolUseHookInput extends BaseHookInput
 {
     /**
+     * @param  string  $sessionId  The runtime session ID of the session that triggered the hook
      * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
      * @param  string  $cwd  Current working directory
      * @param  string  $toolName  Name of the tool to be executed
      * @param  mixed  $toolArgs  Arguments to be passed to the tool
      */
     public function __construct(
+        string $sessionId,
         int $timestamp,
         string $cwd,
         public string $toolName,
         public mixed $toolArgs,
     ) {
-        parent::__construct($timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd);
     }
 
     /**
@@ -30,6 +32,7 @@ readonly class PreToolUseHookInput extends BaseHookInput
     public static function fromArray(array $data): static
     {
         return new static(
+            sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
             cwd: $data['cwd'] ?? '',
             toolName: $data['toolName'] ?? '',

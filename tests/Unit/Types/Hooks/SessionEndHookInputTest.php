@@ -8,6 +8,7 @@ use Revolution\Copilot\Types\Hooks\SessionEndHookInput;
 describe('SessionEndHookInput', function () {
     it('can be created with all fields', function () {
         $input = new SessionEndHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/home/user/project',
             reason: 'complete',
@@ -15,7 +16,8 @@ describe('SessionEndHookInput', function () {
             error: null,
         );
 
-        expect($input->timestamp)->toBe(1706600000)
+        expect($input->sessionId)->toBe('session-abc')
+            ->and($input->timestamp)->toBe(1706600000)
             ->and($input->cwd)->toBe('/home/user/project')
             ->and($input->reason)->toBe('complete')
             ->and($input->finalMessage)->toBe('Task completed successfully')
@@ -24,6 +26,7 @@ describe('SessionEndHookInput', function () {
 
     it('can be created with error reason', function () {
         $input = new SessionEndHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/tmp',
             reason: 'error',
@@ -36,20 +39,23 @@ describe('SessionEndHookInput', function () {
 
     it('can be created from array', function () {
         $input = SessionEndHookInput::fromArray([
+            'sessionId' => 'session-abc',
             'timestamp' => 1706600000,
             'cwd' => '/var/www',
             'reason' => 'abort',
             'finalMessage' => 'User aborted',
         ]);
 
-        expect($input->reason)->toBe('abort')
+        expect($input->sessionId)->toBe('session-abc')
+            ->and($input->reason)->toBe('abort')
             ->and($input->finalMessage)->toBe('User aborted');
     });
 
     it('can be created from array with defaults', function () {
         $input = SessionEndHookInput::fromArray([]);
 
-        expect($input->timestamp)->toBe(0)
+        expect($input->sessionId)->toBe('')
+            ->and($input->timestamp)->toBe(0)
             ->and($input->cwd)->toBe('')
             ->and($input->reason)->toBe('complete')
             ->and($input->finalMessage)->toBeNull()
@@ -58,6 +64,7 @@ describe('SessionEndHookInput', function () {
 
     it('can convert to array with all fields', function () {
         $input = new SessionEndHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/tmp',
             reason: 'timeout',
@@ -66,6 +73,7 @@ describe('SessionEndHookInput', function () {
         );
 
         expect($input->toArray())->toBe([
+            'sessionId' => 'session-abc',
             'timestamp' => 1706600000,
             'cwd' => '/tmp',
             'reason' => 'timeout',
@@ -76,12 +84,14 @@ describe('SessionEndHookInput', function () {
 
     it('filters null values in toArray', function () {
         $input = new SessionEndHookInput(
+            sessionId: 'session-abc',
             timestamp: 1706600000,
             cwd: '/tmp',
             reason: 'user_exit',
         );
 
         expect($input->toArray())->toBe([
+            'sessionId' => 'session-abc',
             'timestamp' => 1706600000,
             'cwd' => '/tmp',
             'reason' => 'user_exit',
