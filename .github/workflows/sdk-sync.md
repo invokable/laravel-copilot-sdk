@@ -45,7 +45,7 @@ safe-outputs:
     labels: [sdk-sync, copilot]
     reviewers: [kawax]
     draft: true
-    fallback-as-issue: false
+    fallback-as-issue: true
     if-no-changes: ignore
 
 network:

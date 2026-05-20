@@ -41,7 +41,7 @@ safe-outputs:
     reviewers: [kawax]
     draft: true
     expires: 14d
-    fallback-as-issue: false
+    fallback-as-issue: true
     if-no-changes: ignore
 
 network:
