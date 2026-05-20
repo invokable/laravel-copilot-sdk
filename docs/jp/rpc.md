@@ -403,6 +403,32 @@ $connected = $session->rpc()->remote()->connectRemoteSession(new ConnectRemoteSe
 | `SessionFsRmRequest` | ファイル/ディレクトリ削除 |
 | `SessionFsRenameRequest` | ファイル/ディレクトリ名前変更 |
 
+### SQLite コールバック型
+
+| 型クラス | 用途 |
+|---|---|
+| `SessionFsSetProviderCapabilities` | プロバイダーの対応機能宣言（SQLiteサポートなど） |
+| `SessionFsSqliteExistsRequest` / `SessionFsSqliteExistsResult` | SQLiteデータベースの存在確認 |
+| `SessionFsSqliteQueryRequest` / `SessionFsSqliteQueryResult` | SQLiteクエリ実行 |
+
+SQLiteサポートを有効にするには、`SessionFsSetProviderRequest` の `capabilities` に `SessionFsSetProviderCapabilities(sqlite: true)` を渡します。
+
+```php
+use Revolution\Copilot\Types\Rpc\SessionFsSetProviderCapabilities;
+use Revolution\Copilot\Types\Rpc\SessionFsSetProviderRequest;
+
+$client->rpc()->sessionFs()->setProvider(new SessionFsSetProviderRequest(
+    initialCwd: '/app',
+    sessionStatePath: '.copilot/sessions',
+    capabilities: new SessionFsSetProviderCapabilities(sqlite: true),
+));
+```
+
+`SessionFsSqliteQueryType` enum（`src/Enums/`）はクエリ種別を表します:
+- `Exec`: DDL/複数ステートメント（結果なし）
+- `Query`: SELECT（行を返す）
+- `Run`: INSERT/UPDATE/DELETE（rowsAffected を返す）
+
 これらの型クラスは`src/Types/Rpc/`に配置されています。
 
 ## 配列での引数指定
