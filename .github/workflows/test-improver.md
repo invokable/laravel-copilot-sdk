@@ -43,6 +43,7 @@ safe-outputs:
     expires: 14d
     fallback-as-issue: true
     if-no-changes: ignore
+    signed-commits: false
 
 network:
   allowed:

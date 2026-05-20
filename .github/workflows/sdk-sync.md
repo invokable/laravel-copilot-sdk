@@ -47,6 +47,7 @@ safe-outputs:
     draft: true
     fallback-as-issue: true
     if-no-changes: ignore
+    signed-commits: false
 
 network:
   allowed:
