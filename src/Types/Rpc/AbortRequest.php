@@ -28,8 +28,12 @@ readonly class AbortRequest implements Arrayable
 
     public function toArray(): array
     {
-        return array_filter([
-            'reason' => $this->reason?->value,
-        ], fn ($value) => ! is_null($value));
+        if (is_null($this->reason)) {
+            return [];
+        }
+
+        return [
+            'reason' => $this->reason->value,
+        ];
     }
 }

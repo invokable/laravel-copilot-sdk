@@ -30,9 +30,14 @@ readonly class AbortResult implements Arrayable
 
     public function toArray(): array
     {
-        return array_filter([
+        $result = [
             'success' => $this->success,
-            'error' => $this->error,
-        ], fn ($value) => ! is_null($value));
+        ];
+
+        if (! is_null($this->error)) {
+            $result['error'] = $this->error;
+        }
+
+        return $result;
     }
 }
