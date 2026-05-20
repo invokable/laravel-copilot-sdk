@@ -30,6 +30,6 @@ readonly class AbortRequest implements Arrayable
     {
         return array_filter([
             'reason' => $this->reason?->value,
-        ], fn ($value) => $value !== null);
+        ], fn ($value) => ! is_null($value));
     }
 }

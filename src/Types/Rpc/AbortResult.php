@@ -33,6 +33,6 @@ readonly class AbortResult implements Arrayable
         return array_filter([
             'success' => $this->success,
             'error' => $this->error,
-        ], fn ($value) => $value !== null);
+        ], fn ($value) => ! is_null($value));
     }
 }
