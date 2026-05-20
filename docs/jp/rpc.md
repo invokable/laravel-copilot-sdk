@@ -47,6 +47,7 @@ Copilot::client()->rpc()->mcp()->add(new McpConfigAddRequest(
     name: 'my-server',
     config: new McpServerValue(type: 'local', command: 'php', args: ['artisan', 'mcp']),
 ));
+// args は省略可能
 Copilot::client()->rpc()->mcp()->update(new McpConfigUpdateRequest(
     name: 'my-server',
     config: new McpServerValue(type: 'http', url: 'https://mcp.example.com'),

@@ -219,6 +219,22 @@ describe('UsageGetMetricsResult', function () {
             ->and($result->modelMetrics)->toBe([]);
     });
 
+    it('accepts totalApiDuration alias from duration rename', function () {
+        $result = UsageGetMetricsResult::fromArray([
+            'totalPremiumRequestCost' => 1.5,
+            'totalUserRequests' => 2,
+            'totalApiDuration' => 999.5,
+            'sessionStartTime' => 1700000000000,
+            'codeChanges' => ['linesAdded' => 1, 'linesRemoved' => 0, 'filesModifiedCount' => 1],
+            'modelMetrics' => [],
+            'lastCallInputTokens' => 10,
+            'lastCallOutputTokens' => 20,
+        ]);
+
+        expect($result->totalApiDurationMs)->toBe(999.5)
+            ->and($result->toArray())->toHaveKey('totalApiDurationMs', 999.5);
+    });
+
     it('converts to array roundtrip', function () {
         $data = [
             'totalPremiumRequestCost' => 2.0,

@@ -71,6 +71,15 @@ describe('McpServerValue', function () {
             ->toHaveKey('args', ['server.js'])
             ->not->toHaveKey('url');
     });
+
+    it('omits args when not configured', function () {
+        $data = new McpServerValue(type: 'local', command: 'php');
+
+        expect($data->toArray())
+            ->toHaveKey('type', 'local')
+            ->toHaveKey('command', 'php')
+            ->not->toHaveKey('args');
+    });
 });
 
 describe('McpConfigList', function () {

@@ -46,7 +46,9 @@ readonly class UsageGetMetricsResult implements Arrayable
         return new self(
             totalPremiumRequestCost: (float) $data['totalPremiumRequestCost'],
             totalUserRequests: $data['totalUserRequests'],
-            totalApiDurationMs: (float) $data['totalApiDurationMs'],
+            totalApiDurationMs: isset($data['totalApiDurationMs'])
+                ? (float) $data['totalApiDurationMs']
+                : (float) ($data['totalApiDuration'] ?? 0),
             sessionStartTime: $data['sessionStartTime'],
             codeChanges: CodeChanges::fromArray($data['codeChanges']),
             modelMetrics: $modelMetrics,
