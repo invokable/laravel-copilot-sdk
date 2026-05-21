@@ -369,6 +369,15 @@ $removed = $session->rpc()->tasks()->remove(
     new TasksRemoveRequest(id: $result->agentId)
 );
 // $removed->removed - 削除に成功したかどうか
+
+// 実行中のエージェントタスクにメッセージを送信（ステアリング）
+use Revolution\Copilot\Types\Rpc\TasksSendMessageRequest;
+
+$sent = $session->rpc()->tasks()->sendMessage(
+    new TasksSendMessageRequest(id: $result->agentId, message: '別のディレクトリも検索してください')
+);
+// $sent->sent - メッセージが正常に送信されたかどうか
+// $sent->error - 送信失敗時のエラーメッセージ（nullable）
 ```
 
 ### remote (experimental: リモートセッションサポート)

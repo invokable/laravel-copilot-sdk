@@ -12,6 +12,8 @@ use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundRequest;
 use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundResult;
 use Revolution\Copilot\Types\Rpc\TasksRemoveRequest;
 use Revolution\Copilot\Types\Rpc\TasksRemoveResult;
+use Revolution\Copilot\Types\Rpc\TasksSendMessageRequest;
+use Revolution\Copilot\Types\Rpc\TasksSendMessageResult;
 use Revolution\Copilot\Types\Rpc\TasksStartAgentRequest;
 use Revolution\Copilot\Types\Rpc\TasksStartAgentResult;
 
@@ -130,5 +132,44 @@ describe('PendingTasks', function () {
 
         expect($result)->toBeInstanceOf(TasksRemoveResult::class)
             ->and($result->removed)->toBeTrue();
+    });
+
+    it('calls session.tasks.sendMessage and returns result', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.tasks.sendMessage',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'sess-1'
+                    && $params['id'] === 'task-1'
+                    && $params['message'] === 'hello agent'),
+            )
+            ->andReturn(['sent' => true]);
+
+        $pending = new PendingTasks($client, 'sess-1');
+        $result = $pending->sendMessage(new TasksSendMessageRequest(id: 'task-1', message: 'hello agent'));
+
+        expect($result)->toBeInstanceOf(TasksSendMessageResult::class)
+            ->and($result->sent)->toBeTrue();
+    });
+
+    it('calls session.tasks.sendMessage with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.tasks.sendMessage',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'sess-1'
+                    && $params['id'] === 'task-2'
+                    && $params['message'] === 'steer this'),
+            )
+            ->andReturn(['sent' => false, 'error' => 'Task not found']);
+
+        $pending = new PendingTasks($client, 'sess-1');
+        $result = $pending->sendMessage(['id' => 'task-2', 'message' => 'steer this']);
+
+        expect($result)->toBeInstanceOf(TasksSendMessageResult::class)
+            ->and($result->sent)->toBeFalse()
+            ->and($result->error)->toBe('Task not found');
     });
 });
