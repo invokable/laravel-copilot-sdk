@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\AuthInfoType;
 use Revolution\Copilot\Types\Rpc\AccountGetQuotaRequest;
+use Revolution\Copilot\Types\Rpc\AuthInfo;
 use Revolution\Copilot\Types\Rpc\McpConfigDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
@@ -14,6 +15,8 @@ use Revolution\Copilot\Types\Rpc\PermissionsResetSessionApprovalsResult;
 use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllResult;
 use Revolution\Copilot\Types\Rpc\SessionAuthStatus;
+use Revolution\Copilot\Types\Rpc\SessionSetCredentialsParams;
+use Revolution\Copilot\Types\Rpc\SessionSetCredentialsResult;
 
 describe('AccountGetQuotaRequest', function () {
     it('can be created with gitHubToken', function () {
@@ -265,5 +268,82 @@ describe('SessionAuthStatus', function () {
         ]);
 
         expect($status->authType)->toBe('unknown-type');
+    });
+});
+
+describe('AuthInfo', function () {
+    it('can be created with known type', function () {
+        $auth = AuthInfo::fromArray([
+            'host' => 'https://github.com',
+            'type' => 'user',
+            'login' => 'octocat',
+            'copilotUser' => ['login' => 'octocat'],
+        ]);
+
+        expect($auth->type)->toBe(AuthInfoType::USER)
+            ->and($auth->host)->toBe('https://github.com')
+            ->and($auth->login)->toBe('octocat')
+            ->and($auth->copilotUser)->toBe(['login' => 'octocat']);
+    });
+
+    it('serializes optional values and enum type', function () {
+        $auth = new AuthInfo(
+            host: 'https://github.com',
+            type: AuthInfoType::TOKEN,
+            token: 'ghp_test',
+        );
+
+        expect($auth->toArray())->toBe([
+            'host' => 'https://github.com',
+            'type' => 'token',
+            'token' => 'ghp_test',
+        ]);
+    });
+
+    it('keeps unknown type as string', function () {
+        $auth = AuthInfo::fromArray([
+            'host' => 'https://example.com',
+            'type' => 'custom-auth-type',
+        ]);
+
+        expect($auth->type)->toBe('custom-auth-type');
+    });
+});
+
+describe('SessionSetCredentialsParams', function () {
+    it('can be created without credentials', function () {
+        $params = SessionSetCredentialsParams::fromArray([]);
+
+        expect($params->credentials)->toBeNull()
+            ->and($params->toArray())->toBe([]);
+    });
+
+    it('serializes credentials', function () {
+        $params = new SessionSetCredentialsParams(
+            credentials: new AuthInfo(
+                host: 'https://github.com',
+                type: AuthInfoType::GH_CLI,
+                login: 'octocat',
+                token: 'gho_test',
+            ),
+        );
+
+        expect($params->toArray())->toBe([
+            'credentials' => [
+                'host' => 'https://github.com',
+                'type' => 'gh-cli',
+                'login' => 'octocat',
+                'token' => 'gho_test',
+            ],
+        ]);
+    });
+});
+
+describe('SessionSetCredentialsResult', function () {
+    it('can be created from array', function () {
+        $result = SessionSetCredentialsResult::fromArray(['success' => true]);
+
+        expect($result->success)->toBeTrue()
+            ->and($result->toArray())->toBe(['success' => true]);
     });
 });
