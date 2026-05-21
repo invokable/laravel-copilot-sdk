@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Revolution\Copilot\Types\Rpc;
+
+use Illuminate\Contracts\Support\Arrayable;
+
+/**
+ * Result for workspace path check.
+ */
+readonly class PermissionPathsWorkspaceCheckResult implements Arrayable
+{
+    public function __construct(
+        public bool $allowed,
+    ) {}
+
+    public static function fromArray(array $data): self
+    {
+        return new self(allowed: $data['allowed'] ?? false);
+    }
+
+    public function toArray(): array
+    {
+        return ['allowed' => $this->allowed];
+    }
+}
