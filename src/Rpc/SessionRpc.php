@@ -48,6 +48,11 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->tasks()->remove(new TasksRemoveRequest(id: 'task-id'));
  * $session->rpc()->remote()->enable();
  * $session->rpc()->remote()->disable();
+ * $session->rpc()->queue()->pendingItems();
+ * $session->rpc()->queue()->removeMostRecent();
+ * $session->rpc()->queue()->clear();
+ * $session->rpc()->schedule()->list();
+ * $session->rpc()->schedule()->stop(new ScheduleStopRequest(id: 1));
  * $session->rpc()->suspend();
  * ```
  */
@@ -288,6 +293,26 @@ class SessionRpc
     public function remote(): PendingRemote
     {
         return new PendingRemote($this->client, $this->sessionId);
+    }
+
+    /**
+     * Queue RPC operations.
+     *
+     * Used to inspect and manage pending queued items in the session.
+     */
+    public function queue(): PendingQueue
+    {
+        return new PendingQueue($this->client, $this->sessionId);
+    }
+
+    /**
+     * Schedule RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function schedule(): PendingSchedule
+    {
+        return new PendingSchedule($this->client, $this->sessionId);
     }
 
     /**

@@ -19,6 +19,8 @@ use Revolution\Copilot\Rpc\PendingName;
 use Revolution\Copilot\Rpc\PendingPermissions;
 use Revolution\Copilot\Rpc\PendingPlan;
 use Revolution\Copilot\Rpc\PendingPlugins;
+use Revolution\Copilot\Rpc\PendingQueue;
+use Revolution\Copilot\Rpc\PendingSchedule;
 use Revolution\Copilot\Rpc\PendingSkills;
 use Revolution\Copilot\Rpc\PendingTasks;
 use Revolution\Copilot\Rpc\PendingTools;
@@ -152,6 +154,18 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->tasks())->toBeInstanceOf(PendingTasks::class);
+    });
+
+    it('returns PendingQueue from queue()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->queue())->toBeInstanceOf(PendingQueue::class);
+    });
+
+    it('returns PendingSchedule from schedule()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->schedule())->toBeInstanceOf(PendingSchedule::class);
     });
 
     it('calls session.suspend via suspend()', function () {
