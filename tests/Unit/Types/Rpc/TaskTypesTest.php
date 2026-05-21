@@ -69,6 +69,22 @@ describe('TaskAgentInfo', function () {
             ->and($info->canPromoteToBackground)->toBeNull();
     });
 
+    it('accepts activeTime alias from duration rename', function () {
+        $info = TaskAgentInfo::fromArray([
+            'id' => 'task-123',
+            'toolCallId' => 'tool-456',
+            'description' => 'Explore task',
+            'status' => 'running',
+            'startedAt' => '2024-01-01T00:00:00Z',
+            'agentType' => 'explore',
+            'prompt' => 'Search the codebase',
+            'activeTime' => 60000,
+        ]);
+
+        expect($info->activeTimeMs)->toBe(60000)
+            ->and($info->toArray())->toHaveKey('activeTimeMs', 60000);
+    });
+
     it('converts to array with optional fields omitted when null', function () {
         $info = TaskAgentInfo::fromArray([
             'id' => 'abc',

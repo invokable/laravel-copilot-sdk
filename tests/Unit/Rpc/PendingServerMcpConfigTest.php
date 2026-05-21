@@ -86,6 +86,26 @@ describe('PendingServerMcpConfig', function () {
         $pending->add(['name' => 'remote-server', 'config' => ['type' => 'http', 'url' => 'https://example.com']]);
     });
 
+    it('calls mcp.config.add without args for stdio config', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'mcp.config.add',
+                Mockery::on(fn ($params) => $params['name'] === 'my-server'
+                    && $params['config']['type'] === 'local'
+                    && $params['config']['command'] === 'php'
+                    && ! array_key_exists('args', $params['config'])),
+            )
+            ->andReturn([]);
+
+        $pending = new PendingServerMcpConfig($client);
+        $pending->add(new McpConfigAddRequest(
+            name: 'my-server',
+            config: new McpServerValue(type: 'local', command: 'php'),
+        ));
+    });
+
     it('calls mcp.config.update with typed params', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

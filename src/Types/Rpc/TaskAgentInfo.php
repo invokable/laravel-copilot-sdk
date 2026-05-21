@@ -46,7 +46,9 @@ readonly class TaskAgentInfo implements Arrayable
             agentType: $data['agentType'] ?? '',
             prompt: $data['prompt'] ?? '',
             completedAt: $data['completedAt'] ?? null,
-            activeTimeMs: isset($data['activeTimeMs']) ? (int) $data['activeTimeMs'] : null,
+            activeTimeMs: isset($data['activeTimeMs'])
+                ? (int) $data['activeTimeMs']
+                : (isset($data['activeTime']) ? (int) $data['activeTime'] : null),
             activeStartedAt: $data['activeStartedAt'] ?? null,
             error: $data['error'] ?? null,
             result: $data['result'] ?? null,
