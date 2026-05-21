@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\AuthInfoType;
+use Revolution\Copilot\Enums\PermissionsSetApproveAllSource;
 use Revolution\Copilot\Types\Rpc\AccountGetQuotaRequest;
 use Revolution\Copilot\Types\Rpc\AuthInfo;
 use Revolution\Copilot\Types\Rpc\McpConfigDisableRequest;
@@ -205,6 +206,19 @@ describe('PermissionsSetApproveAllRequest', function () {
         $req = new PermissionsSetApproveAllRequest(enabled: true);
 
         expect($req->toArray())->toBe(['enabled' => true]);
+    });
+
+    it('can parse and serialize source enum', function () {
+        $req = PermissionsSetApproveAllRequest::fromArray([
+            'enabled' => true,
+            'source' => 'rpc',
+        ]);
+
+        expect($req->source)->toBe(PermissionsSetApproveAllSource::RPC)
+            ->and($req->toArray())->toBe([
+                'enabled' => true,
+                'source' => 'rpc',
+            ]);
     });
 });
 
