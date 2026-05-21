@@ -1,0 +1,83 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Revolution\Copilot\Types\Rpc;
+
+use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\AgentMode;
+
+/**
+ * Point-in-time metadata snapshot for a session.
+ *
+ * @experimental This type is part of an experimental API and may change or be removed.
+ */
+readonly class SessionMetadataSnapshot implements Arrayable
+{
+    /**
+     * @param  ?array<string, mixed>  $remoteMetadata
+     * @param  ?array<string, mixed>  $workspace
+     */
+    public function __construct(
+        public string $sessionId,
+        public string $startTime,
+        public string $modifiedTime,
+        public bool $isRemote,
+        public bool $alreadyInUse,
+        public ?string $workspacePath,
+        public string $workingDirectory,
+        public AgentMode|string $currentMode,
+        public ?string $initialName = null,
+        public ?array $remoteMetadata = null,
+        public ?string $summary = null,
+        public ?string $selectedModel = null,
+        public ?array $workspace = null,
+    ) {}
+
+    public static function fromArray(array $data): self
+    {
+        $currentMode = $data['currentMode'] ?? AgentMode::INTERACTIVE->value;
+        if (is_string($currentMode)) {
+            $currentMode = AgentMode::tryFrom($currentMode) ?? $currentMode;
+        }
+
+        return new self(
+            sessionId: $data['sessionId'] ?? '',
+            startTime: $data['startTime'] ?? '',
+            modifiedTime: $data['modifiedTime'] ?? '',
+            isRemote: (bool) ($data['isRemote'] ?? false),
+            alreadyInUse: (bool) ($data['alreadyInUse'] ?? false),
+            workspacePath: $data['workspacePath'] ?? null,
+            workingDirectory: $data['workingDirectory'] ?? '',
+            currentMode: $currentMode,
+            initialName: $data['initialName'] ?? null,
+            remoteMetadata: isset($data['remoteMetadata']) && is_array($data['remoteMetadata']) ? $data['remoteMetadata'] : null,
+            summary: $data['summary'] ?? null,
+            selectedModel: $data['selectedModel'] ?? null,
+            workspace: isset($data['workspace']) && is_array($data['workspace']) ? $data['workspace'] : null,
+        );
+    }
+
+    public function toArray(): array
+    {
+        $currentMode = $this->currentMode instanceof AgentMode
+            ? $this->currentMode->value
+            : $this->currentMode;
+
+        return array_filter([
+            'sessionId' => $this->sessionId,
+            'startTime' => $this->startTime,
+            'modifiedTime' => $this->modifiedTime,
+            'isRemote' => $this->isRemote,
+            'alreadyInUse' => $this->alreadyInUse,
+            'workspacePath' => $this->workspacePath,
+            'workingDirectory' => $this->workingDirectory,
+            'currentMode' => $currentMode,
+            'initialName' => $this->initialName,
+            'remoteMetadata' => $this->remoteMetadata,
+            'summary' => $this->summary,
+            'selectedModel' => $this->selectedModel,
+            'workspace' => $this->workspace,
+        ], fn ($value): bool => $value !== null);
+    }
+}

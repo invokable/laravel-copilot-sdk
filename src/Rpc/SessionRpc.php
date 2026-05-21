@@ -24,6 +24,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->fleet()->start();
  * $session->rpc()->log()->log(new LogRequest(message: 'Processing started'));
  * $session->rpc()->log()->log(new LogRequest(message: 'Disk usage high', level: LogLevel::WARNING));
+ * $session->rpc()->metadata()->snapshot();
+ * $session->rpc()->eventLog()->tail();
  * $session->rpc()->agent()->list();
  * $session->rpc()->agent()->reload();
  * $session->rpc()->skills()->list();
@@ -218,6 +220,26 @@ class SessionRpc
     public function log(): PendingLog
     {
         return new PendingLog($this->client, $this->sessionId);
+    }
+
+    /**
+     * Metadata RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function metadata(): PendingMetadata
+    {
+        return new PendingMetadata($this->client, $this->sessionId);
+    }
+
+    /**
+     * Event log RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function eventLog(): PendingEventLog
+    {
+        return new PendingEventLog($this->client, $this->sessionId);
     }
 
     /**
