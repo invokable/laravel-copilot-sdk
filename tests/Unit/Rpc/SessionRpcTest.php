@@ -5,12 +5,14 @@ declare(strict_types=1);
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingAgent;
 use Revolution\Copilot\Rpc\PendingCommands;
+use Revolution\Copilot\Rpc\PendingEventLog;
 use Revolution\Copilot\Rpc\PendingExtensions;
 use Revolution\Copilot\Rpc\PendingFleet;
 use Revolution\Copilot\Rpc\PendingHistory;
 use Revolution\Copilot\Rpc\PendingInstructions;
 use Revolution\Copilot\Rpc\PendingLog;
 use Revolution\Copilot\Rpc\PendingMcp;
+use Revolution\Copilot\Rpc\PendingMetadata;
 use Revolution\Copilot\Rpc\PendingMode;
 use Revolution\Copilot\Rpc\PendingModel;
 use Revolution\Copilot\Rpc\PendingName;
@@ -90,6 +92,18 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->log())->toBeInstanceOf(PendingLog::class);
+    });
+
+    it('returns PendingMetadata from metadata()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->metadata())->toBeInstanceOf(PendingMetadata::class);
+    });
+
+    it('returns PendingEventLog from eventLog()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->eventLog())->toBeInstanceOf(PendingEventLog::class);
     });
 
     it('returns PendingSkills from skills()', function () {
