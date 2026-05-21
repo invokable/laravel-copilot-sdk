@@ -292,3 +292,25 @@ Create a draft PR with:
 - The `copilot-sdk/` submodule uses the `main` branch of `github/copilot-sdk`.
 - Always update the submodule pointer in the PR so the repo tracks the new version.
 - If the official SDK introduces a new protocol version, update `src/Protocol.php`.
+
+## Operational APIs Backlog (Tracking)
+
+Related:
+- invokable/laravel-copilot-sdk#126
+- invokable/laravel-copilot-sdk#127
+
+Parent issue progress checklist:
+- [ ] 1) Event log + Metadata
+  - Scope: `src/Types/Rpc/*EventLog*`, `src/Types/Rpc/*Metadata*`, related `src/Rpc/*`, contracts, and matching unit tests only.
+  - Exit criteria: Child issue/PR changes only this domain and keeps changed files under 100 (target: 70 or fewer).
+- [ ] 2) Queue + Schedule
+  - Scope: `src/Types/Rpc/*Queue*`, `src/Types/Rpc/*Schedule*`, related `src/Rpc/*`, contracts, and matching unit tests only.
+  - Exit criteria: Child issue/PR changes only this domain and keeps changed files under 100 (target: 70 or fewer).
+- [ ] 3) Task + UI
+  - Scope: `src/Types/Rpc/*Task*`, `src/Types/Rpc/*Ui*`, related `src/Rpc/*`, contracts, and matching unit tests only.
+  - Exit criteria: Child issue/PR changes only this domain and keeps changed files under 100 (target: 70 or fewer).
+
+Issue split guidance:
+- Create each item above as a child issue (or a normal issue if child issues are unavailable).
+- Keep one domain group per PR and do not mix groups.
+- Update the parent issue checklist as each child issue is opened and completed.
