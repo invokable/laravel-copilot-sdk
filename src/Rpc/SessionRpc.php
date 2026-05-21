@@ -46,6 +46,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
  * $session->rpc()->tasks()->cancel(new TasksCancelRequest(id: 'task-id'));
  * $session->rpc()->tasks()->promoteToBackground(new TasksPromoteToBackgroundRequest(id: 'task-id'));
  * $session->rpc()->tasks()->remove(new TasksRemoveRequest(id: 'task-id'));
+ * $session->rpc()->tasks()->sendMessage(new TasksSendMessageRequest(id: 'task-id', message: 'additional guidance'));
  * $session->rpc()->remote()->enable();
  * $session->rpc()->remote()->disable();
  * $session->rpc()->queue()->pendingItems();
