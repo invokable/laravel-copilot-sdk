@@ -329,6 +329,25 @@ $status = $session->rpc()->auth()->getStatus();
 // $status->copilotPlan - Copilotプラン（individual, business など）
 // $status->statusMessage - 認証状態のメッセージ
 
+// queue: キューに積まれたユーザー向け項目の確認・管理
+$pending = $session->rpc()->queue()->pendingItems();
+// $pending->items - QueuePendingItems の配列
+// $pending->items[0]->kind - QueuePendingItemsKind（Command / Message）
+
+$removed = $session->rpc()->queue()->removeMostRecent();
+// $removed->removed - 直近項目を削除できたかどうか
+
+$session->rpc()->queue()->clear();
+
+// schedule (experimental: スケジュール済みプロンプト管理)
+$schedule = $session->rpc()->schedule()->list();
+// $schedule->entries - ScheduleEntry の配列
+
+use Revolution\Copilot\Types\Rpc\ScheduleStopRequest;
+
+$stopped = $session->rpc()->schedule()->stop(new ScheduleStopRequest(id: 1));
+// $stopped->stopped - 停止に成功したかどうか
+
 // tasks (experimental: バックグラウンドエージェントタスク管理)
 // エージェントタスクを開始してIDを取得
 use Revolution\Copilot\Types\Rpc\TasksStartAgentRequest;
