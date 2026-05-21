@@ -221,6 +221,27 @@ $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDec
 $session->rpc()->permissions()->setApproveAll(new PermissionsSetApproveAllRequest(enabled: true));
 // セッションスコープの権限承認をリセット
 $session->rpc()->permissions()->resetSessionApprovals();
+// 現在pending中の権限リクエスト一覧を取得
+$pending = $session->rpc()->permissions()->pendingRequests();
+// 権限リクエストのイベントブリッジを有効化/無効化
+$session->rpc()->permissions()->setRequired(new PermissionsSetRequiredRequest(required: true));
+// 権限ルールを追加/削除
+$session->rpc()->permissions()->modifyRules(new PermissionsModifyRulesParams(
+    scope: PermissionsModifyRulesScope::SESSION,
+    add: [['tool' => 'bash', 'decision' => 'allow']],
+));
+// 権限プロンプトを表示したことを通知
+$session->rpc()->permissions()->notifyPromptShown(new PermissionPromptShownNotification(message: 'tool permission prompt'));
+// パス権限
+$paths = $session->rpc()->permissions()->paths()->list();
+$session->rpc()->permissions()->paths()->add(new PermissionPathsAddParams(path: '/path/to/allow'));
+$session->rpc()->permissions()->paths()->updatePrimary(new PermissionPathsUpdatePrimaryParams(path: '/path/to/allow'));
+$session->rpc()->permissions()->paths()->isPathWithinAllowedDirectories(new PermissionPathsAllowedCheckParams(path: '/path/to/allow/file.txt'));
+$session->rpc()->permissions()->paths()->isPathWithinWorkspace(new PermissionPathsWorkspaceCheckParams(path: '/path/to/allow/file.txt'));
+// URL権限
+$session->rpc()->permissions()->urls()->setUnrestrictedMode(
+    new PermissionUrlsSetUnrestrictedModeParams(enabled: true)
+);
 
 // commands: セッションで利用可能なスラッシュコマンド一覧を取得
 use Revolution\Copilot\Types\Rpc\CommandsListRequest;
