@@ -16,6 +16,7 @@ flowchart LR
     F -->|onSessionEnd| G((Done))
     C -. error .-> H[onErrorOccurred]
     D -. error .-> H
+    D -.MCP call.-> I[onPreMcpToolCall]
 ```
 
 ## 基本的な使い方
@@ -28,6 +29,8 @@ use Revolution\Copilot\Types\Hooks\ErrorOccurredHookInput;
 use Revolution\Copilot\Types\Hooks\ErrorOccurredHookOutput;
 use Revolution\Copilot\Types\Hooks\PostToolUseHookInput;
 use Revolution\Copilot\Types\Hooks\PostToolUseHookOutput;
+use Revolution\Copilot\Types\Hooks\PreMcpToolCallHookInput;
+use Revolution\Copilot\Types\Hooks\PreMcpToolCallHookOutput;
 use Revolution\Copilot\Types\Hooks\PreToolUseHookInput;
 use Revolution\Copilot\Types\Hooks\PreToolUseHookOutput;
 use Revolution\Copilot\Types\Hooks\SessionEndHookInput;
@@ -115,6 +118,7 @@ Copilot::start(function (CopilotSession $session) {
 | `onUserPromptSubmitted` | ユーザープロンプト送信時 | プロンプト補強、テンプレート展開、入力フィルタ |
 | `onPreToolUse` | ツール実行前 | 許可/拒否/要確認、引数改変、出力抑制 |
 | `onPostToolUse` | ツール実行後 | 結果改変、機密情報マスク、監査ログ |
+| `onPreMcpToolCall` | MCPツール実行直前 | MCPメタデータの検査・設定・削除 |
 | `onErrorOccurred` | セッション内エラー発生時 | リトライ、通知、エラー分類処理 |
 | `onSessionEnd` | セッション終了時 | クリーンアップ、メトリクス記録、終了サマリ |
 
@@ -258,6 +262,53 @@ Copilot::start(function (CopilotSession $session) {
 | `errorHandling` | `?string` | `retry` / `skip` / `abort` |
 | `retryCount` | `?int` | リトライ回数 |
 | `userNotification` | `?string` | 利用者への通知文 |
+
+### `PreMcpToolCallHookInput`
+
+| プロパティ | 型 | 説明 |
+|---|---|---|
+| `sessionId` | `string` | フックを発火させたセッションのランタイムID |
+| `timestamp` | `int` | フック発火時刻（Unix ms） |
+| `workingDirectory` | `string` | 現在の作業ディレクトリ |
+| `serverName` | `string` | MCPサーバー名 |
+| `toolName` | `string` | 実行予定MCPツール名 |
+| `arguments` | `mixed` | ツールに渡す引数 |
+| `toolCallId` | `?string` | ツール呼び出しID（オプション） |
+| `_meta` | `?array<string, mixed>` | ツール呼び出しメタデータ（オプション） |
+
+### `PreMcpToolCallHookOutput`
+
+| プロパティ | 型 | 説明 |
+|---|---|---|
+| `metaToUse` | `?array<string, mixed>` | 使用するメタデータ（null: 現在の_metaを保持、空配列[]: _metaを削除、配列: _metaを置換） |
+
+**`metaToUse` の動作:**
+- プロパティが設定されていない（`null`）: 現在のリクエストの `_meta` を保持
+- 空配列 `[]`: リクエストから `_meta` を削除
+- 配列データ: この配列を `_meta` として使用
+
+**使用例:**
+
+```php
+// MCPツールコールのメタデータを監視・変更
+onPreMcpToolCall: function (PreMcpToolCallHookInput $input): ?PreMcpToolCallHookOutput {
+    // 特定のサーバーにtraceIDを追加
+    if ($input->serverName === 'github' && $input->_meta === null) {
+        return new PreMcpToolCallHookOutput(
+            metaToUse: ['traceId' => uniqid('trace_', true)],
+        );
+    }
+    
+    // 機密情報を含むメタデータを削除
+    if ($input->_meta && isset($input->_meta['authToken'])) {
+        return new PreMcpToolCallHookOutput(
+            metaToUse: [], // メタデータを削除
+        );
+    }
+    
+    return null; // デフォルト動作（メタデータをそのまま保持）
+},
+```
 
 ## ToolResultObject
 

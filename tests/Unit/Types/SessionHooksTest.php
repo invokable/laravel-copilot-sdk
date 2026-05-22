@@ -13,6 +13,7 @@ describe('SessionHooks', function () {
         $sessionStart = fn () => null;
         $sessionEnd = fn () => null;
         $errorOccurred = fn () => null;
+        $preMcpToolCall = fn () => null;
 
         $hooks = new SessionHooks(
             onPreToolUse: $preToolUse,
@@ -21,6 +22,7 @@ describe('SessionHooks', function () {
             onSessionStart: $sessionStart,
             onSessionEnd: $sessionEnd,
             onErrorOccurred: $errorOccurred,
+            onPreMcpToolCall: $preMcpToolCall,
         );
 
         expect($hooks->onPreToolUse)->toBe($preToolUse)
@@ -28,7 +30,8 @@ describe('SessionHooks', function () {
             ->and($hooks->onUserPromptSubmitted)->toBe($userPromptSubmitted)
             ->and($hooks->onSessionStart)->toBe($sessionStart)
             ->and($hooks->onSessionEnd)->toBe($sessionEnd)
-            ->and($hooks->onErrorOccurred)->toBe($errorOccurred);
+            ->and($hooks->onErrorOccurred)->toBe($errorOccurred)
+            ->and($hooks->onPreMcpToolCall)->toBe($preMcpToolCall);
     });
 
     it('can be created with no hooks', function () {
@@ -39,7 +42,8 @@ describe('SessionHooks', function () {
             ->and($hooks->onUserPromptSubmitted)->toBeNull()
             ->and($hooks->onSessionStart)->toBeNull()
             ->and($hooks->onSessionEnd)->toBeNull()
-            ->and($hooks->onErrorOccurred)->toBeNull();
+            ->and($hooks->onErrorOccurred)->toBeNull()
+            ->and($hooks->onPreMcpToolCall)->toBeNull();
     });
 
     it('can be created with partial hooks', function () {
@@ -78,7 +82,8 @@ describe('SessionHooks', function () {
             ->and($hooks->onUserPromptSubmitted)->toBeNull()
             ->and($hooks->onSessionStart)->toBeNull()
             ->and($hooks->onSessionEnd)->toBeNull()
-            ->and($hooks->onErrorOccurred)->toBeNull();
+            ->and($hooks->onErrorOccurred)->toBeNull()
+            ->and($hooks->onPreMcpToolCall)->toBeNull();
     });
 
     it('can convert to array with all hooks', function () {
