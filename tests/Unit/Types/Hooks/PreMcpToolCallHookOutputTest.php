@@ -6,7 +6,7 @@ use Revolution\Copilot\Types\Hooks\PreMcpToolCallHookOutput;
 
 describe('PreMcpToolCallHookOutput', function () {
     it('can be created with null metaToUse', function () {
-        $output = new PreMcpToolCallHookOutput();
+        $output = new PreMcpToolCallHookOutput;
 
         expect($output->metaToUse)->toBeNull();
     });
@@ -42,7 +42,7 @@ describe('PreMcpToolCallHookOutput', function () {
     });
 
     it('converts to empty array when metaToUse is null', function () {
-        $output = new PreMcpToolCallHookOutput();
+        $output = new PreMcpToolCallHookOutput;
 
         expect($output->toArray())->toBe([]);
     });
