@@ -8,54 +8,6 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 
 /**
  * Typed session-scoped RPC methods.
- *
- * Usage:
- * ```php
- * $session->rpc()->model()->getCurrent();
- * $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'gpt-4'));
- * $session->rpc()->mode()->get();
- * $session->rpc()->mode()->set(new ModeSetRequest(mode: 'plan'));
- * $session->rpc()->name()->get();
- * $session->rpc()->name()->set(new NameSetRequest(name: 'my session'));
- * $session->rpc()->plan()->read();
- * $session->rpc()->workspaces()->getWorkspace();
- * $session->rpc()->workspaces()->listFiles();
- * $session->rpc()->instructions()->getSources();
- * $session->rpc()->fleet()->start();
- * $session->rpc()->log()->log(new LogRequest(message: 'Processing started'));
- * $session->rpc()->log()->log(new LogRequest(message: 'Disk usage high', level: LogLevel::WARNING));
- * $session->rpc()->metadata()->snapshot();
- * $session->rpc()->eventLog()->tail();
- * $session->rpc()->agent()->list();
- * $session->rpc()->agent()->reload();
- * $session->rpc()->skills()->list();
- * $session->rpc()->mcp()->list();
- * $session->rpc()->plugins()->list();
- * $session->rpc()->extensions()->list();
- * $session->rpc()->history()->compact();
- * $session->rpc()->history()->truncate(new HistoryTruncateRequest(eventId: '...'));
- * $session->rpc()->tools()->handlePendingToolCall(new HandlePendingToolCallRequest(requestId: '...', result: 'done'));
- * $session->rpc()->commands()->handlePendingCommand(new CommandsHandlePendingCommandRequest(requestId: '...'));
- * $session->rpc()->ui()->elicitation(new UIElicitationRequest(message: '...', requestedSchema: [...]));
- * $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(requestId: '...', decision: PermissionRequestResultKind::approveOnce()));
- * $session->rpc()->permissions()->setApproveAll(new PermissionsSetApproveAllRequest(enabled: true));
- * $session->rpc()->permissions()->resetSessionApprovals();
- * $session->rpc()->auth()->getStatus();
- * $session->rpc()->tasks()->startAgent(new TasksStartAgentRequest(agentType: 'explore', prompt: '...', name: 'my-task'));
- * $session->rpc()->tasks()->list();
- * $session->rpc()->tasks()->cancel(new TasksCancelRequest(id: 'task-id'));
- * $session->rpc()->tasks()->promoteToBackground(new TasksPromoteToBackgroundRequest(id: 'task-id'));
- * $session->rpc()->tasks()->remove(new TasksRemoveRequest(id: 'task-id'));
- * $session->rpc()->tasks()->sendMessage(new TasksSendMessageRequest(id: 'task-id', message: 'additional guidance'));
- * $session->rpc()->remote()->enable();
- * $session->rpc()->remote()->disable();
- * $session->rpc()->queue()->pendingItems();
- * $session->rpc()->queue()->removeMostRecent();
- * $session->rpc()->queue()->clear();
- * $session->rpc()->schedule()->list();
- * $session->rpc()->schedule()->stop(new ScheduleStopRequest(id: 1));
- * $session->rpc()->suspend();
- * ```
  */
 class SessionRpc
 {
