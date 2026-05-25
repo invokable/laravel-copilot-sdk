@@ -45,6 +45,7 @@ trait HasHooks
         $handlerMap = [
             'preToolUse' => $this->hooks->onPreToolUse,
             'postToolUse' => $this->hooks->onPostToolUse,
+            'preMcpToolCall' => $this->hooks->onPreMcpToolCall,
             'userPromptSubmitted' => $this->hooks->onUserPromptSubmitted,
             'sessionStart' => $this->hooks->onSessionStart,
             'sessionEnd' => $this->hooks->onSessionEnd,
