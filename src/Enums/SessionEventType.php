@@ -40,6 +40,8 @@ enum SessionEventType: string
     case SESSION_TASK_COMPLETE = 'session.task_complete';
     case SESSION_REMOTE_STEERABLE_CHANGED = 'session.remote_steerable_changed';
     case SESSION_TOOLS_UPDATED = 'session.tools_updated';
+    case SESSION_CANVAS_OPENED = 'session.canvas.opened';
+    case SESSION_CANVAS_REGISTRY_CHANGED = 'session.canvas.registry_changed';
 
     // Capabilities
     case CAPABILITIES_CHANGED = 'capabilities.changed';
@@ -105,6 +107,9 @@ enum SessionEventType: string
     // MCP OAuth events
     case MCP_OAUTH_REQUIRED = 'mcp.oauth_required';
     case MCP_OAUTH_COMPLETED = 'mcp.oauth_completed';
+
+    // MCP App events
+    case MCP_APP_TOOL_CALL_COMPLETE = 'mcp_app.tool_call_complete';
 
     // Custom notification events
     case SESSION_CUSTOM_NOTIFICATION = 'session.custom_notification';
