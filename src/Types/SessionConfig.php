@@ -97,6 +97,21 @@ readonly class SessionConfig implements Arrayable
      *                                                        - `"on"` — export to GitHub AND enable remote steering
      * @param  CloudSessionOptions|array|null  $cloud  Creates a remote session in the cloud instead of a local session.
      *                                                 The optional repository is associated with the cloud session.
+     * @param  ?array  $canvases  Canvases contributed by this session participant. The declaring connection becomes
+     *                            the live provider for canvas operations.
+     *                            Experimental: this is part of an experimental API and may change or be removed.
+     * @param  ?bool  $requestCanvasRenderer  Renderer-side opt-in: when true, the runtime surfaces canvas agent tools
+     *                                        to the model for this connection. Default off so SDK callers that cannot
+     *                                        display canvases stay clean.
+     *                                        Experimental: this is part of an experimental API and may change or be removed.
+     * @param  ?bool  $requestExtensions  Extension surface opt-in: when true, the runtime wires extension management
+     *                                    tools onto the session for this connection. Default off so callers that do
+     *                                    not expose extensions stay clean.
+     *                                    Experimental: this is part of an experimental API and may change or be removed.
+     * @param  ExtensionInfo|array|null  $extensionInfo  Stable extension identity for canvas providers on this connection.
+     *                                                   When set, the runtime uses `${source}:${name}` as the agent-facing
+     *                                                   extension id.
+     *                                                   Experimental: this is part of an experimental API and may change or be removed.
      * @param  ?Closure  $onEvent  Optional event handler registered on the session before the session.create RPC is issued.
      *                             This guarantees that early events emitted by the CLI during session creation (e.g. session.start)
      *                             are delivered to the handler.
@@ -138,6 +153,10 @@ readonly class SessionConfig implements Arrayable
         public ?string $gitHubToken = null,
         public RemoteSessionMode|string|null $remoteSession = null,
         public CloudSessionOptions|array|null $cloud = null,
+        public ?array $canvases = null,
+        public ?bool $requestCanvasRenderer = null,
+        public ?bool $requestExtensions = null,
+        public ExtensionInfo|array|null $extensionInfo = null,
         public ?Closure $onEvent = null,
     ) {}
 
@@ -188,6 +207,13 @@ readonly class SessionConfig implements Arrayable
                 : CloudSessionOptions::fromArray($data['cloud']);
         }
 
+        $extensionInfo = null;
+        if (isset($data['extensionInfo'])) {
+            $extensionInfo = $data['extensionInfo'] instanceof ExtensionInfo
+                ? $data['extensionInfo']
+                : ExtensionInfo::fromArray($data['extensionInfo']);
+        }
+
         return new self(
             sessionId: $data['sessionId'] ?? null,
             clientName: $data['clientName'] ?? null,
@@ -223,6 +249,10 @@ readonly class SessionConfig implements Arrayable
             gitHubToken: $data['gitHubToken'] ?? null,
             remoteSession: $data['remoteSession'] ?? null,
             cloud: $cloud,
+            canvases: $data['canvases'] ?? null,
+            requestCanvasRenderer: $data['requestCanvasRenderer'] ?? null,
+            requestExtensions: $data['requestExtensions'] ?? null,
+            extensionInfo: $extensionInfo,
             onEvent: $data['onEvent'] ?? null,
         );
     }
@@ -264,6 +294,10 @@ readonly class SessionConfig implements Arrayable
             ? $this->cloud->toArray()
             : $this->cloud;
 
+        $extensionInfo = $this->extensionInfo instanceof ExtensionInfo
+            ? $this->extensionInfo->toArray()
+            : $this->extensionInfo;
+
         return array_filter([
             'sessionId' => $this->sessionId,
             'clientName' => $this->clientName,
@@ -299,6 +333,10 @@ readonly class SessionConfig implements Arrayable
             'gitHubToken' => $this->gitHubToken,
             'remoteSession' => $remoteSession,
             'cloud' => $cloud,
+            'canvases' => $this->canvases,
+            'requestCanvasRenderer' => $this->requestCanvasRenderer,
+            'requestExtensions' => $this->requestExtensions,
+            'extensionInfo' => $extensionInfo,
             'onEvent' => $this->onEvent,
         ], fn ($value) => $value !== null);
     }

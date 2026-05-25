@@ -12,7 +12,7 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class SessionCapabilities implements Arrayable
 {
     /**
-     * @param  ?array{elicitation?: bool}  $ui  UI capabilities
+     * @param  ?array{elicitation?: bool, canvases?: bool}  $ui  UI capabilities
      */
     public function __construct(
         public ?array $ui = null,
@@ -24,6 +24,16 @@ readonly class SessionCapabilities implements Arrayable
     public function supportsElicitation(): bool
     {
         return (bool) ($this->ui['elicitation'] ?? false);
+    }
+
+    /**
+     * Whether the host supports canvas rendering.
+     *
+     * Experimental: this is part of an experimental API and may change or be removed.
+     */
+    public function supportsCanvases(): bool
+    {
+        return (bool) ($this->ui['canvases'] ?? false);
     }
 
     public static function fromArray(array $data): self

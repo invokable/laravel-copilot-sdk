@@ -85,6 +85,10 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                      remain pending after resume and the agentic loop awaits their results.
      *                                      When false (the default), any such tool calls and permission requests are immediately
      *                                      marked as interrupted on resume.
+     * @param  ?array  $openCanvases  Snapshot of canvases that were already open when the session was suspended.
+     *                                When provided on resume, the runtime can rehydrate canvas state so consumers
+     *                                do not need to re-open canvases that were active before the previous shutdown.
+     *                                Experimental: this is part of an experimental API and may change or be removed.
      * @param  ?string  $gitHubToken  GitHub token for per-session authentication.
      *                                When provided, the runtime resolves this token into a full GitHub identity
      *                                (login, Copilot plan, endpoints) and stores it on the session.
@@ -130,8 +134,13 @@ readonly class ResumeSessionConfig implements Arrayable
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
         public ?bool $disableResume = null,
         public ?bool $continuePendingWork = null,
+        public ?array $openCanvases = null,
         public ?string $gitHubToken = null,
         public RemoteSessionMode|string|null $remoteSession = null,
+        public ExtensionInfo|array|null $extensionInfo = null,
+        public ?array $canvases = null,
+        public ?bool $requestCanvasRenderer = null,
+        public ?bool $requestExtensions = null,
         public ?Closure $onEvent = null,
     ) {}
 
@@ -175,6 +184,13 @@ readonly class ResumeSessionConfig implements Arrayable
                 : ModelCapabilitiesOverride::fromArray($data['modelCapabilities']);
         }
 
+        $extensionInfo = null;
+        if (isset($data['extensionInfo'])) {
+            $extensionInfo = $data['extensionInfo'] instanceof ExtensionInfo
+                ? $data['extensionInfo']
+                : ExtensionInfo::fromArray($data['extensionInfo']);
+        }
+
         return new self(
             clientName: $data['clientName'] ?? null,
             model: $data['model'] ?? null,
@@ -207,8 +223,13 @@ readonly class ResumeSessionConfig implements Arrayable
             infiniteSessions: $infiniteSessions,
             disableResume: $data['disableResume'] ?? null,
             continuePendingWork: $data['continuePendingWork'] ?? null,
+            openCanvases: $data['openCanvases'] ?? null,
             gitHubToken: $data['gitHubToken'] ?? null,
             remoteSession: $data['remoteSession'] ?? null,
+            extensionInfo: $extensionInfo,
+            canvases: $data['canvases'] ?? null,
+            requestCanvasRenderer: $data['requestCanvasRenderer'] ?? null,
+            requestExtensions: $data['requestExtensions'] ?? null,
             onEvent: $data['onEvent'] ?? null,
         );
     }
@@ -246,6 +267,10 @@ readonly class ResumeSessionConfig implements Arrayable
             ? $this->remoteSession->value
             : $this->remoteSession;
 
+        $extensionInfo = $this->extensionInfo instanceof ExtensionInfo
+            ? $this->extensionInfo->toArray()
+            : $this->extensionInfo;
+
         return array_filter([
             'clientName' => $this->clientName,
             'model' => $this->model,
@@ -278,8 +303,13 @@ readonly class ResumeSessionConfig implements Arrayable
             'infiniteSessions' => $infiniteSessions,
             'disableResume' => $this->disableResume,
             'continuePendingWork' => $this->continuePendingWork,
+            'openCanvases' => $this->openCanvases,
             'gitHubToken' => $this->gitHubToken,
             'remoteSession' => $remoteSession,
+            'extensionInfo' => $extensionInfo,
+            'canvases' => $this->canvases,
+            'requestCanvasRenderer' => $this->requestCanvasRenderer,
+            'requestExtensions' => $this->requestExtensions,
             'onEvent' => $this->onEvent,
         ], fn ($value) => $value !== null);
     }
