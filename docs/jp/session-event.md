@@ -163,3 +163,15 @@ if ($event->agentId !== null) {
 ```
 
 サブエージェントのストリーミングイベントの受信は `SessionConfig` の `includeSubAgentStreamingEvents` で制御できます。
+
+
+## 実験的機能: Canvas runtime support (v1.0.0-beta.7+)
+
+v1.0.0-beta.7以降、Canvas runtime supportが追加されました。以下の新しいイベントタイプが利用可能です：
+
+- `SESSION_CANVAS_OPENED`: キャンバスが開かれた時
+- `SESSION_CANVAS_REGISTRY_CHANGED`: キャンバスレジストリが変更された時
+- `MCP_APP_TOOL_CALL_COMPLETE`: MCPアプリツール呼び出しが完了した時
+
+これらのイベントは実験的機能のため、将来変更される可能性があります。
+

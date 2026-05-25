@@ -195,11 +195,31 @@ $config = new SessionConfig(
     onEvent: function (SessionEvent $event) {
         // すべてのセッションイベントを受け取る
     },
+
+    // **実験的機能** Canvas runtime support (v1.0.0-beta.7+)
+    // このセッション参加者が提供するキャンバス。宣言した接続がキャンバス操作のライブプロバイダーになる。
+    // canvases: [...],
+
+    // **実験的機能** レンダラー側のオプトイン: trueの場合、ランタイムはこの接続用のキャンバスエージェントツールをモデルに提供する。
+    // キャンバスを表示できないSDK呼び出し元がクリーンな状態を保つため、デフォルトはoff。
+    // requestCanvasRenderer: false,
+
+    // **実験的機能** 拡張機能サーフェスのオプトイン: trueの場合、ランタイムは拡張機能管理ツールをこの接続のセッションに接続する。
+    // 拡張機能を公開しない呼び出し元がクリーンな状態を保つため、デフォルトはoff。
+    // requestExtensions: false,
+
+    // **実験的機能** この接続上のキャンバスプロバイダーのための安定した拡張機能ID。
+    // 設定すると、ランタイムは再接続固有の接続IDの代わりに`${source}:${name}`をエージェント向け拡張機能IDとして使用する。
+    // extensionInfo: new ExtensionInfo(source: 'github-app', name: 'my-extension'),
+    // 配列での指定も可能
+    // extensionInfo: ['source' => 'github-app', 'name' => 'my-extension'],
 );
 
 $response = Copilot::run('...', config: $config);
 ```
 
 セッション再開時には`ResumeSessionConfig`クラスを使用します。`SessionConfig`とほとんど同じですが少しだけ違います。ResumeSessionConfigは設定を変えたい項目のみ指定します。他は新規セッション開始時の設定が引き継がれます。
+
+`ResumeSessionConfig`特有のフィールドとして`openCanvases`があります。セッションが中断された時に既に開いていたキャンバスのスナップショットを提供すると、ランタイムはキャンバスの状態を再ハイドレートできるため、以前のシャットダウン前にアクティブだったキャンバスを再度開く必要がありません。（実験的機能）
 
 カスタムエージェントの使い方は [Custom Agents](./custom-agents.md) を参照。
