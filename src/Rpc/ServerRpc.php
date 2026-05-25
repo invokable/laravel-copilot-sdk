@@ -12,17 +12,6 @@ use Revolution\Copilot\Types\Rpc\PingResult;
 
 /**
  * Typed server-scoped RPC methods (no session required).
- *
- * Usage:
- * ```php
- * $client->rpc()->ping(new PingRequest(message: 'hello'));
- * $client->rpc()->models()->list();
- * $client->rpc()->tools()->list();
- * $client->rpc()->account()->getQuota();
- * $client->rpc()->mcp()->config()->list();
- * $client->rpc()->sessionFs()->setProvider(...);
- * $client->rpc()->sessions()->fork(...);
- * ```
  */
 class ServerRpc
 {
