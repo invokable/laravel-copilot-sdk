@@ -77,6 +77,8 @@ Permission、commands、elicitation/UI、custom tools、attachments、MCP config
 
 **方針:** v1.0 前に修正する。型とテスト資産はすでにあるため、dispatch map とテスト追加で完結する可能性が高い。
 
+追記：修正済み。
+
 ### 2. `sampling.requested` の未処理
 
 `SessionEventType` には `sampling.requested` / `sampling.completed` があるが、`Session::handleBroadcastEvent()` は sampling を処理せず、`PendingUi` 側にも `handlePendingSampling` がないと報告された。[^sampling-gap][^rpc-gap-summary]
@@ -100,6 +102,8 @@ Laravel 版には `src/Types/Rpc/SessionFs*.php` と `PendingServerSessionFs::se
 公式 beta.7 で Canvas runtime が追加されたと報告されたが、Laravel 版には canvas 関連の class/RPC/docs/tests がない。[^release-timeline] Canvas は structured UI / runtime feature に近く、Laravel の `Copilot::run()` / `Copilot::start()` 中心のシンプル利用とは距離がある。
 
 **方針:** v1.0 では defer。公式 stable 後に、Laravel 側でどう表現できるかを別 ADR として検討する。
+
+追記：最新すぎて同期されてなかったけど次の同期エージェントで追加された。現状はGitHub Copilot App専用の実験的機能のようなので様子見。
 
 ## 同期エージェントの現状評価
 
