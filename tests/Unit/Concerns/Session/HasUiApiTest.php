@@ -5,9 +5,9 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Session;
-use Revolution\Copilot\Types\UiInputOptions;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
+use Revolution\Copilot\Types\UiInputOptions;
 
 describe('HasUiApi', function () {
     it('returns empty capabilities by default', function () {

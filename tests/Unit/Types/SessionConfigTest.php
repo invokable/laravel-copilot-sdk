@@ -41,6 +41,10 @@ describe('SessionConfig', function () {
             'skillDirectories' => ['/path/to/skills'],
             'instructionDirectories' => ['/path/to/instructions'],
             'disabledSkills' => ['skill1'],
+            'skipCustomInstructions' => true,
+            'customAgentsLocalOnly' => true,
+            'coauthorEnabled' => false,
+            'manageScheduleEnabled' => true,
             'infiniteSessions' => ['enabled' => true, 'backgroundCompactionThreshold' => 0.80],
             'agent' => 'reviewer',
         ]);
@@ -68,6 +72,10 @@ describe('SessionConfig', function () {
             ->and($config->skillDirectories)->toBe(['/path/to/skills'])
             ->and($config->instructionDirectories)->toBe(['/path/to/instructions'])
             ->and($config->disabledSkills)->toBe(['skill1'])
+            ->and($config->skipCustomInstructions)->toBeTrue()
+            ->and($config->customAgentsLocalOnly)->toBeTrue()
+            ->and($config->coauthorEnabled)->toBeFalse()
+            ->and($config->manageScheduleEnabled)->toBeTrue()
             ->and($config->infiniteSessions)->toBeInstanceOf(InfiniteSessionConfig::class)
             ->and($config->infiniteSessions->enabled)->toBeTrue()
             ->and($config->infiniteSessions->backgroundCompactionThreshold)->toBe(0.80)
@@ -97,6 +105,10 @@ describe('SessionConfig', function () {
             ->and($config->skillDirectories)->toBeNull()
             ->and($config->instructionDirectories)->toBeNull()
             ->and($config->disabledSkills)->toBeNull()
+            ->and($config->skipCustomInstructions)->toBeNull()
+            ->and($config->customAgentsLocalOnly)->toBeNull()
+            ->and($config->coauthorEnabled)->toBeNull()
+            ->and($config->manageScheduleEnabled)->toBeNull()
             ->and($config->infiniteSessions)->toBeNull()
             ->and($config->agent)->toBeNull();
     });
@@ -148,6 +160,10 @@ describe('SessionConfig', function () {
             customAgents: [['name' => 'agent1']],
             skillDirectories: ['/skills'],
             disabledSkills: ['skill1'],
+            skipCustomInstructions: true,
+            customAgentsLocalOnly: true,
+            coauthorEnabled: false,
+            manageScheduleEnabled: true,
             infiniteSessions: new InfiniteSessionConfig(enabled: false),
             agent: 'reviewer',
         );
@@ -175,6 +191,10 @@ describe('SessionConfig', function () {
             ->and($array['customAgents'])->toBe([['name' => 'agent1']])
             ->and($array['skillDirectories'])->toBe(['/skills'])
             ->and($array['disabledSkills'])->toBe(['skill1'])
+            ->and($array['skipCustomInstructions'])->toBeTrue()
+            ->and($array['customAgentsLocalOnly'])->toBeTrue()
+            ->and($array['coauthorEnabled'])->toBeFalse()
+            ->and($array['manageScheduleEnabled'])->toBeTrue()
             ->and($array['infiniteSessions'])->toBe(['enabled' => false])
             ->and($array['agent'])->toBe('reviewer');
     });

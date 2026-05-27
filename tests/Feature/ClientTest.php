@@ -409,6 +409,67 @@ describe('Client', function () {
         expect($session)->toBe($mockSession);
     });
 
+    it('createSession sends beta9 tool precedence and applies option flags', function () {
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', [])
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn ($params) => ($params['availableTools'] ?? null) === ['builtin:*']
+                && ($params['excludedTools'] ?? null) === ['mcp:github-delete_repository']
+                && ($params['toolFilterPrecedence'] ?? null) === 'excluded'
+                && ! array_key_exists('skipCustomInstructions', $params)
+                && ! array_key_exists('customAgentsLocalOnly', $params)
+                && ! array_key_exists('coauthorEnabled', $params)
+                && ! array_key_exists('manageScheduleEnabled', $params)))
+            ->once()
+            ->andReturn(['sessionId' => 'test-session-123']);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.options.update', [
+                'sessionId' => 'test-session-123',
+                'skipCustomInstructions' => true,
+                'customAgentsLocalOnly' => true,
+                'coauthorEnabled' => false,
+                'manageScheduleEnabled' => true,
+            ])
+            ->once()
+            ->andReturn(['success' => true]);
+
+        $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with([]);
+        $mockSession->shouldReceive('setCapabilities')->once()->with(null);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+        $this->app->bind(Session::class, fn () => $mockSession);
+
+        $client = new Client;
+        $client->start();
+        $session = $client->createSession([
+            'availableTools' => ['builtin:*'],
+            'excludedTools' => ['mcp:github-delete_repository'],
+            'skipCustomInstructions' => true,
+            'customAgentsLocalOnly' => true,
+            'coauthorEnabled' => false,
+            'manageScheduleEnabled' => true,
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
+
+        expect($session)->toBe($mockSession);
+    });
+
     it('resumeSession sends only name/description for commands in RPC request', function () {
         Event::fake();
 
@@ -568,6 +629,16 @@ describe('Client', function () {
             ->with('session.resume', Mockery::any())
             ->once()
             ->andReturn(['sessionId' => 'test-session-123']);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.options.update', [
+                'sessionId' => 'test-session-123',
+                'skipCustomInstructions' => true,
+                'customAgentsLocalOnly' => true,
+                'coauthorEnabled' => false,
+                'manageScheduleEnabled' => true,
+            ])
+            ->once()
+            ->andReturn(['success' => true]);
 
         $mockSession = Mockery::mock(Session::class);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
@@ -583,6 +654,10 @@ describe('Client', function () {
         $client->start();
         $session = $client->resumeSession('test-session-123', [
             'onPermissionRequest' => PermissionHandler::approveAll(),
+            'skipCustomInstructions' => true,
+            'customAgentsLocalOnly' => true,
+            'coauthorEnabled' => false,
+            'manageScheduleEnabled' => true,
         ]);
 
         expect($session)->toBe($mockSession);

@@ -213,3 +213,45 @@
   - `ClientTest` の `connect` handshake / legacy `ping` fallback regression
   - `ProviderConfig` / `SessionConfig` / `ResumeSessionConfig` rename alias tests
   - `SessionTest` の `getEvents()` regression
+
+## beta.9 同期メモ
+
+参照: https://github.com/github/copilot-sdk/releases/tag/v1.0.0-beta.9
+
+### 実装判断
+
+| 公式変更 | Laravel 版の対応 |
+| --- | --- |
+| `MessageOptions.agentMode` | `CopilotSession::send()` / `sendAndWait()` / `sendAndStream()` と `CopilotManager::run()` に `AgentMode|string|null $agentMode` を直接引数として追加する。Python SDK の `agent_mode=` と同じく per-message option として扱い、`SessionConfig` には入れない。wire key は `agentMode`。 |
+| `postToolUseFailure` hook | `SessionHooks::$onPostToolUseFailure` と hook dispatch map を追加する。`onPostToolUse` は成功時、`onPostToolUseFailure` は失敗時の hook として分離する。 |
+| tool filter precedence | `session.create` / `session.resume` に `toolFilterPrecedence: "excluded"` を送る。`availableTools` と `excludedTools` が両方ある場合は denylist が勝つ。docs/comments は source-qualified filter (`builtin:*`, `mcp:*`, `custom:*`) 前提に更新する。 |
+| `skipCustomInstructions` / `customAgentsLocalOnly` / `coauthorEnabled` / `manageScheduleEnabled` | `SessionConfig` / `ResumeSessionConfig` で round-trip し、create/resume 後に公式 Python / Node と同じく `session.options.update` で反映する。 |
+| `CopilotClientMode.Empty` | Laravel 版は今回未実装。公式では multi-tenant hardening と `availableTools` 必須検証を含むため、Laravel config/API と安全 default の設計判断が必要。現時点では `permission_approve` の default deny-all と明示的 tool filters を使う。 |
+| `ToolSet` helper | 今回未実装。Laravel 版では当面 `availableTools` / `excludedTools` に source-qualified string 配列を直接渡す。GA 前後に `Support\ToolSet` 相当を追加する余地がある。 |
+
+### 実装済み内容
+
+- `AgentMode` enum または文字列を `agentMode` 直接引数として渡せるようにした。
+  - `Copilot::run('...', agentMode: AgentMode::PLAN)`
+  - `$session->send('...', agentMode: 'autopilot')`
+- fake session / facade docblock / contracts も同じ signature に揃え、fake の recorded prompt に normalized `agentMode` を残すようにした。
+- `SessionHooks` に `onPostToolUseFailure` を追加し、`hooks.invoke` の `postToolUseFailure` を該当 handler へ dispatch するようにした。
+- `Client` の create/resume payload に `toolFilterPrecedence: "excluded"` を追加し、beta.9 option flags は session 作成/再開後の `session.options.update` で反映するようにした。
+- `SessionConfig` / `ResumeSessionConfig` に beta.9 option flags を追加した。既存 positional constructor 利用への影響を避けるため、新規 property は既存引数末尾に追加した。
+
+### beta.9 追加 tests
+
+- `SessionTest`
+  - `agentMode` enum/string の `session.send` wire regression
+  - `postToolUseFailure` hook dispatch regression
+- `CopilotManagerTest`
+  - `CopilotManager::run(..., agentMode: AgentMode::PLAN)`
+  - `CopilotManager::run(..., agentMode: 'shell')`
+- `CopilotFakeTest`
+  - fake run の `agentMode` recording
+- `SessionHooksTest`
+  - `onPostToolUseFailure` constructor/fromArray/toArray coverage
+- `SessionConfigTest` / `ResumeSessionConfigTest`
+  - beta.9 option flags の fromArray/toArray coverage
+- `ClientTest`
+  - create payload の `toolFilterPrecedence: "excluded"` と `session.options.update` 経由の beta.9 option flags

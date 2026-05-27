@@ -41,6 +41,10 @@ describe('ResumeSessionConfig', function () {
             'skillDirectories' => ['/path/to/skills'],
             'instructionDirectories' => ['/path/to/instructions'],
             'disabledSkills' => ['skill1'],
+            'skipCustomInstructions' => true,
+            'customAgentsLocalOnly' => true,
+            'coauthorEnabled' => false,
+            'manageScheduleEnabled' => true,
             'infiniteSessions' => new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
             'suppressResumeEvent' => true,
             'agent' => 'reviewer',
@@ -67,6 +71,10 @@ describe('ResumeSessionConfig', function () {
             ->and($config->skillDirectories)->toBe(['/path/to/skills'])
             ->and($config->instructionDirectories)->toBe(['/path/to/instructions'])
             ->and($config->disabledSkills)->toBe(['skill1'])
+            ->and($config->skipCustomInstructions)->toBeTrue()
+            ->and($config->customAgentsLocalOnly)->toBeTrue()
+            ->and($config->coauthorEnabled)->toBeFalse()
+            ->and($config->manageScheduleEnabled)->toBeTrue()
             ->and($config->agent)->toBe('reviewer');
     });
 
@@ -87,6 +95,10 @@ describe('ResumeSessionConfig', function () {
             ->and($config->skillDirectories)->toBeNull()
             ->and($config->instructionDirectories)->toBeNull()
             ->and($config->disabledSkills)->toBeNull()
+            ->and($config->skipCustomInstructions)->toBeNull()
+            ->and($config->customAgentsLocalOnly)->toBeNull()
+            ->and($config->coauthorEnabled)->toBeNull()
+            ->and($config->manageScheduleEnabled)->toBeNull()
             ->and($config->agent)->toBeNull();
     });
 
@@ -137,6 +149,10 @@ describe('ResumeSessionConfig', function () {
             customAgents: [['name' => 'agent1']],
             skillDirectories: ['/skills'],
             disabledSkills: ['skill1'],
+            skipCustomInstructions: true,
+            customAgentsLocalOnly: true,
+            coauthorEnabled: false,
+            manageScheduleEnabled: true,
             infiniteSessions: new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
             suppressResumeEvent: false,
             agent: 'reviewer',
@@ -160,6 +176,10 @@ describe('ResumeSessionConfig', function () {
             ->and($array['customAgents'])->toBe([['name' => 'agent1']])
             ->and($array['skillDirectories'])->toBe(['/skills'])
             ->and($array['disabledSkills'])->toBe(['skill1'])
+            ->and($array['skipCustomInstructions'])->toBeTrue()
+            ->and($array['customAgentsLocalOnly'])->toBeTrue()
+            ->and($array['coauthorEnabled'])->toBeFalse()
+            ->and($array['manageScheduleEnabled'])->toBeTrue()
             ->and($array['agent'])->toBe('reviewer');
     });
 
