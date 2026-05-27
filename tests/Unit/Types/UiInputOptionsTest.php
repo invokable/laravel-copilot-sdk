@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
-use Revolution\Copilot\Types\InputOptions;
+use Revolution\Copilot\Types\UiInputOptions;
 
 describe('InputOptions', function () {
     it('can be created with all fields', function () {
-        $opts = new InputOptions(
+        $opts = new UiInputOptions(
             title: 'Release Name',
             description: 'Enter the name for this release',
             minLength: 1,
@@ -25,7 +25,7 @@ describe('InputOptions', function () {
     });
 
     it('can be created with no fields', function () {
-        $opts = new InputOptions;
+        $opts = new UiInputOptions;
 
         expect($opts->title)->toBeNull()
             ->and($opts->description)->toBeNull()
@@ -36,7 +36,7 @@ describe('InputOptions', function () {
     });
 
     it('can be created from array with all fields', function () {
-        $opts = InputOptions::fromArray([
+        $opts = UiInputOptions::fromArray([
             'title' => 'Email',
             'description' => 'Enter your email',
             'minLength' => 5,
@@ -54,7 +54,7 @@ describe('InputOptions', function () {
     });
 
     it('can be created from empty array', function () {
-        $opts = InputOptions::fromArray([]);
+        $opts = UiInputOptions::fromArray([]);
 
         expect($opts->title)->toBeNull()
             ->and($opts->description)->toBeNull()
@@ -65,7 +65,7 @@ describe('InputOptions', function () {
     });
 
     it('can convert to array with all fields', function () {
-        $opts = new InputOptions(
+        $opts = new UiInputOptions(
             title: 'Name',
             description: 'Enter name',
             minLength: 1,
@@ -85,19 +85,19 @@ describe('InputOptions', function () {
     });
 
     it('filters null values in toArray', function () {
-        $opts = new InputOptions(maxLength: 100);
+        $opts = new UiInputOptions(maxLength: 100);
 
         expect($opts->toArray())->toBe(['maxLength' => 100]);
     });
 
     it('returns empty array when all fields are null', function () {
-        $opts = new InputOptions;
+        $opts = new UiInputOptions;
 
         expect($opts->toArray())->toBe([]);
     });
 
     it('implements Arrayable interface', function () {
-        expect(new InputOptions)->toBeInstanceOf(Arrayable::class);
+        expect(new UiInputOptions)->toBeInstanceOf(Arrayable::class);
     });
 
     it('roundtrips through fromArray and toArray', function () {
@@ -110,7 +110,7 @@ describe('InputOptions', function () {
             'default' => 'https://',
         ];
 
-        $opts = InputOptions::fromArray($data);
+        $opts = UiInputOptions::fromArray($data);
 
         expect($opts->toArray())->toBe($data);
     });

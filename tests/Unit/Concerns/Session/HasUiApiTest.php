@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Session;
-use Revolution\Copilot\Types\InputOptions;
+use Revolution\Copilot\Types\UiInputOptions;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 
@@ -191,7 +191,7 @@ describe('HasUiApi', function () {
             $session = new Session('test-session', $mockClient);
             $session->setCapabilities(['ui' => ['elicitation' => true]]);
 
-            $result = $session->input('Enter name', new InputOptions(maxLength: 50, minLength: 2));
+            $result = $session->input('Enter name', new UiInputOptions(maxLength: 50, minLength: 2));
 
             expect($result)->toBe('hi');
         });

@@ -8,6 +8,7 @@ use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\InputOptions;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
+use Revolution\Copilot\Types\UiInputOptions;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
@@ -54,7 +55,7 @@ describe('FakeSession UI methods', function () {
         Copilot::fake('test');
 
         Copilot::start(function (CopilotSession $session) {
-            expect($session->input('Name?', new InputOptions(maxLength: 50)))->toBeNull();
+            expect($session->input('Name?', new UiInputOptions(maxLength: 50)))->toBeNull();
         });
     });
 
