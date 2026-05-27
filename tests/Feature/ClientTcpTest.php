@@ -9,6 +9,7 @@ use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Protocol;
 use Revolution\Copilot\Transport\TcpTransport;
+use Revolution\Copilot\Types\RuntimeConnection;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
@@ -42,7 +43,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -71,7 +72,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -89,17 +90,44 @@ describe('Client TCP Mode', function () {
             ->and($client->getState())->toBe(ConnectionState::DISCONNECTED);
     });
 
+    it('sends connection token during connect handshake', function () {
+        $mockTransport = Mockery::mock(TcpTransport::class, Transport::class);
+        $mockTransport->shouldReceive('start')->once();
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['token' => 'secret'])
+            ->once()
+            ->andReturn(['ok' => true, 'version' => '', 'protocolVersion' => Protocol::version()]);
+
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client([
+            'connection' => RuntimeConnection::forUri('tcp://127.0.0.1:12345', 'secret'),
+        ]);
+        $reflection = new ReflectionClass($client);
+        $transportProperty = $reflection->getProperty('transport');
+        $transportProperty->setValue($client, $mockTransport);
+
+        $client->start();
+
+        expect($client->getState())->toBe(ConnectionState::CONNECTED);
+    });
+
     it('throws when github_token is used with cli_url', function () {
         expect(fn () => new Client([
             'cli_url' => 'tcp://127.0.0.1:12345',
             'github_token' => 'gho_test_token',
-        ]))->toThrow(InvalidArgumentException::class, 'github_token and use_logged_in_user cannot be used with cli_url');
+        ]))->toThrow(InvalidArgumentException::class, 'github_token and use_logged_in_user cannot be used with RuntimeConnection::forUri()');
     });
 
     it('throws when use_logged_in_user is used with cli_url', function () {
         expect(fn () => new Client([
             'cli_url' => 'tcp://127.0.0.1:12345',
             'use_logged_in_user' => false,
-        ]))->toThrow(InvalidArgumentException::class, 'github_token and use_logged_in_user cannot be used with cli_url');
+        ]))->toThrow(InvalidArgumentException::class, 'github_token and use_logged_in_user cannot be used with RuntimeConnection::forUri()');
     });
 });

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Event;
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Events\Session\ResumeSession;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
@@ -58,9 +59,44 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client;
+        $client->start();
+
+        expect($client->getState())->toBe(ConnectionState::CONNECTED);
+
+        fclose($stdin);
+        fclose($stdout);
+    });
+
+    it('falls back to ping when connect handshake is unavailable', function () {
+        $stdin = fopen('php://memory', 'r+');
+        $stdout = fopen('php://memory', 'r+');
+
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', [])
+            ->once()
+            ->andThrow(new JsonRpcException(-32601, 'Method not found'));
+        $mockRpcClient->shouldReceive('request')
+            ->with('ping', [], 10.0)
+            ->once()
+            ->andReturn(['message' => 'pong', 'timestamp' => time(), 'protocolVersion' => Protocol::version()]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -89,7 +125,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -121,7 +157,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 1]);
 
@@ -154,7 +190,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -187,7 +223,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -238,7 +274,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -294,7 +330,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -343,7 +379,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -396,7 +432,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -459,7 +495,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -491,7 +527,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -525,7 +561,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
         $mockRpcClient->shouldReceive('request')
-            ->with('status.get')
+            ->with('connect', [])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')

@@ -7,7 +7,7 @@ use Revolution\Copilot\Facades\Copilot;
 beforeEach(function () {
     // Reset the facade before each test
     Copilot::clearResolvedInstances();
-    Copilot::preventStrayRequests(allow: ['ping', 'status.get']);
+    Copilot::preventStrayRequests(allow: ['connect', 'ping', 'status.get']);
 });
 
 test('ping() returns pong', function () {

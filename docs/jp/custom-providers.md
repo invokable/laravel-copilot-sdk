@@ -16,7 +16,7 @@
 | `azure`          | `array\|null`  | Azure固有のオプション。`['apiVersion' => '2024-10-21']`など             |
 | `modelId`        | `string\|null` | ランタイムがエージェント設定やトークン制限の検索に使うモデル名。未設定時は`SessionConfig::$model`にフォールバック |
 | `wireModel`      | `string\|null` | プロバイダーAPIに送信するモデル名。Azureのデプロイ名やカスタムファインチューン名など。未設定時は`modelId`にフォールバック |
-| `maxInputTokens` | `int\|null`    | プロンプトの最大トークン数の上書き。この制限に近づくとランタイムが会話をコンパクト化する。ワイヤーでは`maxPromptTokens`として送信される |
+| `maxPromptTokens` | `int\|null`  | プロンプトの最大トークン数の上書き。この制限に近づくとランタイムが会話をコンパクト化する |
 | `maxOutputTokens` | `int\|null`   | 出力の最大トークン数の上書き。この制限に達すると応答が途切れる |
 
 ## 基本的な使い方

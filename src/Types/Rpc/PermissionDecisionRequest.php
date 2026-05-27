@@ -5,19 +5,16 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
-use Revolution\Copilot\Support\PermissionRequestResultKind;
+use Revolution\Copilot\Support\PermissionDecision;
 
 /**
  * Parameters for handling a pending permission request.
  *
- * The result array must contain a "kind" key with one of:
- * - "approved"
- * - "denied-by-rules" (with optional "rules" array)
- * - "denied-no-approval-rule-and-could-not-request-from-user"
- * - "denied-interactively-by-user" (with optional "feedback" string)
- * - "denied-by-content-exclusion-policy" (with required "path" and "message" strings)
+ * The result array must contain a "kind" key matching the generated
+ * PermissionDecision union, such as "approve-once", "approve-for-session",
+ * "approve-permanently", "reject", or "user-not-available".
  *
- * Use {@see PermissionRequestResultKind} for building result arrays.
+ * Use {@see PermissionDecision} for building result arrays.
  */
 readonly class PermissionDecisionRequest implements Arrayable
 {

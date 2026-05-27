@@ -10,11 +10,11 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\SessionRpc;
-use Revolution\Copilot\Types\InputOptions;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\UiInputOptions;
 
 /**
  * Represents a single conversation session with the Copilot CLI.
@@ -67,7 +67,7 @@ interface CopilotSession
      *
      * @throws \RuntimeException if the host does not support elicitation
      */
-    public function input(string $message, InputOptions|array|null $options = null): ?string;
+    public function input(string $message, UiInputOptions|array|null $options = null): ?string;
 
     /**
      * Switch the model for this session.
@@ -132,20 +132,15 @@ interface CopilotSession
     public function stream(?float $timeout = null): iterable;
 
     /**
-     * Get all messages from this session's history.
+     * Get all events from this session's history.
      *
      * @return array<SessionEvent>
      */
-    public function getMessages(): array;
+    public function getEvents(): array;
 
     /**
      * Disconnect this session and release all in-memory resources.
      * Session data on disk is preserved for later resumption.
      */
     public function disconnect(): void;
-
-    /**
-     * @deprecated Use disconnect() instead.
-     */
-    public function destroy(): void;
 }

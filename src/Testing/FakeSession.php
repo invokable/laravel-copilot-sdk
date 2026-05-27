@@ -13,11 +13,11 @@ use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
-use Revolution\Copilot\Types\InputOptions;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\UiInputOptions;
 
 /**
  * Fake session for testing purposes.
@@ -76,7 +76,7 @@ class FakeSession implements CopilotSession
         return null;
     }
 
-    public function input(string $message, InputOptions|array|null $options = null): ?string
+    public function input(string $message, UiInputOptions|array|null $options = null): ?string
     {
         return null;
     }
@@ -148,7 +148,7 @@ class FakeSession implements CopilotSession
     /**
      * @return array<SessionEvent>
      */
-    public function getMessages(): array
+    public function getEvents(): array
     {
         return $this->sequence->all();
     }
@@ -169,13 +169,5 @@ class FakeSession implements CopilotSession
     public function disconnect(): void
     {
         // No-op in fake
-    }
-
-    /**
-     * @deprecated Use disconnect() instead.
-     */
-    public function destroy(): void
-    {
-        $this->disconnect();
     }
 }

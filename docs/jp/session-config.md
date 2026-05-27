@@ -109,14 +109,14 @@ $config = new SessionConfig(
 
     // プランモード終了リクエストのハンドラー
     // 設定するとエージェントがプランモードを終了する際のリクエストを受け取れる
-    onExitPlanMode: function (ExitPlanModeRequest $request) {
+    onExitPlanModeRequest: function (ExitPlanModeRequest $request) {
         // プラン内容を確認して承認・却下
         return new ExitPlanModeResult(approved: true, selectedAction: $request->recommendedAction);
     },
 
     // 自動モード切替リクエストのハンドラー
     // レートリミット到達時にautoモードへの切替を許可するか選択できる
-    onAutoModeSwitch: function (AutoModeSwitchRequest $request) {
+    onAutoModeSwitchRequest: function (AutoModeSwitchRequest $request) {
         // "yes", "yes_always", "no" のいずれかを返す
         return 'yes';
     },

@@ -108,6 +108,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Base Directory Alias
+    |--------------------------------------------------------------------------
+    |
+    | Official SDK naming for the same runtime directory. The legacy
+    | `copilot_home` config key remains the documented Laravel option.
+    |
+    */
+    'base_directory' => env('COPILOT_BASE_DIRECTORY'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Auto-approve Permission Requests
     |--------------------------------------------------------------------------
     |

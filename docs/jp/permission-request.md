@@ -110,7 +110,7 @@ $session = $client->createSession([
 use Illuminate\Support\Facades\Artisan;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Support\PermissionRequestResultKind;
+use Revolution\Copilot\Support\PermissionDecision;
 use Revolution\Copilot\Types\SessionConfig;
 
 use function Laravel\Prompts\{confirm, note, spin, text};
@@ -122,9 +122,9 @@ Artisan::command('copilot:chat', function () {
                 label: 'Do you accept the requested permissions?',
             );
             if ($confirm) {
-                return PermissionRequestResultKind::approveOnce();
+                return PermissionDecision::approveOnce();
             } else {
-                return PermissionRequestResultKind::reject();
+                return PermissionDecision::reject();
             }
         },
     );
@@ -184,11 +184,11 @@ kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool" | "memory" | "h
 
 ## レスポンス
 
-許可・拒否の結果を配列で返します。`PermissionRequestResultKind` クラスを使うと便利です。
+許可・拒否の結果を配列で返します。`PermissionDecision` クラスを使うと便利です。
 
 ```php
-return PermissionRequestResultKind::approveOnce();
-return PermissionRequestResultKind::reject();
+return PermissionDecision::approveOnce();
+return PermissionDecision::reject();
 ```
 
 ## プロトコルの詳細
@@ -197,21 +197,21 @@ Protocol v3（現在のデフォルト）では、パーミッションリクエ
 
 **`SessionConfig` の使い方は変わりません。** `onPermissionRequest` にハンドラを渡すだけで、プロトコルの違いはSDKが吸収します。
 
-## PermissionRequestResultKind
+## PermissionDecision
 
-`['kind' => 'approve-once']`の形式で返せばよいですが分かりにくいので`PermissionRequestResultKind`クラスも用意しています。
+`['kind' => 'approve-once']`の形式で返せばよいですが分かりにくいので`PermissionDecision`クラスも用意しています。`PermissionRequestResultKind` は互換用の非推奨エイリアスです。
 
 ```php
-use Revolution\Copilot\Support\PermissionRequestResultKind;
+use Revolution\Copilot\Support\PermissionDecision;
 
 $confirm = confirm(
     label: 'Do you accept the requested permissions?',
 );
 
 if ($confirm) {
-    return PermissionRequestResultKind::approveOnce();
+    return PermissionDecision::approveOnce();
 } else {
-    return PermissionRequestResultKind::reject();
+    return PermissionDecision::reject();
 }
 ```
 
@@ -223,19 +223,19 @@ if ($confirm) {
 | `approveForSession()` | `approve-for-session` | このセッション中の同種リクエストをすべて許可 |
 | `approveForLocation()` | `approve-for-location` | この場所（ファイルパス等）からの同種リクエストをすべて許可 |
 | `approvePermanently($domain)` | `approve-permanently` | 指定ドメインへのリクエストをセッションを超えて永続的に許可 |
-| `reject()` | `reject` | リクエストを拒否 |
+| `reject($feedback = null)` | `reject` | リクエストを拒否。必要なら公式 wire key の `feedback` として理由を渡す |
 | `userNotAvailable()` | `user-not-available` | ユーザーが応答できない状態（非インタラクティブ環境など） |
 | `noResult()` | `no-result` | ハンドラが結果を返せない場合（RPC呼び出しをスキップ） |
 
-`Laravel\Prompts\select`を使いたい場合は`PermissionRequestResultKind::select()`で選択肢を取得できます。ユーザーに提示する選択肢が含まれています。
+`Laravel\Prompts\select`を使いたい場合は`PermissionDecision::select()`で選択肢を取得できます。ユーザーに提示する選択肢が含まれています。
 
 ```php
-use Revolution\Copilot\Support\PermissionRequestResultKind;
+use Revolution\Copilot\Support\PermissionDecision;
 use function Laravel\Prompts\select;
 
 $select = select(
     label: 'Do you accept the requested permissions?',
-    options: PermissionRequestResultKind::select(),
+    options: PermissionDecision::select(),
 );
 
 return ['kind' => $select];
@@ -246,7 +246,6 @@ return ['kind' => $select];
 ハンドラが結果を返せない場合（例: UIが利用できない環境）は`no-result`を返すことができます。`no-result`を返すとRPC呼び出しをスキップし、Copilot CLI側でデフォルトの拒否処理が行われます。
 
 ```php
-return PermissionRequestResultKind::noResult();
+return PermissionDecision::noResult();
 // または ['kind' => 'no-result']
 ```
-

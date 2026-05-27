@@ -14,6 +14,8 @@ describe('SessionConfig', function () {
     it('can be created from array with all fields', function () {
         $handler = fn () => true;
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];
+        $exitPlanModeHandler = fn () => ['approved' => true];
+        $autoModeSwitchHandler = fn () => ['approved' => true];
         $preToolUseHook = fn () => null;
 
         $config = SessionConfig::fromArray([
@@ -28,6 +30,8 @@ describe('SessionConfig', function () {
             'provider' => ['baseUrl' => 'https://api.example.com'],
             'onPermissionRequest' => $handler,
             'onUserInputRequest' => $userInputHandler,
+            'onExitPlanModeRequest' => $exitPlanModeHandler,
+            'onAutoModeSwitchRequest' => $autoModeSwitchHandler,
             'hooks' => ['onPreToolUse' => $preToolUseHook],
             'workingDirectory' => '/home/user/project',
             'streaming' => true,
@@ -52,6 +56,8 @@ describe('SessionConfig', function () {
             ->and($config->provider)->toBeInstanceOf(ProviderConfig::class)
             ->and($config->onPermissionRequest)->toBe($handler)
             ->and($config->onUserInputRequest)->toBe($userInputHandler)
+            ->and($config->onExitPlanModeRequest)->toBe($exitPlanModeHandler)
+            ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler)
             ->and($config->hooks)->toBeInstanceOf(SessionHooks::class)
             ->and($config->hooks->onPreToolUse)->toBe($preToolUseHook)
             ->and($config->workingDirectory)->toBe('/home/user/project')
@@ -116,6 +122,8 @@ describe('SessionConfig', function () {
     it('can convert to array with all fields', function () {
         $handler = fn () => true;
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];
+        $exitPlanModeHandler = fn () => ['approved' => true];
+        $autoModeSwitchHandler = fn () => ['approved' => true];
         $preToolUseHook = fn () => null;
 
         $config = new SessionConfig(
@@ -130,6 +138,8 @@ describe('SessionConfig', function () {
             provider: new ProviderConfig(baseUrl: 'https://api.test.com'),
             onPermissionRequest: $handler,
             onUserInputRequest: $userInputHandler,
+            onExitPlanModeRequest: $exitPlanModeHandler,
+            onAutoModeSwitchRequest: $autoModeSwitchHandler,
             hooks: new SessionHooks(onPreToolUse: $preToolUseHook),
             workingDirectory: '/home/user',
             streaming: false,
@@ -155,6 +165,8 @@ describe('SessionConfig', function () {
             ->and($array['provider'])->toBe(['baseUrl' => 'https://api.test.com'])
             ->and($array['onPermissionRequest'])->toBe($handler)
             ->and($array['onUserInputRequest'])->toBe($userInputHandler)
+            ->and($array['onExitPlanModeRequest'])->toBe($exitPlanModeHandler)
+            ->and($array['onAutoModeSwitchRequest'])->toBe($autoModeSwitchHandler)
             ->and($array['hooks'])->toBe(['onPreToolUse' => $preToolUseHook])
             ->and($array['workingDirectory'])->toBe('/home/user')
             ->and($array['streaming'])->toBeFalse()
@@ -219,6 +231,19 @@ describe('SessionConfig', function () {
         $config = new SessionConfig;
 
         expect($config)->toBeInstanceOf(Arrayable::class);
+    });
+
+    it('accepts old handler names as aliases', function () {
+        $exitPlanModeHandler = fn () => ['approved' => true];
+        $autoModeSwitchHandler = fn () => ['approved' => true];
+
+        $config = SessionConfig::fromArray([
+            'onExitPlanMode' => $exitPlanModeHandler,
+            'onAutoModeSwitch' => $autoModeSwitchHandler,
+        ]);
+
+        expect($config->onExitPlanModeRequest)->toBe($exitPlanModeHandler)
+            ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler);
     });
 
     it('accepts reasoningEffort as enum', function () {
