@@ -19,6 +19,7 @@ use Revolution\Copilot\Concerns\Session\HasToolHandlers;
 use Revolution\Copilot\Concerns\Session\HasUiApi;
 use Revolution\Copilot\Concerns\Session\HasUserInputHandler;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
@@ -138,11 +139,14 @@ class Session implements CopilotSession
      * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments. type: "file" | "directory"
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
+     * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
      *
      * @throws JsonRpcException
      */
-    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, ?array $requestHeaders = null): string
+    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null): string
     {
+        $agentMode = $agentMode instanceof AgentMode ? $agentMode->value : $agentMode;
+
         $response = $this->client->request('session.send', array_filter([
             ...TraceContext::get(),
             'sessionId' => $this->sessionId,
@@ -150,6 +154,7 @@ class Session implements CopilotSession
             'attachments' => $attachments,
             'mode' => $mode,
             'requestHeaders' => $requestHeaders,
+            'agentMode' => $agentMode,
         ], fn ($v) => $v !== null));
 
         MessageSend::dispatch($this->sessionId, $response['messageId'] ?? '', $prompt, $attachments, $mode);
@@ -165,15 +170,16 @@ class Session implements CopilotSession
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
      * @param  ?float  $timeout  Maximum time to wait for idle state, in seconds
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
+     * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
      */
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null, ?array $requestHeaders = null): ?SessionEvent
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null): ?SessionEvent
     {
         $timeout = $timeout ?? config('copilot.timeout', 60.0);
 
         $this->prepareWait();
 
         try {
-            $this->send($prompt, $attachments, $mode, $requestHeaders);
+            $this->send($prompt, $attachments, $mode, $requestHeaders, $agentMode);
             $this->wait($timeout);
 
             MessageSendAndWait::dispatch($this->sessionId, $this->waitLastAssistantMessage, $prompt, $attachments, $mode);
@@ -373,11 +379,12 @@ class Session implements CopilotSession
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
      * @param  float|null  $timeout  Maximum time to wait for idle state, in seconds
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
+     * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
      * @return iterable<SessionEvent>
      */
-    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null, ?array $requestHeaders = null): iterable
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null): iterable
     {
-        $this->send($prompt, $attachments, $mode, $requestHeaders);
+        $this->send($prompt, $attachments, $mode, $requestHeaders, $agentMode);
 
         yield from $this->stream($timeout);
     }

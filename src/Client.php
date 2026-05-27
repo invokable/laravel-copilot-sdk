@@ -312,6 +312,7 @@ class Client implements CopilotClient
             'systemMessage' => $config['systemMessage'] ?? null,
             'availableTools' => $config['availableTools'] ?? null,
             'excludedTools' => $config['excludedTools'] ?? null,
+            'toolFilterPrecedence' => 'excluded',
             'provider' => $config['provider'] ?? null,
             'requestPermission' => isset($config['onPermissionRequest']),
             'requestUserInput' => isset($config['onUserInputRequest']),
@@ -375,6 +376,8 @@ class Client implements CopilotClient
 
         $this->sessions[$sessionId] = $session;
 
+        $this->applyPostCreateOptionsPatch($sessionId, $session, $config);
+
         CreateSession::dispatch($session);
 
         return $session;
@@ -424,6 +427,10 @@ class Client implements CopilotClient
             'modelCapabilities' => $config['modelCapabilities'] ?? null,
             'tools' => $toolsForRequest ?: null,
             'commands' => $commandsForRequest,
+            'systemMessage' => $config['systemMessage'] ?? null,
+            'availableTools' => $config['availableTools'] ?? null,
+            'excludedTools' => $config['excludedTools'] ?? null,
+            'toolFilterPrecedence' => 'excluded',
             'provider' => $config['provider'] ?? null,
             'requestPermission' => isset($config['onPermissionRequest']),
             'requestUserInput' => isset($config['onUserInputRequest']),
@@ -488,9 +495,46 @@ class Client implements CopilotClient
 
         $this->sessions[$resumedSessionId] = $session;
 
+        $this->applyPostCreateOptionsPatch($resumedSessionId, $session, $config);
+
         ResumeSession::dispatch($session);
 
         return $session;
+    }
+
+    private function applyPostCreateOptionsPatch(string $sessionId, Session $session, array $config): void
+    {
+        $patch = array_filter([
+            'skipCustomInstructions' => $config['skipCustomInstructions'] ?? null,
+            'customAgentsLocalOnly' => $config['customAgentsLocalOnly'] ?? null,
+            'coauthorEnabled' => $config['coauthorEnabled'] ?? null,
+            'manageScheduleEnabled' => $config['manageScheduleEnabled'] ?? null,
+        ], fn ($value) => $value !== null);
+
+        if ($patch === []) {
+            return;
+        }
+
+        try {
+            $response = $this->rpcClient->request('session.options.update', [
+                'sessionId' => $sessionId,
+                ...$patch,
+            ]);
+
+            if (($response['success'] ?? true) === false) {
+                throw new RuntimeException('Failed to update session options');
+            }
+        } catch (Throwable $e) {
+            unset($this->sessions[$sessionId]);
+
+            try {
+                $session->disconnect();
+            } catch (Throwable $cleanupException) {
+                report($cleanupException);
+            }
+
+            throw $e;
+        }
     }
 
     /**

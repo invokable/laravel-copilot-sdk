@@ -8,13 +8,14 @@ use Illuminate\Support\Facades\Facade;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
 use Revolution\Copilot\CopilotManager;
+use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Testing\ResponseSequence;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 
 /**
- * @method static SessionEvent|null run(string $prompt, ?array $attachments = null, ?string $mode = null, ?array $requestHeaders = null, SessionConfig|array $config = [])
+ * @method static SessionEvent|null run(string $prompt, ?array $attachments = null, ?string $mode = null, ?array $requestHeaders = null, SessionConfig|array $config = [], AgentMode|string|null $agentMode = null)
  * @method static mixed start(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null)
  * @method static iterable<SessionEvent> stream(callable $callback, SessionConfig|ResumeSessionConfig|array $config = [], ?string $resume = null)
  * @method static CopilotSession createSession(SessionConfig|array $config = [])

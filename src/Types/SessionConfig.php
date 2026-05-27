@@ -38,10 +38,10 @@ readonly class SessionConfig implements Arrayable
      *                            When the CLI has a TUI, each command appears as `/name` for the user to invoke.
      *                            Each entry should have 'name', 'handler', and optionally 'description'.
      * @param  SystemMessageConfig|array|null  $systemMessage  System message configuration. Controls how the system prompt is constructed.
-     * @param  ?array  $availableTools  List of tool names to allow. When specified, only these tools will be available.
-     *                                  Takes precedence over excludedTools.
-     * @param  ?array  $excludedTools  List of tool names to disable. All other tools remain available.
-     *                                 Ignored if availableTools is specified.
+     * @param  ?array  $availableTools  List of source-qualified tool filters to allow. When specified, only these tools will be available.
+     *                                  Examples: `builtin:*`, `builtin:bash`, `mcp:*`, `mcp:github-read_issue`, `custom:*`.
+     * @param  ?array  $excludedTools  List of source-qualified tool filters to disable. When both lists are set,
+     *                                 excludedTools wins (`toolFilterPrecedence: "excluded"`).
      * @param  ProviderConfig|array|null  $provider  Custom provider configuration (BYOK - Bring Your Own Key).
      *                                               When specified, uses the provided API endpoint instead of the Copilot API.
      * @param  ?Closure  $onPermissionRequest  Handler for permission requests from the server.
@@ -84,6 +84,10 @@ readonly class SessionConfig implements Arrayable
      * @param  ?array  $skillDirectories  Directories to load skills from
      * @param  ?array  $instructionDirectories  Additional directories to search for custom instruction files.
      * @param  ?array  $disabledSkills  List of skill names to disable
+     * @param  ?bool  $skipCustomInstructions  When true, custom instruction files are not loaded.
+     * @param  ?bool  $customAgentsLocalOnly  When true, only local custom agents are considered.
+     * @param  ?bool  $coauthorEnabled  Enables co-author integration for this session.
+     * @param  ?bool  $manageScheduleEnabled  Enables schedule management tools for this session.
      * @param  InfiniteSessionConfig|array|null  $infiniteSessions  Infinite session configuration for persistent workspaces and automatic compaction.
      *                                                              When enabled (default), sessions automatically manage context limits and persist state.
      *                                                              Set to `new InfiniteSessionConfig(enabled: false)` to disable.
@@ -158,6 +162,10 @@ readonly class SessionConfig implements Arrayable
         public ?bool $requestExtensions = null,
         public ExtensionInfo|array|null $extensionInfo = null,
         public ?Closure $onEvent = null,
+        public ?bool $skipCustomInstructions = null,
+        public ?bool $customAgentsLocalOnly = null,
+        public ?bool $coauthorEnabled = null,
+        public ?bool $manageScheduleEnabled = null,
     ) {}
 
     /**
@@ -245,6 +253,10 @@ readonly class SessionConfig implements Arrayable
             skillDirectories: $data['skillDirectories'] ?? null,
             instructionDirectories: $data['instructionDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
+            skipCustomInstructions: $data['skipCustomInstructions'] ?? null,
+            customAgentsLocalOnly: $data['customAgentsLocalOnly'] ?? null,
+            coauthorEnabled: $data['coauthorEnabled'] ?? null,
+            manageScheduleEnabled: $data['manageScheduleEnabled'] ?? null,
             infiniteSessions: $infiniteSessions,
             gitHubToken: $data['gitHubToken'] ?? null,
             remoteSession: $data['remoteSession'] ?? null,
@@ -329,6 +341,10 @@ readonly class SessionConfig implements Arrayable
             'skillDirectories' => $this->skillDirectories,
             'instructionDirectories' => $this->instructionDirectories,
             'disabledSkills' => $this->disabledSkills,
+            'skipCustomInstructions' => $this->skipCustomInstructions,
+            'customAgentsLocalOnly' => $this->customAgentsLocalOnly,
+            'coauthorEnabled' => $this->coauthorEnabled,
+            'manageScheduleEnabled' => $this->manageScheduleEnabled,
             'infiniteSessions' => $infiniteSessions,
             'gitHubToken' => $this->gitHubToken,
             'remoteSession' => $remoteSession,

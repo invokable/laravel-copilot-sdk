@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Testing;
 use Illuminate\Support\Str;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Factory;
+use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
@@ -28,7 +29,7 @@ class CopilotFake implements Factory
     /**
      * Recorded prompts across all sessions.
      *
-     * @var array<array{prompt: string, attachments: ?array, mode: ?string}>
+     * @var array<array{prompt: string, attachments: ?array, mode: ?string, agentMode?: ?string}>
      */
     public array $recorded = [];
 
@@ -92,13 +93,14 @@ class CopilotFake implements Factory
     /**
      * Run a single prompt and return the response.
      */
-    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, ?array $requestHeaders = null, SessionConfig|array $config = []): ?SessionEvent
+    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, SessionConfig|array $config = []): ?SessionEvent
     {
         return $this->start(
             fn (CopilotSession $session) => $session->sendAndWait(
                 prompt: $prompt,
                 attachments: $attachments,
                 mode: $mode,
+                agentMode: $agentMode,
                 requestHeaders: $requestHeaders,
             ),
             config: $config,
@@ -202,7 +204,7 @@ class CopilotFake implements Factory
     /**
      * Record a prompt.
      *
-     * @param  array{prompt: string, attachments: ?array, mode: ?string}  $record
+     * @param  array{prompt: string, attachments: ?array, mode: ?string, agentMode?: ?string}  $record
      */
     protected function recordPrompt(array $record): void
     {

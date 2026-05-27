@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Revolt\EventLoop;
+use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Exceptions\SessionErrorException;
 use Revolution\Copilot\Exceptions\SessionTimeoutException;
@@ -58,6 +59,40 @@ describe('Session', function () {
         $messageId = $session->send('prompt', [['type' => 'file', 'path' => '/test.txt']], 'plan');
 
         expect($messageId)->toBe('msg-456');
+    });
+
+    it('send accepts agent mode enum', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', [
+                'sessionId' => 'test-session',
+                'prompt' => 'prompt',
+                'agentMode' => 'plan',
+            ])
+            ->once()
+            ->andReturn(['messageId' => 'msg-789']);
+
+        $session = new Session('test-session', $mockClient);
+        $messageId = $session->send('prompt', agentMode: AgentMode::PLAN);
+
+        expect($messageId)->toBe('msg-789');
+    });
+
+    it('send accepts agent mode string', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', [
+                'sessionId' => 'test-session',
+                'prompt' => 'prompt',
+                'agentMode' => 'autopilot',
+            ])
+            ->once()
+            ->andReturn(['messageId' => 'msg-790']);
+
+        $session = new Session('test-session', $mockClient);
+        $messageId = $session->send('prompt', agentMode: 'autopilot');
+
+        expect($messageId)->toBe('msg-790');
     });
 
     it('on registers event handler', function () {
@@ -230,6 +265,35 @@ describe('Session', function () {
         $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
 
         expect($secondHandlerCalled)->toBeTrue();
+    });
+
+    it('invokes post tool use failure hook', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient);
+
+        $called = false;
+        $receivedInput = null;
+        $receivedContext = null;
+
+        $session->registerHooks([
+            'onPostToolUseFailure' => function ($input, $context) use (&$called, &$receivedInput, &$receivedContext) {
+                $called = true;
+                $receivedInput = $input;
+                $receivedContext = $context;
+
+                return ['additionalContext' => 'Prefer a safer command'];
+            },
+        ]);
+
+        $result = $session->handleHooksInvoke('postToolUseFailure', [
+            'toolName' => 'bash',
+            'error' => 'failed',
+        ]);
+
+        expect($called)->toBeTrue()
+            ->and($receivedInput)->toBe(['toolName' => 'bash', 'error' => 'failed'])
+            ->and($receivedContext)->toBe(['sessionId' => 'test-session'])
+            ->and($result)->toBe(['additionalContext' => 'Prefer a safer command']);
     });
 
     it('registerTools stores tool handlers', function () {

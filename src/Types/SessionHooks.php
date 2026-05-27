@@ -14,7 +14,8 @@ readonly class SessionHooks implements Arrayable
 {
     /**
      * @param  ?Closure  $onPreToolUse  Called before a tool is executed
-     * @param  ?Closure  $onPostToolUse  Called after a tool is executed
+     * @param  ?Closure  $onPostToolUse  Called after a tool is executed successfully
+     * @param  ?Closure  $onPostToolUseFailure  Called after a tool execution fails
      * @param  ?Closure  $onUserPromptSubmitted  Called when the user submits a prompt
      * @param  ?Closure  $onSessionStart  Called when a session starts
      * @param  ?Closure  $onSessionEnd  Called when a session ends
@@ -24,6 +25,7 @@ readonly class SessionHooks implements Arrayable
     public function __construct(
         public ?Closure $onPreToolUse = null,
         public ?Closure $onPostToolUse = null,
+        public ?Closure $onPostToolUseFailure = null,
         public ?Closure $onUserPromptSubmitted = null,
         public ?Closure $onSessionStart = null,
         public ?Closure $onSessionEnd = null,
@@ -39,6 +41,7 @@ readonly class SessionHooks implements Arrayable
         return new self(
             onPreToolUse: $data['onPreToolUse'] ?? null,
             onPostToolUse: $data['onPostToolUse'] ?? null,
+            onPostToolUseFailure: $data['onPostToolUseFailure'] ?? null,
             onUserPromptSubmitted: $data['onUserPromptSubmitted'] ?? null,
             onSessionStart: $data['onSessionStart'] ?? null,
             onSessionEnd: $data['onSessionEnd'] ?? null,
@@ -55,6 +58,7 @@ readonly class SessionHooks implements Arrayable
         return array_filter([
             'onPreToolUse' => $this->onPreToolUse,
             'onPostToolUse' => $this->onPostToolUse,
+            'onPostToolUseFailure' => $this->onPostToolUseFailure,
             'onUserPromptSubmitted' => $this->onUserPromptSubmitted,
             'onSessionStart' => $this->onSessionStart,
             'onSessionEnd' => $this->onSessionEnd,

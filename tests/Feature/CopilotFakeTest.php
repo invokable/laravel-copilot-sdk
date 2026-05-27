@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\CopilotManager;
+use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
@@ -32,6 +33,17 @@ describe('Copilot::fake()', function () {
         $response = Copilot::run('What is 6 * 7?');
 
         expect((string) $response)->toBe('42');
+    });
+
+    it('records agent mode from run', function () {
+        Copilot::fake('Planned');
+
+        $response = Copilot::run('Plan this', agentMode: AgentMode::PLAN);
+        $recorded = Copilot::recorded();
+
+        expect($response?->content())->toBe('Planned')
+            ->and($recorded)->toHaveCount(1)
+            ->and($recorded[0]['agentMode'])->toBe('plan');
     });
 
     it('returns CopilotManager instance', function () {

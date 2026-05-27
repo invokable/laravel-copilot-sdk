@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Testing;
 
 use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ReasoningEffort;
@@ -27,7 +28,7 @@ class FakeSession implements CopilotSession
     /**
      * Recorded prompts.
      *
-     * @var array<array{prompt: string, attachments: ?array, mode: ?string}>
+     * @var array<array{prompt: string, attachments: ?array, mode: ?string, agentMode?: ?string}>
      */
     protected array $recorded = [];
 
@@ -91,23 +92,25 @@ class FakeSession implements CopilotSession
         return '';
     }
 
-    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, ?array $requestHeaders = null): string
+    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null): string
     {
         $this->recorded[] = [
             'prompt' => $prompt,
             'attachments' => $attachments,
             'mode' => $mode,
+            'agentMode' => $agentMode instanceof AgentMode ? $agentMode->value : $agentMode,
         ];
 
         return 'fake-message-id';
     }
 
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null, ?array $requestHeaders = null): ?SessionEvent
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null): ?SessionEvent
     {
         $this->recorded[] = [
             'prompt' => $prompt,
             'attachments' => $attachments,
             'mode' => $mode,
+            'agentMode' => $agentMode instanceof AgentMode ? $agentMode->value : $agentMode,
         ];
 
         return $this->sequence->pop();
@@ -123,12 +126,13 @@ class FakeSession implements CopilotSession
         // No-op in fake
     }
 
-    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, ?float $timeout = null, ?array $requestHeaders = null): iterable
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null): iterable
     {
         $this->recorded[] = [
             'prompt' => $prompt,
             'attachments' => $attachments,
             'mode' => $mode,
+            'agentMode' => $agentMode instanceof AgentMode ? $agentMode->value : $agentMode,
         ];
 
         $event = $this->sequence->pop();
@@ -156,7 +160,7 @@ class FakeSession implements CopilotSession
     /**
      * Get recorded prompts.
      *
-     * @return array<array{prompt: string, attachments: ?array, mode: ?string}>
+     * @return array<array{prompt: string, attachments: ?array, mode: ?string, agentMode?: ?string}>
      */
     public function recorded(): array
     {
