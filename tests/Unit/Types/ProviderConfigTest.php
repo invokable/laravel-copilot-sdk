@@ -16,7 +16,7 @@ describe('ProviderConfig', function () {
             'azure' => ['deployment' => 'my-deployment'],
             'modelId' => 'gpt-4o',
             'wireModel' => 'gpt-4o-2024-08-06',
-            'maxInputTokens' => 8192,
+            'maxPromptTokens' => 8192,
             'maxOutputTokens' => 4096,
         ]);
 
@@ -28,7 +28,7 @@ describe('ProviderConfig', function () {
             ->and($config->azure)->toBe(['deployment' => 'my-deployment'])
             ->and($config->modelId)->toBe('gpt-4o')
             ->and($config->wireModel)->toBe('gpt-4o-2024-08-06')
-            ->and($config->maxInputTokens)->toBe(8192)
+            ->and($config->maxPromptTokens)->toBe(8192)
             ->and($config->maxOutputTokens)->toBe(4096);
     });
 
@@ -45,7 +45,7 @@ describe('ProviderConfig', function () {
             ->and($config->azure)->toBeNull()
             ->and($config->modelId)->toBeNull()
             ->and($config->wireModel)->toBeNull()
-            ->and($config->maxInputTokens)->toBeNull()
+            ->and($config->maxPromptTokens)->toBeNull()
             ->and($config->maxOutputTokens)->toBeNull();
     });
 
@@ -55,13 +55,13 @@ describe('ProviderConfig', function () {
         expect($config->baseUrl)->toBe('');
     });
 
-    it('accepts maxPromptTokens as alias for maxInputTokens in fromArray', function () {
+    it('accepts maxInputTokens as alias for maxPromptTokens in fromArray', function () {
         $config = ProviderConfig::fromArray([
             'baseUrl' => 'https://api.example.com',
-            'maxPromptTokens' => 4096,
+            'maxInputTokens' => 4096,
         ]);
 
-        expect($config->maxInputTokens)->toBe(4096);
+        expect($config->maxPromptTokens)->toBe(4096);
     });
 
     it('can convert to array with all fields', function () {
@@ -74,7 +74,7 @@ describe('ProviderConfig', function () {
             azure: ['resource' => 'my-resource'],
             modelId: 'gpt-4o',
             wireModel: 'my-deployment',
-            maxInputTokens: 8192,
+            maxPromptTokens: 8192,
             maxOutputTokens: 4096,
         );
 
@@ -92,8 +92,8 @@ describe('ProviderConfig', function () {
         ]);
     });
 
-    it('remaps maxInputTokens to maxPromptTokens in toArray', function () {
-        $config = new ProviderConfig(baseUrl: 'https://api.test.com', maxInputTokens: 8192);
+    it('emits maxPromptTokens in toArray', function () {
+        $config = new ProviderConfig(baseUrl: 'https://api.test.com', maxPromptTokens: 8192);
 
         $array = $config->toArray();
 

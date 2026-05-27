@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Concurrency;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Support\PermissionRequestResultKind;
+use Revolution\Copilot\Support\PermissionDecision;
 use Revolution\Copilot\Types\Hooks\PreToolUseHookOutput;
 use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
@@ -61,9 +61,9 @@ Artisan::command('copilot:chat {--resume}', function () {
             );
 
             if ($confirm) {
-                return PermissionRequestResultKind::approveOnce();
+                return PermissionDecision::approveOnce();
             } else {
-                return PermissionRequestResultKind::reject();
+                return PermissionDecision::reject();
             }
         },
         mcpServers: $mcp,
@@ -91,7 +91,7 @@ Artisan::command('copilot:chat {--resume}', function () {
 
             intro("Resumed previous session: $session_id. Here are the past assistant messages");
 
-            $messages = $session->getMessages();
+            $messages = $session->getEvents();
             foreach ($messages as $message) {
                 if ($message->isAssistantMessage()) {
                     note($message->content());

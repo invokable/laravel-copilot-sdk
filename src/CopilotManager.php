@@ -13,6 +13,7 @@ use Revolution\Copilot\Contracts\Factory;
 use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Testing\WithFake;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\TelemetryConfig;
@@ -215,7 +216,7 @@ class CopilotManager implements Factory
                     'use_logged_in_user' => $this->config['use_logged_in_user'] ?? null,
                     'telemetry' => $this->config['telemetry'] ?? null,
                     'session_idle_timeout_seconds' => $this->config['session_idle_timeout_seconds'] ?? 0,
-                    'copilot_home' => $this->config['copilot_home'] ?? null,
+                    'baseDirectory' => $this->config['baseDirectory'] ?? $this->config['base_directory'] ?? $this->config['copilot_home'] ?? null,
                     'remote' => $this->config['remote'] ?? false,
                 ];
             }
@@ -247,7 +248,7 @@ class CopilotManager implements Factory
     /**
      * Configure the client to use stdio transport with given options.
      *
-     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, remote?: bool}  $config  Configuration options for stdio transport.
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool}  $config  Configuration options for stdio transport.
      */
     public function useStdio(?array $config = null): static
     {
@@ -266,6 +267,8 @@ class CopilotManager implements Factory
             'telemetry',
             'session_idle_timeout_seconds',
             'copilot_home',
+            'base_directory',
+            'baseDirectory',
             'remote',
         ]));
 
@@ -287,7 +290,7 @@ class CopilotManager implements Factory
             throw new RuntimeException('No TCP URL provided for Copilot client.');
         }
 
-        $this->client(['cli_url' => $url]);
+        $this->client(['connection' => RuntimeConnection::forUri($url)]);
 
         return $this;
     }

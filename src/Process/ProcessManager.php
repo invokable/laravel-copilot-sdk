@@ -47,7 +47,7 @@ class ProcessManager
         protected ?bool $useLoggedInUser = null,
         protected TelemetryConfig|array|null $telemetry = null,
         protected int $sessionIdleTimeoutSeconds = 0,
-        protected ?string $copilotHome = null,
+        protected ?string $baseDirectory = null,
         protected bool $remote = false,
     ) {
         $this->cwd ??= getcwd() ?: null;
@@ -191,9 +191,9 @@ class ProcessManager
             $env['COPILOT_SDK_AUTH_TOKEN'] = $this->gitHubToken;
         }
 
-        // Set COPILOT_HOME if specified
-        if (filled($this->copilotHome)) {
-            $env['COPILOT_HOME'] = $this->copilotHome;
+        // Set COPILOT_HOME if specified. The official SDK calls this baseDirectory.
+        if (filled($this->baseDirectory)) {
+            $env['COPILOT_HOME'] = $this->baseDirectory;
         }
 
         $args = ['--headless', '--stdio', '--log-level', $this->logLevel];

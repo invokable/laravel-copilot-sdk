@@ -23,8 +23,8 @@ $session_id = select(
 // 選択されたIDでセッションを再開
 $session = Copilot::client()->resumeSession($session_id);
 
-// これまでのメッセージを取得
-$messages = $session->getMessages();
+// これまでのイベントを取得
+$events = $session->getEvents();
 ```
 
 ## 固定のセッションIDを使う場合

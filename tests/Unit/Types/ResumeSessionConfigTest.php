@@ -14,6 +14,8 @@ describe('ResumeSessionConfig', function () {
     it('can be created from array with all fields', function () {
         $handler = fn () => true;
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];
+        $exitPlanModeHandler = fn () => ['approved' => true];
+        $autoModeSwitchHandler = fn () => ['approved' => true];
         $preToolUseHook = fn () => null;
 
         $config = ResumeSessionConfig::fromArray([
@@ -28,6 +30,8 @@ describe('ResumeSessionConfig', function () {
             'provider' => ['baseUrl' => 'https://api.example.com'],
             'onPermissionRequest' => $handler,
             'onUserInputRequest' => $userInputHandler,
+            'onExitPlanModeRequest' => $exitPlanModeHandler,
+            'onAutoModeSwitchRequest' => $autoModeSwitchHandler,
             'hooks' => ['onPreToolUse' => $preToolUseHook],
             'workingDirectory' => '/home/user/project',
             'streaming' => true,
@@ -38,7 +42,7 @@ describe('ResumeSessionConfig', function () {
             'instructionDirectories' => ['/path/to/instructions'],
             'disabledSkills' => ['skill1'],
             'infiniteSessions' => new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
-            'disableResume' => true,
+            'suppressResumeEvent' => true,
             'agent' => 'reviewer',
         ]);
 
@@ -50,10 +54,12 @@ describe('ResumeSessionConfig', function () {
             ->and($config->provider)->toBeInstanceOf(ProviderConfig::class)
             ->and($config->onPermissionRequest)->toBe($handler)
             ->and($config->onUserInputRequest)->toBe($userInputHandler)
+            ->and($config->onExitPlanModeRequest)->toBe($exitPlanModeHandler)
+            ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler)
             ->and($config->hooks)->toBeInstanceOf(SessionHooks::class)
             ->and($config->hooks->onPreToolUse)->toBe($preToolUseHook)
             ->and($config->workingDirectory)->toBe('/home/user/project')
-            ->and($config->disableResume)->toBeTrue()
+            ->and($config->suppressResumeEvent)->toBeTrue()
             ->and($config->streaming)->toBeTrue()
             ->and($config->includeSubAgentStreamingEvents)->toBeTrue()
             ->and($config->mcpServers)->toBe(['server1' => ['command' => 'npx']])
@@ -73,7 +79,7 @@ describe('ResumeSessionConfig', function () {
             ->and($config->onUserInputRequest)->toBeNull()
             ->and($config->hooks)->toBeNull()
             ->and($config->workingDirectory)->toBeNull()
-            ->and($config->disableResume)->toBeNull()
+            ->and($config->suppressResumeEvent)->toBeNull()
             ->and($config->streaming)->toBeNull()
             ->and($config->includeSubAgentStreamingEvents)->toBeNull()
             ->and($config->mcpServers)->toBeNull()
@@ -105,6 +111,8 @@ describe('ResumeSessionConfig', function () {
     it('can convert to array with all fields', function () {
         $handler = fn () => true;
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];
+        $exitPlanModeHandler = fn () => ['approved' => true];
+        $autoModeSwitchHandler = fn () => ['approved' => true];
         $preToolUseHook = fn () => null;
 
         $config = new ResumeSessionConfig(
@@ -119,6 +127,8 @@ describe('ResumeSessionConfig', function () {
             provider: new ProviderConfig(baseUrl: 'https://api.test.com'),
             onPermissionRequest: $handler,
             onUserInputRequest: $userInputHandler,
+            onExitPlanModeRequest: $exitPlanModeHandler,
+            onAutoModeSwitchRequest: $autoModeSwitchHandler,
             hooks: new SessionHooks(onPreToolUse: $preToolUseHook),
             workingDirectory: '/home/user',
             streaming: true,
@@ -128,7 +138,7 @@ describe('ResumeSessionConfig', function () {
             skillDirectories: ['/skills'],
             disabledSkills: ['skill1'],
             infiniteSessions: new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
-            disableResume: false,
+            suppressResumeEvent: false,
             agent: 'reviewer',
         );
 
@@ -139,9 +149,11 @@ describe('ResumeSessionConfig', function () {
             ->and($array['provider'])->toBe(['baseUrl' => 'https://api.test.com'])
             ->and($array['onPermissionRequest'])->toBe($handler)
             ->and($array['onUserInputRequest'])->toBe($userInputHandler)
+            ->and($array['onExitPlanModeRequest'])->toBe($exitPlanModeHandler)
+            ->and($array['onAutoModeSwitchRequest'])->toBe($autoModeSwitchHandler)
             ->and($array['hooks'])->toBe(['onPreToolUse' => $preToolUseHook])
             ->and($array['workingDirectory'])->toBe('/home/user')
-            ->and($array['disableResume'])->toBeFalse()
+            ->and($array['suppressResumeEvent'])->toBeFalse()
             ->and($array['streaming'])->toBeTrue()
             ->and($array['includeSubAgentStreamingEvents'])->toBeFalse()
             ->and($array['mcpServers'])->toBe(['server1' => ['command' => 'test']])
@@ -172,6 +184,23 @@ describe('ResumeSessionConfig', function () {
         $config = new ResumeSessionConfig;
 
         expect($config)->toBeInstanceOf(Arrayable::class);
+    });
+
+    it('accepts old names as aliases', function () {
+        $exitPlanModeHandler = fn () => ['approved' => true];
+        $autoModeSwitchHandler = fn () => ['approved' => true];
+
+        $config = ResumeSessionConfig::fromArray([
+            'onExitPlanMode' => $exitPlanModeHandler,
+            'onAutoModeSwitch' => $autoModeSwitchHandler,
+            'disableResume' => true,
+        ]);
+
+        expect($config->onExitPlanModeRequest)->toBe($exitPlanModeHandler)
+            ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler)
+            ->and($config->suppressResumeEvent)->toBeTrue()
+            ->and($config->toArray())->toHaveKey('suppressResumeEvent', true)
+            ->and($config->toArray())->not->toHaveKey('disableResume');
     });
 
     it('accepts reasoningEffort as enum', function () {

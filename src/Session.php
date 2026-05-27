@@ -11,7 +11,6 @@ use InvalidArgumentException;
 use Revolt\EventLoop;
 use Revolution\Copilot\Concerns\Session\HasAutoModeSwitchHandler;
 use Revolution\Copilot\Concerns\Session\HasCommandHandlers;
-use Revolution\Copilot\Concerns\Session\HasDeprecated;
 use Revolution\Copilot\Concerns\Session\HasElicitationHandler;
 use Revolution\Copilot\Concerns\Session\HasExitPlanModeHandler;
 use Revolution\Copilot\Concerns\Session\HasHooks;
@@ -50,7 +49,6 @@ class Session implements CopilotSession
     use Conditionable;
     use HasAutoModeSwitchHandler;
     use HasCommandHandlers;
-    use HasDeprecated;
     use HasElicitationHandler;
     use HasExitPlanModeHandler;
     use HasHooks;
@@ -602,13 +600,13 @@ class Session implements CopilotSession
     }
 
     /**
-     * Get all messages from this session's history.
+     * Get all events from this session's history.
      *
      * @return array<SessionEvent>
      *
      * @throws JsonRpcException
      */
-    public function getMessages(): array
+    public function getEvents(): array
     {
         $response = $this->client->request('session.getMessages', [
             'sessionId' => $this->sessionId,

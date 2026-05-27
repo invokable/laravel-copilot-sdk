@@ -6,26 +6,26 @@ namespace Revolution\Copilot\Support;
 
 final readonly class PermissionRequestResultKind
 {
-    public const string APPROVE_ONCE = 'approve-once';
+    public const string APPROVE_ONCE = PermissionDecision::APPROVE_ONCE;
 
-    public const string APPROVE_FOR_SESSION = 'approve-for-session';
+    public const string APPROVE_FOR_SESSION = PermissionDecision::APPROVE_FOR_SESSION;
 
-    public const string APPROVE_FOR_LOCATION = 'approve-for-location';
+    public const string APPROVE_FOR_LOCATION = PermissionDecision::APPROVE_FOR_LOCATION;
 
-    public const string APPROVE_PERMANENTLY = 'approve-permanently';
+    public const string APPROVE_PERMANENTLY = PermissionDecision::APPROVE_PERMANENTLY;
 
-    public const string REJECT = 'reject';
+    public const string REJECT = PermissionDecision::REJECT;
 
-    public const string USER_NOT_AVAILABLE = 'user-not-available';
+    public const string USER_NOT_AVAILABLE = PermissionDecision::USER_NOT_AVAILABLE;
 
-    public const string NO_RESULT = 'no-result';
+    public const string NO_RESULT = PermissionDecision::NO_RESULT;
 
     /**
      * Approve the request once.
      */
     public static function approveOnce(): array
     {
-        return ['kind' => self::APPROVE_ONCE];
+        return PermissionDecision::approveOnce();
     }
 
     /**
@@ -33,7 +33,7 @@ final readonly class PermissionRequestResultKind
      */
     public static function approveForSession(): array
     {
-        return ['kind' => self::APPROVE_FOR_SESSION];
+        return PermissionDecision::approveForSession();
     }
 
     /**
@@ -41,7 +41,7 @@ final readonly class PermissionRequestResultKind
      */
     public static function approveForLocation(): array
     {
-        return ['kind' => self::APPROVE_FOR_LOCATION];
+        return PermissionDecision::approveForLocation();
     }
 
     /**
@@ -51,15 +51,15 @@ final readonly class PermissionRequestResultKind
      */
     public static function approvePermanently(string $domain): array
     {
-        return ['kind' => self::APPROVE_PERMANENTLY, 'domain' => $domain];
+        return PermissionDecision::approvePermanently($domain);
     }
 
     /**
      * Reject the permission request.
      */
-    public static function reject(): array
+    public static function reject(?string $feedback = null): array
     {
-        return ['kind' => self::REJECT];
+        return PermissionDecision::reject($feedback);
     }
 
     /**
@@ -67,7 +67,7 @@ final readonly class PermissionRequestResultKind
      */
     public static function userNotAvailable(): array
     {
-        return ['kind' => self::USER_NOT_AVAILABLE];
+        return PermissionDecision::userNotAvailable();
     }
 
     /**
@@ -76,7 +76,7 @@ final readonly class PermissionRequestResultKind
      */
     public static function noResult(): array
     {
-        return ['kind' => self::NO_RESULT];
+        return PermissionDecision::noResult();
     }
 
     /**
@@ -85,11 +85,6 @@ final readonly class PermissionRequestResultKind
      */
     public static function select(): array
     {
-        return [
-            self::APPROVE_ONCE => __('Approve Once'),
-            self::APPROVE_FOR_SESSION => __('Approve for Session'),
-            self::APPROVE_FOR_LOCATION => __('Approve for Location'),
-            self::REJECT => __('Reject'),
-        ];
+        return PermissionDecision::select();
     }
 }

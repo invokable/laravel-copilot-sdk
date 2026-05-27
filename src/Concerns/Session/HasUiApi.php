@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Concerns\Session;
 
 use Revolution\Copilot\Enums\ElicitationAction;
-use Revolution\Copilot\Types\InputOptions;
 use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
+use Revolution\Copilot\Types\UiInputOptions;
 use RuntimeException;
 
 /**
@@ -122,12 +122,12 @@ trait HasUiApi
      *
      * @throws RuntimeException if the host does not support elicitation
      */
-    public function input(string $message, InputOptions|array|null $options = null): ?string
+    public function input(string $message, UiInputOptions|array|null $options = null): ?string
     {
         $this->assertElicitation();
 
         $options = match (true) {
-            $options instanceof InputOptions => $options->toArray(),
+            $options instanceof UiInputOptions => $options->toArray(),
             is_array($options) => $options,
             default => [],
         };

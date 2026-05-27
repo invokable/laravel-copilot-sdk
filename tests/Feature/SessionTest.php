@@ -249,7 +249,7 @@ describe('Session', function () {
             ->and($session->getToolHandler('toolC'))->toBeNull();
     });
 
-    it('getMessages returns session events', function () {
+    it('getEvents returns session events', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')
             ->with('session.getMessages', ['sessionId' => 'test-session'])
@@ -262,7 +262,7 @@ describe('Session', function () {
             ]);
 
         $session = new Session('test-session', $mockClient);
-        $messages = $session->getMessages();
+        $messages = $session->getEvents();
 
         expect($messages)->toHaveCount(2)
             ->and($messages[0])->toBeInstanceOf(SessionEvent::class)
@@ -270,7 +270,7 @@ describe('Session', function () {
             ->and($messages[1]->type())->toBe('assistant.message');
     });
 
-    it('destroy sends destroy request and clears handlers', function () {
+    it('disconnect sends destroy request and clears handlers', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')
             ->with('session.destroy', ['sessionId' => 'test-session'])

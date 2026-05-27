@@ -168,3 +168,48 @@
 - Facade 経由の permission default は引き続き deny-all。
 - `ElicitationRequest` の class/test/import が残っていない。
 - Canvas は実験的かつ GitHub Copilot App 専用として扱い、Laravel 版 v1.0 の必須機能にしない。
+
+## 実装済み内容
+
+- `RuntimeConnection` / `RuntimeConnectionKind` を追加し、`Client` は `connection` option、旧 `cli_url`、旧 flat stdio options を正規化するようにした。
+  - `CopilotManager::useTcp()` は既存 runtime への URI 接続として `RuntimeConnection::forUri()` を使う。
+  - SDK が TCP runtime を起動する `forTcp()` 相当は shape のみ追加し、実行時は明示的に未対応として例外にする。
+- 内部名を `baseDirectory` に寄せた。
+  - `ProcessManager` の property / constructor argument は `baseDirectory`。
+  - Laravel config は既存 `copilot_home` を維持しつつ、`base_directory` / `baseDirectory` alias も受ける。
+  - 実 runtime へは従来通り `COPILOT_HOME` env を設定する。
+- Resume config は `suppressResumeEvent` primary に変更した。
+  - `ResumeSessionConfig::fromArray()` と `Client` の direct array config は旧 `disableResume` を入力 alias として読む。
+  - wire key は `suppressResumeEvent` のみ送る。
+- Handler config 名を公式に合わせた。
+  - `onExitPlanModeRequest` / `onAutoModeSwitchRequest` を primary にした。
+  - `fromArray()` と `Client` direct array config は旧 `onExitPlanMode` / `onAutoModeSwitch` を fallback alias として読む。
+  - wire flags と handler registration は新名優先。
+- `ProviderConfig` は `maxPromptTokens` primary に変更した。
+  - `fromArray()` は旧 `maxInputTokens` を alias として読む。
+  - `toArray()` は `maxPromptTokens` のみ送る。
+- `PermissionDecision` helper を追加し、`PermissionHandler` と permission handling internals はこれを使うようにした。
+  - `PermissionRequestResultKind` は互換用 alias/helper として残した。
+  - Facade 経由の default deny-all は維持し、`requestPermission` は handler presence 由来にした。
+- `ElicitationRequest` と該当 test を削除した。
+  - `ElicitationContext`、`UIElicitationRequest`、`UIHandlePendingElicitationRequest` は維持。
+- `getMessages()` を public session API から削除し、`getEvents()` を追加した。
+  - 内部 RPC method は公式通り引き続き `session.getMessages`。
+  - fake session、docs、workbench example を更新した。
+- `destroy()` deprecated alias を削除した。
+  - `disconnect()` のみ public session cleanup API とした。
+- `UiInputOptions` を追加し、`CopilotSession::input()` signature を新名に変更した。
+  - `InputOptions` は互換用 deprecated subclass として残した。
+- `ConnectionState` / `Client::getState()` は `CopilotClient` contract 外の diagnostics API として今回は維持した。
+- `copilot-sdk` サブモジュールを公式 `ed8facbe` (`Update @github/copilot to 1.0.55-1`) まで fast-forward した。
+- プロトコル確認は公式 SDK と同じく `connect` handshake 優先にし、legacy runtime で `connect` が未実装の場合だけ `ping` に fallback するようにした。
+  - `RuntimeConnection::forUri()` の `connectionToken` は `connect` handshake の `token` として送る。
+- `PermissionDecision::reject($feedback)` は公式 generated `PermissionDecisionReject` に合わせ、補助フィールドを `feedback` として送るようにした。
+- docs は plan scope 内の public examples を `PermissionDecision`、`getEvents()`、`onExitPlanModeRequest`、`onAutoModeSwitchRequest`、`maxPromptTokens` に更新した。
+- 追加・更新した主な tests:
+  - `tests/Unit/Types/RuntimeConnectionTest.php`
+  - `tests/Unit/Support/PermissionDecisionTest.php`
+  - `ClientTcpTest` の URI connection token handshake regression
+  - `ClientTest` の `connect` handshake / legacy `ping` fallback regression
+  - `ProviderConfig` / `SessionConfig` / `ResumeSessionConfig` rename alias tests
+  - `SessionTest` の `getEvents()` regression

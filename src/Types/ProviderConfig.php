@@ -26,9 +26,8 @@ readonly class ProviderConfig implements Arrayable
      * @param  ?string  $wireModel  Model name sent to the provider API for inference. Use when the
      *                              provider's model name differs from modelId (e.g. Azure deployment name).
      *                              Falls back to modelId, then SessionConfig::$model.
-     * @param  ?int  $maxInputTokens  Overrides the resolved model's default max prompt tokens. The runtime
-     *                                triggers conversation compaction before this limit is exceeded.
-     *                                Sent to the wire as `maxPromptTokens`.
+     * @param  ?int  $maxPromptTokens  Overrides the resolved model's default max prompt tokens. The runtime
+     *                                 triggers conversation compaction before this limit is exceeded.
      * @param  ?int  $maxOutputTokens  Overrides the resolved model's default max output tokens.
      */
     public function __construct(
@@ -41,7 +40,7 @@ readonly class ProviderConfig implements Arrayable
         public ?array $headers = null,
         public ?string $modelId = null,
         public ?string $wireModel = null,
-        public ?int $maxInputTokens = null,
+        public ?int $maxPromptTokens = null,
         public ?int $maxOutputTokens = null,
     ) {}
 
@@ -60,7 +59,7 @@ readonly class ProviderConfig implements Arrayable
             headers: $data['headers'] ?? null,
             modelId: $data['modelId'] ?? null,
             wireModel: $data['wireModel'] ?? null,
-            maxInputTokens: $data['maxInputTokens'] ?? $data['maxPromptTokens'] ?? null,
+            maxPromptTokens: $data['maxPromptTokens'] ?? $data['maxInputTokens'] ?? null,
             maxOutputTokens: $data['maxOutputTokens'] ?? null,
         );
     }
@@ -80,7 +79,7 @@ readonly class ProviderConfig implements Arrayable
             'headers' => $this->headers,
             'modelId' => $this->modelId,
             'wireModel' => $this->wireModel,
-            'maxPromptTokens' => $this->maxInputTokens,
+            'maxPromptTokens' => $this->maxPromptTokens,
             'maxOutputTokens' => $this->maxOutputTokens,
         ], fn ($value) => $value !== null);
     }

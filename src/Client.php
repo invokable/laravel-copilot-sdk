@@ -14,6 +14,7 @@ use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
+use Revolution\Copilot\Enums\RuntimeConnectionKind;
 use Revolution\Copilot\Events\Client\ClientStarted;
 use Revolution\Copilot\Events\Client\PingPong;
 use Revolution\Copilot\Events\Session\CreateSession;
@@ -28,6 +29,7 @@ use Revolution\Copilot\Types\CommandDefinition;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use RuntimeException;
@@ -52,6 +54,8 @@ class Client implements CopilotClient
 
     protected ConnectionState $state = ConnectionState::DISCONNECTED;
 
+    protected ?string $connectionToken = null;
+
     /**
      * Whether using TCP mode (connecting to existing server).
      */
@@ -69,25 +73,34 @@ class Client implements CopilotClient
      */
     public function __construct(protected array $options = [])
     {
-        // TCP mode: connect to existing server
-        if (filled(data_get($options, 'cli_url'))) {
+        $connection = $this->normalizeConnection($options);
+
+        // URI mode: connect to existing server
+        if ($connection->kindValue() === RuntimeConnectionKind::URI->value) {
             // Validate auth options with external server
             if (filled(data_get($options, 'github_token')) || data_get($options, 'use_logged_in_user') !== null) {
                 throw new \InvalidArgumentException(
-                    'github_token and use_logged_in_user cannot be used with cli_url (external server manages its own auth)',
+                    'github_token and use_logged_in_user cannot be used with RuntimeConnection::forUri() (external server manages its own auth)',
                 );
             }
 
             $this->tcpMode = true;
-            $this->transport = TcpTransport::fromUrl(data_get($options, 'cli_url'));
+            $this->connectionToken = $connection->connectionToken;
+            $this->transport = TcpTransport::fromUrl($connection->url ?? '');
 
             return;
         }
 
+        if ($connection->kindValue() === RuntimeConnectionKind::TCP->value) {
+            throw new \InvalidArgumentException(
+                'SDK-spawned TCP runtime connections are not supported yet. Use RuntimeConnection::forUri() or cli_url to connect to an existing runtime.',
+            );
+        }
+
         // Stdio mode: start CLI process
         $this->processManager = app(ProcessManager::class, [
-            'cliPath' => data_get($options, 'cli_path'),
-            'cliArgs' => data_get($options, 'cli_args', []),
+            'cliPath' => $connection->path ?? data_get($options, 'cli_path'),
+            'cliArgs' => $connection->args ?? data_get($options, 'cli_args', []),
             'cwd' => data_get($options, 'cwd'),
             'logLevel' => data_get($options, 'log_level', 'info'),
             'env' => data_get($options, 'env'),
@@ -95,9 +108,35 @@ class Client implements CopilotClient
             'useLoggedInUser' => data_get($options, 'use_logged_in_user'),
             'telemetry' => data_get($options, 'telemetry'),
             'sessionIdleTimeoutSeconds' => data_get($options, 'session_idle_timeout_seconds', 0),
-            'copilotHome' => data_get($options, 'copilot_home'),
+            'baseDirectory' => data_get($options, 'baseDirectory', data_get($options, 'base_directory', data_get($options, 'copilot_home'))),
             'remote' => data_get($options, 'remote', false),
         ]);
+    }
+
+    protected function normalizeConnection(array $options): RuntimeConnection
+    {
+        $connection = data_get($options, 'connection');
+
+        if ($connection instanceof RuntimeConnection) {
+            return $connection;
+        }
+
+        if ($connection instanceof Arrayable) {
+            return RuntimeConnection::fromArray($connection->toArray());
+        }
+
+        if (is_array($connection)) {
+            return RuntimeConnection::fromArray($connection);
+        }
+
+        if (filled(data_get($options, 'cli_url'))) {
+            return RuntimeConnection::forUri(data_get($options, 'cli_url'));
+        }
+
+        return RuntimeConnection::forStdio(
+            path: data_get($options, 'cli_path'),
+            args: data_get($options, 'cli_args', []),
+        );
     }
 
     /**
@@ -237,7 +276,7 @@ class Client implements CopilotClient
     {
         $this->ensureConnected();
 
-        $config = is_array($config) ? $config : $config->toArray();
+        $config = $this->normalizeSessionConfigAliases(is_array($config) ? $config : $config->toArray());
 
         if (! isset($config['onPermissionRequest']) || ! is_callable($config['onPermissionRequest'])) {
             throw new \InvalidArgumentException(
@@ -274,11 +313,11 @@ class Client implements CopilotClient
             'availableTools' => $config['availableTools'] ?? null,
             'excludedTools' => $config['excludedTools'] ?? null,
             'provider' => $config['provider'] ?? null,
-            'requestPermission' => true,
+            'requestPermission' => isset($config['onPermissionRequest']),
             'requestUserInput' => isset($config['onUserInputRequest']),
             'requestElicitation' => isset($config['onElicitationRequest']),
-            'requestExitPlanMode' => isset($config['onExitPlanMode']),
-            'requestAutoModeSwitch' => isset($config['onAutoModeSwitch']),
+            'requestExitPlanMode' => isset($config['onExitPlanModeRequest']),
+            'requestAutoModeSwitch' => isset($config['onAutoModeSwitchRequest']),
             'hooks' => $hasHooks,
             'workingDirectory' => $config['workingDirectory'] ?? null,
             'streaming' => $config['streaming'] ?? null,
@@ -318,12 +357,12 @@ class Client implements CopilotClient
             $session->registerElicitationHandler($config['onElicitationRequest']);
         }
 
-        if (isset($config['onExitPlanMode']) && is_callable($config['onExitPlanMode'])) {
-            $session->registerExitPlanModeHandler($config['onExitPlanMode']);
+        if (isset($config['onExitPlanModeRequest']) && is_callable($config['onExitPlanModeRequest'])) {
+            $session->registerExitPlanModeHandler($config['onExitPlanModeRequest']);
         }
 
-        if (isset($config['onAutoModeSwitch']) && is_callable($config['onAutoModeSwitch'])) {
-            $session->registerAutoModeSwitchHandler($config['onAutoModeSwitch']);
+        if (isset($config['onAutoModeSwitchRequest']) && is_callable($config['onAutoModeSwitchRequest'])) {
+            $session->registerAutoModeSwitchHandler($config['onAutoModeSwitchRequest']);
         }
 
         if ($hooks !== null) {
@@ -352,7 +391,7 @@ class Client implements CopilotClient
     {
         $this->ensureConnected();
 
-        $config = is_array($config) ? $config : $config->toArray();
+        $config = $this->normalizeSessionConfigAliases(is_array($config) ? $config : $config->toArray());
 
         if (! isset($config['onPermissionRequest']) || ! is_callable($config['onPermissionRequest'])) {
             throw new \InvalidArgumentException(
@@ -386,11 +425,11 @@ class Client implements CopilotClient
             'tools' => $toolsForRequest ?: null,
             'commands' => $commandsForRequest,
             'provider' => $config['provider'] ?? null,
-            'requestPermission' => true,
+            'requestPermission' => isset($config['onPermissionRequest']),
             'requestUserInput' => isset($config['onUserInputRequest']),
             'requestElicitation' => isset($config['onElicitationRequest']),
-            'requestExitPlanMode' => isset($config['onExitPlanMode']),
-            'requestAutoModeSwitch' => isset($config['onAutoModeSwitch']),
+            'requestExitPlanMode' => isset($config['onExitPlanModeRequest']),
+            'requestAutoModeSwitch' => isset($config['onAutoModeSwitchRequest']),
             'hooks' => $hasHooks,
             'workingDirectory' => $config['workingDirectory'] ?? null,
             'streaming' => $config['streaming'] ?? null,
@@ -403,7 +442,7 @@ class Client implements CopilotClient
             'enableConfigDiscovery' => $config['enableConfigDiscovery'] ?? null,
             'skillDirectories' => $config['skillDirectories'] ?? null,
             'disabledSkills' => $config['disabledSkills'] ?? null,
-            'disableResume' => $config['disableResume'] ?? null,
+            'suppressResumeEvent' => $config['suppressResumeEvent'] ?? null,
             'continuePendingWork' => $config['continuePendingWork'] ?? null,
             'enableSessionTelemetry' => $config['enableSessionTelemetry'] ?? null,
             'gitHubToken' => $config['gitHubToken'] ?? null,
@@ -431,12 +470,12 @@ class Client implements CopilotClient
             $session->registerElicitationHandler($config['onElicitationRequest']);
         }
 
-        if (isset($config['onExitPlanMode']) && is_callable($config['onExitPlanMode'])) {
-            $session->registerExitPlanModeHandler($config['onExitPlanMode']);
+        if (isset($config['onExitPlanModeRequest']) && is_callable($config['onExitPlanModeRequest'])) {
+            $session->registerExitPlanModeHandler($config['onExitPlanModeRequest']);
         }
 
-        if (isset($config['onAutoModeSwitch']) && is_callable($config['onAutoModeSwitch'])) {
-            $session->registerAutoModeSwitchHandler($config['onAutoModeSwitch']);
+        if (isset($config['onAutoModeSwitchRequest']) && is_callable($config['onAutoModeSwitchRequest'])) {
+            $session->registerAutoModeSwitchHandler($config['onAutoModeSwitchRequest']);
         }
 
         if ($hooks !== null) {
@@ -493,6 +532,23 @@ class Client implements CopilotClient
         }, $commands);
 
         return array_values(array_filter($normalized)) ?: null;
+    }
+
+    private function normalizeSessionConfigAliases(array $config): array
+    {
+        if (! isset($config['onExitPlanModeRequest']) && isset($config['onExitPlanMode'])) {
+            $config['onExitPlanModeRequest'] = $config['onExitPlanMode'];
+        }
+
+        if (! isset($config['onAutoModeSwitchRequest']) && isset($config['onAutoModeSwitch'])) {
+            $config['onAutoModeSwitchRequest'] = $config['onAutoModeSwitch'];
+        }
+
+        if (! isset($config['suppressResumeEvent']) && isset($config['disableResume'])) {
+            $config['suppressResumeEvent'] = $config['disableResume'];
+        }
+
+        return $config;
     }
 
     /**
@@ -572,8 +628,18 @@ class Client implements CopilotClient
         $expectedVersion = Protocol::version();
 
         try {
-            $serverVersion = $this->getStatus()->protocolVersion;
-        } catch (JsonRpcException) {
+            $serverVersion = $this->rpc()->connect(array_filter([
+                'token' => $this->connectionToken,
+            ], fn ($value) => $value !== null))->protocolVersion;
+        } catch (JsonRpcException $e) {
+            if ($e->code === -32601 || str_contains($e->getMessage(), 'Unhandled method connect')) {
+                $serverVersion = $this->ping()['protocolVersion'] ?? null;
+            } else {
+                throw $e;
+            }
+        }
+
+        if ($serverVersion === null) {
             throw new RuntimeException(
                 "SDK protocol version mismatch: SDK expects version {$expectedVersion}, ".
                 'but server does not report a protocol version.',

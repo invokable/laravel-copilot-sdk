@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Concerns\Session;
 
 use Closure;
-use Revolution\Copilot\Support\PermissionRequestResultKind;
+use Revolution\Copilot\Support\PermissionDecision;
 use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
 use Throwable;
 
@@ -43,13 +43,13 @@ trait HasPermissionHandler
     public function handlePermissionRequest(array $request): array
     {
         if ($this->permissionHandler === null) {
-            return PermissionRequestResultKind::userNotAvailable();
+            return PermissionDecision::userNotAvailable();
         }
 
         try {
             return ($this->permissionHandler)($request, ['sessionId' => $this->sessionId]);
         } catch (Throwable) {
-            return PermissionRequestResultKind::userNotAvailable();
+            return PermissionDecision::userNotAvailable();
         }
     }
 
@@ -65,7 +65,7 @@ trait HasPermissionHandler
             try {
                 $result = ($this->permissionHandler)($permissionRequest, ['sessionId' => $this->sessionId]);
 
-                if (($result['kind'] ?? null) === PermissionRequestResultKind::NO_RESULT) {
+                if (($result['kind'] ?? null) === PermissionDecision::NO_RESULT) {
                     return;
                 }
 
@@ -80,7 +80,7 @@ trait HasPermissionHandler
                     $this->rpc()->permissions()->handlePendingPermissionRequest(
                         new PermissionDecisionRequest(
                             requestId: $requestId,
-                            result: PermissionRequestResultKind::userNotAvailable(),
+                            result: PermissionDecision::userNotAvailable(),
                         )
                     );
                 } catch (Throwable) {
