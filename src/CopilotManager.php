@@ -52,8 +52,14 @@ class CopilotManager implements Factory
      * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      */
-    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, SessionConfig|array $config = []): ?SessionEvent
-    {
+    public function run(
+        string $prompt,
+        ?array $attachments = null,
+        ?string $mode = null,
+        AgentMode|string|null $agentMode = null,
+        ?array $requestHeaders = null,
+        SessionConfig|array $config = []
+    ): ?SessionEvent {
         if ($this->isFake()) {
             return $this->fake->run($prompt, $attachments, $mode, $agentMode, $requestHeaders, $config);
         }
