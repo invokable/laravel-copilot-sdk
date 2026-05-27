@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Types\InputOptions;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\UiInputOptions;
