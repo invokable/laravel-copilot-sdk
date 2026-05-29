@@ -56,6 +56,12 @@ Copilot::client()->rpc()->mcp()->remove(new McpConfigRemoveRequest(name: 'my-ser
 // MCPサーバーを有効化/無効化（グローバル設定）
 Copilot::client()->rpc()->mcp()->enable(new McpConfigEnableRequest(names: ['my-server']));
 Copilot::client()->rpc()->mcp()->disable(new McpConfigDisableRequest(names: ['my-server']));
+// インメモリキャッシュをクリア（次回読み込み時にディスクから再取得）
+Copilot::client()->rpc()->mcp()->reload();
+
+// user settings (ユーザー設定)
+// インメモリキャッシュをクリア（次回読み込み時にディスクから再取得）
+Copilot::client()->rpc()->userSettings()->reload();
 
 // mcp discover (MCPサーバーの自動検出)
 Copilot::client()->rpc()->mcp()->discover(new McpDiscoverRequest(
@@ -129,6 +135,10 @@ $session->rpc()->model()->getCurrent();
 $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'gpt-4'));
 // reasoningEffortを指定する場合（対応モデルのみ）
 $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'claude-opus-4.7', reasoningEffort: ReasoningEffort::HIGH));
+// reasoningSummaryを指定する場合
+$session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'claude-opus-4.7', reasoningSummary: 'concise'));
+// contextTierを指定する場合（対応モデルのみ）
+$session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'gpt-4o', contextTier: 'long_context'));
 // modelCapabilitiesをオーバーライドする場合
 $session->rpc()->model()->switchTo(new ModelSwitchToRequest(
     modelId: 'gpt-4',
@@ -136,6 +146,9 @@ $session->rpc()->model()->switchTo(new ModelSwitchToRequest(
         supports: new ModelCapabilitiesOverrideSupports(vision: true),
     ),
 ));
+// セッションで利用可能なモデルの一覧取得（experimental）
+$session->rpc()->model()->list();
+$session->rpc()->model()->list(new ModelListRequest(skipCache: true)); // キャッシュをスキップ
 
 // setModel()ヘルパーでも同様にreasoningEffortやmodelCapabilitiesを指定可能
 $session->setModel('claude-opus-4.7', ReasoningEffort::HIGH);
@@ -211,6 +224,8 @@ $session->rpc()->tools()->handlePendingToolCall(new HandlePendingToolCallRequest
     requestId: '...',
     result: 'ツールの実行結果',
 ));
+// セッションの現在のツールメタデータを取得（experimental）
+$session->rpc()->tools()->getCurrentMetadata();
 
 // permissions (プロトコルv3+: permission.requestedイベントへの応答)
 $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(

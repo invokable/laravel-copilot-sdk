@@ -13,15 +13,19 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 readonly class ModelSwitchToRequest implements Arrayable
 {
     /**
-     * @param  string  $modelId  The model ID to switch to
+     * @param  string  $modelId  The model ID to switch to.
      * @param  ReasoningEffort|string|null  $reasoningEffort  Reasoning effort level to use for the model.
      *                                                        Accepts either ReasoningEffort enum or string value.
+     * @param  string|null  $reasoningSummary  Reasoning summary mode ("auto", "concise", "detailed", "none").
      * @param  ModelCapabilitiesOverride|array|null  $modelCapabilities  Override individual model capabilities resolved by the runtime.
+     * @param  string|null  $contextTier  Explicit context tier ("default" or "long_context"). Null clears any previous choice.
      */
     public function __construct(
         public string $modelId,
         public ReasoningEffort|string|null $reasoningEffort = null,
+        public ?string $reasoningSummary = null,
         public ModelCapabilitiesOverride|array|null $modelCapabilities = null,
+        public ?string $contextTier = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -35,7 +39,9 @@ readonly class ModelSwitchToRequest implements Arrayable
         return new self(
             modelId: $data['modelId'],
             reasoningEffort: $data['reasoningEffort'] ?? null,
+            reasoningSummary: $data['reasoningSummary'] ?? null,
             modelCapabilities: $modelCapabilities,
+            contextTier: $data['contextTier'] ?? null,
         );
     }
 
@@ -52,7 +58,9 @@ readonly class ModelSwitchToRequest implements Arrayable
         return array_filter([
             'modelId' => $this->modelId,
             'reasoningEffort' => $reasoningEffort,
+            'reasoningSummary' => $this->reasoningSummary,
             'modelCapabilities' => $modelCapabilities,
+            'contextTier' => $this->contextTier,
         ], fn ($v) => $v !== null);
     }
 }

@@ -6,8 +6,10 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
+use Revolution\Copilot\Types\Rpc\ModelListRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
+use Revolution\Copilot\Types\Rpc\SessionModelList;
 
 /**
  * Pending model RPC operations for a session.
@@ -41,6 +43,21 @@ class PendingModel
 
         return ModelSwitchToResult::fromArray(
             $this->client->request('session.model.switchTo', $paramsArray),
+        );
+    }
+
+    /**
+     * List models available to this session.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function list(ModelListRequest|array $params = []): SessionModelList
+    {
+        $paramsArray = ($params instanceof ModelListRequest ? $params : ModelListRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SessionModelList::fromArray(
+            $this->client->request('session.model.list', $paramsArray),
         );
     }
 }

@@ -97,4 +97,12 @@ class PendingServerMcpConfig
 
         $this->client->request('mcp.config.disable', $paramsArray);
     }
+
+    /**
+     * Drops this runtime process's in-memory MCP server-definition cache so the next MCP config read observes disk.
+     */
+    public function reload(): void
+    {
+        $this->client->request('mcp.config.reload', []);
+    }
 }

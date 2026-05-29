@@ -102,4 +102,12 @@ class ServerRpc
     {
         return new PendingServerSkills($this->client);
     }
+
+    /**
+     * Server-level user settings RPC operations.
+     */
+    public function userSettings(): PendingServerUserSettings
+    {
+        return new PendingServerUserSettings($this->client);
+    }
 }
