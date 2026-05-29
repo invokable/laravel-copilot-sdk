@@ -22,6 +22,7 @@ readonly class SessionContextInfo implements Arrayable
         public int $promptTokenLimit,
         public int $systemTokens,
         public int $toolDefinitionsTokens,
+        public int $mcpToolsTokens,
         public int $totalTokens,
     ) {}
 
@@ -36,6 +37,7 @@ readonly class SessionContextInfo implements Arrayable
             promptTokenLimit: $data['promptTokenLimit'] ?? 0,
             systemTokens: $data['systemTokens'] ?? 0,
             toolDefinitionsTokens: $data['toolDefinitionsTokens'] ?? 0,
+            mcpToolsTokens: $data['mcpToolsTokens'] ?? 0,
             totalTokens: $data['totalTokens'] ?? 0,
         );
     }
@@ -51,6 +53,7 @@ readonly class SessionContextInfo implements Arrayable
             'promptTokenLimit' => $this->promptTokenLimit,
             'systemTokens' => $this->systemTokens,
             'toolDefinitionsTokens' => $this->toolDefinitionsTokens,
+            'mcpToolsTokens' => $this->mcpToolsTokens,
             'totalTokens' => $this->totalTokens,
         ];
     }

@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
+use Revolution\Copilot\Types\Rpc\ToolsGetCurrentMetadataResult;
 
 /**
  * Pending session-scoped tools RPC operations.
@@ -31,6 +32,20 @@ class PendingTools
 
         return HandlePendingToolCallResult::fromArray(
             $this->client->request('session.tools.handlePendingToolCall', $paramsArray),
+        );
+    }
+
+    /**
+     * Get current lightweight tool metadata snapshot for this session.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function getCurrentMetadata(): ToolsGetCurrentMetadataResult
+    {
+        return ToolsGetCurrentMetadataResult::fromArray(
+            $this->client->request('session.tools.getCurrentMetadata', [
+                'sessionId' => $this->sessionId,
+            ]),
         );
     }
 }
