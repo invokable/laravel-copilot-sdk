@@ -37,7 +37,7 @@ $config = new SessionConfig(
     // modelCapabilities: ['supports' => ['vision' => true]],
 
     // configディレクトリを上書き設定
-    configDir: '',
+    configDirectory: '',
 
     // MCP設定やスキルディレクトリの自動検出を有効化
     // .mcp.json や .vscode/mcp.json をワーキングディレクトリから自動検出し、
@@ -172,6 +172,9 @@ $config = new SessionConfig(
 
     // スキルディレクトリ
     skillDirectories: [],
+
+    // Open Plugins形式のプラグインディレクトリ
+    pluginDirectories: [],
 
     // カスタム指示ファイルを検索する追加ディレクトリ
     instructionDirectories: [],
