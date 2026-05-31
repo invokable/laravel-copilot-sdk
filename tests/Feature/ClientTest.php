@@ -470,6 +470,60 @@ describe('Client', function () {
         expect($session)->toBe($mockSession);
     });
 
+    it('createSession sends cloud plugin and directory options in RPC request', function () {
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', [])
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn ($params) => ($params['defaultAgent'] ?? null) === ['excludedTools' => ['builtin:bash']]
+                && ($params['pluginDirectories'] ?? null) === ['/app/plugins/reviewer']
+                && ($params['instructionDirectories'] ?? null) === ['/app/instructions']
+                && ($params['remoteSession'] ?? null) === 'export'
+                && ($params['cloud']['repository'] ?? null) === ['owner' => 'myorg', 'name' => 'myrepo', 'branch' => 'main']))
+            ->once()
+            ->andReturn(['sessionId' => 'test-session-123']);
+
+        $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with([]);
+        $mockSession->shouldReceive('setCapabilities')->once()->with(null);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+        $this->app->bind(Session::class, fn () => $mockSession);
+
+        $client = new Client;
+        $client->start();
+        $session = $client->createSession([
+            'defaultAgent' => ['excludedTools' => ['builtin:bash']],
+            'pluginDirectories' => ['/app/plugins/reviewer'],
+            'instructionDirectories' => ['/app/instructions'],
+            'remoteSession' => 'export',
+            'cloud' => [
+                'repository' => [
+                    'owner' => 'myorg',
+                    'name' => 'myrepo',
+                    'branch' => 'main',
+                ],
+            ],
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
+
+        expect($session)->toBe($mockSession);
+    });
+
     it('resumeSession sends only name/description for commands in RPC request', function () {
         Event::fake();
 
@@ -522,6 +576,68 @@ describe('Client', function () {
         $client->start();
         $session = $client->resumeSession('test-session-123', [
             'commands' => $commands,
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
+
+        expect($session)->toBe($mockSession);
+    });
+
+    it('resumeSession sends plugin and shared config options without cloud in RPC request', function () {
+        Event::fake();
+
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', [])
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.resume', Mockery::on(fn ($params) => ($params['defaultAgent'] ?? null) === ['excludedTools' => ['builtin:bash']]
+                && ($params['pluginDirectories'] ?? null) === ['/app/plugins/reviewer']
+                && ($params['instructionDirectories'] ?? null) === ['/app/instructions']
+                && ($params['remoteSession'] ?? null) === 'export'
+                && ($params['largeOutput'] ?? null) === ['enabled' => true, 'maxSizeBytes' => 1024]
+                && ($params['enableMcpApps'] ?? null) === true
+                && ($params['enableSkills'] ?? null) === true
+                && ! array_key_exists('cloud', $params)))
+            ->once()
+            ->andReturn(['sessionId' => 'test-session-123']);
+
+        $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with([]);
+        $mockSession->shouldReceive('setCapabilities')->once()->with(null);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+        $this->app->bind(Session::class, fn () => $mockSession);
+
+        $client = new Client;
+        $client->start();
+        $session = $client->resumeSession('test-session-123', [
+            'defaultAgent' => ['excludedTools' => ['builtin:bash']],
+            'pluginDirectories' => ['/app/plugins/reviewer'],
+            'instructionDirectories' => ['/app/instructions'],
+            'remoteSession' => 'export',
+            'largeOutput' => ['enabled' => true, 'maxSizeBytes' => 1024],
+            'enableMcpApps' => true,
+            'enableSkills' => true,
+            'cloud' => [
+                'repository' => [
+                    'owner' => 'myorg',
+                    'name' => 'myrepo',
+                    'branch' => 'main',
+                ],
+            ],
             'onPermissionRequest' => PermissionHandler::approveAll(),
         ]);
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
+use Revolution\Copilot\Types\LargeToolOutputConfig;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionHooks;
@@ -22,7 +23,10 @@ describe('ResumeSessionConfig', function () {
             'clientName' => 'my-app',
             'model' => 'claude-opus-4.7',
             'reasoningEffort' => ReasoningEffort::XHIGH,
+            'reasoningSummary' => 'none',
+            'contextTier' => 'long_context',
             'configDir' => './src',
+            'configDirectory' => './config',
             'tools' => [['name' => 'test_tool']],
             'systemMessage' => new SystemMessageConfig(mode: 'append', content: 'Instructions'),
             'availableTools' => [],
@@ -38,7 +42,9 @@ describe('ResumeSessionConfig', function () {
             'includeSubAgentStreamingEvents' => true,
             'mcpServers' => ['server1' => ['command' => 'npx']],
             'customAgents' => [['name' => 'agent1']],
+            'defaultAgent' => ['excludedTools' => ['builtin:bash']],
             'skillDirectories' => ['/path/to/skills'],
+            'pluginDirectories' => ['/path/to/plugins'],
             'instructionDirectories' => ['/path/to/instructions'],
             'disabledSkills' => ['skill1'],
             'skipCustomInstructions' => true,
@@ -48,12 +54,28 @@ describe('ResumeSessionConfig', function () {
             'infiniteSessions' => new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
             'suppressResumeEvent' => true,
             'agent' => 'reviewer',
+            'largeOutput' => ['enabled' => true, 'maxSizeBytes' => 1024],
+            'extensionSdkPath' => '/path/to/copilot-sdk',
+            'enableMcpApps' => true,
+            'mcpOAuthTokenStorage' => 'in-memory',
+            'skipEmbeddingRetrieval' => true,
+            'embeddingCacheStorage' => 'in-memory',
+            'organizationCustomInstructions' => 'Use Laravel conventions.',
+            'enableOnDemandInstructionDiscovery' => true,
+            'enableFileHooks' => true,
+            'enableHostGitOperations' => true,
+            'enableSessionStore' => true,
+            'enableSkills' => true,
+            'displayPrompt' => 'Displayed prompt',
         ]);
 
         expect($config->tools)->toBe([['name' => 'test_tool']])
             ->and($config->clientName)->toBe('my-app')
             ->and($config->model)->toBe('claude-opus-4.7')
             ->and($config->reasoningEffort)->toBe(ReasoningEffort::XHIGH)
+            ->and($config->reasoningSummary)->toBe('none')
+            ->and($config->contextTier)->toBe('long_context')
+            ->and($config->configDirectory)->toBe('./config')
             ->and($config->systemMessage->content)->toBe('Instructions')
             ->and($config->provider)->toBeInstanceOf(ProviderConfig::class)
             ->and($config->onPermissionRequest)->toBe($handler)
@@ -68,13 +90,28 @@ describe('ResumeSessionConfig', function () {
             ->and($config->includeSubAgentStreamingEvents)->toBeTrue()
             ->and($config->mcpServers)->toBe(['server1' => ['command' => 'npx']])
             ->and($config->customAgents)->toBe([['name' => 'agent1']])
+            ->and($config->defaultAgent)->toBe(['excludedTools' => ['builtin:bash']])
             ->and($config->skillDirectories)->toBe(['/path/to/skills'])
+            ->and($config->pluginDirectories)->toBe(['/path/to/plugins'])
             ->and($config->instructionDirectories)->toBe(['/path/to/instructions'])
             ->and($config->disabledSkills)->toBe(['skill1'])
             ->and($config->skipCustomInstructions)->toBeTrue()
             ->and($config->customAgentsLocalOnly)->toBeTrue()
             ->and($config->coauthorEnabled)->toBeFalse()
             ->and($config->manageScheduleEnabled)->toBeTrue()
+            ->and($config->largeOutput)->toBeInstanceOf(LargeToolOutputConfig::class)
+            ->and($config->extensionSdkPath)->toBe('/path/to/copilot-sdk')
+            ->and($config->enableMcpApps)->toBeTrue()
+            ->and($config->mcpOAuthTokenStorage)->toBe('in-memory')
+            ->and($config->skipEmbeddingRetrieval)->toBeTrue()
+            ->and($config->embeddingCacheStorage)->toBe('in-memory')
+            ->and($config->organizationCustomInstructions)->toBe('Use Laravel conventions.')
+            ->and($config->enableOnDemandInstructionDiscovery)->toBeTrue()
+            ->and($config->enableFileHooks)->toBeTrue()
+            ->and($config->enableHostGitOperations)->toBeTrue()
+            ->and($config->enableSessionStore)->toBeTrue()
+            ->and($config->enableSkills)->toBeTrue()
+            ->and($config->displayPrompt)->toBe('Displayed prompt')
             ->and($config->agent)->toBe('reviewer');
     });
 
@@ -92,7 +129,9 @@ describe('ResumeSessionConfig', function () {
             ->and($config->includeSubAgentStreamingEvents)->toBeNull()
             ->and($config->mcpServers)->toBeNull()
             ->and($config->customAgents)->toBeNull()
+            ->and($config->defaultAgent)->toBeNull()
             ->and($config->skillDirectories)->toBeNull()
+            ->and($config->pluginDirectories)->toBeNull()
             ->and($config->instructionDirectories)->toBeNull()
             ->and($config->disabledSkills)->toBeNull()
             ->and($config->skipCustomInstructions)->toBeNull()
@@ -131,7 +170,10 @@ describe('ResumeSessionConfig', function () {
             clientName: 'my-app',
             model: 'claude-opus-4.7',
             reasoningEffort: ReasoningEffort::XHIGH,
+            reasoningSummary: 'none',
+            contextTier: 'long_context',
             configDir: './src',
+            configDirectory: './config',
             tools: [['name' => 'tool1']],
             systemMessage: new SystemMessageConfig(mode: 'append', content: 'Instructions'),
             availableTools: [],
@@ -147,7 +189,10 @@ describe('ResumeSessionConfig', function () {
             includeSubAgentStreamingEvents: false,
             mcpServers: ['server1' => ['command' => 'test']],
             customAgents: [['name' => 'agent1']],
+            defaultAgent: ['excludedTools' => ['builtin:bash']],
             skillDirectories: ['/skills'],
+            pluginDirectories: ['/plugins'],
+            instructionDirectories: ['/instructions'],
             disabledSkills: ['skill1'],
             skipCustomInstructions: true,
             customAgentsLocalOnly: true,
@@ -156,12 +201,28 @@ describe('ResumeSessionConfig', function () {
             infiniteSessions: new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
             suppressResumeEvent: false,
             agent: 'reviewer',
+            largeOutput: new LargeToolOutputConfig(enabled: true, maxSizeBytes: 1024),
+            extensionSdkPath: '/path/to/copilot-sdk',
+            enableMcpApps: true,
+            mcpOAuthTokenStorage: 'persistent',
+            skipEmbeddingRetrieval: true,
+            embeddingCacheStorage: 'in-memory',
+            organizationCustomInstructions: 'Use Laravel conventions.',
+            enableOnDemandInstructionDiscovery: true,
+            enableFileHooks: true,
+            enableHostGitOperations: true,
+            enableSessionStore: true,
+            enableSkills: true,
+            displayPrompt: 'Displayed prompt',
         );
 
         $array = $config->toArray();
 
         expect($array['tools'])->toBe([['name' => 'tool1']])
             ->and($array['clientName'])->toBe('my-app')
+            ->and($array['reasoningSummary'])->toBe('none')
+            ->and($array['contextTier'])->toBe('long_context')
+            ->and($array['configDirectory'])->toBe('./config')
             ->and($array['provider'])->toBe(['baseUrl' => 'https://api.test.com'])
             ->and($array['onPermissionRequest'])->toBe($handler)
             ->and($array['onUserInputRequest'])->toBe($userInputHandler)
@@ -174,12 +235,28 @@ describe('ResumeSessionConfig', function () {
             ->and($array['includeSubAgentStreamingEvents'])->toBeFalse()
             ->and($array['mcpServers'])->toBe(['server1' => ['command' => 'test']])
             ->and($array['customAgents'])->toBe([['name' => 'agent1']])
+            ->and($array['defaultAgent'])->toBe(['excludedTools' => ['builtin:bash']])
             ->and($array['skillDirectories'])->toBe(['/skills'])
+            ->and($array['pluginDirectories'])->toBe(['/plugins'])
+            ->and($array['instructionDirectories'])->toBe(['/instructions'])
             ->and($array['disabledSkills'])->toBe(['skill1'])
             ->and($array['skipCustomInstructions'])->toBeTrue()
             ->and($array['customAgentsLocalOnly'])->toBeTrue()
             ->and($array['coauthorEnabled'])->toBeFalse()
             ->and($array['manageScheduleEnabled'])->toBeTrue()
+            ->and($array['largeOutput'])->toBe(['enabled' => true, 'maxSizeBytes' => 1024])
+            ->and($array['extensionSdkPath'])->toBe('/path/to/copilot-sdk')
+            ->and($array['enableMcpApps'])->toBeTrue()
+            ->and($array['mcpOAuthTokenStorage'])->toBe('persistent')
+            ->and($array['skipEmbeddingRetrieval'])->toBeTrue()
+            ->and($array['embeddingCacheStorage'])->toBe('in-memory')
+            ->and($array['organizationCustomInstructions'])->toBe('Use Laravel conventions.')
+            ->and($array['enableOnDemandInstructionDiscovery'])->toBeTrue()
+            ->and($array['enableFileHooks'])->toBeTrue()
+            ->and($array['enableHostGitOperations'])->toBeTrue()
+            ->and($array['enableSessionStore'])->toBeTrue()
+            ->and($array['enableSkills'])->toBeTrue()
+            ->and($array['displayPrompt'])->toBe('Displayed prompt')
             ->and($array['agent'])->toBe('reviewer');
     });
 

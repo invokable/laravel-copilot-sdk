@@ -3,6 +3,8 @@
 カスタムエージェントを定義すると、用途ごとに役割を分けたサブエージェント構成を作れます。  
 Laravel版では `SessionConfig` の `customAgents` を使って設定します。
 
+複数のサブエージェントを並列に走らせるオーケストレーションについては [Fleet Mode](./fleet-mode.md) を参照してください。
+
 ## 基本的な使い方
 
 ```php
@@ -168,5 +170,6 @@ Copilot::start(function (CopilotSession $session) {
 
 - [SessionConfig](./session-config.md)
 - [SessionEvent](./session-event.md)
+- [Fleet Mode](./fleet-mode.md)
 - [MCP](./mcp.md)
 - [Tools](./tools.md)
