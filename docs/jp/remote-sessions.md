@@ -3,6 +3,8 @@
 Remote Sessionsを有効にすると、GitHubのMission Control経由でWebやモバイルから同じセッションにアクセスできます。  
 このページは公式の`remote-sessions.md`をLaravel向けにまとめた日本語版です。
 
+ローカルや自前サーバーではなくGitHubホスト環境でセッション自体を実行したい場合は [Cloud Sessions](./cloud-sessions.md) を使います。
+
 ## 前提条件
 
 - ユーザーが認証済みであること（GitHubトークンまたはログイン済みユーザー）
@@ -91,5 +93,6 @@ $svg = $writer->writeString($result->url ?? '');
 ## 参考
 
 - 公式ドキュメント: https://github.com/github/copilot-sdk/blob/main/docs/features/remote-sessions.md
+- [Cloud Sessions](./cloud-sessions.md)
 - [RPC](./rpc.md)
 - [TCPモード](./tcp-mode.md)

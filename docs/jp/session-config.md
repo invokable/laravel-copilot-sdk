@@ -173,7 +173,7 @@ $config = new SessionConfig(
     // スキルディレクトリ
     skillDirectories: [],
 
-    // Open Plugins形式のプラグインディレクトリ
+    // Plugin Directory。スキル、フック、MCP、カスタムエージェントなどをまとめて読み込む
     pluginDirectories: [],
 
     // カスタム指示ファイルを検索する追加ディレクトリ
@@ -226,3 +226,4 @@ $response = Copilot::run('...', config: $config);
 `ResumeSessionConfig`特有のフィールドとして`openCanvases`があります。セッションが中断された時に既に開いていたキャンバスのスナップショットを提供すると、ランタイムはキャンバスの状態を再ハイドレートできるため、以前のシャットダウン前にアクティブだったキャンバスを再度開く必要がありません。（実験的機能）
 
 カスタムエージェントの使い方は [Custom Agents](./custom-agents.md) を参照。
+クラウド実行は [Cloud Sessions](./cloud-sessions.md)、Plugin Directoryは [Plugin Directories](./plugin-directories.md) を参照。

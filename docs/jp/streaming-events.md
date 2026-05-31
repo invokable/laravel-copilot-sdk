@@ -157,6 +157,11 @@ API呼び出し単位の使用量情報。
 
 ## Session Lifecycle Events
 
+### `session.start`
+セッション開始。Cloud Sessionsでは`producer`が`copilot-agent`の`session.start`を確認してから最初のプロンプトを送ると安全です。
+
+- `producer`（任意）
+
 ### `session.idle`（ephemeral）
 現在の処理が完了し、次の入力待ち。
 
@@ -192,6 +197,17 @@ API呼び出し単位の使用量情報。
 
 - `cwd`（必須）
 - `gitRoot` / `repository` / `branch`（任意）
+
+### `session.info`
+リモートURLなどのセッション情報。
+
+- `infoType`（必須）
+- `url`（任意、`infoType`が`remote`の場合など）
+
+### `session.remote_steerable_changed`
+Mission Controlからのリモート操作可否が変わったことを示すイベント。
+
+- `remoteSteerable`（任意）
 
 ### `session.usage_info`（ephemeral）
 コンテキストウィンドウ利用状況。
@@ -357,6 +373,7 @@ session.idle (ephemeral)
 
 | Event Type | Ephemeral | Category |
 |---|---|---|
+| `session.start` |  | Session |
 | `assistant.turn_start` |  | Assistant |
 | `assistant.intent` | ✅ | Assistant |
 | `assistant.reasoning` |  | Assistant |
@@ -377,6 +394,8 @@ session.idle (ephemeral)
 | `session.compaction_complete` |  | Session |
 | `session.title_changed` | ✅ | Session |
 | `session.context_changed` |  | Session |
+| `session.info` |  | Session |
+| `session.remote_steerable_changed` |  | Session |
 | `session.usage_info` | ✅ | Session |
 | `session.task_complete` |  | Session |
 | `session.shutdown` |  | Session |

@@ -180,6 +180,7 @@ $result = $session->rpc()->instructions()->getSources();
 
 // fleet
 $session->rpc()->fleet()->start(new FleetStartRequest(prompt: '...'));
+// 詳細は fleet-mode.md を参照
 
 // agent
 $session->rpc()->agent()->list();

@@ -23,9 +23,13 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                                        Only valid for models where capabilities.supports.reasoningEffort is true.
      *                                                        Use client.listModels() to check supported values for each model.
      *                                                        Accepts either ReasoningEffort enum or string value.
+     * @param  ?string  $reasoningSummary  Reasoning summary mode for models that support configurable reasoning summaries.
+     * @param  ?string  $contextTier  Context window tier ("default" or "long_context").
      * @param  ModelCapabilitiesOverride|array|null  $modelCapabilities  Per-property overrides for model capabilities, deep-merged over runtime defaults.
      * @param  ?string  $configDir  Override the default configuration directory location.
      *                              When specified, the session will use this directory for storing config and state.
+     *                              Deprecated: use $configDirectory instead.
+     * @param  ?string  $configDirectory  Override the default configuration directory location.
      * @param  ?bool  $enableConfigDiscovery  When true, automatically discovers MCP server configurations
      *                                        (e.g. `.mcp.json`, `.vscode/mcp.json`) and skill directories from the
      *                                        working directory and merges them with any explicitly provided
@@ -71,9 +75,11 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                                 sub-agents are suppressed. Defaults to true.
      * @param  ?array  $mcpServers  MCP server configurations for the session. Keys are server names, values are server configurations.
      * @param  ?array  $customAgents  Custom agent configurations for the session
+     * @param  ?array  $defaultAgent  Configuration for the default agent.
      * @param  ?string  $agent  Name of the custom agent to activate when the session resumes.
      *                          Must match the `name` of one of the agents in `customAgents`.
      * @param  ?array  $skillDirectories  Directories to load skills from
+     * @param  ?array  $pluginDirectories  Local filesystem paths to Open Plugins-format directories to load for this session.
      * @param  ?array  $instructionDirectories  Additional directories to search for custom instruction files.
      * @param  ?array  $disabledSkills  List of skill names to disable
      * @param  ?bool  $skipCustomInstructions  When true, custom instruction files are not loaded.
@@ -105,6 +111,19 @@ readonly class ResumeSessionConfig implements Arrayable
      *                             are delivered to the handler.
      *                             Equivalent to calling `$session->on($handler)` immediately after resumption, but executes
      *                             earlier in the lifecycle so no events are missed.
+     * @param  LargeToolOutputConfig|array|null  $largeOutput  Configuration for handling large tool outputs.
+     * @param  ?string  $extensionSdkPath  Optional override path to a `copilot-sdk/` folder to inject into extension subprocesses.
+     * @param  ?bool  $enableMcpApps  Enable MCP Apps (SEP-1865) UI passthrough on this session. Experimental.
+     * @param  ?string  $mcpOAuthTokenStorage  Controls how MCP OAuth tokens are stored ("persistent" or "in-memory").
+     * @param  ?bool  $skipEmbeddingRetrieval  When true, skips embedding-based retrieval for this session.
+     * @param  ?string  $embeddingCacheStorage  Controls how the embedding cache is stored ("persistent" or "in-memory").
+     * @param  ?string  $organizationCustomInstructions  Organization-level custom instructions to include in the system prompt.
+     * @param  ?bool  $enableOnDemandInstructionDiscovery  When true, enables on-demand discovery of instruction files.
+     * @param  ?bool  $enableFileHooks  When true, enables loading of file-based hooks from `.github/hooks/`.
+     * @param  ?bool  $enableHostGitOperations  When true, enables git operations on the host filesystem.
+     * @param  ?bool  $enableSessionStore  When true, enables the cross-session store for search and retrieval.
+     * @param  ?bool  $enableSkills  When true, enables skill loading.
+     * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of the original prompt.
      */
     public function __construct(
         public ?string $clientName = null,
@@ -150,6 +169,24 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?bool $customAgentsLocalOnly = null,
         public ?bool $coauthorEnabled = null,
         public ?bool $manageScheduleEnabled = null,
+        public ?string $reasoningSummary = null,
+        public ?string $contextTier = null,
+        public ?string $configDirectory = null,
+        public ?array $defaultAgent = null,
+        public ?array $pluginDirectories = null,
+        public LargeToolOutputConfig|array|null $largeOutput = null,
+        public ?string $extensionSdkPath = null,
+        public ?bool $enableMcpApps = null,
+        public ?string $mcpOAuthTokenStorage = null,
+        public ?bool $skipEmbeddingRetrieval = null,
+        public ?string $embeddingCacheStorage = null,
+        public ?string $organizationCustomInstructions = null,
+        public ?bool $enableOnDemandInstructionDiscovery = null,
+        public ?bool $enableFileHooks = null,
+        public ?bool $enableHostGitOperations = null,
+        public ?bool $enableSessionStore = null,
+        public ?bool $enableSkills = null,
+        public ?string $displayPrompt = null,
     ) {}
 
     /**
@@ -199,12 +236,22 @@ readonly class ResumeSessionConfig implements Arrayable
                 : ExtensionInfo::fromArray($data['extensionInfo']);
         }
 
+        $largeOutput = null;
+        if (isset($data['largeOutput'])) {
+            $largeOutput = $data['largeOutput'] instanceof LargeToolOutputConfig
+                ? $data['largeOutput']
+                : LargeToolOutputConfig::fromArray($data['largeOutput']);
+        }
+
         return new self(
             clientName: $data['clientName'] ?? null,
             model: $data['model'] ?? null,
             reasoningEffort: $data['reasoningEffort'] ?? null,
+            reasoningSummary: $data['reasoningSummary'] ?? null,
+            contextTier: $data['contextTier'] ?? null,
             modelCapabilities: $modelCapabilities,
             configDir: $data['configDir'] ?? null,
+            configDirectory: $data['configDirectory'] ?? null,
             enableConfigDiscovery: $data['enableConfigDiscovery'] ?? null,
             tools: $data['tools'] ?? null,
             commands: $data['commands'] ?? null,
@@ -224,8 +271,10 @@ readonly class ResumeSessionConfig implements Arrayable
             includeSubAgentStreamingEvents: $data['includeSubAgentStreamingEvents'] ?? null,
             mcpServers: $data['mcpServers'] ?? null,
             customAgents: $data['customAgents'] ?? null,
+            defaultAgent: $data['defaultAgent'] ?? null,
             agent: $data['agent'] ?? null,
             skillDirectories: $data['skillDirectories'] ?? null,
+            pluginDirectories: $data['pluginDirectories'] ?? null,
             instructionDirectories: $data['instructionDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
             skipCustomInstructions: $data['skipCustomInstructions'] ?? null,
@@ -243,6 +292,19 @@ readonly class ResumeSessionConfig implements Arrayable
             requestCanvasRenderer: $data['requestCanvasRenderer'] ?? null,
             requestExtensions: $data['requestExtensions'] ?? null,
             onEvent: $data['onEvent'] ?? null,
+            largeOutput: $largeOutput,
+            extensionSdkPath: $data['extensionSdkPath'] ?? null,
+            enableMcpApps: $data['enableMcpApps'] ?? null,
+            mcpOAuthTokenStorage: $data['mcpOAuthTokenStorage'] ?? null,
+            skipEmbeddingRetrieval: $data['skipEmbeddingRetrieval'] ?? null,
+            embeddingCacheStorage: $data['embeddingCacheStorage'] ?? null,
+            organizationCustomInstructions: $data['organizationCustomInstructions'] ?? null,
+            enableOnDemandInstructionDiscovery: $data['enableOnDemandInstructionDiscovery'] ?? null,
+            enableFileHooks: $data['enableFileHooks'] ?? null,
+            enableHostGitOperations: $data['enableHostGitOperations'] ?? null,
+            enableSessionStore: $data['enableSessionStore'] ?? null,
+            enableSkills: $data['enableSkills'] ?? null,
+            displayPrompt: $data['displayPrompt'] ?? null,
         );
     }
 
@@ -283,12 +345,19 @@ readonly class ResumeSessionConfig implements Arrayable
             ? $this->extensionInfo->toArray()
             : $this->extensionInfo;
 
+        $largeOutput = $this->largeOutput instanceof LargeToolOutputConfig
+            ? $this->largeOutput->toArray()
+            : $this->largeOutput;
+
         return array_filter([
             'clientName' => $this->clientName,
             'model' => $this->model,
             'reasoningEffort' => $reasoningEffort,
+            'reasoningSummary' => $this->reasoningSummary,
+            'contextTier' => $this->contextTier,
             'modelCapabilities' => $modelCapabilities,
             'configDir' => $this->configDir,
+            'configDirectory' => $this->configDirectory,
             'enableConfigDiscovery' => $this->enableConfigDiscovery,
             'tools' => $this->tools,
             'commands' => $this->commands,
@@ -308,8 +377,10 @@ readonly class ResumeSessionConfig implements Arrayable
             'includeSubAgentStreamingEvents' => $this->includeSubAgentStreamingEvents,
             'mcpServers' => $this->mcpServers,
             'customAgents' => $this->customAgents,
+            'defaultAgent' => $this->defaultAgent,
             'agent' => $this->agent,
             'skillDirectories' => $this->skillDirectories,
+            'pluginDirectories' => $this->pluginDirectories,
             'instructionDirectories' => $this->instructionDirectories,
             'disabledSkills' => $this->disabledSkills,
             'skipCustomInstructions' => $this->skipCustomInstructions,
@@ -327,6 +398,19 @@ readonly class ResumeSessionConfig implements Arrayable
             'requestCanvasRenderer' => $this->requestCanvasRenderer,
             'requestExtensions' => $this->requestExtensions,
             'onEvent' => $this->onEvent,
+            'largeOutput' => $largeOutput,
+            'extensionSdkPath' => $this->extensionSdkPath,
+            'enableMcpApps' => $this->enableMcpApps,
+            'mcpOAuthTokenStorage' => $this->mcpOAuthTokenStorage,
+            'skipEmbeddingRetrieval' => $this->skipEmbeddingRetrieval,
+            'embeddingCacheStorage' => $this->embeddingCacheStorage,
+            'organizationCustomInstructions' => $this->organizationCustomInstructions,
+            'enableOnDemandInstructionDiscovery' => $this->enableOnDemandInstructionDiscovery,
+            'enableFileHooks' => $this->enableFileHooks,
+            'enableHostGitOperations' => $this->enableHostGitOperations,
+            'enableSessionStore' => $this->enableSessionStore,
+            'enableSkills' => $this->enableSkills,
+            'displayPrompt' => $this->displayPrompt,
         ], fn ($value) => $value !== null);
     }
 }
