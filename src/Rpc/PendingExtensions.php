@@ -8,6 +8,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\ExtensionList;
 use Revolution\Copilot\Types\Rpc\ExtensionsDisableRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionsEnableRequest;
+use Revolution\Copilot\Types\Rpc\SendAttachmentsToMessageParams;
 
 /**
  * Pending extensions RPC operations for a session.
@@ -63,5 +64,18 @@ class PendingExtensions
         return $this->client->request('session.extensions.reload', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Push attachments into the next user-message turn.
+     *
+     * @experimental This method is experimental and may change or be removed.
+     */
+    public function sendAttachmentsToMessage(SendAttachmentsToMessageParams|array $params): void
+    {
+        $paramsArray = ($params instanceof SendAttachmentsToMessageParams ? $params : SendAttachmentsToMessageParams::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.extensions.sendAttachmentsToMessage', $paramsArray);
     }
 }

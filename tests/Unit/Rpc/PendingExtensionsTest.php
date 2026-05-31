@@ -7,6 +7,7 @@ use Revolution\Copilot\Rpc\PendingExtensions;
 use Revolution\Copilot\Types\Rpc\ExtensionList;
 use Revolution\Copilot\Types\Rpc\ExtensionsDisableRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionsEnableRequest;
+use Revolution\Copilot\Types\Rpc\SendAttachmentsToMessageParams;
 
 describe('PendingExtensions', function () {
     it('calls session.extensions.list and returns result', function () {
@@ -127,5 +128,36 @@ describe('PendingExtensions', function () {
         $result = $pending->reload();
 
         expect($result)->toBe([]);
+    });
+
+    it('calls session.extensions.sendAttachmentsToMessage with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.extensions.sendAttachmentsToMessage',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'
+                    && isset($params['attachments'])),
+            )
+            ->andReturn(null);
+
+        $pending = new PendingExtensions($client, 'session-abc');
+        $pending->sendAttachmentsToMessage(new SendAttachmentsToMessageParams(
+            attachments: [['type' => 'file', 'path' => '/tmp/test.php', 'displayName' => 'test.php']],
+        ));
+    });
+
+    it('calls session.extensions.sendAttachmentsToMessage with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.extensions.sendAttachmentsToMessage',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'),
+            )
+            ->andReturn(null);
+
+        $pending = new PendingExtensions($client, 'session-abc');
+        $pending->sendAttachmentsToMessage(['attachments' => []]);
     });
 });
