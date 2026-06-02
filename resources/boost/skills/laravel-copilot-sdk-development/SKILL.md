@@ -366,7 +366,7 @@ In web-facing applications or when prompts can be influenced by end users, you s
 Custom handler example:
 
 ```php
-use Revolution\Copilot\Support\PermissionRequestResultKind;
+use Revolution\Copilot\Support\PermissionDecision;
 
 $config = new SessionConfig(
     onPermissionRequest: function (array $request, array $invocation) {
@@ -375,7 +375,7 @@ $config = new SessionConfig(
             case 'shell':
             case 'write':
                 // High-risk operations: deny by default.
-                return PermissionRequestResultKind::reject();
+                return PermissionDecision::reject();
 
             case 'read':
             case 'url':
@@ -383,7 +383,7 @@ $config = new SessionConfig(
             case 'custom-tool':
             default:
                 // Lower-risk operations: approve once (adjust to your own policies).
-                return PermissionRequestResultKind::approveOnce();
+                return PermissionDecision::approveOnce();
         }
     },
 );
@@ -519,17 +519,17 @@ The SDK dispatches Laravel events for logging and debugging:
 
 ## Key Classes Reference
 
-| Class / Interface             | Purpose                                                                                                                                  |
-|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| `Copilot` (Facade)            | Main entry point: `run()`, `start()`, `stream()`, `fake()`                                                                               |
-| `CopilotSession` (Contract)   | Session interface: `send()`, `sendAndWait()`, `on()`, `rpc()`, `getMessages()`, `destroy()`                                              |
-| `CopilotClient` (Contract)    | Client interface: `start()`, `stop()`, `createSession()`, `resumeSession()`, `ping()`, `listModels()`, `listSessions()`, `rpc()`         |
-| `SessionConfig`               | Session creation options (model, tools, streaming, MCP, etc.)                                                                            |
-| `ResumeSessionConfig`         | Options for resuming a session                                                                                                           |
-| `SessionEvent`                | Event object: `content()`, `type()`, `deltaContent()`, `isAssistantMessage()`, `isAssistantMessageDelta()`, `failed()`, `errorMessage()` |
-| `Tool`                        | `Tool::define(name, description, parameters, handler)`                                                                                   |
-| `ToolResultObject`            | Tool handler return type                                                                                                                 |
-| `Attachment`                  | `Attachment::file()`, `Attachment::directory()`, `Attachment::selection()`                                                               |
-| `ServerRpc` / `SessionRpc`    | Typed RPC layer                                                                                                                          |
-| `PermissionHandler`           | `PermissionHandler::approveAll()`, `PermissionHandler::approveSafety()`, `PermissionHandler::denyAll()`                                  |
-| `PermissionRequestResultKind` | `approveOnce()`, `approveForSession()`, `approveForLocation()`, `reject()`, `userNotAvailable()`, `noResult()`, `select()`               |
+| Class / Interface           | Purpose                                                                                                                                  |
+|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `Copilot` (Facade)          | Main entry point: `run()`, `start()`, `stream()`, `fake()`                                                                               |
+| `CopilotSession` (Contract) | Session interface: `send()`, `sendAndWait()`, `on()`, `rpc()`, `getMessages()`, `destroy()`                                              |
+| `CopilotClient` (Contract)  | Client interface: `start()`, `stop()`, `createSession()`, `resumeSession()`, `ping()`, `listModels()`, `listSessions()`, `rpc()`         |
+| `SessionConfig`             | Session creation options (model, tools, streaming, MCP, etc.)                                                                            |
+| `ResumeSessionConfig`       | Options for resuming a session                                                                                                           |
+| `SessionEvent`              | Event object: `content()`, `type()`, `deltaContent()`, `isAssistantMessage()`, `isAssistantMessageDelta()`, `failed()`, `errorMessage()` |
+| `Tool`                      | `Tool::define(name, description, parameters, handler)`                                                                                   |
+| `ToolResultObject`          | Tool handler return type                                                                                                                 |
+| `Attachment`                | `Attachment::file()`, `Attachment::directory()`, `Attachment::selection()`                                                               |
+| `ServerRpc` / `SessionRpc`  | Typed RPC layer                                                                                                                          |
+| `PermissionHandler`         | `PermissionHandler::approveAll()`, `PermissionHandler::approveSafety()`, `PermissionHandler::denyAll()`                                  |
+| `PermissionDecision`        | `approveOnce()`, `approveForSession()`, `approveForLocation()`, `reject()`, `userNotAvailable()`, `noResult()`, `select()`               |
