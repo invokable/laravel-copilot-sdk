@@ -230,7 +230,7 @@ describe('ResumeSessionConfig', function () {
             ->and($array['onAutoModeSwitchRequest'])->toBe($autoModeSwitchHandler)
             ->and($array['hooks'])->toBe(['onPreToolUse' => $preToolUseHook])
             ->and($array['workingDirectory'])->toBe('/home/user')
-            ->and($array['suppressResumeEvent'])->toBeFalse()
+            ->and($array['disableResume'])->toBeFalse()
             ->and($array['streaming'])->toBeTrue()
             ->and($array['includeSubAgentStreamingEvents'])->toBeFalse()
             ->and($array['mcpServers'])->toBe(['server1' => ['command' => 'test']])
@@ -290,14 +290,10 @@ describe('ResumeSessionConfig', function () {
         $config = ResumeSessionConfig::fromArray([
             'onExitPlanMode' => $exitPlanModeHandler,
             'onAutoModeSwitch' => $autoModeSwitchHandler,
-            'disableResume' => true,
         ]);
 
         expect($config->onExitPlanModeRequest)->toBe($exitPlanModeHandler)
-            ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler)
-            ->and($config->suppressResumeEvent)->toBeTrue()
-            ->and($config->toArray())->toHaveKey('suppressResumeEvent', true)
-            ->and($config->toArray())->not->toHaveKey('disableResume');
+            ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler);
     });
 
     it('accepts reasoningEffort as enum', function () {
