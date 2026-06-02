@@ -26,7 +26,7 @@ readonly class ModelBilling implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            multiplier: (float) $data['multiplier'] ?? null,
+            multiplier: (float) ($data['multiplier'] ?? null),
         );
     }
 
