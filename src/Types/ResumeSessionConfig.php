@@ -84,6 +84,7 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?array  $disabledSkills  List of skill names to disable
      * @param  ?bool  $skipCustomInstructions  When true, custom instruction files are not loaded.
      * @param  ?bool  $customAgentsLocalOnly  When true, only local custom agents are considered.
+     * @param  ?bool  $suppressCustomAgentPrompt  When true, the selected custom agent's prompt is not injected into the user message (skill context is still injected). Used by automation triggers where the agent prompt is already in the problem statement.
      * @param  ?bool  $coauthorEnabled  Enables co-author integration for this session.
      * @param  ?bool  $manageScheduleEnabled  Enables schedule management tools for this session.
      * @param  InfiniteSessionConfig|array|null  $infiniteSessions  Infinite session configuration for persistent workspaces and automatic compaction.
@@ -167,6 +168,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?Closure $onEvent = null,
         public ?bool $skipCustomInstructions = null,
         public ?bool $customAgentsLocalOnly = null,
+        public ?bool $suppressCustomAgentPrompt = null,
         public ?bool $coauthorEnabled = null,
         public ?bool $manageScheduleEnabled = null,
         public ?string $reasoningSummary = null,
@@ -279,6 +281,7 @@ readonly class ResumeSessionConfig implements Arrayable
             disabledSkills: $data['disabledSkills'] ?? null,
             skipCustomInstructions: $data['skipCustomInstructions'] ?? null,
             customAgentsLocalOnly: $data['customAgentsLocalOnly'] ?? null,
+            suppressCustomAgentPrompt: $data['suppressCustomAgentPrompt'] ?? null,
             coauthorEnabled: $data['coauthorEnabled'] ?? null,
             manageScheduleEnabled: $data['manageScheduleEnabled'] ?? null,
             infiniteSessions: $infiniteSessions,
@@ -385,10 +388,11 @@ readonly class ResumeSessionConfig implements Arrayable
             'disabledSkills' => $this->disabledSkills,
             'skipCustomInstructions' => $this->skipCustomInstructions,
             'customAgentsLocalOnly' => $this->customAgentsLocalOnly,
+            'suppressCustomAgentPrompt' => $this->suppressCustomAgentPrompt,
             'coauthorEnabled' => $this->coauthorEnabled,
             'manageScheduleEnabled' => $this->manageScheduleEnabled,
             'infiniteSessions' => $infiniteSessions,
-            'suppressResumeEvent' => $this->suppressResumeEvent,
+            'disableResume' => $this->suppressResumeEvent,
             'continuePendingWork' => $this->continuePendingWork,
             'openCanvases' => $this->openCanvases,
             'gitHubToken' => $this->gitHubToken,
