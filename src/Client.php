@@ -482,7 +482,7 @@ class Client implements CopilotClient
             'pluginDirectories' => $config['pluginDirectories'] ?? null,
             'instructionDirectories' => $config['instructionDirectories'] ?? null,
             'disabledSkills' => $config['disabledSkills'] ?? null,
-            'suppressResumeEvent' => $config['suppressResumeEvent'] ?? null,
+            'disableResume' => $config['suppressResumeEvent'] ?? $config['disableResume'] ?? null,
             'continuePendingWork' => $config['continuePendingWork'] ?? null,
             'openCanvases' => $config['openCanvases'] ?? null,
             'enableSessionTelemetry' => $config['enableSessionTelemetry'] ?? null,
@@ -560,6 +560,7 @@ class Client implements CopilotClient
             'customAgentsLocalOnly' => $config['customAgentsLocalOnly'] ?? null,
             'coauthorEnabled' => $config['coauthorEnabled'] ?? null,
             'manageScheduleEnabled' => $config['manageScheduleEnabled'] ?? null,
+            'suppressCustomAgentPrompt' => $config['suppressCustomAgentPrompt'] ?? null,
         ], fn ($value) => $value !== null);
 
         if ($patch === []) {
@@ -639,8 +640,8 @@ class Client implements CopilotClient
             $config['onAutoModeSwitchRequest'] = $config['onAutoModeSwitch'];
         }
 
-        if (! isset($config['suppressResumeEvent']) && isset($config['disableResume'])) {
-            $config['suppressResumeEvent'] = $config['disableResume'];
+        if (! isset($config['disableResume']) && isset($config['suppressResumeEvent'])) {
+            $config['disableResume'] = $config['suppressResumeEvent'];
         }
 
         return $config;
