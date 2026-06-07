@@ -24,6 +24,7 @@ permissions:
 
 engine:
   id: copilot
+  model: auto
 
 checkout:
   - path: .

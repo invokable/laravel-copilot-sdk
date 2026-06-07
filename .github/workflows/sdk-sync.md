@@ -27,6 +27,7 @@ permissions:
 
 engine:
   id: copilot
+  model: auto
   agent: laravel-sdk-sync
 
 checkout:
