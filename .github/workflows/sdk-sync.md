@@ -27,7 +27,7 @@ permissions:
 
 engine:
   id: copilot
-  model: auto
+  model: haiku
   agent: laravel-sdk-sync
 
 checkout:

@@ -24,7 +24,7 @@ permissions:
 
 engine:
   id: copilot
-  model: auto
+  model: haiku
 
 checkout:
   - path: .
