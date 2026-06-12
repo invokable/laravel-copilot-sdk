@@ -167,6 +167,9 @@ $session->rpc()->name()->set(new NameSetRequest(name: 'My Session'));
 $session->rpc()->plan()->read();
 $session->rpc()->plan()->update(new PlanUpdateRequest(content: '...'));
 $session->rpc()->plan()->delete();
+// SQLite todoリストを読み取り（プランモード）
+$result = $session->rpc()->plan()->readSqlTodos();
+// $result->rows - PlanSqlTodosRow の配列（id, title, description, status）
 
 // workspaces
 $session->rpc()->workspaces()->getWorkspace();
@@ -177,6 +180,16 @@ $session->rpc()->workspaces()->createFile(new WorkspacesCreateFileRequest(path: 
 // instructions (セッションのインストラクションソースを取得)
 $result = $session->rpc()->instructions()->getSources();
 // $result->sources - InstructionsSources の配列
+
+// instructions discover (インストラクションファイルを検出)
+use Revolution\Copilot\Types\Rpc\InstructionsDiscoverRequest;
+
+$result = $session->rpc()->instructions()->discover();
+// $result->sources - InstructionSource の配列
+$result = $session->rpc()->instructions()->discover(new InstructionsDiscoverRequest(
+    projectPaths: ['/path/to/project'],
+    excludeHostInstructions: true, // ホストレベルのインストラクションを除外
+));
 
 // fleet
 $session->rpc()->fleet()->start(new FleetStartRequest(prompt: '...'));
@@ -200,12 +213,38 @@ $session->rpc()->mcp()->list();
 $session->rpc()->mcp()->enable(new McpEnableRequest(serverName: 'server-name'));
 $session->rpc()->mcp()->disable(new McpDisableRequest(serverName: 'server-name'));
 $session->rpc()->mcp()->reload();
+// MCPサーバーが実行中かどうかを確認
+use Revolution\Copilot\Types\Rpc\McpIsServerRunningRequest;
+
+$result = $session->rpc()->mcp()->isServerRunning(new McpIsServerRunningRequest(serverName: 'my-server'));
+// $result->running - サーバーが実行中かどうか
+
+// MCPサーバーのツール一覧を取得
+use Revolution\Copilot\Types\Rpc\McpListToolsRequest;
+
+$result = $session->rpc()->mcp()->listTools(new McpListToolsRequest(serverName: 'my-server'));
+// $result->tools - McpTools の配列（name, description）
+
+// MCPサーバーを停止
+use Revolution\Copilot\Types\Rpc\McpStopServerRequest;
+
+$session->rpc()->mcp()->stopServer(new McpStopServerRequest(serverName: 'my-server'));
 // MCP OAuthログイン（認証が必要なMCPサーバー向け）
 $result = $session->rpc()->mcp()->login(new McpOauthLoginRequest(serverName: 'my-server'));
 // $result->authorizationUrl - OAuthフローのURL（認証が必要な場合）
 
 // plugins (experimental: プラグインの一覧)
 $session->rpc()->plugins()->list();
+// プラグインをリロード
+$session->rpc()->plugins()->reload();
+// オプションを指定してリロード
+use Revolution\Copilot\Types\Rpc\PluginsReloadRequest;
+
+$session->rpc()->plugins()->reload(new PluginsReloadRequest(
+    reloadMcp: true,      // MCPサーバー設定を再読み込み
+    reloadHooks: true,    // フックを再読み込み
+    reloadCustomAgents: false, // カスタムエージェントを再読み込みしない
+));
 
 // extensions (experimental: エクステンションの管理)
 $session->rpc()->extensions()->list();
@@ -327,6 +366,14 @@ $session->rpc()->shell()->kill(new ShellKillRequest(
     processId: $result->processId,
     signal: 'SIGTERM', // SIGTERM（デフォルト）, SIGKILL, SIGINT
 ));
+
+// ユーザーがリクエストしたシェルコマンドをキャンセル
+use Revolution\Copilot\Types\Rpc\ShellCancelUserRequestedRequest;
+
+$cancelled = $session->rpc()->shell()->cancelUserRequested(
+    new ShellCancelUserRequestedRequest(requestId: 'req-123')
+);
+// $cancelled->cancelled - キャンセルに成功したかどうか
 
 // usage (experimental: セッション使用量メトリクス)
 $metrics = $session->rpc()->usage()->getMetrics();

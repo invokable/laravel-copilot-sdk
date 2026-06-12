@@ -100,4 +100,12 @@ describe('SessionEventType', function () {
         expect(SessionEventType::from('session.schedule_created'))->toBe(SessionEventType::SESSION_SCHEDULE_CREATED)
             ->and(SessionEventType::from('session.schedule_cancelled'))->toBe(SessionEventType::SESSION_SCHEDULE_CANCELLED);
     });
+
+    it('has canvas closed event type', function () {
+        expect(SessionEventType::SESSION_CANVAS_CLOSED->value)->toBe('session.canvas.closed');
+    });
+
+    it('can create canvas closed event type from string', function () {
+        expect(SessionEventType::from('session.canvas.closed'))->toBe(SessionEventType::SESSION_CANVAS_CLOSED);
+    });
 });

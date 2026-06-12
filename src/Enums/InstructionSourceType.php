@@ -6,8 +6,10 @@ namespace Revolution\Copilot\Enums;
 
 /**
  * Category of instruction source — used for merge logic.
+ *
+ * @experimental This type is part of an experimental API and may change or be removed.
  */
-enum InstructionsSourcesType: string
+enum InstructionSourceType: string
 {
     case HOME = 'home';
     case REPO = 'repo';

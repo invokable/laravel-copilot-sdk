@@ -7,9 +7,14 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\McpDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpEnableRequest;
+use Revolution\Copilot\Types\Rpc\McpIsServerRunningRequest;
+use Revolution\Copilot\Types\Rpc\McpIsServerRunningResult;
+use Revolution\Copilot\Types\Rpc\McpListToolsRequest;
+use Revolution\Copilot\Types\Rpc\McpListToolsResult;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
 use Revolution\Copilot\Types\Rpc\McpServerList;
+use Revolution\Copilot\Types\Rpc\McpStopServerRequest;
 
 /**
  * Pending MCP server RPC operations for a session.
@@ -77,6 +82,49 @@ class PendingMcp
 
         return McpOauthLoginResult::fromArray(
             $this->client->request('session.mcp.oauth.login', $paramsArray),
+        );
+    }
+
+    /**
+     * List tools exposed by a connected MCP server.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function listTools(McpListToolsRequest|array $params): McpListToolsResult
+    {
+        $paramsArray = ($params instanceof McpListToolsRequest ? $params : McpListToolsRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return McpListToolsResult::fromArray(
+            $this->client->request('session.mcp.listTools', $paramsArray),
+        );
+    }
+
+    /**
+     * Stop a specific MCP server.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function stopServer(McpStopServerRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof McpStopServerRequest ? $params : McpStopServerRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.mcp.stopServer', $paramsArray);
+    }
+
+    /**
+     * Check whether a specific MCP server is currently running.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function isServerRunning(McpIsServerRunningRequest|array $params): McpIsServerRunningResult
+    {
+        $paramsArray = ($params instanceof McpIsServerRunningRequest ? $params : McpIsServerRunningRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return McpIsServerRunningResult::fromArray(
+            $this->client->request('session.mcp.isServerRunning', $paramsArray),
         );
     }
 }
