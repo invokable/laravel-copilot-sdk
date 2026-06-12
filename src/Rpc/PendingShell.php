@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\CancelUserRequestedShellCommandResult;
+use Revolution\Copilot\Types\Rpc\ShellCancelUserRequestedRequest;
 use Revolution\Copilot\Types\Rpc\ShellExecRequest;
 use Revolution\Copilot\Types\Rpc\ShellExecResult;
 use Revolution\Copilot\Types\Rpc\ShellKillRequest;
@@ -46,6 +48,21 @@ class PendingShell
 
         return ShellKillResult::fromArray(
             $this->client->request('session.shell.kill', $paramsArray),
+        );
+    }
+
+    /**
+     * Cancel a user-requested shell command in progress.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function cancelUserRequested(ShellCancelUserRequestedRequest|array $params): CancelUserRequestedShellCommandResult
+    {
+        $paramsArray = ($params instanceof ShellCancelUserRequestedRequest ? $params : ShellCancelUserRequestedRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return CancelUserRequestedShellCommandResult::fromArray(
+            $this->client->request('session.shell.cancelUserRequested', $paramsArray),
         );
     }
 }

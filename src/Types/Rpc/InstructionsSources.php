@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
-use Revolution\Copilot\Enums\InstructionsSourcesLocation;
-use Revolution\Copilot\Enums\InstructionsSourcesType;
+use Revolution\Copilot\Enums\InstructionSourceLocation;
+use Revolution\Copilot\Enums\InstructionSourceType;
 
 /**
  * A single instruction source for a session.
@@ -18,8 +18,8 @@ readonly class InstructionsSources implements Arrayable
      * @param  string  $label  Human-readable label
      * @param  string  $content  Raw content of the instruction file
      * @param  string  $sourcePath  File path relative to repo or absolute for home
-     * @param  InstructionsSourcesType  $type  Category of instruction source — used for merge logic
-     * @param  InstructionsSourcesLocation  $location  Where this source lives — used for UI grouping
+     * @param  InstructionSourceType  $type  Category of instruction source — used for merge logic
+     * @param  InstructionSourceLocation  $location  Where this source lives — used for UI grouping
      * @param  ?string  $applyTo  Glob pattern from frontmatter — when set, this instruction applies only to matching files
      * @param  ?string  $description  Short description (body after frontmatter) for use in instruction tables
      */
@@ -28,8 +28,8 @@ readonly class InstructionsSources implements Arrayable
         public string $label,
         public string $content,
         public string $sourcePath,
-        public InstructionsSourcesType $type,
-        public InstructionsSourcesLocation $location,
+        public InstructionSourceType $type,
+        public InstructionSourceLocation $location,
         public ?string $applyTo = null,
         public ?string $description = null,
     ) {}
@@ -41,8 +41,8 @@ readonly class InstructionsSources implements Arrayable
             label: $data['label'],
             content: $data['content'],
             sourcePath: $data['sourcePath'],
-            type: InstructionsSourcesType::from($data['type']),
-            location: InstructionsSourcesLocation::from($data['location']),
+            type: InstructionSourceType::from($data['type']),
+            location: InstructionSourceLocation::from($data['location']),
             applyTo: $data['applyTo'] ?? null,
             description: $data['description'] ?? null,
         );

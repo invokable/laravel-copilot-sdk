@@ -42,6 +42,7 @@ enum SessionEventType: string
     case SESSION_TOOLS_UPDATED = 'session.tools_updated';
     case SESSION_CANVAS_OPENED = 'session.canvas.opened';
     case SESSION_CANVAS_REGISTRY_CHANGED = 'session.canvas.registry_changed';
+    case SESSION_CANVAS_CLOSED = 'session.canvas.closed';
     case SESSION_EXTENSIONS_ATTACHMENTS_PUSHED = 'session.extensions.attachments_pushed';
 
     // Capabilities

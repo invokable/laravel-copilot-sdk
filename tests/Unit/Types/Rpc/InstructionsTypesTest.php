@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Enums\InstructionsSourcesLocation;
-use Revolution\Copilot\Enums\InstructionsSourcesType;
+use Revolution\Copilot\Enums\InstructionSourceLocation;
+use Revolution\Copilot\Enums\InstructionSourceType;
 use Revolution\Copilot\Enums\SessionFSErrorCode;
 use Revolution\Copilot\Types\Rpc\InstructionsGetSourcesResult;
 use Revolution\Copilot\Types\Rpc\InstructionsSources;
@@ -63,8 +63,8 @@ describe('InstructionsSources', function () {
             ->and($source->label)->toBe('My Instructions')
             ->and($source->content)->toBe('Be helpful.')
             ->and($source->sourcePath)->toBe('.copilot/instructions.md')
-            ->and($source->type)->toBe(InstructionsSourcesType::REPO)
-            ->and($source->location)->toBe(InstructionsSourcesLocation::REPOSITORY)
+            ->and($source->type)->toBe(InstructionSourceType::REPO)
+            ->and($source->location)->toBe(InstructionSourceLocation::REPOSITORY)
             ->and($source->applyTo)->toBe('**/*.php')
             ->and($source->description)->toBe('PHP-specific instructions');
     });

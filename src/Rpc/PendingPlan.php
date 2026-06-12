@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\PlanReadResult;
+use Revolution\Copilot\Types\Rpc\PlanReadSqlTodosResult;
 use Revolution\Copilot\Types\Rpc\PlanUpdateRequest;
 
 /**
@@ -49,5 +50,19 @@ class PendingPlan
         return $this->client->request('session.plan.delete', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Read SQL todos from the session database.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function readSqlTodos(): PlanReadSqlTodosResult
+    {
+        return PlanReadSqlTodosResult::fromArray(
+            $this->client->request('session.plan.readSqlTodos', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
     }
 }
