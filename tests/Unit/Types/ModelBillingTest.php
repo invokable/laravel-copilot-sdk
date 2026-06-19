@@ -42,19 +42,19 @@ describe('ModelBilling', function () {
         $billing = ModelBilling::fromArray([
             'multiplier' => 1.0,
             'tokenPrices' => [
-                'inputMTokenPrice' => 3.0,
-                'outputMTokenPrice' => 10.0,
+                'inputPrice' => 3.0,
+                'outputPrice' => 10.0,
             ],
         ]);
 
         expect($billing->tokenPrices)->toBeInstanceOf(ModelBillingTokenPrices::class)
-            ->and($billing->tokenPrices->inputMTokenPrice)->toBe(3.0);
+            ->and($billing->tokenPrices->inputPrice)->toBe(3.0);
     });
 
     it('includes tokenPrices in toArray when set', function () {
         $billing = new ModelBilling(
             multiplier: 1.0,
-            tokenPrices: new ModelBillingTokenPrices(inputMTokenPrice: 3.0, outputMTokenPrice: 10.0),
+            tokenPrices: new ModelBillingTokenPrices(inputPrice: 3.0, outputPrice: 10.0),
         );
 
         expect($billing->toArray())->toHaveKey('tokenPrices');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AgentDiscoveryPathScope;
 use Revolution\Copilot\Enums\InstructionDiscoveryPathKind;
+use Revolution\Copilot\Enums\InstructionSourceLocation;
 use Revolution\Copilot\Enums\SkillDiscoveryScope;
 use Revolution\Copilot\Enums\SubagentSettingsEntryContextTier;
 use Revolution\Copilot\Types\MemoryConfiguration;
@@ -35,65 +36,61 @@ describe('MemoryConfiguration', function () {
     it('can be created with all fields', function () {
         $mem = MemoryConfiguration::fromArray([
             'enabled' => true,
-            'maxEntries' => 100,
         ]);
 
-        expect($mem->enabled)->toBeTrue()
-            ->and($mem->maxEntries)->toBe(100);
+        expect($mem->enabled)->toBeTrue();
     });
 
-    it('handles null fields', function () {
+    it('handles missing fields with defaults', function () {
         $mem = MemoryConfiguration::fromArray([]);
 
-        expect($mem->enabled)->toBeNull()
-            ->and($mem->maxEntries)->toBeNull();
+        expect($mem->enabled)->toBeFalse();
     });
 
-    it('converts to array without null values', function () {
-        $mem = new MemoryConfiguration(enabled: true, maxEntries: 50);
+    it('converts to array', function () {
+        $mem = new MemoryConfiguration(enabled: true);
 
         $arr = $mem->toArray();
 
-        expect($arr)->toHaveKey('enabled', true)
-            ->and($arr)->toHaveKey('maxEntries', 50);
+        expect($arr)->toHaveKey('enabled', true);
     });
 
     it('implements Arrayable interface', function () {
-        expect(new MemoryConfiguration)->toBeInstanceOf(Arrayable::class);
+        expect(new MemoryConfiguration(enabled: false))->toBeInstanceOf(Arrayable::class);
     });
 });
 
 describe('NamedProviderConfig', function () {
     it('can be created with all fields', function () {
         $provider = NamedProviderConfig::fromArray([
-            'id' => 'openai-custom',
+            'name' => 'openai-custom',
             'type' => 'openai',
             'apiKey' => 'sk-test',
-            'apiUrl' => 'https://api.openai.com/v1',
+            'baseUrl' => 'https://api.openai.com/v1',
         ]);
 
-        expect($provider->id)->toBe('openai-custom')
+        expect($provider->name)->toBe('openai-custom')
             ->and($provider->type)->toBe('openai')
             ->and($provider->apiKey)->toBe('sk-test')
-            ->and($provider->apiUrl)->toBe('https://api.openai.com/v1');
+            ->and($provider->baseUrl)->toBe('https://api.openai.com/v1');
     });
 
     it('handles default values', function () {
-        $provider = NamedProviderConfig::fromArray(['id' => 'my-provider', 'type' => 'openai']);
+        $provider = NamedProviderConfig::fromArray(['name' => 'my-provider', 'baseUrl' => 'https://api.openai.com/v1', 'type' => 'openai']);
 
         expect($provider->apiKey)->toBeNull()
-            ->and($provider->apiUrl)->toBeNull();
+            ->and($provider->bearerToken)->toBeNull();
     });
 
     it('converts to array', function () {
-        $provider = new NamedProviderConfig(id: 'test', type: 'openai');
+        $provider = new NamedProviderConfig(name: 'test', baseUrl: 'https://api.example.com');
 
-        expect($provider->toArray())->toHaveKey('id', 'test')
-            ->and($provider->toArray())->toHaveKey('type', 'openai');
+        expect($provider->toArray())->toHaveKey('name', 'test')
+            ->and($provider->toArray())->toHaveKey('baseUrl', 'https://api.example.com');
     });
 
     it('implements Arrayable interface', function () {
-        expect(new NamedProviderConfig(id: 'x', type: 'openai'))->toBeInstanceOf(Arrayable::class);
+        expect(new NamedProviderConfig(name: 'x', baseUrl: 'https://api.example.com'))->toBeInstanceOf(Arrayable::class);
     });
 });
 
@@ -101,26 +98,26 @@ describe('ProviderModelConfig', function () {
     it('can be created with all fields', function () {
         $model = ProviderModelConfig::fromArray([
             'id' => 'gpt-5',
-            'providerId' => 'openai-custom',
+            'provider' => 'openai-custom',
             'modelId' => 'gpt-5-latest',
         ]);
 
         expect($model->id)->toBe('gpt-5')
-            ->and($model->providerId)->toBe('openai-custom')
+            ->and($model->provider)->toBe('openai-custom')
             ->and($model->modelId)->toBe('gpt-5-latest');
     });
 
     it('handles optional fields', function () {
-        $model = ProviderModelConfig::fromArray(['id' => 'm1', 'providerId' => 'p1']);
+        $model = ProviderModelConfig::fromArray(['id' => 'm1', 'provider' => 'p1']);
 
         expect($model->modelId)->toBeNull();
     });
 
     it('converts to array', function () {
-        $model = new ProviderModelConfig(id: 'm1', providerId: 'p1', modelId: 'gpt-5');
+        $model = new ProviderModelConfig(id: 'm1', provider: 'p1', modelId: 'gpt-5');
 
         expect($model->toArray())->toHaveKey('id', 'm1')
-            ->and($model->toArray())->toHaveKey('providerId', 'p1')
+            ->and($model->toArray())->toHaveKey('provider', 'p1')
             ->and($model->toArray())->toHaveKey('modelId', 'gpt-5');
     });
 });
@@ -128,57 +125,57 @@ describe('ProviderModelConfig', function () {
 describe('ModelBillingTokenPricesLongContext', function () {
     it('can be created from array', function () {
         $lc = ModelBillingTokenPricesLongContext::fromArray([
-            'inputMTokenPrice' => 5.0,
-            'outputMTokenPrice' => 15.0,
+            'inputPrice' => 5.0,
+            'outputPrice' => 15.0,
         ]);
 
-        expect($lc->inputMTokenPrice)->toBe(5.0)
-            ->and($lc->outputMTokenPrice)->toBe(15.0);
+        expect($lc->inputPrice)->toBe(5.0)
+            ->and($lc->outputPrice)->toBe(15.0);
     });
 
     it('handles null values', function () {
         $lc = ModelBillingTokenPricesLongContext::fromArray([]);
 
-        expect($lc->inputMTokenPrice)->toBeNull()
-            ->and($lc->outputMTokenPrice)->toBeNull();
+        expect($lc->inputPrice)->toBeNull()
+            ->and($lc->outputPrice)->toBeNull();
     });
 
     it('converts to array', function () {
-        $lc = new ModelBillingTokenPricesLongContext(inputMTokenPrice: 3.0, outputMTokenPrice: 10.0);
+        $lc = new ModelBillingTokenPricesLongContext(inputPrice: 3.0, outputPrice: 10.0);
 
-        expect($lc->toArray())->toHaveKey('inputMTokenPrice', 3.0)
-            ->and($lc->toArray())->toHaveKey('outputMTokenPrice', 10.0);
+        expect($lc->toArray())->toHaveKey('inputPrice', 3.0)
+            ->and($lc->toArray())->toHaveKey('outputPrice', 10.0);
     });
 });
 
 describe('ModelBillingTokenPrices', function () {
     it('can be created from array with all fields', function () {
         $prices = ModelBillingTokenPrices::fromArray([
-            'inputMTokenPrice' => 2.5,
-            'outputMTokenPrice' => 7.5,
+            'inputPrice' => 2.5,
+            'outputPrice' => 7.5,
             'longContext' => [
-                'inputMTokenPrice' => 5.0,
-                'outputMTokenPrice' => 15.0,
+                'inputPrice' => 5.0,
+                'outputPrice' => 15.0,
             ],
         ]);
 
-        expect($prices->inputMTokenPrice)->toBe(2.5)
-            ->and($prices->outputMTokenPrice)->toBe(7.5)
+        expect($prices->inputPrice)->toBe(2.5)
+            ->and($prices->outputPrice)->toBe(7.5)
             ->and($prices->longContext)->toBeInstanceOf(ModelBillingTokenPricesLongContext::class)
-            ->and($prices->longContext->inputMTokenPrice)->toBe(5.0);
+            ->and($prices->longContext->inputPrice)->toBe(5.0);
     });
 
     it('handles missing fields', function () {
         $prices = ModelBillingTokenPrices::fromArray([]);
 
-        expect($prices->inputMTokenPrice)->toBeNull()
+        expect($prices->inputPrice)->toBeNull()
             ->and($prices->longContext)->toBeNull();
     });
 
     it('converts to array', function () {
-        $prices = new ModelBillingTokenPrices(inputMTokenPrice: 1.0, outputMTokenPrice: 3.0);
+        $prices = new ModelBillingTokenPrices(inputPrice: 1.0, outputPrice: 3.0);
 
-        expect($prices->toArray())->toHaveKey('inputMTokenPrice', 1.0)
+        expect($prices->toArray())->toHaveKey('inputPrice', 1.0)
             ->and($prices->toArray())->not->toHaveKey('longContext');
     });
 
@@ -196,7 +193,7 @@ describe('AgentDiscoveryPath', function () {
         ]);
 
         expect($path->path)->toBe('/home/user/.copilot/agents')
-            ->and($path->scope)->toBe('user')
+            ->and($path->scope)->toBe(AgentDiscoveryPathScope::User)
             ->and($path->preferredForCreation)->toBeTrue();
     });
 
@@ -207,7 +204,7 @@ describe('AgentDiscoveryPath', function () {
     });
 
     it('converts to array including false preferredForCreation', function () {
-        $path = new AgentDiscoveryPath(path: '/some/path', scope: 'project', preferredForCreation: false);
+        $path = new AgentDiscoveryPath(path: '/some/path', scope: AgentDiscoveryPathScope::Project, preferredForCreation: false);
 
         $arr = $path->toArray();
         expect($arr)->toHaveKey('path', '/some/path')
@@ -216,7 +213,7 @@ describe('AgentDiscoveryPath', function () {
     });
 
     it('implements Arrayable interface', function () {
-        expect(new AgentDiscoveryPath(path: '/p', scope: 'user'))->toBeInstanceOf(Arrayable::class);
+        expect(new AgentDiscoveryPath(path: '/p', scope: AgentDiscoveryPathScope::User, preferredForCreation: false))->toBeInstanceOf(Arrayable::class);
     });
 });
 
@@ -231,7 +228,7 @@ describe('AgentDiscoveryPathList', function () {
 
         expect($list->paths)->toHaveCount(2)
             ->and($list->paths[0])->toBeInstanceOf(AgentDiscoveryPath::class)
-            ->and($list->paths[0]->scope)->toBe('user');
+            ->and($list->paths[0]->scope)->toBe(AgentDiscoveryPathScope::User);
     });
 
     it('handles empty paths', function () {
@@ -255,17 +252,17 @@ describe('AgentsGetDiscoveryPathsRequest', function () {
     it('can be created from empty array', function () {
         $req = AgentsGetDiscoveryPathsRequest::fromArray([]);
 
-        expect($req->scope)->toBeNull();
+        expect($req->excludeHostAgents)->toBeNull();
     });
 
-    it('can be created with scope', function () {
-        $req = AgentsGetDiscoveryPathsRequest::fromArray(['scope' => 'user']);
+    it('can be created with excludeHostAgents', function () {
+        $req = AgentsGetDiscoveryPathsRequest::fromArray(['excludeHostAgents' => true]);
 
-        expect($req->scope)->toBe('user');
+        expect($req->excludeHostAgents)->toBeTrue();
     });
 
     it('converts to array without null values', function () {
-        $req = new AgentsGetDiscoveryPathsRequest(scope: null);
+        $req = new AgentsGetDiscoveryPathsRequest;
 
         expect($req->toArray())->toBeEmpty();
     });
@@ -275,17 +272,17 @@ describe('SkillDiscoveryPath', function () {
     it('can be created from array with all fields', function () {
         $path = SkillDiscoveryPath::fromArray([
             'path' => '/home/user/.copilot/skills',
-            'scope' => 'user',
+            'scope' => 'project',
             'preferredForCreation' => true,
         ]);
 
         expect($path->path)->toBe('/home/user/.copilot/skills')
-            ->and($path->scope)->toBe('user')
+            ->and($path->scope)->toBe(SkillDiscoveryScope::Project)
             ->and($path->preferredForCreation)->toBeTrue();
     });
 
     it('converts to array including false preferredForCreation', function () {
-        $path = new SkillDiscoveryPath(path: '/p', scope: 'project', preferredForCreation: false);
+        $path = new SkillDiscoveryPath(path: '/p', scope: SkillDiscoveryScope::Project, preferredForCreation: false);
 
         expect($path->toArray())->toHaveKey('preferredForCreation', false);
     });
@@ -295,7 +292,7 @@ describe('SkillDiscoveryPathList', function () {
     it('can be created from array with paths', function () {
         $list = SkillDiscoveryPathList::fromArray([
             'paths' => [
-                ['path' => '/home/user/.copilot/skills', 'scope' => 'user', 'preferredForCreation' => true],
+                ['path' => '/home/user/.copilot/skills', 'scope' => 'project', 'preferredForCreation' => true],
             ],
         ]);
 
@@ -305,10 +302,10 @@ describe('SkillDiscoveryPathList', function () {
 });
 
 describe('SkillsGetDiscoveryPathsRequest', function () {
-    it('can be created with scope', function () {
-        $req = SkillsGetDiscoveryPathsRequest::fromArray(['scope' => 'project']);
+    it('can be created with excludeHostSkills', function () {
+        $req = SkillsGetDiscoveryPathsRequest::fromArray(['excludeHostSkills' => true]);
 
-        expect($req->scope)->toBe('project');
+        expect($req->excludeHostSkills)->toBeTrue();
     });
 
     it('converts to array without null', function () {
@@ -328,13 +325,13 @@ describe('InstructionDiscoveryPath', function () {
         ]);
 
         expect($path->path)->toBe('/home/user/.copilot/instructions.md')
-            ->and($path->location)->toBe('user')
-            ->and($path->kind)->toBe('file')
+            ->and($path->location)->toBe(InstructionSourceLocation::USER)
+            ->and($path->kind)->toBe(InstructionDiscoveryPathKind::File)
             ->and($path->preferredForCreation)->toBeTrue();
     });
 
     it('converts to array with false preferredForCreation', function () {
-        $path = new InstructionDiscoveryPath(path: '/p', location: 'repository', kind: 'file', preferredForCreation: false);
+        $path = new InstructionDiscoveryPath(path: '/p', location: InstructionSourceLocation::REPOSITORY, kind: InstructionDiscoveryPathKind::File, preferredForCreation: false);
 
         expect($path->toArray())->toHaveKey('preferredForCreation', false);
     });
@@ -360,10 +357,10 @@ describe('InstructionDiscoveryPathList', function () {
 });
 
 describe('InstructionsGetDiscoveryPathsRequest', function () {
-    it('can be created with location', function () {
-        $req = InstructionsGetDiscoveryPathsRequest::fromArray(['location' => 'repository']);
+    it('can be created with excludeHostInstructions', function () {
+        $req = InstructionsGetDiscoveryPathsRequest::fromArray(['excludeHostInstructions' => true]);
 
-        expect($req->location)->toBe('repository');
+        expect($req->excludeHostInstructions)->toBeTrue();
     });
 
     it('converts to empty array when null', function () {
@@ -376,18 +373,18 @@ describe('InstructionsGetDiscoveryPathsRequest', function () {
 describe('PlanSqlTodoDependency', function () {
     it('can be created from array', function () {
         $dep = PlanSqlTodoDependency::fromArray([
-            'todo_id' => 'task-1',
-            'depends_on' => 'task-2',
+            'todoId' => 'task-1',
+            'dependsOn' => 'task-2',
         ]);
 
-        expect($dep->todo_id)->toBe('task-1')
-            ->and($dep->depends_on)->toBe('task-2');
+        expect($dep->todoId)->toBe('task-1')
+            ->and($dep->dependsOn)->toBe('task-2');
     });
 
     it('converts to array', function () {
-        $dep = new PlanSqlTodoDependency(todo_id: 'a', depends_on: 'b');
+        $dep = new PlanSqlTodoDependency(todoId: 'a', dependsOn: 'b');
 
-        expect($dep->toArray())->toBe(['todo_id' => 'a', 'depends_on' => 'b']);
+        expect($dep->toArray())->toBe(['dependsOn' => 'b', 'todoId' => 'a']);
     });
 });
 
@@ -395,17 +392,17 @@ describe('PlanReadSqlTodosWithDependenciesResult', function () {
     it('can be created from array with rows and dependencies', function () {
         $result = PlanReadSqlTodosWithDependenciesResult::fromArray([
             'rows' => [
-                ['id' => 1, 'title' => 'Task 1', 'status' => 'pending'],
+                ['id' => 'task-1', 'title' => 'Task 1', 'status' => 'pending'],
             ],
             'dependencies' => [
-                ['todo_id' => 'task-1', 'depends_on' => 'task-2'],
+                ['todoId' => 'task-1', 'dependsOn' => 'task-2'],
             ],
         ]);
 
         expect($result->rows)->toHaveCount(1)
             ->and($result->dependencies)->toHaveCount(1)
             ->and($result->dependencies[0])->toBeInstanceOf(PlanSqlTodoDependency::class)
-            ->and($result->dependencies[0]->todo_id)->toBe('task-1');
+            ->and($result->dependencies[0]->todoId)->toBe('task-1');
     });
 
     it('handles empty result', function () {
@@ -417,7 +414,7 @@ describe('PlanReadSqlTodosWithDependenciesResult', function () {
 
     it('converts to array', function () {
         $result = PlanReadSqlTodosWithDependenciesResult::fromArray([
-            'rows' => [['id' => 1]],
+            'rows' => [['id' => 'task-1']],
             'dependencies' => [],
         ]);
 
@@ -444,7 +441,7 @@ describe('ProviderSessionToken', function () {
     });
 
     it('converts to array', function () {
-        $token = new ProviderSessionToken(token: 'test-token');
+        $token = new ProviderSessionToken(header: 'X-Session-Token', token: 'test-token');
 
         expect($token->toArray())->toHaveKey('token', 'test-token');
     });
@@ -492,16 +489,16 @@ describe('ProviderEndpoint', function () {
 });
 
 describe('ProviderGetEndpointRequest', function () {
-    it('can be created with model', function () {
-        $req = ProviderGetEndpointRequest::fromArray(['model' => 'gpt-5']);
+    it('can be created with modelId', function () {
+        $req = ProviderGetEndpointRequest::fromArray(['modelId' => 'gpt-5']);
 
-        expect($req->model)->toBe('gpt-5');
+        expect($req->modelId)->toBe('gpt-5');
     });
 
-    it('handles no model', function () {
+    it('handles no modelId', function () {
         $req = ProviderGetEndpointRequest::fromArray([]);
 
-        expect($req->model)->toBeNull();
+        expect($req->modelId)->toBeNull();
     });
 
     it('converts to empty array when null', function () {
@@ -514,107 +511,96 @@ describe('ProviderGetEndpointRequest', function () {
 describe('SubagentSettingsEntry', function () {
     it('can be created from array with all fields', function () {
         $entry = SubagentSettingsEntry::fromArray([
-            'agentName' => 'my-agent',
-            'contextTier' => 'medium',
-            'enabled' => true,
+            'contextTier' => 'inherit',
+            'effortLevel' => 'medium',
+            'model' => 'gpt-5',
         ]);
 
-        expect($entry->agentName)->toBe('my-agent')
-            ->and($entry->contextTier)->toBe('medium')
-            ->and($entry->enabled)->toBeTrue();
+        expect($entry->contextTier)->toBe(SubagentSettingsEntryContextTier::Inherit)
+            ->and($entry->effortLevel)->toBe('medium')
+            ->and($entry->model)->toBe('gpt-5');
     });
 
     it('handles optional fields', function () {
-        $entry = SubagentSettingsEntry::fromArray(['agentName' => 'agent']);
+        $entry = SubagentSettingsEntry::fromArray([]);
 
         expect($entry->contextTier)->toBeNull()
-            ->and($entry->enabled)->toBeNull();
+            ->and($entry->effortLevel)->toBeNull()
+            ->and($entry->model)->toBeNull();
     });
 
     it('converts to array', function () {
-        $entry = new SubagentSettingsEntry(agentName: 'agent', contextTier: 'high', enabled: true);
+        $entry = new SubagentSettingsEntry(contextTier: SubagentSettingsEntryContextTier::Default, effortLevel: 'high', model: 'gpt-5');
 
-        expect($entry->toArray())->toHaveKey('agentName', 'agent')
-            ->and($entry->toArray())->toHaveKey('contextTier', 'high')
-            ->and($entry->toArray())->toHaveKey('enabled', true);
+        expect($entry->toArray())->toHaveKey('contextTier', 'default')
+            ->and($entry->toArray())->toHaveKey('effortLevel', 'high')
+            ->and($entry->toArray())->toHaveKey('model', 'gpt-5');
     });
 });
 
 describe('SubagentSettings', function () {
-    it('can be created from array with entries', function () {
+    it('can be created from array with agents', function () {
         $settings = SubagentSettings::fromArray([
-            'entries' => [
-                ['agentName' => 'agent-1', 'contextTier' => 'low', 'enabled' => true],
-                ['agentName' => 'agent-2', 'contextTier' => 'high', 'enabled' => false],
+            'agents' => [
+                'agent-1' => ['contextTier' => 'inherit', 'effortLevel' => 'low'],
+                'agent-2' => ['model' => 'gpt-5'],
             ],
         ]);
 
-        expect($settings->entries)->toHaveCount(2)
-            ->and($settings->entries[0])->toBeInstanceOf(SubagentSettingsEntry::class)
-            ->and($settings->entries[0]->agentName)->toBe('agent-1');
+        expect($settings->agents)->toHaveCount(2)
+            ->and($settings->agents['agent-1'])->toBeInstanceOf(SubagentSettingsEntry::class);
     });
 
-    it('handles empty entries', function () {
+    it('handles empty agents', function () {
         $settings = SubagentSettings::fromArray([]);
 
-        expect($settings->entries)->toBeEmpty();
+        expect($settings->agents)->toBeNull();
     });
 
     it('converts to array', function () {
         $settings = SubagentSettings::fromArray([
-            'entries' => [['agentName' => 'a']],
+            'agents' => ['agent-a' => ['effortLevel' => 'low']],
         ]);
 
-        expect($settings->toArray())->toHaveKey('entries');
+        expect($settings->toArray())->toHaveKey('agents');
     });
 });
 
 describe('UpdateSubagentSettingsRequest', function () {
-    it('can be created with settings', function () {
+    it('can be created with subagents', function () {
         $req = UpdateSubagentSettingsRequest::fromArray([
-            'settings' => [
-                'entries' => [['agentName' => 'agent']],
+            'subagents' => [
+                'agents' => ['agent-a' => ['effortLevel' => 'medium']],
             ],
         ]);
 
-        expect($req->settings)->toBeInstanceOf(SubagentSettings::class)
-            ->and($req->settings->entries[0]->agentName)->toBe('agent');
+        expect($req->subagents)->toBeInstanceOf(SubagentSettings::class)
+            ->and($req->subagents->agents['agent-a']->effortLevel)->toBe('medium');
     });
 
-    it('handles null settings', function () {
+    it('handles null subagents', function () {
         $req = UpdateSubagentSettingsRequest::fromArray([]);
 
-        expect($req->settings)->toBeNull();
+        expect($req->subagents)->toBeNull();
     });
 
     it('converts to array', function () {
-        $settings = new SubagentSettings(entries: []);
-        $req = new UpdateSubagentSettingsRequest(settings: $settings);
+        $settings = new SubagentSettings(agents: []);
+        $req = new UpdateSubagentSettingsRequest(subagents: $settings);
 
-        expect($req->toArray())->toHaveKey('settings');
+        expect($req->toArray())->toHaveKey('subagents');
     });
 });
 
 describe('ToolsUpdateSubagentSettingsResult', function () {
     it('can be created from array', function () {
-        $result = ToolsUpdateSubagentSettingsResult::fromArray([
-            'settings' => [
-                'entries' => [['agentName' => 'agent-1', 'contextTier' => 'medium']],
-            ],
-        ]);
-
-        expect($result->settings)->toBeInstanceOf(SubagentSettings::class)
-            ->and($result->settings->entries)->toHaveCount(1);
-    });
-
-    it('handles null settings', function () {
         $result = ToolsUpdateSubagentSettingsResult::fromArray([]);
 
-        expect($result->settings)->toBeNull();
+        expect($result)->toBeInstanceOf(ToolsUpdateSubagentSettingsResult::class);
     });
 
-    it('converts to array', function () {
-        $result = new ToolsUpdateSubagentSettingsResult(settings: null);
+    it('converts to empty array', function () {
+        $result = new ToolsUpdateSubagentSettingsResult;
 
         expect($result->toArray())->toBeEmpty();
     });

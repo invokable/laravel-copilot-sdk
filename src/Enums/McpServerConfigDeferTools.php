@@ -11,7 +11,7 @@ namespace Revolution\Copilot\Enums;
 enum McpServerConfigDeferTools: string
 {
     /** Tools may be deferred under certain conditions. */
-    case AUTO = 'auto';
+    case Auto = 'auto';
     /** Tools are always included in the initial tool list, even when tool search is enabled. */
-    case NEVER = 'never';
+    case Never = 'never';
 }

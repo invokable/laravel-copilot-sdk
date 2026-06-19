@@ -11,6 +11,6 @@ namespace Revolution\Copilot\Enums;
  */
 enum AgentDiscoveryPathScope: string
 {
-    case USER = 'user';
-    case PROJECT = 'project';
+    case User = 'user';
+    case Project = 'project';
 }

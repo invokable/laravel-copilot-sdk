@@ -53,7 +53,7 @@ describe('PendingServerAgents', function () {
             ->andReturn(['paths' => []]);
 
         $pending = new PendingServerAgents($client);
-        $req = new AgentsGetDiscoveryPathsRequest(scope: 'user');
+        $req = new AgentsGetDiscoveryPathsRequest(excludeHostAgents: true);
         $result = $pending->getDiscoveryPaths($req);
 
         expect($result)->toBeInstanceOf(AgentDiscoveryPathList::class);
@@ -98,7 +98,7 @@ describe('PendingServerInstructions', function () {
             ->andReturn(['paths' => []]);
 
         $pending = new PendingServerInstructions($client);
-        $req = new InstructionsGetDiscoveryPathsRequest(location: 'repository');
+        $req = new InstructionsGetDiscoveryPathsRequest(excludeHostInstructions: true);
         $result = $pending->getDiscoveryPaths($req);
 
         expect($result)->toBeInstanceOf(InstructionDiscoveryPathList::class);
@@ -134,7 +134,7 @@ describe('PendingProvider', function () {
             ->once()
             ->with(
                 'session.provider.getEndpoint',
-                Mockery::on(fn ($params) => isset($params['sessionId']) && isset($params['model'])),
+                Mockery::on(fn ($params) => isset($params['sessionId']) && isset($params['modelId'])),
             )
             ->andReturn([
                 'baseUrl' => 'https://api.example.com',
@@ -143,7 +143,7 @@ describe('PendingProvider', function () {
             ]);
 
         $pending = new PendingProvider($client, 'session-abc');
-        $req = new ProviderGetEndpointRequest(model: 'gpt-5');
+        $req = new ProviderGetEndpointRequest(modelId: 'gpt-5');
         $result = $pending->getEndpoint($req);
 
         expect($result)->toBeInstanceOf(ProviderEndpoint::class);

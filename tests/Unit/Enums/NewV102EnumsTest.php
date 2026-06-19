@@ -11,14 +11,12 @@ use Revolution\Copilot\Enums\SubagentSettingsEntryContextTier;
 describe('AgentDiscoveryPathScope', function () {
     it('has all expected cases', function () {
         expect(AgentDiscoveryPathScope::User->value)->toBe('user')
-            ->and(AgentDiscoveryPathScope::Project->value)->toBe('project')
-            ->and(AgentDiscoveryPathScope::Plugin->value)->toBe('plugin');
+            ->and(AgentDiscoveryPathScope::Project->value)->toBe('project');
     });
 
     it('can be created from string', function () {
         expect(AgentDiscoveryPathScope::from('user'))->toBe(AgentDiscoveryPathScope::User)
-            ->and(AgentDiscoveryPathScope::from('project'))->toBe(AgentDiscoveryPathScope::Project)
-            ->and(AgentDiscoveryPathScope::from('plugin'))->toBe(AgentDiscoveryPathScope::Plugin);
+            ->and(AgentDiscoveryPathScope::from('project'))->toBe(AgentDiscoveryPathScope::Project);
     });
 
     it('returns null for unknown value with tryFrom', function () {
@@ -28,15 +26,17 @@ describe('AgentDiscoveryPathScope', function () {
 
 describe('SkillDiscoveryScope', function () {
     it('has all expected cases', function () {
-        expect(SkillDiscoveryScope::User->value)->toBe('user')
-            ->and(SkillDiscoveryScope::Project->value)->toBe('project')
-            ->and(SkillDiscoveryScope::Plugin->value)->toBe('plugin');
+        expect(SkillDiscoveryScope::Project->value)->toBe('project')
+            ->and(SkillDiscoveryScope::PersonalCopilot->value)->toBe('personal-copilot')
+            ->and(SkillDiscoveryScope::PersonalAgents->value)->toBe('personal-agents')
+            ->and(SkillDiscoveryScope::Custom->value)->toBe('custom');
     });
 
     it('can be created from string', function () {
-        expect(SkillDiscoveryScope::from('user'))->toBe(SkillDiscoveryScope::User)
-            ->and(SkillDiscoveryScope::from('project'))->toBe(SkillDiscoveryScope::Project)
-            ->and(SkillDiscoveryScope::from('plugin'))->toBe(SkillDiscoveryScope::Plugin);
+        expect(SkillDiscoveryScope::from('project'))->toBe(SkillDiscoveryScope::Project)
+            ->and(SkillDiscoveryScope::from('personal-copilot'))->toBe(SkillDiscoveryScope::PersonalCopilot)
+            ->and(SkillDiscoveryScope::from('personal-agents'))->toBe(SkillDiscoveryScope::PersonalAgents)
+            ->and(SkillDiscoveryScope::from('custom'))->toBe(SkillDiscoveryScope::Custom);
     });
 
     it('returns null for unknown value with tryFrom', function () {
@@ -62,15 +62,15 @@ describe('InstructionDiscoveryPathKind', function () {
 
 describe('SubagentSettingsEntryContextTier', function () {
     it('has all expected cases', function () {
-        expect(SubagentSettingsEntryContextTier::Low->value)->toBe('low')
-            ->and(SubagentSettingsEntryContextTier::Medium->value)->toBe('medium')
-            ->and(SubagentSettingsEntryContextTier::High->value)->toBe('high');
+        expect(SubagentSettingsEntryContextTier::Inherit->value)->toBe('inherit')
+            ->and(SubagentSettingsEntryContextTier::Default->value)->toBe('default')
+            ->and(SubagentSettingsEntryContextTier::LongContext->value)->toBe('long_context');
     });
 
     it('can be created from string', function () {
-        expect(SubagentSettingsEntryContextTier::from('low'))->toBe(SubagentSettingsEntryContextTier::Low)
-            ->and(SubagentSettingsEntryContextTier::from('medium'))->toBe(SubagentSettingsEntryContextTier::Medium)
-            ->and(SubagentSettingsEntryContextTier::from('high'))->toBe(SubagentSettingsEntryContextTier::High);
+        expect(SubagentSettingsEntryContextTier::from('inherit'))->toBe(SubagentSettingsEntryContextTier::Inherit)
+            ->and(SubagentSettingsEntryContextTier::from('default'))->toBe(SubagentSettingsEntryContextTier::Default)
+            ->and(SubagentSettingsEntryContextTier::from('long_context'))->toBe(SubagentSettingsEntryContextTier::LongContext);
     });
 
     it('returns null for unknown value with tryFrom', function () {
@@ -80,13 +80,13 @@ describe('SubagentSettingsEntryContextTier', function () {
 
 describe('McpServerConfigDeferTools', function () {
     it('has all expected cases', function () {
-        expect(McpServerConfigDeferTools::Eager->value)->toBe('eager')
-            ->and(McpServerConfigDeferTools::Deferred->value)->toBe('deferred');
+        expect(McpServerConfigDeferTools::Auto->value)->toBe('auto')
+            ->and(McpServerConfigDeferTools::Never->value)->toBe('never');
     });
 
     it('can be created from string', function () {
-        expect(McpServerConfigDeferTools::from('eager'))->toBe(McpServerConfigDeferTools::Eager)
-            ->and(McpServerConfigDeferTools::from('deferred'))->toBe(McpServerConfigDeferTools::Deferred);
+        expect(McpServerConfigDeferTools::from('auto'))->toBe(McpServerConfigDeferTools::Auto)
+            ->and(McpServerConfigDeferTools::from('never'))->toBe(McpServerConfigDeferTools::Never);
     });
 
     it('returns null for unknown value with tryFrom', function () {

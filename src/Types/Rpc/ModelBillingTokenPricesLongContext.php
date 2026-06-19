@@ -12,24 +12,24 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class ModelBillingTokenPricesLongContext implements Arrayable
 {
     /**
-     * @param  ?int  $inputPrice  AI Credits cost per billing batch of input tokens
-     * @param  ?int  $outputPrice  AI Credits cost per billing batch of output tokens
-     * @param  ?int  $cachePrice  AI Credits cost per billing batch of cached tokens
+     * @param  ?float  $inputPrice  AI Credits cost per billing batch of input tokens
+     * @param  ?float  $outputPrice  AI Credits cost per billing batch of output tokens
+     * @param  ?float  $cachePrice  AI Credits cost per billing batch of cached tokens
      * @param  ?int  $contextMax  Prompt token budget for the long context tier
      */
     public function __construct(
-        public ?int $inputPrice = null,
-        public ?int $outputPrice = null,
-        public ?int $cachePrice = null,
+        public ?float $inputPrice = null,
+        public ?float $outputPrice = null,
+        public ?float $cachePrice = null,
         public ?int $contextMax = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            inputPrice: isset($data['inputPrice']) ? (int) $data['inputPrice'] : null,
-            outputPrice: isset($data['outputPrice']) ? (int) $data['outputPrice'] : null,
-            cachePrice: isset($data['cachePrice']) ? (int) $data['cachePrice'] : null,
+            inputPrice: isset($data['inputPrice']) ? (float) $data['inputPrice'] : null,
+            outputPrice: isset($data['outputPrice']) ? (float) $data['outputPrice'] : null,
+            cachePrice: isset($data['cachePrice']) ? (float) $data['cachePrice'] : null,
             contextMax: isset($data['contextMax']) ? (int) $data['contextMax'] : null,
         );
     }

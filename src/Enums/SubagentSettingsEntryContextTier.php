@@ -12,9 +12,9 @@ namespace Revolution\Copilot\Enums;
 enum SubagentSettingsEntryContextTier: string
 {
     /** Inherit the parent session's effective context tier at dispatch time. */
-    case INHERIT = 'inherit';
+    case Inherit = 'inherit';
     /** Use the model's default context window. */
-    case DEFAULT = 'default';
+    case Default = 'default';
     /** Pin the subagent to the long-context tier when supported. */
-    case LONG_CONTEXT = 'long_context';
+    case LongContext = 'long_context';
 }

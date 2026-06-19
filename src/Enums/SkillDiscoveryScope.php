@@ -11,8 +11,8 @@ namespace Revolution\Copilot\Enums;
  */
 enum SkillDiscoveryScope: string
 {
-    case PROJECT = 'project';
-    case PERSONAL_COPILOT = 'personal-copilot';
-    case PERSONAL_AGENTS = 'personal-agents';
-    case CUSTOM = 'custom';
+    case Project = 'project';
+    case PersonalCopilot = 'personal-copilot';
+    case PersonalAgents = 'personal-agents';
+    case Custom = 'custom';
 }

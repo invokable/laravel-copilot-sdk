@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
+use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionHooks;
@@ -398,19 +399,19 @@ describe('SessionConfig', function () {
     });
 
     it('accepts memory as MemoryConfiguration', function () {
-        $memory = new \Revolution\Copilot\Types\MemoryConfiguration(enabled: true, maxEntries: 100);
+        $memory = new MemoryConfiguration(enabled: true);
         $config = new SessionConfig(memory: $memory);
 
-        expect($config->memory)->toBeInstanceOf(\Revolution\Copilot\Types\MemoryConfiguration::class)
+        expect($config->memory)->toBeInstanceOf(MemoryConfiguration::class)
             ->and($config->memory->enabled)->toBeTrue();
     });
 
     it('accepts memory as array and deserializes to MemoryConfiguration', function () {
         $config = SessionConfig::fromArray([
-            'memory' => ['enabled' => true, 'maxEntries' => 50],
+            'memory' => ['enabled' => true],
         ]);
 
-        expect($config->memory)->toBeInstanceOf(\Revolution\Copilot\Types\MemoryConfiguration::class)
+        expect($config->memory)->toBeInstanceOf(MemoryConfiguration::class)
             ->and($config->memory->enabled)->toBeTrue();
     });
 
@@ -425,7 +426,7 @@ describe('SessionConfig', function () {
     });
 
     it('includes memory in toArray as array', function () {
-        $memory = new \Revolution\Copilot\Types\MemoryConfiguration(enabled: false);
+        $memory = new MemoryConfiguration(enabled: false);
         $config = new SessionConfig(memory: $memory);
 
         expect($config->toArray()['memory'])->toBeArray();

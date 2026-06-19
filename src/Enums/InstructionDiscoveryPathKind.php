@@ -11,6 +11,6 @@ namespace Revolution\Copilot\Enums;
  */
 enum InstructionDiscoveryPathKind: string
 {
-    case FILE = 'file';
-    case DIRECTORY = 'directory';
+    case File = 'file';
+    case Directory = 'directory';
 }

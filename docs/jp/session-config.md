@@ -99,10 +99,9 @@ $config = new SessionConfig(
     // セッション間でのメモリ機能を制御する。
     memory: new \Revolution\Copilot\Types\MemoryConfiguration(
         enabled: true,
-        maxEntries: 100,
     ),
     // 配列での指定も可能
-    // memory: ['enabled' => true, 'maxEntries' => 50],
+    // memory: ['enabled' => true],
 
     // セッションごとのGitHubトークン（マルチテナント対応）
     // クライアントレベルのgithub_tokenとは別に、セッション単位でトークンを指定できる
