@@ -229,6 +229,18 @@ class SessionRpc
     }
 
     /**
+     * Provider RPC operations.
+     *
+     * Returns the provider endpoint and credentials the session is currently configured to use.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function provider(): PendingProvider
+    {
+        return new PendingProvider($this->client, $this->sessionId);
+    }
+
+    /**
      * Tasks RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.

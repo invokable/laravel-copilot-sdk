@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\ModelBilling;
+use Revolution\Copilot\Types\Rpc\ModelBillingTokenPrices;
 
 describe('ModelBilling', function () {
     it('can be created from array', function () {
@@ -35,5 +36,27 @@ describe('ModelBilling', function () {
         $billing = new ModelBilling(multiplier: 1.0);
 
         expect($billing)->toBeInstanceOf(Arrayable::class);
+    });
+
+    it('can be created with tokenPrices', function () {
+        $billing = ModelBilling::fromArray([
+            'multiplier' => 1.0,
+            'tokenPrices' => [
+                'inputMTokenPrice' => 3.0,
+                'outputMTokenPrice' => 10.0,
+            ],
+        ]);
+
+        expect($billing->tokenPrices)->toBeInstanceOf(ModelBillingTokenPrices::class)
+            ->and($billing->tokenPrices->inputMTokenPrice)->toBe(3.0);
+    });
+
+    it('includes tokenPrices in toArray when set', function () {
+        $billing = new ModelBilling(
+            multiplier: 1.0,
+            tokenPrices: new ModelBillingTokenPrices(inputMTokenPrice: 3.0, outputMTokenPrice: 10.0),
+        );
+
+        expect($billing->toArray())->toHaveKey('tokenPrices');
     });
 });

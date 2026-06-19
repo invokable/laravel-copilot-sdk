@@ -104,6 +104,26 @@ class ServerRpc
     }
 
     /**
+     * Server-level agents RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function agents(): PendingServerAgents
+    {
+        return new PendingServerAgents($this->client);
+    }
+
+    /**
+     * Server-level instructions RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function instructions(): PendingServerInstructions
+    {
+        return new PendingServerInstructions($this->client);
+    }
+
+    /**
      * Server-level user settings RPC operations.
      */
     public function userSettings(): PendingServerUserSettings

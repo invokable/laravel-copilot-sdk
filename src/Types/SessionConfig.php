@@ -51,6 +51,14 @@ readonly class SessionConfig implements Arrayable
      *                                 excludedTools wins (`toolFilterPrecedence: "excluded"`).
      * @param  ProviderConfig|array|null  $provider  Custom provider configuration (BYOK - Bring Your Own Key).
      *                                               When specified, uses the provided API endpoint instead of the Copilot API.
+     * @param  NamedProviderConfig[]|null  $providers  Named BYOK provider connections (transport + credentials).
+     *                                                 Unlike the singular provider — which makes the entire session BYOK — named
+     *                                                 providers are additive and coexist with Copilot API auth. Combining
+     *                                                 providers/models with provider is rejected.
+     *                                                 @experimental
+     * @param  ProviderModelConfig[]|null  $models  BYOK model definitions added to the session's selectable model list,
+     *                                              each referencing a providers[].name.
+     *                                              @experimental
      * @param  ?Closure  $onPermissionRequest  Handler for permission requests from the server.
      *                                         When provided, the server will call this handler to request permission for operations.
      * @param  ?Closure  $onUserInputRequest  Handler for user input requests from the agent.
@@ -100,6 +108,7 @@ readonly class SessionConfig implements Arrayable
      * @param  InfiniteSessionConfig|array|null  $infiniteSessions  Infinite session configuration for persistent workspaces and automatic compaction.
      *                                                              When enabled (default), sessions automatically manage context limits and persist state.
      *                                                              Set to `new InfiniteSessionConfig(enabled: false)` to disable.
+     * @param  MemoryConfiguration|array|null  $memory  Memory configuration for the session. When omitted, the runtime default applies.
      * @param  ?string  $gitHubToken  GitHub token for per-session authentication.
      *                                When provided, the runtime resolves this token into a full GitHub identity
      *                                (login, Copilot plan, endpoints) and stores it on the session.
@@ -163,6 +172,8 @@ readonly class SessionConfig implements Arrayable
         public ?array $availableTools = null,
         public ?array $excludedTools = null,
         public ProviderConfig|array|null $provider = null,
+        public ?array $providers = null,
+        public ?array $models = null,
         public ?Closure $onPermissionRequest = null,
         public ?Closure $onUserInputRequest = null,
         public ?Closure $onElicitationRequest = null,
@@ -182,6 +193,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $instructionDirectories = null,
         public ?array $disabledSkills = null,
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
+        public MemoryConfiguration|array|null $memory = null,
         public ?string $gitHubToken = null,
         public RemoteSessionMode|string|null $remoteSession = null,
         public CloudSessionOptions|array|null $cloud = null,
@@ -236,6 +248,13 @@ readonly class SessionConfig implements Arrayable
                 : InfiniteSessionConfig::fromArray($data['infiniteSessions']);
         }
 
+        $memory = null;
+        if (isset($data['memory'])) {
+            $memory = $data['memory'] instanceof MemoryConfiguration
+                ? $data['memory']
+                : MemoryConfiguration::fromArray($data['memory']);
+        }
+
         $hooks = null;
         if (isset($data['hooks'])) {
             $hooks = $data['hooks'] instanceof SessionHooks
@@ -288,6 +307,8 @@ readonly class SessionConfig implements Arrayable
             availableTools: $data['availableTools'] ?? null,
             excludedTools: $data['excludedTools'] ?? null,
             provider: $provider,
+            providers: $data['providers'] ?? null,
+            models: $data['models'] ?? null,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
             onUserInputRequest: $data['onUserInputRequest'] ?? null,
             onElicitationRequest: $data['onElicitationRequest'] ?? null,
@@ -312,6 +333,7 @@ readonly class SessionConfig implements Arrayable
             coauthorEnabled: $data['coauthorEnabled'] ?? null,
             manageScheduleEnabled: $data['manageScheduleEnabled'] ?? null,
             infiniteSessions: $infiniteSessions,
+            memory: $memory,
             gitHubToken: $data['gitHubToken'] ?? null,
             remoteSession: $data['remoteSession'] ?? null,
             cloud: $cloud,
@@ -357,6 +379,10 @@ readonly class SessionConfig implements Arrayable
             ? $this->infiniteSessions->toArray()
             : $this->infiniteSessions;
 
+        $memory = $this->memory instanceof MemoryConfiguration
+            ? $this->memory->toArray()
+            : $this->memory;
+
         $hooks = $this->hooks instanceof SessionHooks
             ? $this->hooks->toArray()
             : $this->hooks;
@@ -398,6 +424,8 @@ readonly class SessionConfig implements Arrayable
             'availableTools' => $this->availableTools,
             'excludedTools' => $this->excludedTools,
             'provider' => $provider,
+            'providers' => $this->providers,
+            'models' => $this->models,
             'onPermissionRequest' => $this->onPermissionRequest,
             'onUserInputRequest' => $this->onUserInputRequest,
             'onElicitationRequest' => $this->onElicitationRequest,
@@ -422,6 +450,7 @@ readonly class SessionConfig implements Arrayable
             'coauthorEnabled' => $this->coauthorEnabled,
             'manageScheduleEnabled' => $this->manageScheduleEnabled,
             'infiniteSessions' => $infiniteSessions,
+            'memory' => $memory,
             'gitHubToken' => $this->gitHubToken,
             'remoteSession' => $remoteSession,
             'cloud' => $cloud,

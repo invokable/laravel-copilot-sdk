@@ -108,4 +108,14 @@ describe('SessionEventType', function () {
     it('can create canvas closed event type from string', function () {
         expect(SessionEventType::from('session.canvas.closed'))->toBe(SessionEventType::SESSION_CANVAS_CLOSED);
     });
+
+    it('has todos changed and binary asset event types', function () {
+        expect(SessionEventType::SESSION_TODOS_CHANGED->value)->toBe('session.todos_changed')
+            ->and(SessionEventType::SESSION_BINARY_ASSET->value)->toBe('session.binary_asset');
+    });
+
+    it('can create todos changed and binary asset from string', function () {
+        expect(SessionEventType::from('session.todos_changed'))->toBe(SessionEventType::SESSION_TODOS_CHANGED)
+            ->and(SessionEventType::from('session.binary_asset'))->toBe(SessionEventType::SESSION_BINARY_ASSET);
+    });
 });

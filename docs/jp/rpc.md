@@ -98,6 +98,66 @@ $result = Copilot::client()->rpc()->skills()->discover(new SkillsDiscoverRequest
 Copilot::client()->rpc()->skills()->config()->setDisabledSkills(
     new SkillsConfigSetDisabledSkillsRequest(disabledSkills: ['skill-name'])
 );
+
+// skills: スキル作成可能ディレクトリを取得 (experimental)
+// スキルを配置するとランタイムが認識するディレクトリの一覧
+use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
+
+$result = Copilot::client()->rpc()->skills()->getDiscoveryPaths();
+// $result->paths は SkillDiscoveryPath の配列
+// $result->paths[0]->path - ディレクトリパス
+// $result->paths[0]->scope - スコープ（user, project, plugin）
+// $result->paths[0]->preferredForCreation - 新規作成時の推奨ディレクトリか
+// オプションでスコープを絞り込み
+$result = Copilot::client()->rpc()->skills()->getDiscoveryPaths(
+    new SkillsGetDiscoveryPathsRequest(scope: 'project')
+);
+
+// agents (experimental: カスタムエージェント管理)
+// カスタムエージェントの探索
+use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
+
+$result = Copilot::client()->rpc()->agents()->discover();
+// $result->agents は AgentInfo の配列
+$result = Copilot::client()->rpc()->agents()->discover(new AgentsDiscoverRequest(
+    projectPaths: ['/path/to/project'],
+    excludeHostAgents: true,
+));
+
+// エージェント作成可能ディレクトリを取得 (experimental)
+use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
+
+$result = Copilot::client()->rpc()->agents()->getDiscoveryPaths();
+// $result->paths は AgentDiscoveryPath の配列
+// $result->paths[0]->path - ディレクトリパス
+// $result->paths[0]->scope - スコープ（user, project, plugin）
+// $result->paths[0]->preferredForCreation - 新規作成時の推奨ディレクトリか
+$result = Copilot::client()->rpc()->agents()->getDiscoveryPaths(
+    new AgentsGetDiscoveryPathsRequest(scope: 'user')
+);
+
+// instructions (experimental: インストラクション管理)
+// インストラクションの探索
+use Revolution\Copilot\Types\Rpc\InstructionsDiscoverRequest as ServerInstructionsDiscoverRequest;
+
+$result = Copilot::client()->rpc()->instructions()->discover();
+// $result->sources は InstructionSource の配列
+$result = Copilot::client()->rpc()->instructions()->discover(
+    new ServerInstructionsDiscoverRequest(projectPaths: ['/path/to/project'])
+);
+
+// インストラクション作成可能ファイル/ディレクトリを取得 (experimental)
+use Revolution\Copilot\Types\Rpc\InstructionsGetDiscoveryPathsRequest;
+
+$result = Copilot::client()->rpc()->instructions()->getDiscoveryPaths();
+// $result->paths は InstructionDiscoveryPath の配列
+// $result->paths[0]->path - ファイル/ディレクトリパス
+// $result->paths[0]->location - 場所（user, repository, working-directory, plugin）
+// $result->paths[0]->kind - 種別（file, directory）
+// $result->paths[0]->preferredForCreation - 新規作成時の推奨か
+$result = Copilot::client()->rpc()->instructions()->getDiscoveryPaths(
+    new InstructionsGetDiscoveryPathsRequest(location: 'repository')
+);
 ```
 
 ## SessionRpc
@@ -170,6 +230,11 @@ $session->rpc()->plan()->delete();
 // SQLite todoリストを読み取り（プランモード）
 $result = $session->rpc()->plan()->readSqlTodos();
 // $result->rows - PlanSqlTodosRow の配列（id, title, description, status）
+
+// SQLite todoリストと依存関係を読み取り（experimental）
+$result = $session->rpc()->plan()->readSqlTodosWithDependencies();
+// $result->rows - PlanSqlTodosRow の配列
+// $result->dependencies - PlanSqlTodoDependency の配列（todo_id, depends_on）
 
 // workspaces
 $session->rpc()->workspaces()->getWorkspace();
@@ -266,6 +331,17 @@ $session->rpc()->tools()->handlePendingToolCall(new HandlePendingToolCallRequest
 ));
 // セッションの現在のツールメタデータを取得（experimental）
 $session->rpc()->tools()->getCurrentMetadata();
+// サブエージェントの設定を更新（experimental）
+use Revolution\Copilot\Types\Rpc\SubagentSettings;
+use Revolution\Copilot\Types\Rpc\SubagentSettingsEntry;
+use Revolution\Copilot\Types\Rpc\UpdateSubagentSettingsRequest;
+
+$result = $session->rpc()->tools()->updateSubagentSettings(new UpdateSubagentSettingsRequest(
+    settings: new SubagentSettings(entries: [
+        new SubagentSettingsEntry(agentName: 'my-agent', contextTier: 'medium', enabled: true),
+    ]),
+));
+// $result->settings - 更新後の SubagentSettings
 
 // permissions (プロトコルv3+: permission.requestedイベントへの応答)
 $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(
@@ -391,6 +467,23 @@ $status = $session->rpc()->auth()->getStatus();
 // $status->host - GitHubホスト
 // $status->copilotPlan - Copilotプラン（individual, business など）
 // $status->statusMessage - 認証状態のメッセージ
+
+// provider: セッションが使用しているプロバイダーのエンドポイント情報を取得 (experimental)
+// BYOK（Bring Your Own Key）構成で直接LLMバックエンドを呼び出す際に使用
+use Revolution\Copilot\Types\Rpc\ProviderGetEndpointRequest;
+
+$endpoint = $session->rpc()->provider()->getEndpoint();
+// $endpoint->baseUrl - LLMクライアントライブラリに渡すベースURL
+// $endpoint->type - プロバイダー種別（openai, anthropic など）
+// $endpoint->headers - リクエストに含めるHTTPヘッダー
+// $endpoint->apiKey - 認証情報（nullable）
+// $endpoint->sessionToken - 短命のセッション認証情報（nullable）
+// $endpoint->wireApi - プロバイダー固有のワイヤーAPI（nullable）
+
+// 特定モデルのエンドポイントを取得
+$endpoint = $session->rpc()->provider()->getEndpoint(
+    new ProviderGetEndpointRequest(model: 'gpt-5')
+);
 
 // queue: キューに積まれたユーザー向け項目の確認・管理
 $pending = $session->rpc()->queue()->pendingItems();

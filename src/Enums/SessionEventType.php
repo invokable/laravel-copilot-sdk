@@ -44,6 +44,8 @@ enum SessionEventType: string
     case SESSION_CANVAS_REGISTRY_CHANGED = 'session.canvas.registry_changed';
     case SESSION_CANVAS_CLOSED = 'session.canvas.closed';
     case SESSION_EXTENSIONS_ATTACHMENTS_PUSHED = 'session.extensions.attachments_pushed';
+    case SESSION_TODOS_CHANGED = 'session.todos_changed';
+    case SESSION_BINARY_ASSET = 'session.binary_asset';
 
     // Capabilities
     case CAPABILITIES_CHANGED = 'capabilities.changed';

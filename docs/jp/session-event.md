@@ -175,3 +175,25 @@ v1.0.0-beta.7以降、Canvas runtime supportが追加されました。以下の
 
 これらのイベントは実験的機能のため、将来変更される可能性があります。
 
+## v1.0.2 追加イベント
+
+### `session.todos_changed`
+
+プランモードのSQLite todoリストが変更された時に発生するイベント。`$data`にはtodoの変更内容が含まれます。
+
+```php
+if ($event->is(SessionEventType::SESSION_TODOS_CHANGED)) {
+    // todoリストが変更された場合の処理
+}
+```
+
+### `session.binary_asset`
+
+バイナリアセット（画像など）がセッションに追加された時に発生するイベント。
+
+```php
+if ($event->is(SessionEventType::SESSION_BINARY_ASSET)) {
+    // バイナリアセットが追加された場合の処理
+}
+```
+

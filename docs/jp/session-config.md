@@ -72,6 +72,38 @@ $config = new SessionConfig(
     // カスタムプロバイダー
     provider: new ProviderConfig(),
 
+    // マルチプロバイダー BYOK（Bring Your Own Key）設定 (experimental)
+    // 名前付きプロバイダー接続のリスト。provider と同時使用不可。
+    providers: [
+        [
+            'id' => 'my-openai',
+            'type' => 'openai',
+            'apiKey' => env('OPENAI_API_KEY'),
+            'apiUrl' => 'https://api.openai.com/v1',
+        ],
+        [
+            'id' => 'my-anthropic',
+            'type' => 'anthropic',
+            'apiKey' => env('ANTHROPIC_API_KEY'),
+        ],
+    ],
+
+    // BYOK モデル定義 (experimental)
+    // providers で定義したプロバイダーを参照するモデルリスト。
+    models: [
+        ['id' => 'gpt-5', 'providerId' => 'my-openai', 'modelId' => 'gpt-5-latest'],
+        ['id' => 'claude-4', 'providerId' => 'my-anthropic', 'modelId' => 'claude-opus-4'],
+    ],
+
+    // メモリ設定 (experimental)
+    // セッション間でのメモリ機能を制御する。
+    memory: new \Revolution\Copilot\Types\MemoryConfiguration(
+        enabled: true,
+        maxEntries: 100,
+    ),
+    // 配列での指定も可能
+    // memory: ['enabled' => true, 'maxEntries' => 50],
+
     // セッションごとのGitHubトークン（マルチテナント対応）
     // クライアントレベルのgithub_tokenとは別に、セッション単位でトークンを指定できる
     gitHubToken: $user->github_token,

@@ -16,6 +16,7 @@ readonly class TelemetryConfig implements Arrayable
 {
     /**
      * @param  ?string  $otlpEndpoint  OTLP HTTP endpoint URL for trace/metric export. Sets OTEL_EXPORTER_OTLP_ENDPOINT.
+     * @param  ?string  $otlpProtocol  OTLP HTTP protocol for all signals. Sets OTEL_EXPORTER_OTLP_PROTOCOL.
      * @param  ?string  $filePath  File path for JSON-lines trace output. Sets COPILOT_OTEL_FILE_EXPORTER_PATH.
      * @param  ?string  $exporterType  Exporter backend type: "otlp-http" or "file". Sets COPILOT_OTEL_EXPORTER_TYPE.
      * @param  ?string  $sourceName  Instrumentation scope name. Sets COPILOT_OTEL_SOURCE_NAME.
@@ -24,6 +25,7 @@ readonly class TelemetryConfig implements Arrayable
      */
     public function __construct(
         public ?string $otlpEndpoint = null,
+        public ?string $otlpProtocol = null,
         public ?string $filePath = null,
         public ?string $exporterType = null,
         public ?string $sourceName = null,
@@ -37,6 +39,7 @@ readonly class TelemetryConfig implements Arrayable
     {
         return new static(
             otlpEndpoint: $data['otlpEndpoint'] ?? null,
+            otlpProtocol: $data['otlpProtocol'] ?? null,
             filePath: $data['filePath'] ?? null,
             exporterType: $data['exporterType'] ?? null,
             sourceName: $data['sourceName'] ?? null,
@@ -51,6 +54,7 @@ readonly class TelemetryConfig implements Arrayable
     {
         return array_filter([
             'otlpEndpoint' => $this->otlpEndpoint,
+            'otlpProtocol' => $this->otlpProtocol,
             'filePath' => $this->filePath,
             'exporterType' => $this->exporterType,
             'sourceName' => $this->sourceName,
@@ -69,6 +73,9 @@ readonly class TelemetryConfig implements Arrayable
 
         if ($this->otlpEndpoint !== null) {
             $env['OTEL_EXPORTER_OTLP_ENDPOINT'] = $this->otlpEndpoint;
+        }
+        if ($this->otlpProtocol !== null) {
+            $env['OTEL_EXPORTER_OTLP_PROTOCOL'] = $this->otlpProtocol;
         }
         if ($this->filePath !== null) {
             $env['COPILOT_OTEL_FILE_EXPORTER_PATH'] = $this->filePath;
