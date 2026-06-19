@@ -55,10 +55,14 @@ readonly class SessionConfig implements Arrayable
      *                                                 Unlike the singular provider — which makes the entire session BYOK — named
      *                                                 providers are additive and coexist with Copilot API auth. Combining
      *                                                 providers/models with provider is rejected.
+     *
      *                                                 @experimental
+     *
      * @param  ProviderModelConfig[]|null  $models  BYOK model definitions added to the session's selectable model list,
      *                                              each referencing a providers[].name.
+     *
      *                                              @experimental
+     *
      * @param  ?Closure  $onPermissionRequest  Handler for permission requests from the server.
      *                                         When provided, the server will call this handler to request permission for operations.
      * @param  ?Closure  $onUserInputRequest  Handler for user input requests from the agent.
