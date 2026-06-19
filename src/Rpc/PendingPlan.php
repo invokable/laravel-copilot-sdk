@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\PlanReadResult;
 use Revolution\Copilot\Types\Rpc\PlanReadSqlTodosResult;
+use Revolution\Copilot\Types\Rpc\PlanReadSqlTodosWithDependenciesResult;
 use Revolution\Copilot\Types\Rpc\PlanUpdateRequest;
 
 /**
@@ -61,6 +62,23 @@ class PendingPlan
     {
         return PlanReadSqlTodosResult::fromArray(
             $this->client->request('session.plan.readSqlTodos', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Read SQL todos with dependency edges from the session database.
+     *
+     * Clients should call this on session start and after every `session.todos_changed`
+     * event to refresh structured-UI rendering.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function readSqlTodosWithDependencies(): PlanReadSqlTodosWithDependenciesResult
+    {
+        return PlanReadSqlTodosWithDependenciesResult::fromArray(
+            $this->client->request('session.plan.readSqlTodosWithDependencies', [
                 'sessionId' => $this->sessionId,
             ]),
         );

@@ -6,7 +6,9 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\ServerSkillList;
+use Revolution\Copilot\Types\Rpc\SkillDiscoveryPathList;
 use Revolution\Copilot\Types\Rpc\SkillsDiscoverRequest;
+use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
 
 /**
  * Pending server-level skills RPC operations.
@@ -42,6 +44,23 @@ class PendingServerSkills
 
         return ServerSkillList::fromArray(
             $this->client->request('skills.discover', $paramsArray),
+        );
+    }
+
+    /**
+     * Returns the canonical directories where a client may create skills that the runtime
+     * will recognize, including ones that do not exist yet.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function getDiscoveryPaths(SkillsGetDiscoveryPathsRequest|array $params = []): SkillDiscoveryPathList
+    {
+        $paramsArray = ($params instanceof SkillsGetDiscoveryPathsRequest
+            ? $params
+            : SkillsGetDiscoveryPathsRequest::fromArray($params))->toArray();
+
+        return SkillDiscoveryPathList::fromArray(
+            $this->client->request('skills.getDiscoveryPaths', $paramsArray),
         );
     }
 }

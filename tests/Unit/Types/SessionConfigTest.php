@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
+use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionHooks;
@@ -379,5 +380,63 @@ describe('SessionConfig', function () {
         $config = new SessionConfig;
 
         expect($config->toArray())->not->toHaveKey('commands');
+    });
+
+    it('accepts providers parameter', function () {
+        $config = new SessionConfig(
+            providers: [['id' => 'my-openai', 'type' => 'openai', 'apiKey' => 'sk-test']],
+        );
+
+        expect($config->providers)->toHaveCount(1);
+    });
+
+    it('accepts models parameter', function () {
+        $config = new SessionConfig(
+            models: [['id' => 'gpt-5', 'providerId' => 'my-openai']],
+        );
+
+        expect($config->models)->toHaveCount(1);
+    });
+
+    it('accepts memory as MemoryConfiguration', function () {
+        $memory = new MemoryConfiguration(enabled: true);
+        $config = new SessionConfig(memory: $memory);
+
+        expect($config->memory)->toBeInstanceOf(MemoryConfiguration::class)
+            ->and($config->memory->enabled)->toBeTrue();
+    });
+
+    it('accepts memory as array and deserializes to MemoryConfiguration', function () {
+        $config = SessionConfig::fromArray([
+            'memory' => ['enabled' => true],
+        ]);
+
+        expect($config->memory)->toBeInstanceOf(MemoryConfiguration::class)
+            ->and($config->memory->enabled)->toBeTrue();
+    });
+
+    it('includes providers and models in toArray', function () {
+        $config = new SessionConfig(
+            providers: [['id' => 'p1', 'type' => 'openai']],
+            models: [['id' => 'm1', 'providerId' => 'p1']],
+        );
+
+        expect($config->toArray())->toHaveKey('providers')
+            ->and($config->toArray())->toHaveKey('models');
+    });
+
+    it('includes memory in toArray as array', function () {
+        $memory = new MemoryConfiguration(enabled: false);
+        $config = new SessionConfig(memory: $memory);
+
+        expect($config->toArray()['memory'])->toBeArray();
+    });
+
+    it('excludes providers/models/memory from toArray when null', function () {
+        $config = new SessionConfig;
+
+        expect($config->toArray())->not->toHaveKey('providers')
+            ->and($config->toArray())->not->toHaveKey('models')
+            ->and($config->toArray())->not->toHaveKey('memory');
     });
 });

@@ -13,4 +13,8 @@ enum ExtensionSource: string
 {
     case PROJECT = 'project';
     case USER = 'user';
+    /** Extension contributed by an installed plugin. */
+    case PLUGIN = 'plugin';
+    /** Extension discovered from the current session's state directory. */
+    case SESSION = 'session';
 }

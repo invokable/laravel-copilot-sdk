@@ -8,6 +8,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
 use Revolution\Copilot\Types\Rpc\ToolsGetCurrentMetadataResult;
+use Revolution\Copilot\Types\Rpc\ToolsUpdateSubagentSettingsResult;
+use Revolution\Copilot\Types\Rpc\UpdateSubagentSettingsRequest;
 
 /**
  * Pending session-scoped tools RPC operations.
@@ -46,6 +48,21 @@ class PendingTools
             $this->client->request('session.tools.getCurrentMetadata', [
                 'sessionId' => $this->sessionId,
             ]),
+        );
+    }
+
+    /**
+     * Updates the current session's live subagent settings after user settings change.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function updateSubagentSettings(UpdateSubagentSettingsRequest|array $params): ToolsUpdateSubagentSettingsResult
+    {
+        $paramsArray = ($params instanceof UpdateSubagentSettingsRequest ? $params : UpdateSubagentSettingsRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ToolsUpdateSubagentSettingsResult::fromArray(
+            $this->client->request('session.tools.updateSubagentSettings', $paramsArray),
         );
     }
 }
