@@ -59,6 +59,8 @@ steps:
         with:
             php-version: 8.5
             extensions: mbstring, dom
+    -   name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
 permissions:
   contents: read
@@ -94,6 +96,7 @@ network:
   allowed:
     - defaults
     - github
+    - php
 ---
 
 # Official Copilot SDK Sync
