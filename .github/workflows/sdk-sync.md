@@ -72,6 +72,7 @@ permissions:
 engine:
   id: copilot
   agent: laravel-sdk-sync
+  model: claude-haiku-4.5
 
 checkout:
   - path: .
