@@ -10,14 +10,55 @@ on:
   workflow_dispatch:
 
 steps:
-    -   name: Set up PHP
+    -   name: Detect SDK changes
+        id: changes
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+            cd copilot-sdk
+            git fetch origin main --quiet
+            CURRENT=$(git rev-parse HEAD)
+            LATEST=$(git rev-parse origin/main)
+            
+            if [ "$CURRENT" = "$LATEST" ]; then
+                echo "status=up-to-date" >> $GITHUB_OUTPUT
+                exit 0
+            fi
+            
+            # Generate change summary for the agent
+            mkdir -p /tmp/gh-aw
+            echo "$CURRENT" > /tmp/gh-aw/current-commit.txt
+            echo "$LATEST" > /tmp/gh-aw/latest-commit.txt
+            
+            # Extract release info and key file changes
+            git log --oneline "$CURRENT..origin/main" > /tmp/gh-aw/commits.txt
+            
+            # Check critical files (limit to files that actually matter)
+            echo "nodejs/src/generated/rpc.ts nodejs/src/generated/session-events.ts python/copilot/generated/rpc.py nodejs/src/client.ts nodejs/src/session.ts nodejs/src/types.ts src/Protocol.ts" | tr ' ' '\n' | while read file; do
+                if git diff "$CURRENT..origin/main" -- "$file" > /tmp/gh-aw/diff-$(echo "$file" | sed 's|/|-|g').txt 2>/dev/null; then
+                    [ -s "/tmp/gh-aw/diff-$(echo "$file" | sed 's|/|-|g').txt" ] && echo "changed" || echo "unchanged"
+                fi
+            done > /tmp/gh-aw/file-status.txt
+            
+            echo "status=changes-detected" >> $GITHUB_OUTPUT
+    
+    -   name: Check for duplicate sync PR
+        if: steps.changes.outputs.status == 'changes-detected'
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+            OPEN_PRS=$(gh pr list --repo "${{ github.repository }}" --label sdk-sync --state open --json number --jq length)
+            if [ "$OPEN_PRS" -gt 0 ]; then
+                echo "Found $OPEN_PRS open sdk-sync PR(s). Skipping duplicate."
+                exit 1
+            fi
+    
+    -   name: Set up PHP (if changes detected)
+        if: steps.changes.outputs.status == 'changes-detected'
         uses: shivammathur/setup-php@2.37.2
         with:
             php-version: 8.5
             extensions: mbstring, dom
-            coverage: xdebug
-    -   name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
 permissions:
   contents: read
@@ -37,7 +78,7 @@ checkout:
 tools:
   github:
     mode: gh-proxy
-    toolsets: [repos, default]
+    toolsets: [repos]
   cache-memory: true
 
 safe-outputs:
@@ -53,242 +94,126 @@ network:
   allowed:
     - defaults
     - github
-    - threat-detection
-    - php
 ---
 
 # Official Copilot SDK Sync
 
 You are responsible for keeping this Laravel Copilot SDK package in sync with the official `github/copilot-sdk` repository.
 
-## Pre-check: Avoid Duplicate PRs
+## Pre-prepared Data
 
-Before starting any sync work:
+The previous workflow steps have pre-computed:
+- `/tmp/gh-aw/current-commit.txt` — Current submodule commit hash
+- `/tmp/gh-aw/latest-commit.txt` — Latest upstream commit hash
+- `/tmp/gh-aw/commits.txt` — Commit log (current..latest)
+- `/tmp/gh-aw/diff-*.txt` — Diffs for critical files only
+- `/tmp/gh-aw/file-status.txt` — Which critical files changed
 
-1. Search for open PRs in this repository with the label `sdk-sync`.
-2. If an open sdk-sync PR already exists, check whether the official SDK has additional changes beyond what that PR already covers.
-3. If no new changes exist beyond the open PR, stop and report "No additional changes to sync" — do not create a duplicate PR.
+**Do not re-run git commands to fetch changes; use the pre-computed files above.**
 
-## Step 1: Detect Changes in the Official SDK
+## Step 1: Check for Duplicate PRs (Fast-Track)
 
-The official SDK is checked out as a git submodule at `./copilot-sdk/`.
+Search for open PRs with label `sdk-sync`:
+```bash
+gh pr list --repo "${{ github.repository }}" --label sdk-sync --state open
+```
 
-1. Record the current submodule commit: `cd copilot-sdk && git rev-parse HEAD`
-2. Fetch the latest from origin: `git fetch origin main`
-3. Check for new commits: `git log --oneline HEAD..origin/main`
-4. If there are no new commits, stop and report "Already up to date."
-5. If there are new commits, record the latest commit hash and proceed.
+If an open PR exists, check its commit range. If it already covers the changes in `/tmp/gh-aw/commits.txt`, output "No additional changes to sync" and stop.
 
-## Step 2: Analyze Changes
+## Step 2: Analyze Pre-Computed Changes
 
-Focus on these specific areas of the official SDK:
+Read the change files prepared by the workflow:
 
-### Release information
-- Check the latest release/tag on `github/copilot-sdk` using GitHub API.
+1. Load `/tmp/gh-aw/commits.txt` — Review the commit messages to understand what upstream is doing
+2. Load each non-empty diff file:
+  - `diff-nodejs-src-generated-rpc-ts.txt`
+  - `diff-nodejs-src-generated-session-events-ts.txt`
+  - `diff-python-copilot-generated-rpc-py.txt` (if available — easier to read than rpc.ts)
+  - `diff-nodejs-src-client-ts.txt`
+  - `diff-nodejs-src-session-ts.txt`
+  - `diff-nodejs-src-types-ts.txt`
 
-### Source file changes
-Compare `HEAD..origin/main` diffs in these key files:
+3. For each diff:
+  - Identify what was added (new methods, types, events)
+  - Identify what was modified (parameter changes)
+  - Note what was removed (deprecated APIs)
 
-| Official SDK File | What to look for |
-|---|---|
-| `nodejs/src/generated/rpc.ts` | New RPC methods, changed parameters, new types |
-| `nodejs/src/generated/session-events.ts` | New event types, changed event shapes |
-| `python/copilot/generated/rpc.py` | Same as rpc.ts but easier to read for PHP mapping |
-| `python/copilot/generated/session_events.py` | Same as session-events.ts |
-| `nodejs/src/client.ts` | New client methods, API changes |
-| `nodejs/src/session.ts` | New session methods, API changes |
-| `nodejs/src/types.ts` | New or changed type definitions |
+**Do not fetch additional diffs.** The files above are sufficient. If a file is missing from `/tmp/gh-aw/`, it means it did not change.
 
-For each changed file, summarize:
-- What was added (new methods, types, events)
-- What was modified (parameter changes, renamed fields)
-- What was removed (deprecated APIs)
+## Step 3: Map to Laravel Implementation
 
-## Step 3: Map Changes to Laravel Implementation
-
-Use this mapping table to determine which Laravel files need updates:
+Using the mapping table below, determine which Laravel files need updates:
 
 | Official SDK | Laravel Implementation |
 |---|---|
-| `generated/rpc.ts` / `generated/rpc.py` | `src/Types/Rpc/*.php` (type classes), `src/Rpc/*.php` (RPC clients + Pending* classes) |
-| `generated/session-events.ts` | `src/Enums/SessionEventType.php`, `src/Types/SessionEvent.php` |
-| `client.ts` client methods | `src/Client.php`, `src/Contracts/CopilotClient.php`, `src/CopilotManager.php` |
-| `session.ts` session methods | `src/Session.php`, `src/Contracts/CopilotSession.php` |
-| `types.ts` type definitions | `src/Types/*.php` |
+| `nodejs/src/generated/rpc.ts` / `python/copilot/generated/rpc.py` | `src/Types/Rpc/*.php`, `src/Rpc/*.php` |
+| `nodejs/src/generated/session-events.ts` | `src/Enums/SessionEventType.php`, `src/Types/SessionEvent.php` |
+| `nodejs/src/client.ts` | `src/Client.php`, `src/Contracts/CopilotClient.php` |
+| `nodejs/src/session.ts` | `src/Session.php`, `src/Contracts/CopilotSession.php` |
+| `nodejs/src/types.ts` | `src/Types/*.php` |
 | Protocol version changes | `src/Protocol.php` |
 
-### Implementation conventions
+### Implementation Conventions (Strict)
 
-Follow these conventions strictly:
-
-- **Type classes**: Use `readonly class` implementing `Illuminate\Contracts\Support\Arrayable` with `fromArray()` and `toArray()` static/instance methods.
-- **RPC types** go in `src/Types/Rpc/` directory.
-- **RPC API classes** go in `src/Rpc/` with `Pending*` naming pattern (mirroring Python's `*Api` classes).
-- **Enums**: Use PHP 8.4 backed enums in `src/Enums/`.
-- **Contracts**: Update interfaces in `src/Contracts/` when adding public methods to Client or Session.
-- **Testing**: Update fakes in `src/Testing/` (CopilotFake, FakeSession) when Contracts change.
-- **Client options**: When `Client::__construct` `$options` keys change (added, removed, or renamed), update `CopilotManager::client()` (which builds the `$options` array) and `CopilotManager::useStdio()` (which filters allowed keys via `Arr::only()`) accordingly.
-- **Session event `data` changes**: When `session-events.ts` changes only the `data` shape (fields inside each event's data payload), **skip those changes**. In the Laravel implementation, `SessionEvent::$data` is a generic `array` and all data fields are accessed dynamically (e.g., `$event->content()`, `$event->data('key')`), so upstream `data` structure changes require no code updates. Only sync changes to event **types** (new/removed/renamed event kinds) or **top-level fields** (`id`, `timestamp`, `parentId`, `type`, `ephemeral`).
-
-### What NOT to change
-
-- Do not modify `src/Facades/Copilot.php` unless new facade methods are needed.
-- Do not modify `src/CopilotSdkServiceProvider.php` unless new bindings are needed.
-- Do not modify `src/Ai/` (Laravel AI SDK integration) unless Copilot's core API changes affect it.
-- Do not add Copilot CLI binary bundling.
+- **Type classes**: `readonly class` with `Arrayable` interface, `fromArray()`, `toArray()`
+- **RPC types**: `src/Types/Rpc/` directory
+- **RPC API classes**: `src/Rpc/` with `Pending*` pattern
+- **Enums**: PHP 8.4 backed enums in `src/Enums/`
+- **Session event data changes only**: **Skip**. The `SessionEvent::$data` is a generic array; skip changes to field shapes inside `data` unless event types themselves changed.
+- **Client option key changes**: Update both `CopilotManager::client()` and `CopilotManager::useStdio()` `Arr::only()` filter
+- **Do not touch**: `src/Facades/Copilot.php`, `src/CopilotSdkServiceProvider.php`, `src/Ai/`
 
 ## Step 4: Implement Changes
 
-1. Update the submodule pointer: `cd copilot-sdk && git checkout origin/main && cd ..`
-2. Implement the mapped changes in the Laravel codebase following the conventions above.
-3. For each new Type class, ensure it has:
-   - `readonly class` declaration
-   - Constructor with typed properties
-   - `fromArray(array $data): static` static method
-   - `toArray(): array` instance method
-   - `Arrayable` interface implementation
-4. For each new RPC method, ensure:
-   - Corresponding `Pending*` class in `src/Rpc/` (if new RPC category)
-   - Parameter and result types in `src/Types/Rpc/`
-   - Proper method in `ServerRpc.php` or `SessionRpc.php`
-5. For each new enum value, add the case to the appropriate PHP enum.
+1. Update submodule: Read `/tmp/gh-aw/latest-commit.txt` and check out that commit in `copilot-sdk/`
+2. Implement mapped Laravel changes (use Python version of rpc.py as reference — easier to read)
+3. For new type classes: ensure `readonly`, `Arrayable`, `fromArray()`, `toArray()`
+4. For new RPC methods: add `Pending*` class in `src/Rpc/` and types in `src/Types/Rpc/`
 
 ## Step 5: Add Tests
 
-For every new or changed class implemented in Step 4, add or update corresponding Pest tests.
+Add Pest tests for all new/changed classes:
 
-### Test placement rules
+- `src/Types/Rpc/*.php` → `tests/Unit/Types/Rpc/*Test.php`
+- `src/Types/*.php` → `tests/Unit/Types/*Test.php`
+- `src/Rpc/*.php` → `tests/Unit/Rpc/*Test.php`
+- `src/Enums/*.php` → `tests/Unit/Enums/*Test.php`
 
-| Source location | Test location |
-|---|---|
-| `src/Types/Rpc/*.php` | `tests/Unit/Types/Rpc/*Test.php` |
-| `src/Types/*.php` | `tests/Unit/Types/*Test.php` |
-| `src/Rpc/*.php` | `tests/Unit/Rpc/*Test.php` |
-| `src/Enums/*.php` | `tests/Unit/Enums/*Test.php` |
-| `src/Support/*.php` | `tests/Unit/Support/*Test.php` |
-
-### Guidelines
-
-- Use Pest `describe()`/`it()` syntax consistently.
-- Use `expect()` for all assertions — never use PHPUnit-style `$this->assert*()`.
-- All test files must start with `declare(strict_types=1);`.
-- For `readonly class` types with `fromArray()`/`toArray()`:
-  - Test creation with all fields populated.
-  - Test creation with minimal/default values (empty array).
-  - Test `toArray()` roundtrip.
-  - Test handling of optional/nullable fields.
-- For enum classes: test all new cases exist and that `from()`/`tryFrom()` behave correctly.
-- For new RPC `Pending*` classes: test that calling the method returns the expected result type.
-- Study existing test files in `tests/Unit/` that are similar to the target before writing new ones.
-
-### Example test structure
-
-```php
-<?php
-
-declare(strict_types=1);
-
-use Revolution\Copilot\Types\Rpc\SomeType;
-
-describe('SomeType', function () {
-    it('can be created from array with all fields', function () {
-        $data = SomeType::fromArray([
-            'field1' => 'value1',
-            'field2' => true,
-        ]);
-
-        expect($data->field1)->toBe('value1')
-            ->and($data->field2)->toBeTrue();
-    });
-
-    it('handles default values', function () {
-        $data = SomeType::fromArray([]);
-
-        expect($data->field1)->toBeNull()
-            ->and($data->field2)->toBeFalse();
-    });
-
-    it('converts to array', function () {
-        $data = SomeType::fromArray(['field1' => 'value1']);
-
-        expect($data->toArray())->toHaveKey('field1', 'value1');
-    });
-});
-```
+**Minimal test coverage**: Each type should have tests for creation, default values, roundtrip conversion. See existing test files for patterns.
 
 ## Step 6: Validate
 
-1. Run the test suite: `composer run test`
-2. Run the linter: `composer run lint`
-3. If tests fail due to your changes, fix them.
-4. If existing tests need updating for new behavior, update them.
-
-## Step 7: Update Documentation
-
-Review the changes implemented in Step 4 and update relevant documentation files:
-
-### docs/jp/ (Japanese documentation)
-
-Check the following files and update them if the corresponding feature changed:
-
-| Changed area | Document to update |
-|---|---|
-| New or changed RPC methods | `docs/jp/rpc.md` |
-| New or changed session events | `docs/jp/session-event.md` |
-| New client/session methods | `docs/jp/basic-usage.md` |
-| New or changed session config options | `docs/jp/session-config.md` |
-| New or changed streaming behavior | `docs/jp/streaming.md` |
-| New or changed model options | `docs/jp/models.md` |
-| New or changed MCP features | `docs/jp/mcp.md` |
-| New or changed hooks | `docs/jp/hooks.md` |
-| New or changed tools | `docs/jp/tools.md` |
-| New or changed permission requests | `docs/jp/permission-request.md` |
-| New or changed session context | `docs/jp/session-context.md` |
-| New or changed resume behavior | `docs/jp/resume.md` |
-
-### docs/getting-started.md (English)
-
-Update if the getting-started flow has changed (new required config, changed API signatures, etc.).
-
-### resources/boost/skills/laravel-copilot-sdk-development/SKILL.md
-
-Update skills for Laravel Boost if necessary.
-
-### Documentation guidelines
-
-- Keep the Japanese tone and style consistent with existing content.
-- Only update files that are directly affected by the synced changes.
-- If a new feature has no corresponding doc file, skip (do not create new doc files in this workflow).
-- Do not rewrite sections unrelated to the synced changes.
-
-## Step 8: Save Sync State
-
-Write the sync state to cache-memory so future runs know what was processed:
-
-```json
-{
-  "last_synced_commit": "<new commit hash>",
-  "synced_at": "<timestamp in YYYY-MM-DD-HH-MM-SS format>",
-  "changes_summary": "<brief summary of what changed>"
-}
+Run:
+```bash
+composer run test --compact
+composer run lint
 ```
 
-Save this as `sdk-sync-state.json` in cache-memory.
+Fix any failures.
 
-## Step 9: Create Pull Request
+## Step 7: Update Docs (Selective)
 
-Create a draft PR with:
-- **Title**: A concise description of the sync (e.g., "Sync with copilot-sdk: add new RPC methods for model switching")
-- **Body**: Include:
-  - The official SDK commit range synced (old..new)
-  - Summary of changes detected
-  - List of Laravel files added or modified
-  - Any breaking changes or migration notes
-  - Link to the official SDK comparison: `https://github.com/github/copilot-sdk/compare/<old>..<new>`
+Review your changes and update **only affected** docs in `docs/jp/`:
+- New/changed RPC methods → `docs/jp/rpc.md`
+- New session events → `docs/jp/session-event.md`
+- New client/session methods → `docs/jp/basic-usage.md`
 
-## Important Notes
+**Do not create new doc files.** Only update existing ones if directly affected.
 
-- Python's `rpc.py` is often easier to read than TypeScript's `rpc.ts` for mapping to PHP. Prefer it as reference.
-- The `copilot-sdk/` submodule uses the `main` branch of `github/copilot-sdk`.
-- Always update the submodule pointer in the PR so the repo tracks the new version.
-- If the official SDK introduces a new protocol version, update `src/Protocol.php`.
+## Step 8: Create Pull Request
+
+Title: "Sync with copilot-sdk: [brief description]" (e.g., "add new RPC methods for model switching")
+
+Body:
+- Commit range: `github/copilot-sdk/<old>..<new>`
+- Summary of changes
+- List of modified Laravel files
+- Link: `https://github.com/github/copilot-sdk/compare/<old>..<new>`
+
+## Key Optimization Rules
+
+1. **Use pre-computed diffs only** — Do not fetch git diffs yourself
+2. **Skip unchanged files** — If a file is not in `/tmp/gh-aw/`, assume no changes
+3. **Shallow analysis** — Focus on structural changes (new methods/types/enums); skip minor tweaks
+4. **No broad exploration** — Do not search for "where this might be used" unless it affects the mapping
+5. **Minimal testing** — Test only new/modified code; do not refactor or add coverage beyond what's needed
