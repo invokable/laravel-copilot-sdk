@@ -46,8 +46,9 @@ steps:
         if: steps.changes.outputs.status == 'changes-detected'
         env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            EXPR_GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-            OPEN_PRS=$(gh pr list --repo "${{ github.repository }}" --label sdk-sync --state open --json number --jq length)
+            OPEN_PRS=$(gh pr list --repo "$EXPR_GITHUB_REPOSITORY" --label sdk-sync --state open --json number --jq length)
             if [ "$OPEN_PRS" -gt 0 ]; then
                 echo "Found $OPEN_PRS open sdk-sync PR(s). Skipping duplicate."
                 exit 1
@@ -60,7 +61,7 @@ steps:
             php-version: 8.5
             extensions: mbstring, dom
     -   name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+        run: composer install -q --no-interaction --prefer-dist --optimize-autoloader
 
 permissions:
   contents: read

@@ -14,7 +14,7 @@ steps:
             extensions: mbstring, dom
             coverage: xdebug
     -   name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+        run: composer install -q --no-interaction --prefer-dist --optimize-autoloader
 
 permissions:
   contents: read
