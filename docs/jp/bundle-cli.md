@@ -22,21 +22,27 @@ npm install @github/copilot
 インストール後、以下のパスでCopilot CLIを直接実行できます。
 
 ```shell
-node node_modules/@github/copilot/index.js --version
+node node_modules/@github/copilot/npm-loader.js --version
+```
+
+Copilot CLI 1.0.64以降は`index.js`はプラットフォームごとのパッケージにのみ含まれているので`index.js`を使う場合は環境に合わせて使用してください。
+
+```shell
+node node_modules/@github/copilot-linux-x64/index.js --version
 ```
 
 ### 2. .envの設定
 
-`COPILOT_CLI_PATH`に`index.js`までのフルパスを指定します。
+`COPILOT_CLI_PATH`に`npm-loader.js`までのフルパスを指定します。
 
 ```dotenv
-COPILOT_CLI_PATH=/path/to/project/node_modules/@github/copilot/index.js
+COPILOT_CLI_PATH=/path/to/project/node_modules/@github/copilot/npm-loader.js
 ```
 
 `base_path()`を使って動的にパスを設定したい場合は`config/copilot.php`を直接編集します。
 
 ```php
-'cli_path' => base_path('node_modules/@github/copilot/index.js'),
+'cli_path' => base_path('node_modules/@github/copilot/npm-loader.js'),
 ```
 
 ## デプロイ
