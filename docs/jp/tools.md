@@ -63,6 +63,7 @@ Artisan::command('copilot:tools', function () {
                 },
                 overridesBuiltInTool: false,
                 skipPermission: false, // trueにするとパーミッションプロンプトなしで実行
+                defer: 'auto', // ツールを常にプリロードするのではなく、遅延ロード（ツール検索による遅延ロード）するかどうかを制御します。`"auto"` の場合、ツールは遅延ロードされ、ツール検索によって表示されます。`"never"` の場合、ツールは常にプリロードされます。オプション。デフォルトは `"auto" です。
             ),
         ],
     );

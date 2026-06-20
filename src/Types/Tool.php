@@ -20,6 +20,7 @@ readonly class Tool implements Arrayable
      *                             must be resolved by the consumer via pending external tool request RPCs.
      * @param  bool  $overridesBuiltInTool  Whether this tool overrides a built-in tool with the same name
      * @param  bool  $skipPermission  Whether to skip permission prompt for this tool
+     * @param  ?string  $defer  Controls whether the tool may be deferred (loaded lazily via tool search) rather than always pre-loaded. When `"auto"`, the tool can be deferred and surfaced through tool search. When `"never"`, the tool is always pre-loaded. Optional; defaults to `"auto"`.
      */
     public function __construct(
         public string $name,
@@ -28,6 +29,7 @@ readonly class Tool implements Arrayable
         public ?Closure $handler = null,
         public bool $overridesBuiltInTool = false,
         public bool $skipPermission = false,
+        public ?string $defer = 'auto',
     ) {}
 
     /**
@@ -40,14 +42,23 @@ readonly class Tool implements Arrayable
         ?Closure $handler = null,
         bool $overridesBuiltInTool = false,
         bool $skipPermission = false,
+        ?string $defer = 'auto',
     ): array {
-        return new self($name, $description, $parameters, $handler, $overridesBuiltInTool, $skipPermission)->toArray();
+        return new self(
+            name: $name,
+            description: $description,
+            parameters: $parameters,
+            handler: $handler,
+            overridesBuiltInTool: $overridesBuiltInTool,
+            skipPermission: $skipPermission,
+            defer: $defer,
+        )->toArray();
     }
 
     /**
      * Create from array.
      *
-     * @param  array{name: string, description?: string, parameters?: array, handler?: callable, overridesBuiltInTool?: bool, skipPermission?: bool}  $data
+     * @param  array{name: string, description?: string, parameters?: array, handler?: callable, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string}  $data
      */
     public static function fromArray(array $data): self
     {
@@ -58,6 +69,7 @@ readonly class Tool implements Arrayable
             handler: $data['handler'] ?? null,
             overridesBuiltInTool: $data['overridesBuiltInTool'] ?? false,
             skipPermission: $data['skipPermission'] ?? false,
+            defer: $data['defer'] ?? 'auto',
         );
     }
 
@@ -81,6 +93,10 @@ readonly class Tool implements Arrayable
 
         if ($this->skipPermission) {
             $array['skipPermission'] = true;
+        }
+
+        if ($this->defer !== null) {
+            $array['defer'] = $this->defer;
         }
 
         return $array;

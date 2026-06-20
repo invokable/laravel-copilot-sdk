@@ -292,6 +292,7 @@ class Client implements CopilotClient
             'parameters' => $tool['parameters'] ?? null,
             'overridesBuiltInTool' => $tool['overridesBuiltInTool'] ?? null,
             'skipPermission' => $tool['skipPermission'] ?? null,
+            'defer' => $tool['defer'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
         $commands = $config['commands'] ?? [];
@@ -435,6 +436,7 @@ class Client implements CopilotClient
             'parameters' => $tool['parameters'] ?? null,
             'overridesBuiltInTool' => $tool['overridesBuiltInTool'] ?? null,
             'skipPermission' => $tool['skipPermission'] ?? null,
+            'defer' => $tool['defer'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
         $commands = $config['commands'] ?? [];
