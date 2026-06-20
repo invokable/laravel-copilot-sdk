@@ -34,7 +34,7 @@ steps:
             git log --oneline "$CURRENT..origin/main" > /tmp/gh-aw/commits.txt
             
             # Check critical files (limit to files that actually matter)
-            echo "nodejs/src/generated/rpc.ts nodejs/src/generated/session-events.ts python/copilot/generated/rpc.py nodejs/src/client.ts nodejs/src/session.ts nodejs/src/types.ts src/Protocol.ts" | tr ' ' '\n' | while read file; do
+            echo "nodejs/src/generated/rpc.ts nodejs/src/generated/session-events.ts python/copilot/generated/rpc.py nodejs/src/client.ts nodejs/src/session.ts nodejs/src/types.ts" | tr ' ' '\n' | while read file; do
                 if git diff "$CURRENT..origin/main" -- "$file" > /tmp/gh-aw/diff-$(echo "$file" | sed 's|/|-|g').txt 2>/dev/null; then
                     [ -s "/tmp/gh-aw/diff-$(echo "$file" | sed 's|/|-|g').txt" ] && echo "changed" || echo "unchanged"
                 fi
