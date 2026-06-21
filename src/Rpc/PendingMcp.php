@@ -11,6 +11,8 @@ use Revolution\Copilot\Types\Rpc\McpIsServerRunningRequest;
 use Revolution\Copilot\Types\Rpc\McpIsServerRunningResult;
 use Revolution\Copilot\Types\Rpc\McpListToolsRequest;
 use Revolution\Copilot\Types\Rpc\McpListToolsResult;
+use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingResult;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
 use Revolution\Copilot\Types\Rpc\McpServerList;
@@ -70,6 +72,22 @@ class PendingMcp
         return $this->client->request('session.mcp.reload', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Resolves a pending MCP OAuth request with a host-provided token or cancellation.
+     *
+     * The pending request is emitted as mcp.oauth_required with the data necessary
+     * to authorize the request.
+     */
+    public function handlePendingRequest(McpOauthHandlePendingRequest|array $params): McpOauthHandlePendingResult
+    {
+        $paramsArray = ($params instanceof McpOauthHandlePendingRequest ? $params : McpOauthHandlePendingRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return McpOauthHandlePendingResult::fromArray(
+            $this->client->request('session.mcp.oauth.handlePendingRequest', $paramsArray),
+        );
     }
 
     /**

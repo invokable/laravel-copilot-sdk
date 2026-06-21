@@ -130,4 +130,17 @@ class ServerRpc
     {
         return new PendingServerUserSettings($this->client);
     }
+
+    /**
+     * LLM inference callback provider RPC operations.
+     *
+     * Allows this client to register as the LLM inference provider and deliver
+     * HTTP response frames for in-flight model-layer requests.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function llmInference(): PendingServerLlmInference
+    {
+        return new PendingServerLlmInference($this->client);
+    }
 }
