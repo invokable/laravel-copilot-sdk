@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\McpOauthPendingRequestResponseKind;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Rpc\PendingServerLlmInference;
 use Revolution\Copilot\Types\Rpc\LlmInferenceHTTPResponseChunkRequest;
 use Revolution\Copilot\Types\Rpc\LlmInferenceHTTPResponseChunkResult;
@@ -124,7 +125,7 @@ describe('PendingMcp handlePendingRequest', function () {
             )
             ->andReturn(['success' => true]);
 
-        $pending = new \Revolution\Copilot\Rpc\PendingMcp($client, 'session-abc');
+        $pending = new PendingMcp($client, 'session-abc');
         $result = $pending->handlePendingRequest(new McpOauthHandlePendingRequest(
             requestId: 'oauth-req-1',
             result: new McpOauthPendingRequestResponse(
@@ -148,7 +149,7 @@ describe('PendingMcp handlePendingRequest', function () {
             )
             ->andReturn(['success' => false]);
 
-        $pending = new \Revolution\Copilot\Rpc\PendingMcp($client, 'session-abc');
+        $pending = new PendingMcp($client, 'session-abc');
         $result = $pending->handlePendingRequest([
             'requestId' => 'oauth-req-2',
             'result' => ['kind' => 'cancelled'],

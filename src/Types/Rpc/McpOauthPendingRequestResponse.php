@@ -13,7 +13,6 @@ use Revolution\Copilot\Enums\McpOauthPendingRequestResponseKind;
 readonly class McpOauthPendingRequestResponse implements Arrayable
 {
     /**
-     * @param  McpOauthPendingRequestResponseKind|string  $kind
      * @param  ?string  $accessToken  Access token acquired by the SDK host.
      * @param  ?int  $expiresIn  Token lifetime in seconds, if known.
      * @param  ?string  $refreshToken  Refresh token supplied by the host, if available.

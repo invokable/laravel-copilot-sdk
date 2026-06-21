@@ -91,7 +91,7 @@ describe('LlmInferenceHTTPRequestStartResult', function () {
     });
 
     it('converts to empty array', function () {
-        expect((new LlmInferenceHTTPRequestStartResult())->toArray())->toBe([]);
+        expect((new LlmInferenceHTTPRequestStartResult)->toArray())->toBe([]);
     });
 });
 
@@ -142,7 +142,7 @@ describe('LlmInferenceHTTPRequestChunkResult', function () {
     });
 
     it('converts to empty array', function () {
-        expect((new LlmInferenceHTTPRequestChunkResult())->toArray())->toBe([]);
+        expect((new LlmInferenceHTTPRequestChunkResult)->toArray())->toBe([]);
     });
 });
 
