@@ -439,4 +439,29 @@ describe('SessionConfig', function () {
             ->and($config->toArray())->not->toHaveKey('models')
             ->and($config->toArray())->not->toHaveKey('memory');
     });
+
+    it('accepts enableCitations parameter', function () {
+        $config = new SessionConfig(enableCitations: true);
+
+        expect($config->enableCitations)->toBeTrue();
+    });
+
+    it('includes enableCitations in toArray', function () {
+        $config = new SessionConfig(enableCitations: true);
+
+        expect($config->toArray())->toHaveKey('enableCitations')
+            ->and($config->toArray()['enableCitations'])->toBeTrue();
+    });
+
+    it('excludes enableCitations from toArray when null', function () {
+        $config = new SessionConfig;
+
+        expect($config->toArray())->not->toHaveKey('enableCitations');
+    });
+
+    it('can be created from array with enableCitations', function () {
+        $config = SessionConfig::fromArray(['enableCitations' => true]);
+
+        expect($config->enableCitations)->toBeTrue();
+    });
 });

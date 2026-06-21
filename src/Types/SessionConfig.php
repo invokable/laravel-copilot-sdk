@@ -158,6 +158,7 @@ readonly class SessionConfig implements Arrayable
      * @param  ?bool  $enableSessionStore  When true, enables the cross-session store for search and retrieval.
      * @param  ?bool  $enableSkills  When true, enables skill loading.
      * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of `prompt`.
+     * @param  ?bool  $enableCitations  Experimental: enable native model citations, normalized onto the `assistant.message` event.
      */
     public function __construct(
         public ?string $sessionId = null,
@@ -224,6 +225,7 @@ readonly class SessionConfig implements Arrayable
         public ?bool $enableSessionStore = null,
         public ?bool $enableSkills = null,
         public ?string $displayPrompt = null,
+        public ?bool $enableCitations = null,
     ) {}
 
     /**
@@ -359,6 +361,7 @@ readonly class SessionConfig implements Arrayable
             enableSessionStore: $data['enableSessionStore'] ?? null,
             enableSkills: $data['enableSkills'] ?? null,
             displayPrompt: $data['displayPrompt'] ?? null,
+            enableCitations: $data['enableCitations'] ?? null,
         );
     }
 
@@ -476,6 +479,7 @@ readonly class SessionConfig implements Arrayable
             'enableSessionStore' => $this->enableSessionStore,
             'enableSkills' => $this->enableSkills,
             'displayPrompt' => $this->displayPrompt,
+            'enableCitations' => $this->enableCitations,
         ], fn ($value) => $value !== null);
     }
 }
