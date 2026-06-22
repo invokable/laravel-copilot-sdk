@@ -15,7 +15,7 @@ readonly class ProviderConfig implements Arrayable
      * @param  string  $baseUrl  API endpoint URL
      * @param  ?string  $type  Provider type. Defaults to "openai" for generic OpenAI-compatible APIs.
      * @param  ?string  $wireApi  API format (openai/azure only). Defaults to "completions".
-     *                                      Set to "responses" to use the OpenAI Responses API format.
+     *                            Set to "responses" to use the OpenAI Responses API format.
      * @param  ?string  $transport  Transport for OpenAI Responses requests. Defaults to "http".
      *                              Set to "websockets" to deliver Responses API requests over a persistent
      *                              WebSocket connection. Applies to OpenAI-compatible providers using
