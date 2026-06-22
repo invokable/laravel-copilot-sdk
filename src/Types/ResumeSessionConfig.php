@@ -47,6 +47,8 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                 excludedTools wins (`toolFilterPrecedence: "excluded"`).
      * @param  ProviderConfig|array|null  $provider  Custom provider configuration (BYOK - Bring Your Own Key).
      *                                               When specified, uses the provided API endpoint instead of the Copilot API.
+     * @param  CapiSessionOptions|array|null  $capi  Provider-scoped options for the built-in Copilot API (CAPI), such as
+     *                                               opting out of the WebSocket Responses transport. See {@see CapiSessionOptions}.
      * @param  ?Closure  $onPermissionRequest  Handler for permission requests from the server.
      *                                         When provided, the server will call this handler to request permission for operations.
      * @param  ?Closure  $onUserInputRequest  Handler for user input requests from the agent.
@@ -139,6 +141,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $availableTools = null,
         public ?array $excludedTools = null,
         public ProviderConfig|array|null $provider = null,
+        public CapiSessionOptions|array|null $capi = null,
         public ?Closure $onPermissionRequest = null,
         public ?Closure $onUserInputRequest = null,
         public ?Closure $onElicitationRequest = null,
@@ -210,6 +213,13 @@ readonly class ResumeSessionConfig implements Arrayable
                 : ProviderConfig::fromArray($data['provider']);
         }
 
+        $capi = null;
+        if (isset($data['capi'])) {
+            $capi = $data['capi'] instanceof CapiSessionOptions
+                ? $data['capi']
+                : CapiSessionOptions::fromArray($data['capi']);
+        }
+
         $infiniteSessions = null;
         if (isset($data['infiniteSessions'])) {
             $infiniteSessions = $data['infiniteSessions'] instanceof InfiniteSessionConfig
@@ -261,6 +271,7 @@ readonly class ResumeSessionConfig implements Arrayable
             availableTools: $data['availableTools'] ?? null,
             excludedTools: $data['excludedTools'] ?? null,
             provider: $provider,
+            capi: $capi,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
             onUserInputRequest: $data['onUserInputRequest'] ?? null,
             onElicitationRequest: $data['onElicitationRequest'] ?? null,
@@ -328,6 +339,10 @@ readonly class ResumeSessionConfig implements Arrayable
             ? $this->provider->toArray()
             : $this->provider;
 
+        $capi = $this->capi instanceof CapiSessionOptions
+            ? $this->capi->toArray()
+            : $this->capi;
+
         $infiniteSessions = $this->infiniteSessions instanceof InfiniteSessionConfig
             ? $this->infiniteSessions->toArray()
             : $this->infiniteSessions;
@@ -368,6 +383,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'availableTools' => $this->availableTools,
             'excludedTools' => $this->excludedTools,
             'provider' => $provider,
+            'capi' => $capi,
             'onPermissionRequest' => $this->onPermissionRequest,
             'onUserInputRequest' => $this->onUserInputRequest,
             'onElicitationRequest' => $this->onElicitationRequest,
