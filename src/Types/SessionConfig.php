@@ -51,6 +51,8 @@ readonly class SessionConfig implements Arrayable
      *                                 excludedTools wins (`toolFilterPrecedence: "excluded"`).
      * @param  ProviderConfig|array|null  $provider  Custom provider configuration (BYOK - Bring Your Own Key).
      *                                               When specified, uses the provided API endpoint instead of the Copilot API.
+     * @param  CapiSessionOptions|array|null  $capi  Provider-scoped options for the built-in Copilot API (CAPI), such as
+     *                                               opting out of the WebSocket Responses transport. See {@see CapiSessionOptions}.
      * @param  NamedProviderConfig[]|null  $providers  Named BYOK provider connections (transport + credentials).
      *                                                 Unlike the singular provider — which makes the entire session BYOK — named
      *                                                 providers are additive and coexist with Copilot API auth. Combining
@@ -177,6 +179,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $availableTools = null,
         public ?array $excludedTools = null,
         public ProviderConfig|array|null $provider = null,
+        public CapiSessionOptions|array|null $capi = null,
         public ?array $providers = null,
         public ?array $models = null,
         public ?Closure $onPermissionRequest = null,
@@ -247,6 +250,13 @@ readonly class SessionConfig implements Arrayable
                 : ProviderConfig::fromArray($data['provider']);
         }
 
+        $capi = null;
+        if (isset($data['capi'])) {
+            $capi = $data['capi'] instanceof CapiSessionOptions
+                ? $data['capi']
+                : CapiSessionOptions::fromArray($data['capi']);
+        }
+
         $infiniteSessions = null;
         if (isset($data['infiniteSessions'])) {
             $infiniteSessions = $data['infiniteSessions'] instanceof InfiniteSessionConfig
@@ -313,6 +323,7 @@ readonly class SessionConfig implements Arrayable
             availableTools: $data['availableTools'] ?? null,
             excludedTools: $data['excludedTools'] ?? null,
             provider: $provider,
+            capi: $capi,
             providers: $data['providers'] ?? null,
             models: $data['models'] ?? null,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
@@ -382,6 +393,10 @@ readonly class SessionConfig implements Arrayable
             ? $this->provider->toArray()
             : $this->provider;
 
+        $capi = $this->capi instanceof CapiSessionOptions
+            ? $this->capi->toArray()
+            : $this->capi;
+
         $infiniteSessions = $this->infiniteSessions instanceof InfiniteSessionConfig
             ? $this->infiniteSessions->toArray()
             : $this->infiniteSessions;
@@ -431,6 +446,7 @@ readonly class SessionConfig implements Arrayable
             'availableTools' => $this->availableTools,
             'excludedTools' => $this->excludedTools,
             'provider' => $provider,
+            'capi' => $capi,
             'providers' => $this->providers,
             'models' => $this->models,
             'onPermissionRequest' => $this->onPermissionRequest,
