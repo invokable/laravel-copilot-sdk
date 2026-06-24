@@ -13,5 +13,6 @@ enum SectionOverrideAction: string
     case REMOVE = 'remove';
     case APPEND = 'append';
     case PREPEND = 'prepend';
+    case PRESERVE = 'preserve';
     case TRANSFORM = 'transform';
 }

@@ -15,6 +15,11 @@ enum SystemMessageSection: string
     /**
      * Agent identity preamble and mode statement
      */
+    case PREAMBLE = 'preamble';
+
+    /**
+     * Section group covering the identity preamble and its sibling sub-sections (tone, tool efficiency, etc.)
+     */
     case IDENTITY = 'identity';
 
     /**
@@ -77,7 +82,8 @@ enum SystemMessageSection: string
     public static function descriptions(): array
     {
         return [
-            self::IDENTITY->value => 'Agent identity preamble and mode statement',
+            self::PREAMBLE->value => 'Agent identity preamble and mode statement',
+            self::IDENTITY->value => 'Section group covering the identity preamble and its sibling sub-sections (tone, tool efficiency, etc.)',
             self::TONE->value => 'Response style, conciseness rules, output formatting preferences',
             self::TOOL_EFFICIENCY->value => 'Tool usage patterns, parallel calling, batching guidelines',
             self::ENVIRONMENT_CONTEXT->value => 'CWD, OS, git root, directory listing, available tools',
