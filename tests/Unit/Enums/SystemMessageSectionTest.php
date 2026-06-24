@@ -26,7 +26,7 @@ describe('SystemMessageSection', function () {
     });
 
     it('has all expected cases', function () {
-        expect(SystemMessageSection::cases())->toHaveCount(11);
+        expect(SystemMessageSection::cases())->toHaveCount(12);
     });
 
     it('returns null for invalid value with tryFrom', function () {
@@ -37,7 +37,7 @@ describe('SystemMessageSection', function () {
         $descriptions = SystemMessageSection::descriptions();
 
         expect($descriptions)->toBeArray()
-            ->and($descriptions)->toHaveCount(11)
+            ->and($descriptions)->toHaveCount(12)
             ->and($descriptions['identity'])->toBeString()
             ->and($descriptions['runtime_instructions'])->toContain('Runtime-provided context')
             ->and($descriptions['last_instructions'])->toContain('End-of-prompt');

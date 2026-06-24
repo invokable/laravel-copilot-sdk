@@ -161,6 +161,8 @@ readonly class SessionConfig implements Arrayable
      * @param  ?bool  $enableSkills  When true, enables skill loading.
      * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of `prompt`.
      * @param  ?bool  $enableCitations  Experimental: enable native model citations, normalized onto the `assistant.message` event.
+     * @param  ?array  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
+     *                                  path as CLI-fetched assignments. Applies to both session creation and resume. @internal
      */
     public function __construct(
         public ?string $sessionId = null,
@@ -229,6 +231,7 @@ readonly class SessionConfig implements Arrayable
         public ?bool $enableSkills = null,
         public ?string $displayPrompt = null,
         public ?bool $enableCitations = null,
+        public ?array $expAssignments = null,
     ) {}
 
     /**
@@ -373,6 +376,7 @@ readonly class SessionConfig implements Arrayable
             enableSkills: $data['enableSkills'] ?? null,
             displayPrompt: $data['displayPrompt'] ?? null,
             enableCitations: $data['enableCitations'] ?? null,
+            expAssignments: $data['expAssignments'] ?? null,
         );
     }
 
@@ -496,6 +500,7 @@ readonly class SessionConfig implements Arrayable
             'enableSkills' => $this->enableSkills,
             'displayPrompt' => $this->displayPrompt,
             'enableCitations' => $this->enableCitations,
+            'expAssignments' => $this->expAssignments,
         ], fn ($value) => $value !== null);
     }
 }

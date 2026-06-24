@@ -22,6 +22,6 @@ describe('SectionOverrideAction', function () {
     });
 
     it('has all expected cases', function () {
-        expect(SectionOverrideAction::cases())->toHaveCount(5);
+        expect(SectionOverrideAction::cases())->toHaveCount(6);
     });
 });
