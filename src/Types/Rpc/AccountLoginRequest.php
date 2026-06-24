@@ -12,7 +12,7 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class AccountLoginRequest implements Arrayable
 {
     /**
-     * @param  string  $host   GitHub host URL.
+     * @param  string  $host  GitHub host URL.
      * @param  string  $login  User login/username.
      * @param  string  $token  GitHub authentication token.
      */

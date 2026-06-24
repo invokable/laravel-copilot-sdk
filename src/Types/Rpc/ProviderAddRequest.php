@@ -19,8 +19,8 @@ use Revolution\Copilot\Types\ProviderModelConfig;
 readonly class ProviderAddRequest implements Arrayable
 {
     /**
-     * @param  ProviderModelConfig[]|null  $models     BYOK model definitions to register. Each must reference a provider
-     *                                                 that is already registered or included in this same call.
+     * @param  ProviderModelConfig[]|null  $models  BYOK model definitions to register. Each must reference a provider
+     *                                              that is already registered or included in this same call.
      * @param  NamedProviderConfig[]|null  $providers  Named BYOK provider connections to register, additive to any
      *                                                 providers already in the registry.
      */

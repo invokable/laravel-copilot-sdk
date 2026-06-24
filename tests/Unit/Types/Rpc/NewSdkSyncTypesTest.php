@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\AuthInfoType;
 use Revolution\Copilot\Enums\SectionOverrideAction;
 use Revolution\Copilot\Enums\SystemMessageSection;
+use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\AccountAllUsers;
 use Revolution\Copilot\Types\Rpc\AccountGetCurrentAuthResult;
 use Revolution\Copilot\Types\Rpc\AccountLoginRequest;
@@ -14,7 +15,6 @@ use Revolution\Copilot\Types\Rpc\AccountLogoutResult;
 use Revolution\Copilot\Types\Rpc\AuthInfo;
 use Revolution\Copilot\Types\Rpc\ProviderAddRequest;
 use Revolution\Copilot\Types\Rpc\ProviderAddResult;
-use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 
 describe('SystemMessageSection preamble', function () {
