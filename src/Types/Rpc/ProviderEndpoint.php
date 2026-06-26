@@ -19,6 +19,7 @@ readonly class ProviderEndpoint implements Arrayable
      * @param  array<string, string>  $headers  HTTP headers the caller must include on every outbound request.
      * @param  ?string  $apiKey  A credential the caller should use with this endpoint.
      * @param  ?string  $wireApi  Wire API to be used, when required for the provider type.
+     * @param  ?string  $transport  Transport to be used for provider requests.
      * @param  ProviderSessionToken|null  $sessionToken  Short-lived, rotating credential the caller must send on every request.
      */
     public function __construct(
@@ -27,6 +28,7 @@ readonly class ProviderEndpoint implements Arrayable
         public array $headers,
         public ?string $apiKey = null,
         public ?string $wireApi = null,
+        public ?string $transport = null,
         public ?ProviderSessionToken $sessionToken = null,
     ) {}
 
@@ -38,6 +40,7 @@ readonly class ProviderEndpoint implements Arrayable
             headers: $data['headers'] ?? [],
             apiKey: $data['apiKey'] ?? null,
             wireApi: $data['wireApi'] ?? null,
+            transport: $data['transport'] ?? null,
             sessionToken: isset($data['sessionToken']) ? ProviderSessionToken::fromArray($data['sessionToken']) : null,
         );
     }
@@ -50,6 +53,7 @@ readonly class ProviderEndpoint implements Arrayable
             'headers' => $this->headers,
             'apiKey' => $this->apiKey,
             'wireApi' => $this->wireApi,
+            'transport' => $this->transport,
             'sessionToken' => $this->sessionToken?->toArray(),
         ], fn ($v) => $v !== null);
     }
