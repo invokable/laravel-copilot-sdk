@@ -17,6 +17,7 @@ enum SessionEventType: string
     case SESSION_TITLE_CHANGED = 'session.title_changed';
     case SESSION_SCHEDULE_CREATED = 'session.schedule_created';
     case SESSION_SCHEDULE_CANCELLED = 'session.schedule_cancelled';
+    case SESSION_SCHEDULE_REARMED = 'session.schedule_rearmed';
     case SESSION_INFO = 'session.info';
     case SESSION_WARNING = 'session.warning';
     case SESSION_MODEL_CHANGE = 'session.model_change';
@@ -43,6 +44,9 @@ enum SessionEventType: string
     case SESSION_CANVAS_OPENED = 'session.canvas.opened';
     case SESSION_CANVAS_REGISTRY_CHANGED = 'session.canvas.registry_changed';
     case SESSION_CANVAS_CLOSED = 'session.canvas.closed';
+    case SESSION_CANVAS_UNAVAILABLE = 'session.canvas.unavailable';
+    case SESSION_CANVAS_RECORDED = 'session.canvas.recorded';
+    case SESSION_CANVAS_REMOVED = 'session.canvas.removed';
     case SESSION_EXTENSIONS_ATTACHMENTS_PUSHED = 'session.extensions.attachments_pushed';
     case SESSION_TODOS_CHANGED = 'session.todos_changed';
     case SESSION_BINARY_ASSET = 'session.binary_asset';

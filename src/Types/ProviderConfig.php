@@ -24,6 +24,7 @@ readonly class ProviderConfig implements Arrayable
      * @param  ?string  $bearerToken  Bearer token for authentication. Sets the Authorization header directly.
      *                                Use this for services requiring bearer token auth instead of API key.
      *                                Takes precedence over apiKey when both are set.
+     * @param  ?bool  $hasBearerTokenProvider  When true, the SDK client supplies bearer tokens on demand via a callback.
      * @param  ?array  $azure  Azure-specific options
      * @param  ?array<string, string>  $headers  Custom HTTP headers to include in outbound provider requests.
      * @param  ?string  $modelId  Well-known model name used by the runtime to look up agent configuration
@@ -42,6 +43,7 @@ readonly class ProviderConfig implements Arrayable
         public ?string $transport = null,
         public ?string $apiKey = null,
         public ?string $bearerToken = null,
+        public ?bool $hasBearerTokenProvider = null,
         public ?array $azure = null,
         public ?array $headers = null,
         public ?string $modelId = null,
@@ -62,6 +64,7 @@ readonly class ProviderConfig implements Arrayable
             transport: $data['transport'] ?? null,
             apiKey: $data['apiKey'] ?? null,
             bearerToken: $data['bearerToken'] ?? null,
+            hasBearerTokenProvider: $data['hasBearerTokenProvider'] ?? null,
             azure: $data['azure'] ?? null,
             headers: $data['headers'] ?? null,
             modelId: $data['modelId'] ?? null,
@@ -83,6 +86,7 @@ readonly class ProviderConfig implements Arrayable
             'transport' => $this->transport,
             'apiKey' => $this->apiKey,
             'bearerToken' => $this->bearerToken,
+            'hasBearerTokenProvider' => $this->hasBearerTokenProvider,
             'azure' => $this->azure,
             'headers' => $this->headers,
             'modelId' => $this->modelId,

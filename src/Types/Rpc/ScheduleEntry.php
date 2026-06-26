@@ -19,6 +19,7 @@ readonly class ScheduleEntry implements Arrayable
      * @param  string  $nextRunAt  ISO 8601 timestamp when the next tick is scheduled to fire
      * @param  string  $prompt  Prompt text that gets enqueued on every tick
      * @param  bool  $recurring  Whether the schedule re-arms after each tick (`/every`) or fires once (`/after`)
+     * @param  ?bool  $selfPaced  True for a self-paced (`dynamic`) schedule: no fixed cadence; the model arms each next run via the `manage_schedule` `wakeup` action.
      * @param  ?string  $displayPrompt  Display-only label for the prompt as shown in the UI
      */
     public function __construct(
@@ -27,6 +28,7 @@ readonly class ScheduleEntry implements Arrayable
         public string $nextRunAt,
         public string $prompt,
         public bool $recurring,
+        public ?bool $selfPaced = null,
         public ?string $displayPrompt = null,
     ) {}
 
@@ -38,6 +40,7 @@ readonly class ScheduleEntry implements Arrayable
             nextRunAt: $data['nextRunAt'] ?? '',
             prompt: $data['prompt'] ?? '',
             recurring: $data['recurring'] ?? false,
+            selfPaced: $data['selfPaced'] ?? null,
             displayPrompt: $data['displayPrompt'] ?? null,
         );
     }
@@ -50,6 +53,7 @@ readonly class ScheduleEntry implements Arrayable
             'nextRunAt' => $this->nextRunAt,
             'prompt' => $this->prompt,
             'recurring' => $this->recurring,
+            'selfPaced' => $this->selfPaced,
             'displayPrompt' => $this->displayPrompt,
         ], fn ($v) => $v !== null);
     }
