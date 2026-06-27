@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Types;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Dumpable;
@@ -54,12 +55,12 @@ readonly class SessionEvent implements Arrayable, Jsonable
     public static function fromArray(array $event): self
     {
         return new self(
-            id: $event['id'] ?? '',
-            timestamp: $event['timestamp'] ?? '',
+            id: Arr::string($event, 'id', ''),
+            timestamp: Arr::string($event, 'timestamp', ''),
             parentId: $event['parentId'] ?? null,
             type: SessionEventType::tryFrom($event['type'] ?? '') ?? SessionEventType::SESSION_INFO,
-            data: $event['data'] ?? [],
-            ephemeral: $event['ephemeral'] ?? false,
+            data: Arr::array($event, 'data', []),
+            ephemeral: Arr::boolean($event, 'ephemeral', false),
             agentId: $event['agentId'] ?? null,
         );
     }
