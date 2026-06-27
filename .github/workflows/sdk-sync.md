@@ -172,7 +172,7 @@ Using the mapping table below, determine which Laravel files need updates:
 
 1. Update submodule: Read `/tmp/gh-aw/latest-commit.txt` and check out that commit in `copilot-sdk/`
 2. Implement mapped Laravel changes (use Python version of rpc.py as reference — easier to read)
-3. For new type classes: ensure `readonly`, `Arrayable`, `fromArray()`, `toArray()`
+3. For new type classes: ensure `readonly`, `Arrayable`, `fromArray()`, `toArray()`. Use `Arr::string()`, `Arr::integer()`, `Arr::float()`, `Arr::array()`, and `Arr::boolean()` where the type is clearly defined.
 4. For new RPC methods: add `Pending*` class in `src/Rpc/` and types in `src/Types/Rpc/`
 
 ## Step 5: Add Tests
