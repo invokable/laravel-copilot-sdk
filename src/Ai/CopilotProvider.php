@@ -55,6 +55,6 @@ class CopilotProvider extends Provider implements TextProvider
      */
     public function smartestTextModel(): string
     {
-        return $this->config['models']['text']['smartest'] ?? 'claude-opus-4.7';
+        return $this->config['models']['text']['smartest'] ?? 'claude-opus-4.8';
     }
 }
