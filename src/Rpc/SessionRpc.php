@@ -221,9 +221,9 @@ class SessionRpc
     }
 
     /**
-     * Session authentication RPC operations.
+     * Session GitHub authentication RPC operations.
      */
-    public function auth(): PendingSessionAuth
+    public function gitHubAuth(): PendingSessionAuth
     {
         return new PendingSessionAuth($this->client, $this->sessionId);
     }
@@ -258,6 +258,26 @@ class SessionRpc
     public function remote(): PendingRemote
     {
         return new PendingRemote($this->client, $this->sessionId);
+    }
+
+    /**
+     * Session visibility RPC operations (Mission Control sharing status).
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function visibility(): PendingVisibility
+    {
+        return new PendingVisibility($this->client, $this->sessionId);
+    }
+
+    /**
+     * MCP headers RPC operations (dynamic headers refresh).
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function mcpHeaders(): PendingMcpHeaders
+    {
+        return new PendingMcpHeaders($this->client, $this->sessionId);
     }
 
     /**

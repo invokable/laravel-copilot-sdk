@@ -16,10 +16,14 @@ readonly class SubagentSettings implements Arrayable
     /**
      * @param  array<string, SubagentSettingsEntry>|null  $agents  Per-agent settings keyed by subagent agent_type
      * @param  ?array<string>  $disabledSubagents  Names of subagents the user has turned off
+     * @param  ?int  $maxConcurrency  Maximum number of subagents that can run concurrently; applies to usage-based billing users only
+     * @param  ?int  $maxDepth  Maximum subagent nesting depth; applies to usage-based billing users only
      */
     public function __construct(
         public ?array $agents = null,
         public ?array $disabledSubagents = null,
+        public ?int $maxConcurrency = null,
+        public ?int $maxDepth = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -35,6 +39,8 @@ readonly class SubagentSettings implements Arrayable
         return new self(
             agents: $agents,
             disabledSubagents: $data['disabledSubagents'] ?? null,
+            maxConcurrency: isset($data['maxConcurrency']) ? (int) $data['maxConcurrency'] : null,
+            maxDepth: isset($data['maxDepth']) ? (int) $data['maxDepth'] : null,
         );
     }
 
@@ -47,6 +53,8 @@ readonly class SubagentSettings implements Arrayable
         return array_filter([
             'agents' => $agents,
             'disabledSubagents' => $this->disabledSubagents,
+            'maxConcurrency' => $this->maxConcurrency,
+            'maxDepth' => $this->maxDepth,
         ], fn ($v) => $v !== null);
     }
 }
