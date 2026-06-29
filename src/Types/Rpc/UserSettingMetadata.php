@@ -14,9 +14,9 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class UserSettingMetadata implements Arrayable
 {
     /**
-     * @param  array  $value    The effective value: the user's value if set, otherwise the default.
+     * @param  array  $value  The effective value: the user's value if set, otherwise the default.
      * @param  array  $default  The centrally-known default for this setting (null when no default is registered).
-     * @param  bool   $isDefault  True when the user has not set an explicit value for this setting.
+     * @param  bool  $isDefault  True when the user has not set an explicit value for this setting.
      */
     public function __construct(
         public array $value,

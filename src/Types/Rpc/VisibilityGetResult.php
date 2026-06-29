@@ -15,9 +15,9 @@ use Revolution\Copilot\Enums\SessionVisibilityStatus;
 readonly class VisibilityGetResult implements Arrayable
 {
     /**
-     * @param  bool                         $synced    Whether the session has been synced to Mission Control.
-     * @param  SessionVisibilityStatus|null $status    The current visibility status.
-     * @param  string|null                  $shareUrl  Shareable GitHub URL for the session.
+     * @param  bool  $synced  Whether the session has been synced to Mission Control.
+     * @param  SessionVisibilityStatus|null  $status  The current visibility status.
+     * @param  string|null  $shareUrl  Shareable GitHub URL for the session.
      */
     public function __construct(
         public bool $synced,

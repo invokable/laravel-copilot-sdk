@@ -14,8 +14,8 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class McpHeadersHandlePendingHeadersRefreshRequestRequest implements Arrayable
 {
     /**
-     * @param  string                                          $requestId  Headers refresh request identifier from mcp.headers_refresh_required.
-     * @param  McpHeadersHandlePendingHeadersRefreshRequest   $result     The host response (headers or none).
+     * @param  string  $requestId  Headers refresh request identifier from mcp.headers_refresh_required.
+     * @param  McpHeadersHandlePendingHeadersRefreshRequest  $result  The host response (headers or none).
      */
     public function __construct(
         public string $requestId,

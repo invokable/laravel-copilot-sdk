@@ -16,8 +16,8 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class McpHeadersHandlePendingHeadersRefreshRequest implements Arrayable
 {
     /**
-     * @param  string             $kind     Either "headers" (with headers array) or "none".
-     * @param  array<string>|null $headers  Headers to overlay onto the MCP request (only when kind is "headers").
+     * @param  string  $kind  Either "headers" (with headers array) or "none".
+     * @param  array<string>|null  $headers  Headers to overlay onto the MCP request (only when kind is "headers").
      */
     public function __construct(
         public string $kind,
