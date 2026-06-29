@@ -22,6 +22,7 @@ enum SessionEventType: string
     case SESSION_WARNING = 'session.warning';
     case SESSION_MODEL_CHANGE = 'session.model_change';
     case SESSION_MODE_CHANGED = 'session.mode_changed';
+    case SESSION_RESPONSE_LIMITS_CHANGED = 'session.response_limits_changed';
     case SESSION_PLAN_CHANGED = 'session.plan_changed';
     case SESSION_WORKSPACE_FILE_CHANGED = 'session.workspace_file_changed';
     case SESSION_HANDOFF = 'session.handoff';
@@ -60,6 +61,7 @@ enum SessionEventType: string
 
     // Assistant events
     case ASSISTANT_TURN_START = 'assistant.turn_start';
+    case ASSISTANT_IDLE = 'assistant.idle';
     case ASSISTANT_INTENT = 'assistant.intent';
     case ASSISTANT_REASONING = 'assistant.reasoning';
     case ASSISTANT_REASONING_DELTA = 'assistant.reasoning_delta';
@@ -115,6 +117,10 @@ enum SessionEventType: string
     // MCP OAuth events
     case MCP_OAUTH_REQUIRED = 'mcp.oauth_required';
     case MCP_OAUTH_COMPLETED = 'mcp.oauth_completed';
+
+    // MCP headers events
+    case MCP_HEADERS_REFRESH_REQUIRED = 'mcp.headers_refresh_required';
+    case MCP_HEADERS_REFRESH_COMPLETED = 'mcp.headers_refresh_completed';
 
     // MCP App events
     case MCP_APP_TOOL_CALL_COMPLETE = 'mcp_app.tool_call_complete';

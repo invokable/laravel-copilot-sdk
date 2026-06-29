@@ -25,7 +25,7 @@ class PendingSessionAuth
     public function getStatus(): SessionAuthStatus
     {
         return SessionAuthStatus::fromArray(
-            $this->client->request('session.auth.getStatus', [
+            $this->client->request('session.gitHubAuth.getStatus', [
                 'sessionId' => $this->sessionId,
             ]),
         );
@@ -45,7 +45,7 @@ class PendingSessionAuth
         $paramsArray['sessionId'] = $this->sessionId;
 
         return SessionSetCredentialsResult::fromArray(
-            $this->client->request('session.auth.setCredentials', $paramsArray),
+            $this->client->request('session.gitHubAuth.setCredentials', $paramsArray),
         );
     }
 }

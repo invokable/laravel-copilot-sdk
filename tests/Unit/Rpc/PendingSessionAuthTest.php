@@ -11,11 +11,11 @@ use Revolution\Copilot\Types\Rpc\SessionSetCredentialsParams;
 use Revolution\Copilot\Types\Rpc\SessionSetCredentialsResult;
 
 describe('PendingSessionAuth', function () {
-    it('calls session.auth.getStatus and returns authenticated status', function () {
+    it('calls session.gitHubAuth.getStatus and returns authenticated status', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
-            ->with('session.auth.getStatus', ['sessionId' => 'session-abc'])
+            ->with('session.gitHubAuth.getStatus', ['sessionId' => 'session-abc'])
             ->andReturn([
                 'isAuthenticated' => true,
                 'authType' => 'gh-cli',
@@ -37,11 +37,11 @@ describe('PendingSessionAuth', function () {
             ->and($result->statusMessage)->toBe('Authenticated via GitHub CLI');
     });
 
-    it('calls session.auth.getStatus and returns unauthenticated status', function () {
+    it('calls session.gitHubAuth.getStatus and returns unauthenticated status', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
-            ->with('session.auth.getStatus', ['sessionId' => 'session-abc'])
+            ->with('session.gitHubAuth.getStatus', ['sessionId' => 'session-abc'])
             ->andReturn([
                 'isAuthenticated' => false,
             ]);
@@ -55,11 +55,11 @@ describe('PendingSessionAuth', function () {
             ->and($result->login)->toBeNull();
     });
 
-    it('calls session.auth.setCredentials with typed params', function () {
+    it('calls session.gitHubAuth.setCredentials with typed params', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
-            ->with('session.auth.setCredentials', [
+            ->with('session.gitHubAuth.setCredentials', [
                 'credentials' => [
                     'host' => 'https://github.com',
                     'type' => 'token',
@@ -78,8 +78,8 @@ describe('PendingSessionAuth', function () {
                 credentials: new AuthInfo(
                     host: 'https://github.com',
                     type: AuthInfoType::TOKEN,
-                    token: 'ghp_test',
                     copilotUser: ['login' => 'octocat'],
+                    token: 'ghp_test',
                 ),
             ),
         );
@@ -88,11 +88,11 @@ describe('PendingSessionAuth', function () {
             ->and($result->success)->toBeTrue();
     });
 
-    it('calls session.auth.setCredentials without params', function () {
+    it('calls session.gitHubAuth.setCredentials without params', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
-            ->with('session.auth.setCredentials', [
+            ->with('session.gitHubAuth.setCredentials', [
                 'sessionId' => 'session-abc',
             ])
             ->andReturn([
