@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Host response to a pending MCP dynamic headers refresh request.
@@ -27,8 +28,8 @@ readonly class McpHeadersHandlePendingHeadersRefreshRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            kind: (string) ($data['kind'] ?? 'none'),
-            headers: isset($data['headers']) ? (array) $data['headers'] : null,
+            kind: Arr::string($data, 'kind', 'none'),
+            headers: isset($data['headers']) ? Arr::array($data, 'headers', []) : null,
         );
     }
 

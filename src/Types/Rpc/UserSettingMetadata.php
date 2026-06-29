@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Per-key metadata for a known user setting.
@@ -27,9 +28,9 @@ readonly class UserSettingMetadata implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            value: $data['value'] ?? [],
-            default: $data['default'] ?? [],
-            isDefault: $data['isDefault'] ?? false,
+            value: Arr::array($data, 'value', []),
+            default: Arr::array($data, 'default', []),
+            isDefault: Arr::boolean($data, 'isDefault', false),
         );
     }
 

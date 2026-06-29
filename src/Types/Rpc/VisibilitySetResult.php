@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\SessionVisibilityStatus;
 
 /**
@@ -30,7 +31,7 @@ readonly class VisibilitySetResult implements Arrayable
         $statusRaw = $data['status'] ?? null;
 
         return new self(
-            synced: (bool) ($data['synced'] ?? false),
+            synced: Arr::boolean($data, 'synced', false),
             status: $statusRaw !== null ? SessionVisibilityStatus::tryFrom($statusRaw) : null,
             shareUrl: isset($data['shareUrl']) ? (string) $data['shareUrl'] : null,
         );

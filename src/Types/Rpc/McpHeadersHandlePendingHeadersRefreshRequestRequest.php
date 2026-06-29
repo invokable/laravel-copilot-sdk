@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters to respond to a pending MCP dynamic headers refresh request.
@@ -25,8 +26,8 @@ readonly class McpHeadersHandlePendingHeadersRefreshRequestRequest implements Ar
     public static function fromArray(array $data): self
     {
         return new self(
-            requestId: (string) ($data['requestId'] ?? ''),
-            result: McpHeadersHandlePendingHeadersRefreshRequest::fromArray((array) ($data['result'] ?? [])),
+            requestId: Arr::string($data, 'requestId', ''),
+            result: McpHeadersHandlePendingHeadersRefreshRequest::fromArray(Arr::array($data, 'result', [])),
         );
     }
 
