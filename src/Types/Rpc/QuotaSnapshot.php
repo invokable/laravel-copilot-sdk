@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Quota snapshot for a specific type.
@@ -35,13 +36,13 @@ readonly class QuotaSnapshot implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            entitlementRequests: $data['entitlementRequests'],
-            usedRequests: $data['usedRequests'],
-            remainingPercentage: $data['remainingPercentage'],
-            overage: $data['overage'],
-            overageAllowedWithExhaustedQuota: $data['overageAllowedWithExhaustedQuota'],
-            isUnlimitedEntitlement: $data['isUnlimitedEntitlement'] ?? false,
-            usageAllowedWithExhaustedQuota: $data['usageAllowedWithExhaustedQuota'] ?? false,
+            entitlementRequests: Arr::integer($data, 'entitlementRequests'),
+            usedRequests: Arr::integer($data, 'usedRequests'),
+            remainingPercentage: Arr::float($data, 'remainingPercentage'),
+            overage: is_int($data['overage'] ?? null) ? (float) Arr::integer($data, 'overage') : Arr::float($data, 'overage'),
+            overageAllowedWithExhaustedQuota: Arr::boolean($data, 'overageAllowedWithExhaustedQuota'),
+            isUnlimitedEntitlement: Arr::boolean($data, 'isUnlimitedEntitlement', false),
+            usageAllowedWithExhaustedQuota: Arr::boolean($data, 'usageAllowedWithExhaustedQuota', false),
             resetDate: $data['resetDate'] ?? null,
         );
     }

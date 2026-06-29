@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\AuthInfoType;
 
 /**
@@ -38,7 +39,7 @@ readonly class AuthInfo implements Arrayable
         $type = AuthInfoType::tryFrom($data['type']) ?? $data['type'];
 
         return new self(
-            host: $data['host'],
+            host: Arr::string($data, 'host'),
             type: $type,
             copilotUser: $data['copilotUser'] ?? null,
             hmac: $data['hmac'] ?? null,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Request to start a background agent task.
@@ -31,9 +32,9 @@ readonly class TasksStartAgentRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            agentType: $data['agentType'] ?? '',
-            prompt: $data['prompt'] ?? '',
-            name: $data['name'] ?? '',
+            agentType: Arr::string($data, 'agentType', ''),
+            prompt: Arr::string($data, 'prompt', ''),
+            name: Arr::string($data, 'name', ''),
             description: $data['description'] ?? null,
             model: $data['model'] ?? null,
         );

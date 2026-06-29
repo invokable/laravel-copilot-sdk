@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of notifying that a permission prompt was shown.
@@ -18,7 +19,7 @@ readonly class PermissionsNotifyPromptShownResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            success: $data['success'],
+            success: Arr::boolean($data, 'success'),
         );
     }
 

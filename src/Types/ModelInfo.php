@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\ReasoningEffort;
 
 /**
@@ -39,8 +40,8 @@ readonly class ModelInfo implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
-            name: $data['name'],
+            id: Arr::string($data, 'id'),
+            name: Arr::string($data, 'name'),
             capabilities: ModelCapabilities::fromArray($data['capabilities']),
             policy: isset($data['policy']) ? ModelPolicy::fromArray($data['policy']) : null,
             billing: isset($data['billing']) ? ModelBilling::fromArray($data['billing']) : null,

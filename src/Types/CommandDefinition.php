@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Types;
 
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Definition of a slash command registered with the session.
@@ -30,7 +31,7 @@ readonly class CommandDefinition implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
+            name: Arr::string($data, 'name'),
             handler: $data['handler'],
             description: $data['description'] ?? null,
         );

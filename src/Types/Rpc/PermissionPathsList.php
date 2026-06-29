@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Snapshot of allowed directories and primary path.
@@ -22,8 +23,8 @@ readonly class PermissionPathsList implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            directories: $data['directories'] ?? [],
-            primary: $data['primary'] ?? '',
+            directories: Arr::array($data, 'directories', []),
+            primary: Arr::string($data, 'primary', ''),
         );
     }
 

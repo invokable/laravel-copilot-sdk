@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * An active scheduled prompt entry.
@@ -35,11 +36,11 @@ readonly class ScheduleEntry implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'] ?? 0,
-            intervalMs: $data['intervalMs'] ?? 0,
-            nextRunAt: $data['nextRunAt'] ?? '',
-            prompt: $data['prompt'] ?? '',
-            recurring: $data['recurring'] ?? false,
+            id: Arr::integer($data, 'id', 0),
+            intervalMs: Arr::integer($data, 'intervalMs', 0),
+            nextRunAt: Arr::string($data, 'nextRunAt', ''),
+            prompt: Arr::string($data, 'prompt', ''),
+            recurring: Arr::boolean($data, 'recurring', false),
             selfPaced: $data['selfPaced'] ?? null,
             displayPrompt: $data['displayPrompt'] ?? null,
         );

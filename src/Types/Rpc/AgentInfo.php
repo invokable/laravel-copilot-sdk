@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Information about a custom agent.
@@ -27,9 +28,9 @@ readonly class AgentInfo implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
-            displayName: $data['displayName'],
-            description: $data['description'],
+            name: Arr::string($data, 'name'),
+            displayName: Arr::string($data, 'displayName'),
+            description: Arr::string($data, 'description'),
             path: $data['path'] ?? null,
         );
     }

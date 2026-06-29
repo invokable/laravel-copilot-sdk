@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\LogLevel;
 
 /**
@@ -28,7 +29,7 @@ readonly class LogRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            message: $data['message'],
+            message: Arr::string($data, 'message'),
             level: isset($data['level']) ? LogLevel::from($data['level']) : null,
             ephemeral: $data['ephemeral'] ?? null,
             url: $data['url'] ?? null,

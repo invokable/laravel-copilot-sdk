@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Request for user input from the agent (enables ask_user tool).
@@ -28,7 +29,7 @@ readonly class UserInputRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            question: $data['question'] ?? '',
+            question: Arr::string($data, 'question', ''),
             choices: $data['choices'] ?? null,
             allowFreeform: $data['allowFreeform'] ?? null,
         );

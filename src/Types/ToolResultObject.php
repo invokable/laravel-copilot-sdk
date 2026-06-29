@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Tool result object.
@@ -34,8 +35,8 @@ readonly class ToolResultObject implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            textResultForLlm: $data['textResultForLlm'] ?? '',
-            resultType: $data['resultType'] ?? 'success',
+            textResultForLlm: Arr::string($data, 'textResultForLlm', ''),
+            resultType: Arr::string($data, 'resultType', 'success'),
             binaryResultsForLlm: $data['binaryResultsForLlm'] ?? null,
             error: $data['error'] ?? null,
             sessionLog: $data['sessionLog'] ?? null,

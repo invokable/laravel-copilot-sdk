@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for setting session mode.
@@ -21,7 +22,7 @@ readonly class ModeSetRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            mode: $data['mode'],
+            mode: Arr::string($data, 'mode'),
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Context for an elicitation handler invocation, combining the request data
@@ -34,8 +35,8 @@ readonly class ElicitationContext implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            sessionId: $data['sessionId'] ?? '',
-            message: $data['message'] ?? '',
+            sessionId: Arr::string($data, 'sessionId', ''),
+            message: Arr::string($data, 'message', ''),
             requestedSchema: $data['requestedSchema'] ?? null,
             mode: $data['mode'] ?? null,
             elicitationSource: $data['elicitationSource'] ?? null,

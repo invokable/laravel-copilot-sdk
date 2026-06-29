@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\McpOauthLoginGrantType;
 
 /**
@@ -40,7 +41,7 @@ readonly class McpOauthLoginRequest implements Arrayable
             : null;
 
         return new self(
-            serverName: $data['serverName'],
+            serverName: Arr::string($data, 'serverName'),
             callbackSuccessMessage: $data['callbackSuccessMessage'] ?? null,
             clientName: $data['clientName'] ?? null,
             forceReauth: $data['forceReauth'] ?? null,

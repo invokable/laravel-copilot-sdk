@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * A string field with a fixed set of enum values for UI elicitation forms.
@@ -27,7 +28,7 @@ readonly class UIElicitationStringEnumField implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            enum: $data['enum'],
+            enum: Arr::array($data, 'enum'),
             description: $data['description'] ?? null,
             enumNames: $data['enumNames'] ?? null,
             default: $data['default'] ?? null,

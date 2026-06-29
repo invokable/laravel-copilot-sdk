@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\ExtensionSource;
 use Revolution\Copilot\Enums\ExtensionStatus;
 
@@ -33,8 +34,8 @@ readonly class ExtensionInfo implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
-            name: $data['name'],
+            id: Arr::string($data, 'id'),
+            name: Arr::string($data, 'name'),
             source: ExtensionSource::from($data['source']),
             status: ExtensionStatus::from($data['status']),
             pid: $data['pid'] ?? null,

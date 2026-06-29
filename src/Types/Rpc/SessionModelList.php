@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * The list of models available to a session.
@@ -25,7 +26,7 @@ readonly class SessionModelList implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            list: $data['list'] ?? [],
+            list: Arr::array($data, 'list', []),
             quotaSnapshots: $data['quotaSnapshots'] ?? null,
         );
     }

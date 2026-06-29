@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * The selectable model entries synthesized for the models added by this call.
@@ -25,7 +26,7 @@ readonly class ProviderAddResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            models: $data['models'] ?? [],
+            models: Arr::array($data, 'models', []),
         );
     }
 

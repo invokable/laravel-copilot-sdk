@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Request for renaming/moving a file via SessionFs.
@@ -25,9 +26,9 @@ readonly class SessionFsRenameRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            src: $data['src'],
-            dest: $data['dest'],
-            sessionId: $data['sessionId'],
+            src: Arr::string($data, 'src'),
+            dest: Arr::string($data, 'dest'),
+            sessionId: Arr::string($data, 'sessionId'),
         );
     }
 

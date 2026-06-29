@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for session.extensions.sendAttachmentsToMessage.
@@ -25,7 +26,7 @@ readonly class SendAttachmentsToMessageParams implements Arrayable
     public static function fromArray(array $data): static
     {
         return new static(
-            attachments: $data['attachments'] ?? [],
+            attachments: Arr::array($data, 'attachments', []),
             instanceId: $data['instanceId'] ?? null,
         );
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Aggregated code change metrics.
@@ -27,9 +28,9 @@ readonly class CodeChanges implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            linesAdded: $data['linesAdded'],
-            linesRemoved: $data['linesRemoved'],
-            filesModifiedCount: $data['filesModifiedCount'],
+            linesAdded: Arr::integer($data, 'linesAdded'),
+            linesRemoved: Arr::integer($data, 'linesRemoved'),
+            filesModifiedCount: Arr::integer($data, 'filesModifiedCount'),
         );
     }
 

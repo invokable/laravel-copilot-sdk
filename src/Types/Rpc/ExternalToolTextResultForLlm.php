@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Expanded external tool result payload.
@@ -35,7 +36,7 @@ readonly class ExternalToolTextResultForLlm implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            textResultForLlm: $data['textResultForLlm'],
+            textResultForLlm: Arr::string($data, 'textResultForLlm'),
             resultType: $data['resultType'] ?? null,
             error: $data['error'] ?? null,
             sessionLog: $data['sessionLog'] ?? null,

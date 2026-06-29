@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Pending permission request reconstructed from session event history.
@@ -23,8 +24,8 @@ readonly class PendingPermissionRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            requestId: $data['requestId'],
-            request: $data['request'],
+            requestId: Arr::string($data, 'requestId'),
+            request: Arr::array($data, 'request'),
         );
     }
 

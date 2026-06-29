@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Workspace metadata.
@@ -33,7 +34,7 @@ readonly class Workspace implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
+            id: Arr::string($data, 'id'),
             cwd: $data['cwd'] ?? null,
             gitRoot: $data['git_root'] ?? null,
             repository: $data['repository'] ?? null,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Stable extension identity for session participants that provide canvases.
@@ -25,8 +26,8 @@ readonly class ExtensionInfo implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            source: $data['source'],
-            name: $data['name'],
+            source: Arr::string($data, 'source'),
+            name: Arr::string($data, 'name'),
         );
     }
 

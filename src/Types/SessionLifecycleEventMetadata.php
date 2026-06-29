@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Metadata for session lifecycle events.
@@ -30,8 +31,8 @@ readonly class SessionLifecycleEventMetadata implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            startTime: $data['startTime'],
-            modifiedTime: $data['modifiedTime'],
+            startTime: Arr::string($data, 'startTime'),
+            modifiedTime: Arr::string($data, 'modifiedTime'),
             summary: $data['summary'] ?? null,
         );
     }

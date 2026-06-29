@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 
 /**
@@ -57,8 +58,8 @@ readonly class ProviderModelConfig implements Arrayable
         }
 
         return new self(
-            id: $data['id'] ?? '',
-            provider: $data['provider'] ?? '',
+            id: Arr::string($data, 'id', ''),
+            provider: Arr::string($data, 'provider', ''),
             wireModel: $data['wireModel'] ?? null,
             modelId: $data['modelId'] ?? null,
             name: $data['name'] ?? null,

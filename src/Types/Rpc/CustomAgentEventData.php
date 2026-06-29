@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Metadata about a custom agent from the session.custom_agents_updated event.
@@ -37,13 +38,13 @@ readonly class CustomAgentEventData implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'] ?? '',
-            name: $data['name'] ?? '',
-            displayName: $data['displayName'] ?? '',
-            description: $data['description'] ?? '',
-            source: $data['source'] ?? '',
-            tools: $data['tools'] ?? [],
-            userInvocable: $data['userInvocable'] ?? false,
+            id: Arr::string($data, 'id', ''),
+            name: Arr::string($data, 'name', ''),
+            displayName: Arr::string($data, 'displayName', ''),
+            description: Arr::string($data, 'description', ''),
+            source: Arr::string($data, 'source', ''),
+            tools: Arr::array($data, 'tools', []),
+            userInvocable: Arr::boolean($data, 'userInvocable', false),
             model: $data['model'] ?? null,
         );
     }

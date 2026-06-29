@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\McpTransportType;
 use Revolution\Copilot\Enums\ServerSource;
 
@@ -31,9 +32,9 @@ readonly class DiscoveredMcpServer implements Arrayable
         $type = $data['type'] ?? null;
 
         return new self(
-            name: $data['name'],
+            name: Arr::string($data, 'name'),
             source: ServerSource::from($data['source']),
-            enabled: $data['enabled'],
+            enabled: Arr::boolean($data, 'enabled'),
             type: $type !== null ? (McpTransportType::tryFrom($type) ?? $type) : null,
         );
     }

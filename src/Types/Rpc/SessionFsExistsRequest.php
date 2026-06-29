@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Request for checking file existence via SessionFs.
@@ -23,8 +24,8 @@ readonly class SessionFsExistsRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            path: $data['path'],
-            sessionId: $data['sessionId'],
+            path: Arr::string($data, 'path'),
+            sessionId: Arr::string($data, 'sessionId'),
         );
     }
 

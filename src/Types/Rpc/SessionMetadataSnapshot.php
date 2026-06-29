@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\AgentMode;
 
 /**
@@ -42,13 +43,13 @@ readonly class SessionMetadataSnapshot implements Arrayable
         }
 
         return new self(
-            sessionId: $data['sessionId'] ?? '',
-            startTime: $data['startTime'] ?? '',
-            modifiedTime: $data['modifiedTime'] ?? '',
-            isRemote: (bool) ($data['isRemote'] ?? false),
-            alreadyInUse: (bool) ($data['alreadyInUse'] ?? false),
+            sessionId: Arr::string($data, 'sessionId', ''),
+            startTime: Arr::string($data, 'startTime', ''),
+            modifiedTime: Arr::string($data, 'modifiedTime', ''),
+            isRemote: Arr::boolean($data, 'isRemote', false),
+            alreadyInUse: Arr::boolean($data, 'alreadyInUse', false),
             workspacePath: $data['workspacePath'] ?? null,
-            workingDirectory: $data['workingDirectory'] ?? '',
+            workingDirectory: Arr::string($data, 'workingDirectory', ''),
             currentMode: $currentMode,
             initialName: $data['initialName'] ?? null,
             remoteMetadata: isset($data['remoteMetadata']) && is_array($data['remoteMetadata']) ? $data['remoteMetadata'] : null,

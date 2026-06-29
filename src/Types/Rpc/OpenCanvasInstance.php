@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Open canvas instance snapshot.
@@ -37,9 +38,9 @@ readonly class OpenCanvasInstance implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            canvasId: $data['canvasId'],
-            extensionId: $data['extensionId'],
-            instanceId: $data['instanceId'],
+            canvasId: Arr::string($data, 'canvasId'),
+            extensionId: Arr::string($data, 'extensionId'),
+            instanceId: Arr::string($data, 'instanceId'),
             extensionName: $data['extensionName'] ?? null,
             input: $data['input'] ?? null,
             status: $data['status'] ?? null,

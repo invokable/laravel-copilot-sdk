@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Query results including rows, columns, and rows affected, or a filesystem error
@@ -30,9 +31,9 @@ readonly class SessionFsSqliteQueryResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            columns: $data['columns'] ?? [],
-            rows: $data['rows'] ?? [],
-            rowsAffected: (int) ($data['rowsAffected'] ?? 0),
+            columns: Arr::array($data, 'columns', []),
+            rows: Arr::array($data, 'rows', []),
+            rowsAffected: Arr::integer($data, 'rowsAffected', 0),
             error: isset($data['error']) ? SessionFSError::fromArray($data['error']) : null,
             lastInsertRowid: isset($data['lastInsertRowid']) ? (float) $data['lastInsertRowid'] : null,
         );

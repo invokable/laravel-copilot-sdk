@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\AuthInfoType;
 
 /**
@@ -36,7 +37,7 @@ readonly class SessionAuthStatus implements Arrayable
             : null;
 
         return new self(
-            isAuthenticated: $data['isAuthenticated'],
+            isAuthenticated: Arr::boolean($data, 'isAuthenticated'),
             authType: $authType,
             copilotPlan: $data['copilotPlan'] ?? null,
             host: $data['host'] ?? null,

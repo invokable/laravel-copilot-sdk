@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Pending MCP OAuth request ID and host-provided token or cancellation response.
@@ -27,7 +28,7 @@ readonly class McpOauthHandlePendingRequest implements Arrayable
             : McpOauthPendingRequestResponse::fromArray($data['result']);
 
         return new self(
-            requestId: $data['requestId'],
+            requestId: Arr::string($data, 'requestId'),
             result: $result,
         );
     }

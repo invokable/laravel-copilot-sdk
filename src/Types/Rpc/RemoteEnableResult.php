@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of enabling remote session support.
@@ -25,7 +26,7 @@ readonly class RemoteEnableResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            remoteSteerable: (bool) ($data['remoteSteerable'] ?? false),
+            remoteSteerable: Arr::boolean($data, 'remoteSteerable', false),
             url: $data['url'] ?? null,
         );
     }

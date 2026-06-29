@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * GitHub repository metadata to associate with a cloud session.
@@ -28,8 +29,8 @@ readonly class CloudSessionRepository implements Arrayable
     public static function fromArray(array $data): static
     {
         return new static(
-            owner: $data['owner'] ?? '',
-            name: $data['name'] ?? '',
+            owner: Arr::string($data, 'owner', ''),
+            name: Arr::string($data, 'name', ''),
             branch: $data['branch'] ?? null,
         );
     }

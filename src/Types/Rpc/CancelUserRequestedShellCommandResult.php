@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Cancellation result for a user-requested shell command.
@@ -23,7 +24,7 @@ readonly class CancelUserRequestedShellCommandResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            cancelled: (bool) ($data['cancelled'] ?? false),
+            cancelled: Arr::boolean($data, 'cancelled', false),
         );
     }
 

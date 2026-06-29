@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of cancelling a task.
@@ -23,7 +24,7 @@ readonly class TasksCancelResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            cancelled: (bool) ($data['cancelled'] ?? false),
+            cancelled: Arr::boolean($data, 'cancelled', false),
         );
     }
 

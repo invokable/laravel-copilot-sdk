@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of releasing an event-interest registration.
@@ -20,7 +21,7 @@ readonly class EventLogReleaseInterestResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            success: (bool) ($data['success'] ?? false),
+            success: Arr::boolean($data, 'success', false),
         );
     }
 

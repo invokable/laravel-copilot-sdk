@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for handling a pending tool call.
@@ -30,7 +31,7 @@ readonly class HandlePendingToolCallRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            requestId: $data['requestId'],
+            requestId: Arr::string($data, 'requestId'),
             result: $data['result'] ?? null,
             error: $data['error'] ?? null,
         );

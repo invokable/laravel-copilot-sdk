@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types\Hooks;
 
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Types\ToolResultObject;
 
 /**
@@ -44,7 +45,7 @@ readonly class PostToolUseHookInput extends BaseHookInput
             sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
             cwd: $data['cwd'] ?? '',
-            toolName: $data['toolName'] ?? '',
+            toolName: Arr::string($data, 'toolName', ''),
             toolArgs: $data['toolArgs'] ?? null,
             toolResult: $toolResult,
         );

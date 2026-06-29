@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of reading a workspace file.
@@ -21,7 +22,7 @@ readonly class WorkspacesReadFileResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            content: $data['content'],
+            content: Arr::string($data, 'content'),
         );
     }
 

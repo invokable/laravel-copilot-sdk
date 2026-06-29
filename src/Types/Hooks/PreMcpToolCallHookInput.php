@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types\Hooks;
 
+use Illuminate\Support\Arr;
+
 /**
  * Input for pre-MCP-tool-call hook.
  *
@@ -45,9 +47,9 @@ readonly class PreMcpToolCallHookInput extends BaseHookInput
         return new static(
             sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
-            workingDirectory: $data['workingDirectory'] ?? '',
-            serverName: $data['serverName'] ?? '',
-            toolName: $data['toolName'] ?? '',
+            workingDirectory: Arr::string($data, 'workingDirectory', ''),
+            serverName: Arr::string($data, 'serverName', ''),
+            toolName: Arr::string($data, 'toolName', ''),
             arguments: $data['arguments'] ?? null,
             toolCallId: $data['toolCallId'] ?? null,
             _meta: $data['_meta'] ?? null,

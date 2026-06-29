@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Request to send a message to a running agent task.
@@ -27,8 +28,8 @@ readonly class TasksSendMessageRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'] ?? '',
-            message: $data['message'] ?? '',
+            id: Arr::string($data, 'id', ''),
+            message: Arr::string($data, 'message', ''),
             fromAgentId: $data['fromAgentId'] ?? null,
         );
     }

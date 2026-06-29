@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types\Hooks;
 
+use Illuminate\Support\Arr;
+
 /**
  * Input for session-end hook.
  */
@@ -37,7 +39,7 @@ readonly class SessionEndHookInput extends BaseHookInput
             sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
             cwd: $data['cwd'] ?? '',
-            reason: $data['reason'] ?? 'complete',
+            reason: Arr::string($data, 'reason', 'complete'),
             finalMessage: $data['finalMessage'] ?? null,
             error: $data['error'] ?? null,
         );

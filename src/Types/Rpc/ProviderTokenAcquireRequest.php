@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Asks the SDK client to acquire a bearer token for a BYOK provider whose config set `hasBearerTokenProvider: true`.
@@ -26,8 +27,8 @@ readonly class ProviderTokenAcquireRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            sessionId: $data['sessionId'] ?? '',
-            providerName: $data['providerName'] ?? '',
+            sessionId: Arr::string($data, 'sessionId', ''),
+            providerName: Arr::string($data, 'providerName', ''),
         );
     }
 

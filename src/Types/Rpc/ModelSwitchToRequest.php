@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\ReasoningEffort;
 
 /**
@@ -37,7 +38,7 @@ readonly class ModelSwitchToRequest implements Arrayable
             : null;
 
         return new self(
-            modelId: $data['modelId'],
+            modelId: Arr::string($data, 'modelId'),
             reasoningEffort: $data['reasoningEffort'] ?? null,
             reasoningSummary: $data['reasoningSummary'] ?? null,
             modelCapabilities: $modelCapabilities,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Short-lived, rotating credential the caller must send on every request.
@@ -29,8 +30,8 @@ readonly class ProviderSessionToken implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            header: $data['header'] ?? '',
-            token: $data['token'] ?? '',
+            header: Arr::string($data, 'header', ''),
+            token: Arr::string($data, 'token', ''),
             expiresAt: $data['expiresAt'] ?? null,
             model: $data['model'] ?? null,
         );

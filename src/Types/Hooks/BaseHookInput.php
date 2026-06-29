@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Hooks;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Base interface for all hook inputs.
@@ -29,9 +30,9 @@ readonly class BaseHookInput implements Arrayable
     public static function fromArray(array $data): static
     {
         return new static(
-            sessionId: $data['sessionId'] ?? '',
-            timestamp: $data['timestamp'] ?? 0,
-            cwd: $data['cwd'] ?? '',
+            sessionId: Arr::string($data, 'sessionId', ''),
+            timestamp: Arr::integer($data, 'timestamp', 0),
+            cwd: Arr::string($data, 'cwd', ''),
         );
     }
 

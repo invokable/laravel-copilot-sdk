@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Connection handshake result.
@@ -27,8 +28,8 @@ readonly class ConnectResult implements Arrayable
     public static function fromArray(array $data): static
     {
         return new static(
-            ok: (bool) ($data['ok'] ?? false),
-            protocolVersion: (int) ($data['protocolVersion'] ?? 0),
+            ok: Arr::boolean($data, 'ok', false),
+            protocolVersion: Arr::integer($data, 'protocolVersion', 0),
             version: (string) ($data['version'] ?? ''),
         );
     }

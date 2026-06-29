@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Text content of an embedded resource.
@@ -25,8 +26,8 @@ readonly class EmbeddedTextResourceContents implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            uri: $data['uri'],
-            text: $data['text'],
+            uri: Arr::string($data, 'uri'),
+            text: Arr::string($data, 'text'),
             mimeType: $data['mimeType'] ?? null,
         );
     }

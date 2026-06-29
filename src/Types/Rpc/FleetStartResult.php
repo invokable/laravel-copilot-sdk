@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of starting fleet mode.
@@ -23,7 +24,7 @@ readonly class FleetStartResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            started: $data['started'],
+            started: Arr::boolean($data, 'started'),
         );
     }
 

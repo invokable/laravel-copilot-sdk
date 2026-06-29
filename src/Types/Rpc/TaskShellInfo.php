@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\TaskExecutionMode;
 use Revolution\Copilot\Enums\TaskShellAttachmentMode;
 use Revolution\Copilot\Enums\TaskStatus;
@@ -33,11 +34,11 @@ readonly class TaskShellInfo implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'] ?? '',
-            description: $data['description'] ?? '',
+            id: Arr::string($data, 'id', ''),
+            description: Arr::string($data, 'description', ''),
             status: TaskStatus::from($data['status'] ?? 'running'),
-            startedAt: $data['startedAt'] ?? '',
-            command: $data['command'] ?? '',
+            startedAt: Arr::string($data, 'startedAt', ''),
+            command: Arr::string($data, 'command', ''),
             attachmentMode: TaskShellAttachmentMode::from($data['attachmentMode'] ?? 'attached'),
             completedAt: $data['completedAt'] ?? null,
             executionMode: isset($data['executionMode']) ? TaskExecutionMode::from($data['executionMode']) : null,

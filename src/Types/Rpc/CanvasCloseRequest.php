@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Canvas close parameters.
@@ -23,7 +24,7 @@ readonly class CanvasCloseRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            instanceId: $data['instanceId'],
+            instanceId: Arr::string($data, 'instanceId'),
         );
     }
 

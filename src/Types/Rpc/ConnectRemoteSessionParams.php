@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Remote session connection parameters.
@@ -23,7 +24,7 @@ readonly class ConnectRemoteSessionParams implements Arrayable
     public static function fromArray(array $data): static
     {
         return new static(
-            sessionId: $data['sessionId'] ?? '',
+            sessionId: Arr::string($data, 'sessionId', ''),
         );
     }
 

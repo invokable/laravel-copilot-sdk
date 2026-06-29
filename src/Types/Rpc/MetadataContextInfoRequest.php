@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for computing context token breakdown.
@@ -22,8 +23,8 @@ readonly class MetadataContextInfoRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            promptTokenLimit: $data['promptTokenLimit'] ?? 0,
-            outputTokenLimit: $data['outputTokenLimit'] ?? 0,
+            promptTokenLimit: Arr::integer($data, 'promptTokenLimit', 0),
+            outputTokenLimit: Arr::integer($data, 'outputTokenLimit', 0),
             selectedModel: $data['selectedModel'] ?? null,
         );
     }

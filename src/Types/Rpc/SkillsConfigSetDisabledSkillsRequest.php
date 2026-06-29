@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Request for disabling specific skills globally.
@@ -21,7 +22,7 @@ readonly class SkillsConfigSetDisabledSkillsRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            disabledSkills: $data['disabledSkills'] ?? [],
+            disabledSkills: Arr::array($data, 'disabledSkills', []),
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Token totals after re-tokenizing session context.
@@ -22,9 +23,9 @@ readonly class MetadataRecomputeContextTokensResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            totalTokens: $data['totalTokens'] ?? 0,
-            messagesTokenCount: $data['messagesTokenCount'] ?? 0,
-            systemTokenCount: $data['systemTokenCount'] ?? 0,
+            totalTokens: Arr::integer($data, 'totalTokens', 0),
+            messagesTokenCount: Arr::integer($data, 'messagesTokenCount', 0),
+            systemTokenCount: Arr::integer($data, 'systemTokenCount', 0),
         );
     }
 

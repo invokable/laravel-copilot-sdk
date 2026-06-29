@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * MCP server to diagnose MCP Apps wiring for.
@@ -23,7 +24,7 @@ readonly class MCPAppsDiagnoseRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            serverName: $data['serverName'],
+            serverName: Arr::string($data, 'serverName'),
         );
     }
 
