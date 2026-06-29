@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\ConnectedRemoteSessionMetadataKind;
 
 /**
@@ -45,10 +46,10 @@ readonly class ConnectedRemoteSessionMetadata implements Arrayable
     {
         return new static(
             kind: ConnectedRemoteSessionMetadataKind::from($data['kind'] ?? ''),
-            modifiedTime: $data['modifiedTime'] ?? '',
+            modifiedTime: Arr::string($data, 'modifiedTime', ''),
             repository: ConnectedRemoteSessionMetadataRepository::fromArray($data['repository'] ?? []),
-            sessionId: $data['sessionId'] ?? '',
-            startTime: $data['startTime'] ?? '',
+            sessionId: Arr::string($data, 'sessionId', ''),
+            startTime: Arr::string($data, 'startTime', ''),
             name: $data['name'] ?? null,
             pullRequestNumber: $data['pullRequestNumber'] ?? null,
             resourceId: $data['resourceId'] ?? null,

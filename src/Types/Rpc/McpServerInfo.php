@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\McpServerStatus;
 use Revolution\Copilot\Enums\ServerSource;
 
@@ -33,7 +34,7 @@ readonly class McpServerInfo implements Arrayable
         $source = $data['source'] ?? null;
 
         return new self(
-            name: $data['name'],
+            name: Arr::string($data, 'name'),
             status: McpServerStatus::from($data['status']),
             source: $source !== null ? (ServerSource::tryFrom($source) ?? $source) : null,
             error: $data['error'] ?? null,

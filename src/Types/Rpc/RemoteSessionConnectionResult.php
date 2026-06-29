@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Remote session connection result.
@@ -26,7 +27,7 @@ readonly class RemoteSessionConnectionResult implements Arrayable
     {
         return new static(
             metadata: ConnectedRemoteSessionMetadata::fromArray($data['metadata'] ?? []),
-            sessionId: $data['sessionId'] ?? '',
+            sessionId: Arr::string($data, 'sessionId', ''),
         );
     }
 

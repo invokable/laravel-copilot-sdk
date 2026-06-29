@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Request count and cost metrics for a model.
@@ -25,8 +26,8 @@ readonly class ModelMetricRequests implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            count: $data['count'],
-            cost: (float) $data['cost'],
+            count: Arr::integer($data, 'count'),
+            cost: Arr::float($data, 'cost'),
         );
     }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types\Hooks;
 
+use Illuminate\Support\Arr;
+
 /**
  * Input for session-start hook.
  */
@@ -35,7 +37,7 @@ readonly class SessionStartHookInput extends BaseHookInput
             sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
             cwd: $data['cwd'] ?? '',
-            source: $data['source'] ?? 'new',
+            source: Arr::string($data, 'source', 'new'),
             initialPrompt: $data['initialPrompt'] ?? null,
         );
     }

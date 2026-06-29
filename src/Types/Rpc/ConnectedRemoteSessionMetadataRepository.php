@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Repository associated with the connected remote session.
@@ -25,9 +26,9 @@ readonly class ConnectedRemoteSessionMetadataRepository implements Arrayable
     public static function fromArray(array $data): static
     {
         return new static(
-            branch: $data['branch'] ?? '',
-            name: $data['name'] ?? '',
-            owner: $data['owner'] ?? '',
+            branch: Arr::string($data, 'branch', ''),
+            name: Arr::string($data, 'name', ''),
+            owner: Arr::string($data, 'owner', ''),
         );
     }
 

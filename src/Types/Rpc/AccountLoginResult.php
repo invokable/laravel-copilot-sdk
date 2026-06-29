@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of a successful login; throws on failure.
@@ -23,7 +24,7 @@ readonly class AccountLoginResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            storedInVault: $data['storedInVault'] ?? false,
+            storedInVault: Arr::boolean($data, 'storedInVault', false),
         );
     }
 

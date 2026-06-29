@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Context passed to a command handler when a command is executed.
@@ -27,10 +28,10 @@ readonly class CommandContext implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            sessionId: $data['sessionId'],
-            command: $data['command'],
-            commandName: $data['commandName'],
-            args: $data['args'],
+            sessionId: Arr::string($data, 'sessionId'),
+            command: Arr::string($data, 'command'),
+            commandName: Arr::string($data, 'commandName'),
+            args: Arr::string($data, 'args'),
         );
     }
 

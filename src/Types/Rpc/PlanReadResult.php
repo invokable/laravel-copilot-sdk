@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of reading session plan.
@@ -25,7 +26,7 @@ readonly class PlanReadResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            exists: $data['exists'],
+            exists: Arr::boolean($data, 'exists'),
             content: $data['content'] ?? null,
             path: $data['path'] ?? null,
         );

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Information about a server-level skill discovered by the CLI.
@@ -33,11 +34,11 @@ readonly class ServerSkill implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
-            description: $data['description'],
-            source: $data['source'],
-            userInvocable: $data['userInvocable'],
-            enabled: $data['enabled'],
+            name: Arr::string($data, 'name'),
+            description: Arr::string($data, 'description'),
+            source: Arr::string($data, 'source'),
+            userInvocable: Arr::boolean($data, 'userInvocable'),
+            enabled: Arr::boolean($data, 'enabled'),
             path: $data['path'] ?? null,
             projectPath: $data['projectPath'] ?? null,
         );

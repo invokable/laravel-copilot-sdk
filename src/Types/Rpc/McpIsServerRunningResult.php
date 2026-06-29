@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Whether the named MCP server is running.
@@ -23,7 +24,7 @@ readonly class McpIsServerRunningResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            running: (bool) ($data['running'] ?? false),
+            running: Arr::boolean($data, 'running', false),
         );
     }
 

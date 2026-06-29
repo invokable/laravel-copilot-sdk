@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * A named BYOK provider connection (transport + credentials), referenced by
@@ -48,8 +49,8 @@ readonly class NamedProviderConfig implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'] ?? '',
-            baseUrl: $data['baseUrl'] ?? '',
+            name: Arr::string($data, 'name', ''),
+            baseUrl: Arr::string($data, 'baseUrl', ''),
             type: $data['type'] ?? null,
             wireApi: $data['wireApi'] ?? null,
             transport: $data['transport'] ?? null,

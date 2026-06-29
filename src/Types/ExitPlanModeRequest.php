@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Request to exit plan mode and continue with a selected action.
@@ -27,9 +28,9 @@ readonly class ExitPlanModeRequest implements Arrayable
     public static function fromArray(array $data): static
     {
         return new static(
-            summary: $data['summary'] ?? '',
-            actions: $data['actions'] ?? [],
-            recommendedAction: $data['recommendedAction'] ?? '',
+            summary: Arr::string($data, 'summary', ''),
+            actions: Arr::array($data, 'actions', []),
+            recommendedAction: Arr::string($data, 'recommendedAction', ''),
             planContent: $data['planContent'] ?? null,
         );
     }

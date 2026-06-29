@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of session history compaction.
@@ -29,9 +30,9 @@ readonly class HistoryCompactResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            success: $data['success'],
-            tokensRemoved: $data['tokensRemoved'],
-            messagesRemoved: $data['messagesRemoved'],
+            success: Arr::boolean($data, 'success'),
+            tokensRemoved: Arr::integer($data, 'tokensRemoved'),
+            messagesRemoved: Arr::integer($data, 'messagesRemoved'),
             contextWindow: isset($data['contextWindow']) ? ContextWindow::fromArray($data['contextWindow']) : null,
         );
     }

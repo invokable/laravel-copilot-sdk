@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for responding to a queued command.
@@ -23,7 +24,7 @@ readonly class CommandsRespondToQueuedCommandRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            requestId: $data['requestId'],
+            requestId: Arr::string($data, 'requestId'),
             result: QueuedCommandResult::fromArray($data['result'] ?? []),
         );
     }

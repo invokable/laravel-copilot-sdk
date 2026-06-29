@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Response to an exit-plan-mode request.
@@ -25,7 +26,7 @@ readonly class ExitPlanModeResult implements Arrayable
     public static function fromArray(array $data): static
     {
         return new static(
-            approved: $data['approved'] ?? false,
+            approved: Arr::boolean($data, 'approved', false),
             selectedAction: $data['selectedAction'] ?? null,
             feedback: $data['feedback'] ?? null,
         );

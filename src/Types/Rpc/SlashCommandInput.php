@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Optional unstructured input hint for a slash command.
@@ -27,7 +28,7 @@ readonly class SlashCommandInput implements Arrayable
     public static function fromArray(array $data): static
     {
         return new static(
-            hint: $data['hint'] ?? '',
+            hint: Arr::string($data, 'hint', ''),
             completion: $data['completion'] ?? null,
             preserveMultilineInput: $data['preserveMultilineInput'] ?? null,
             required: $data['required'] ?? null,

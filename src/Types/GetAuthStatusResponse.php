@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Response from auth.getStatus.
@@ -34,7 +35,7 @@ readonly class GetAuthStatusResponse implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            isAuthenticated: $data['isAuthenticated'],
+            isAuthenticated: Arr::boolean($data, 'isAuthenticated'),
             authType: $data['authType'] ?? null,
             host: $data['host'] ?? null,
             login: $data['login'] ?? null,

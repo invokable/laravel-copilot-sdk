@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\InstructionSourceLocation;
 use Revolution\Copilot\Enums\InstructionSourceType;
 
@@ -37,10 +38,10 @@ readonly class InstructionsSources implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
-            label: $data['label'],
-            content: $data['content'],
-            sourcePath: $data['sourcePath'],
+            id: Arr::string($data, 'id'),
+            label: Arr::string($data, 'label'),
+            content: Arr::string($data, 'content'),
+            sourcePath: Arr::string($data, 'sourcePath'),
             type: InstructionSourceType::from($data['type']),
             location: InstructionSourceLocation::from($data['location']),
             applyTo: $data['applyTo'] ?? null,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of setting the session filesystem provider.
@@ -21,7 +22,7 @@ readonly class SessionFsSetProviderResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            success: $data['success'] ?? false,
+            success: Arr::boolean($data, 'success', false),
         );
     }
 

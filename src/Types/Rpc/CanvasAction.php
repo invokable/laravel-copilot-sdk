@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Canvas action that the agent or host can invoke.
@@ -29,7 +30,7 @@ readonly class CanvasAction implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
+            name: Arr::string($data, 'name'),
             description: $data['description'] ?? null,
             inputSchema: $data['inputSchema'] ?? null,
         );

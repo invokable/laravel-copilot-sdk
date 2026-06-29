@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for updating a session working directory.
@@ -20,7 +21,7 @@ readonly class MetadataSetWorkingDirectoryRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            workingDirectory: $data['workingDirectory'] ?? '',
+            workingDirectory: Arr::string($data, 'workingDirectory', ''),
         );
     }
 

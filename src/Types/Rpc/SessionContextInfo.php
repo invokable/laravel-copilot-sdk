@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Token-usage breakdown for a session context window.
@@ -29,16 +30,16 @@ readonly class SessionContextInfo implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            bufferTokens: $data['bufferTokens'] ?? 0,
-            compactionThreshold: $data['compactionThreshold'] ?? 0,
-            conversationTokens: $data['conversationTokens'] ?? 0,
-            limit: $data['limit'] ?? 0,
-            modelName: $data['modelName'] ?? '',
-            promptTokenLimit: $data['promptTokenLimit'] ?? 0,
-            systemTokens: $data['systemTokens'] ?? 0,
-            toolDefinitionsTokens: $data['toolDefinitionsTokens'] ?? 0,
-            mcpToolsTokens: $data['mcpToolsTokens'] ?? 0,
-            totalTokens: $data['totalTokens'] ?? 0,
+            bufferTokens: Arr::integer($data, 'bufferTokens', 0),
+            compactionThreshold: Arr::integer($data, 'compactionThreshold', 0),
+            conversationTokens: Arr::integer($data, 'conversationTokens', 0),
+            limit: Arr::integer($data, 'limit', 0),
+            modelName: Arr::string($data, 'modelName', ''),
+            promptTokenLimit: Arr::integer($data, 'promptTokenLimit', 0),
+            systemTokens: Arr::integer($data, 'systemTokens', 0),
+            toolDefinitionsTokens: Arr::integer($data, 'toolDefinitionsTokens', 0),
+            mcpToolsTokens: Arr::integer($data, 'mcpToolsTokens', 0),
+            totalTokens: Arr::integer($data, 'totalTokens', 0),
         );
     }
 

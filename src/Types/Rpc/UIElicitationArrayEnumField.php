@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * An array field with enum items for UI elicitation forms (multi-select with enum).
@@ -29,7 +30,7 @@ readonly class UIElicitationArrayEnumField implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            items: $data['items'],
+            items: Arr::array($data, 'items'),
             description: $data['description'] ?? null,
             minItems: $data['minItems'] ?? null,
             maxItems: $data['maxItems'] ?? null,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Capability negotiation snapshot for MCP Apps.
@@ -27,9 +28,9 @@ readonly class MCPAppsDiagnoseCapability implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            advertised: $data['advertised'],
-            featureFlagEnabled: $data['featureFlagEnabled'],
-            sessionHasMcpApps: $data['sessionHasMcpApps'],
+            advertised: Arr::boolean($data, 'advertised'),
+            featureFlagEnabled: Arr::boolean($data, 'featureFlagEnabled'),
+            sessionHasMcpApps: Arr::boolean($data, 'sessionHasMcpApps'),
         );
     }
 

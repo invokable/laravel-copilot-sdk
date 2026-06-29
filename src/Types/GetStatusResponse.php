@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Response from status.get.
@@ -28,8 +29,8 @@ readonly class GetStatusResponse implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            version: $data['version'],
-            protocolVersion: $data['protocolVersion'],
+            version: Arr::string($data, 'version'),
+            protocolVersion: Arr::integer($data, 'protocolVersion'),
         );
     }
 

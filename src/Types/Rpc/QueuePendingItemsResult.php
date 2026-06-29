@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Snapshot of the session's pending queued items and immediate-steering messages.
@@ -27,7 +28,7 @@ readonly class QueuePendingItemsResult implements Arrayable
                 fn (array $item) => QueuePendingItems::fromArray($item),
                 $data['items'] ?? [],
             ),
-            steeringMessages: $data['steeringMessages'] ?? [],
+            steeringMessages: Arr::array($data, 'steeringMessages', []),
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\PermissionsSetApproveAllSource;
 
 /**
@@ -24,7 +25,7 @@ readonly class PermissionsSetApproveAllRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            enabled: $data['enabled'],
+            enabled: Arr::boolean($data, 'enabled'),
             source: isset($data['source']) ? PermissionsSetApproveAllSource::tryFrom($data['source']) ?? $data['source'] : null,
         );
     }

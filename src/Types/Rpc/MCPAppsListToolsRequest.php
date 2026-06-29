@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * MCP server to list app-callable tools for.
@@ -25,8 +26,8 @@ readonly class MCPAppsListToolsRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            originServerName: $data['originServerName'],
-            serverName: $data['serverName'],
+            originServerName: Arr::string($data, 'originServerName'),
+            serverName: Arr::string($data, 'serverName'),
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of a ping request.
@@ -25,9 +26,9 @@ readonly class PingResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            message: $data['message'],
-            timestamp: $data['timestamp'],
-            protocolVersion: $data['protocolVersion'],
+            message: Arr::string($data, 'message'),
+            timestamp: Arr::float($data, 'timestamp'),
+            protocolVersion: Arr::float($data, 'protocolVersion'),
         );
     }
 

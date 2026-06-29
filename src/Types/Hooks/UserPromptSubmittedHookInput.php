@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types\Hooks;
 
+use Illuminate\Support\Arr;
+
 /**
  * Input for user-prompt-submitted hook.
  */
@@ -33,7 +35,7 @@ readonly class UserPromptSubmittedHookInput extends BaseHookInput
             sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
             cwd: $data['cwd'] ?? '',
-            prompt: $data['prompt'] ?? '',
+            prompt: Arr::string($data, 'prompt', ''),
         );
     }
 

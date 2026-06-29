@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Model capabilities and limits.
@@ -28,8 +29,8 @@ readonly class ModelCapabilities implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            supports: $data['supports'] ?? [],
-            limits: $data['limits'] ?? [],
+            supports: Arr::array($data, 'supports', []),
+            limits: Arr::array($data, 'limits', []),
         );
     }
 

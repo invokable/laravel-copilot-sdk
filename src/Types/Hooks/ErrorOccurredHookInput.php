@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types\Hooks;
 
+use Illuminate\Support\Arr;
+
 /**
  * Input for error-occurred hook.
  */
@@ -37,9 +39,9 @@ readonly class ErrorOccurredHookInput extends BaseHookInput
             sessionId: $data['sessionId'] ?? '',
             timestamp: $data['timestamp'] ?? 0,
             cwd: $data['cwd'] ?? '',
-            error: $data['error'] ?? '',
-            errorContext: $data['errorContext'] ?? 'system',
-            recoverable: $data['recoverable'] ?? false,
+            error: Arr::string($data, 'error', ''),
+            errorContext: Arr::string($data, 'errorContext', 'system'),
+            recoverable: Arr::boolean($data, 'recoverable', false),
         );
     }
 

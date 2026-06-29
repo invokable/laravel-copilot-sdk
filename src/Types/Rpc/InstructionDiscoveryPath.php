@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\InstructionDiscoveryPathKind;
 use Revolution\Copilot\Enums\InstructionSourceLocation;
 
@@ -35,8 +36,8 @@ readonly class InstructionDiscoveryPath implements Arrayable
         return new self(
             kind: InstructionDiscoveryPathKind::from($data['kind'] ?? 'file'),
             location: InstructionSourceLocation::from($data['location'] ?? 'user'),
-            path: $data['path'] ?? '',
-            preferredForCreation: (bool) ($data['preferredForCreation'] ?? false),
+            path: Arr::string($data, 'path', ''),
+            preferredForCreation: Arr::boolean($data, 'preferredForCreation', false),
             projectPath: $data['projectPath'] ?? null,
         );
     }

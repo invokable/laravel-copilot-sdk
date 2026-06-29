@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Indicates the queued command was handled.
@@ -23,7 +24,7 @@ readonly class QueuedCommandHandled implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            handled: $data['handled'] ?? true,
+            handled: Arr::boolean($data, 'handled', true),
             stopProcessingQueue: $data['stopProcessingQueue'] ?? null,
         );
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Directory path to set as the primary permission path.
@@ -17,7 +18,7 @@ readonly class PermissionPathsUpdatePrimaryParams implements Arrayable
 
     public static function fromArray(array $data): self
     {
-        return new self(path: $data['path'] ?? '');
+        return new self(path: Arr::string($data, 'path', ''));
     }
 
     public function toArray(): array

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * A bearer token supplied by the SDK client for a BYOK provider.
@@ -25,7 +26,7 @@ readonly class ProviderTokenAcquireResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            token: $data['token'] ?? '',
+            token: Arr::string($data, 'token', ''),
         );
     }
 

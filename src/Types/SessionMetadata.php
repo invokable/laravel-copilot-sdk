@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Metadata about a session.
@@ -34,11 +35,11 @@ readonly class SessionMetadata implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            sessionId: $data['sessionId'],
-            startTime: $data['startTime'],
-            modifiedTime: $data['modifiedTime'],
+            sessionId: Arr::string($data, 'sessionId'),
+            startTime: Arr::string($data, 'startTime'),
+            modifiedTime: Arr::string($data, 'modifiedTime'),
             summary: $data['summary'] ?? null,
-            isRemote: $data['isRemote'] ?? false,
+            isRemote: Arr::boolean($data, 'isRemote', false),
             context: isset($data['context']) ? SessionContext::fromArray($data['context']) : null,
         );
     }

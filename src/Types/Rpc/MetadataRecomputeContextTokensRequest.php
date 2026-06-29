@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for re-tokenizing session context against a model.
@@ -20,7 +21,7 @@ readonly class MetadataRecomputeContextTokensRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            modelId: $data['modelId'] ?? '',
+            modelId: Arr::string($data, 'modelId', ''),
         );
     }
 

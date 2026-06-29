@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Indicates whether a session is currently processing.
@@ -20,7 +21,7 @@ readonly class MetadataIsProcessingResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            processing: (bool) ($data['processing'] ?? false),
+            processing: Arr::boolean($data, 'processing', false),
         );
     }
 

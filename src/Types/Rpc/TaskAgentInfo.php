@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\TaskExecutionMode;
 use Revolution\Copilot\Enums\TaskStatus;
 
@@ -38,13 +39,13 @@ readonly class TaskAgentInfo implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'] ?? '',
-            toolCallId: $data['toolCallId'] ?? '',
-            description: $data['description'] ?? '',
+            id: Arr::string($data, 'id', ''),
+            toolCallId: Arr::string($data, 'toolCallId', ''),
+            description: Arr::string($data, 'description', ''),
             status: TaskStatus::from($data['status'] ?? 'running'),
-            startedAt: $data['startedAt'] ?? '',
-            agentType: $data['agentType'] ?? '',
-            prompt: $data['prompt'] ?? '',
+            startedAt: Arr::string($data, 'startedAt', ''),
+            agentType: Arr::string($data, 'agentType', ''),
+            prompt: Arr::string($data, 'prompt', ''),
             completedAt: $data['completedAt'] ?? null,
             activeTimeMs: isset($data['activeTimeMs'])
                 ? (int) $data['activeTimeMs']

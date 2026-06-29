@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * A request body chunk or cancellation signal.
@@ -31,8 +32,8 @@ readonly class LlmInferenceHTTPRequestChunkRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            data: $data['data'],
-            requestId: $data['requestId'],
+            data: Arr::string($data, 'data'),
+            requestId: Arr::string($data, 'requestId'),
             binary: $data['binary'] ?? null,
             cancel: $data['cancel'] ?? null,
             cancelReason: $data['cancelReason'] ?? null,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Configuration for the memory feature, which lets the agent persist and recall
@@ -22,7 +23,7 @@ readonly class MemoryConfiguration implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            enabled: (bool) ($data['enabled'] ?? false),
+            enabled: Arr::boolean($data, 'enabled', false),
         );
     }
 

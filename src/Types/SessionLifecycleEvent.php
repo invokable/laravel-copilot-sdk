@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\SessionLifecycleEventType;
 
 /**
@@ -34,7 +35,7 @@ readonly class SessionLifecycleEvent implements Arrayable
     {
         return new self(
             type: SessionLifecycleEventType::from($data['type']),
-            sessionId: $data['sessionId'],
+            sessionId: Arr::string($data, 'sessionId'),
             metadata: isset($data['metadata']) ? SessionLifecycleEventMetadata::fromArray($data['metadata']) : null,
         );
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Response head (status + headers) for an in-flight request.
@@ -29,9 +30,9 @@ readonly class LlmInferenceHTTPResponseStartRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            headers: $data['headers'],
-            requestId: $data['requestId'],
-            status: $data['status'],
+            headers: Arr::array($data, 'headers'),
+            requestId: Arr::string($data, 'requestId'),
+            status: Arr::integer($data, 'status'),
             statusText: $data['statusText'] ?? null,
         );
     }

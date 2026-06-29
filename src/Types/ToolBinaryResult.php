@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Binary result item for tool responses (images, resources, etc.).
@@ -30,9 +31,9 @@ readonly class ToolBinaryResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            data: $data['data'] ?? '',
-            mimeType: $data['mimeType'] ?? '',
-            type: $data['type'] ?? 'image',
+            data: Arr::string($data, 'data', ''),
+            mimeType: Arr::string($data, 'mimeType', ''),
+            type: Arr::string($data, 'type', 'image'),
             description: $data['description'] ?? null,
         );
     }

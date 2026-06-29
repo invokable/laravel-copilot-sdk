@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * A snapshot of the provider endpoint the session is currently configured to use.
@@ -35,9 +36,9 @@ readonly class ProviderEndpoint implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            baseUrl: $data['baseUrl'] ?? '',
-            type: $data['type'] ?? 'openai',
-            headers: $data['headers'] ?? [],
+            baseUrl: Arr::string($data, 'baseUrl', ''),
+            type: Arr::string($data, 'type', 'openai'),
+            headers: Arr::array($data, 'headers', []),
             apiKey: $data['apiKey'] ?? null,
             wireApi: $data['wireApi'] ?? null,
             transport: $data['transport'] ?? null,

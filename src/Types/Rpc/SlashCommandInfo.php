@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Information about a slash command available in the session.
@@ -33,10 +34,10 @@ readonly class SlashCommandInfo implements Arrayable
     public static function fromArray(array $data): static
     {
         return new static(
-            allowDuringAgentExecution: $data['allowDuringAgentExecution'] ?? false,
-            description: $data['description'] ?? '',
-            kind: $data['kind'] ?? '',
-            name: $data['name'] ?? '',
+            allowDuringAgentExecution: Arr::boolean($data, 'allowDuringAgentExecution', false),
+            description: Arr::string($data, 'description', ''),
+            kind: Arr::string($data, 'kind', ''),
+            name: Arr::string($data, 'name', ''),
             aliases: $data['aliases'] ?? null,
             experimental: $data['experimental'] ?? null,
             input: isset($data['input']) ? SlashCommandInput::fromArray($data['input']) : null,

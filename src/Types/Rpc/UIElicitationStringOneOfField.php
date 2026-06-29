@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * A string field with oneOf options for UI elicitation forms.
@@ -25,7 +26,7 @@ readonly class UIElicitationStringOneOfField implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            oneOf: $data['oneOf'],
+            oneOf: Arr::array($data, 'oneOf'),
             description: $data['description'] ?? null,
             default: $data['default'] ?? null,
         );

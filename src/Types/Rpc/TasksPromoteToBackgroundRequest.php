@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Request to promote a task to background mode.
@@ -23,7 +24,7 @@ readonly class TasksPromoteToBackgroundRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'] ?? '',
+            id: Arr::string($data, 'id', ''),
         );
     }
 

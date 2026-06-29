@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * What the server returned for this session.
@@ -29,10 +30,10 @@ readonly class MCPAppsDiagnoseServer implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            connected: $data['connected'],
-            sampleToolNames: $data['sampleToolNames'],
-            toolCount: (float) $data['toolCount'],
-            toolsWithUiMeta: (float) $data['toolsWithUiMeta'],
+            connected: Arr::boolean($data, 'connected'),
+            sampleToolNames: Arr::array($data, 'sampleToolNames'),
+            toolCount: Arr::float($data, 'toolCount'),
+            toolsWithUiMeta: Arr::float($data, 'toolsWithUiMeta'),
         );
     }
 

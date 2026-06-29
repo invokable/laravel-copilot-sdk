@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Canvas open parameters.
@@ -29,8 +30,8 @@ readonly class CanvasOpenRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            canvasId: $data['canvasId'],
-            instanceId: $data['instanceId'],
+            canvasId: Arr::string($data, 'canvasId'),
+            instanceId: Arr::string($data, 'instanceId'),
             extensionId: $data['extensionId'] ?? null,
             input: $data['input'] ?? null,
         );

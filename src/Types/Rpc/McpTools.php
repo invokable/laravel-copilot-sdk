@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Schema for a single MCP tool entry.
@@ -25,7 +26,7 @@ readonly class McpTools implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
+            name: Arr::string($data, 'name'),
             description: $data['description'] ?? null,
         );
     }

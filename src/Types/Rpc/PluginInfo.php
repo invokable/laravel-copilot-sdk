@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Information about a plugin.
@@ -29,9 +30,9 @@ readonly class PluginInfo implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
-            marketplace: $data['marketplace'],
-            enabled: $data['enabled'],
+            name: Arr::string($data, 'name'),
+            marketplace: Arr::string($data, 'marketplace'),
+            enabled: Arr::boolean($data, 'enabled'),
             version: $data['version'] ?? null,
         );
     }

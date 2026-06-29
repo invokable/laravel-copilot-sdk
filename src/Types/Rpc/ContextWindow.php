@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Post-compaction context window usage breakdown.
@@ -33,9 +34,9 @@ readonly class ContextWindow implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            tokenLimit: (int) $data['tokenLimit'],
-            currentTokens: (int) $data['currentTokens'],
-            messagesLength: (int) $data['messagesLength'],
+            tokenLimit: Arr::integer($data, 'tokenLimit'),
+            currentTokens: Arr::integer($data, 'currentTokens'),
+            messagesLength: Arr::integer($data, 'messagesLength'),
             systemTokens: isset($data['systemTokens']) ? (int) $data['systemTokens'] : null,
             conversationTokens: isset($data['conversationTokens']) ? (int) $data['conversationTokens'] : null,
             toolDefinitionsTokens: isset($data['toolDefinitionsTokens']) ? (int) $data['toolDefinitionsTokens'] : null,

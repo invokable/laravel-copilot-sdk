@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Token usage metrics for a model.
@@ -31,10 +32,10 @@ readonly class ModelMetricUsage implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            inputTokens: $data['inputTokens'],
-            outputTokens: $data['outputTokens'],
-            cacheReadTokens: $data['cacheReadTokens'],
-            cacheWriteTokens: $data['cacheWriteTokens'],
+            inputTokens: Arr::integer($data, 'inputTokens'),
+            outputTokens: Arr::integer($data, 'outputTokens'),
+            cacheReadTokens: Arr::integer($data, 'cacheReadTokens'),
+            cacheWriteTokens: Arr::integer($data, 'cacheWriteTokens'),
             reasoningTokens: $data['reasoningTokens'] ?? null,
         );
     }

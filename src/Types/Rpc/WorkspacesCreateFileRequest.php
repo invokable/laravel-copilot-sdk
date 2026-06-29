@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for creating a workspace file.
@@ -23,8 +24,8 @@ readonly class WorkspacesCreateFileRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            path: $data['path'],
-            content: $data['content'],
+            path: Arr::string($data, 'path'),
+            content: Arr::string($data, 'content'),
         );
     }
 

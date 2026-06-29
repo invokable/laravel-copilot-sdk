@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for truncating session history.
@@ -23,7 +24,7 @@ readonly class HistoryTruncateRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            eventId: $data['eventId'],
+            eventId: Arr::string($data, 'eventId'),
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\EventsCursorStatus;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -37,8 +38,8 @@ readonly class EventsReadResult implements Arrayable
                 fn (array $event) => SessionEvent::fromArray($event),
                 $data['events'] ?? [],
             ),
-            cursor: $data['cursor'] ?? '',
-            hasMore: (bool) ($data['hasMore'] ?? false),
+            cursor: Arr::string($data, 'cursor', ''),
+            hasMore: Arr::boolean($data, 'hasMore', false),
             cursorStatus: $cursorStatus,
         );
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Response to a user input request.
@@ -26,8 +27,8 @@ readonly class UserInputResponse implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            answer: $data['answer'] ?? '',
-            wasFreeform: $data['wasFreeform'] ?? false,
+            answer: Arr::string($data, 'answer', ''),
+            wasFreeform: Arr::boolean($data, 'wasFreeform', false),
         );
     }
 

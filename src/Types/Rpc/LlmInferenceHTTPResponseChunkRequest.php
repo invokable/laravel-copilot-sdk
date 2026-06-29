@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * A response body chunk or terminal error.
@@ -38,8 +39,8 @@ readonly class LlmInferenceHTTPResponseChunkRequest implements Arrayable
         }
 
         return new self(
-            data: $data['data'],
-            requestId: $data['requestId'],
+            data: Arr::string($data, 'data'),
+            requestId: Arr::string($data, 'requestId'),
             binary: $data['binary'] ?? null,
             end: $data['end'] ?? null,
             error: $error,

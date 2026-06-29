@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\LlmInferenceHttpRequestStartTransport;
 
 /**
@@ -32,10 +33,10 @@ readonly class LlmInferenceHTTPRequestStartRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            headers: $data['headers'],
-            method: $data['method'],
-            requestId: $data['requestId'],
-            url: $data['url'],
+            headers: Arr::array($data, 'headers'),
+            method: Arr::string($data, 'method'),
+            requestId: Arr::string($data, 'requestId'),
+            url: Arr::string($data, 'url'),
             sessionId: $data['sessionId'] ?? null,
             transport: isset($data['transport']) ? LlmInferenceHttpRequestStartTransport::from($data['transport']) : null,
         );

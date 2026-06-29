@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Credentials to store after successful authentication.
@@ -25,9 +26,9 @@ readonly class AccountLoginRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            host: $data['host'] ?? '',
-            login: $data['login'] ?? '',
-            token: $data['token'] ?? '',
+            host: Arr::string($data, 'host', ''),
+            login: Arr::string($data, 'login', ''),
+            token: Arr::string($data, 'token', ''),
         );
     }
 

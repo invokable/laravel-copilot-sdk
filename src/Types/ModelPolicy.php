@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Model policy state.
@@ -28,8 +29,8 @@ readonly class ModelPolicy implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            state: $data['state'],
-            terms: $data['terms'],
+            state: Arr::string($data, 'state'),
+            terms: Arr::string($data, 'terms'),
         );
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Identifies the target session for a SQLite exists check.
@@ -21,7 +22,7 @@ readonly class SessionFsSqliteExistsRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            sessionId: $data['sessionId'] ?? '',
+            sessionId: Arr::string($data, 'sessionId', ''),
         );
     }
 

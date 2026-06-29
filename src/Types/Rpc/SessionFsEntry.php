@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\EntryType;
 
 /**
@@ -24,7 +25,7 @@ readonly class SessionFsEntry implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
+            name: Arr::string($data, 'name'),
             type: EntryType::tryFrom($data['type'] ?? '') ?? $data['type'],
         );
     }

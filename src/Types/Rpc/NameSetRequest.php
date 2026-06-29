@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for setting the session name.
@@ -21,7 +22,7 @@ readonly class NameSetRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
+            name: Arr::string($data, 'name'),
         );
     }
 

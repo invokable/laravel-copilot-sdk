@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Working directory context for a session.
@@ -30,7 +31,7 @@ readonly class SessionContext implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            cwd: $data['cwd'],
+            cwd: Arr::string($data, 'cwd'),
             gitRoot: $data['gitRoot'] ?? null,
             repository: $data['repository'] ?? null,
             branch: $data['branch'] ?? null,

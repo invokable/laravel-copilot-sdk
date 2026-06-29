@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of getting file stats via SessionFs.
@@ -29,10 +30,10 @@ readonly class SessionFsStatResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            birthtime: $data['birthtime'] ?? '',
-            isDirectory: $data['isDirectory'] ?? false,
-            isFile: $data['isFile'] ?? false,
-            mtime: $data['mtime'] ?? '',
+            birthtime: Arr::string($data, 'birthtime', ''),
+            isDirectory: Arr::boolean($data, 'isDirectory', false),
+            isFile: Arr::boolean($data, 'isFile', false),
+            mtime: Arr::string($data, 'mtime', ''),
             size: $data['size'] ?? 0,
         );
     }

@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Types;
 
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Tool definition.
@@ -63,12 +64,12 @@ readonly class Tool implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
+            name: Arr::string($data, 'name'),
             description: $data['description'] ?? null,
             parameters: $data['parameters'] ?? null,
             handler: $data['handler'] ?? null,
-            overridesBuiltInTool: $data['overridesBuiltInTool'] ?? false,
-            skipPermission: $data['skipPermission'] ?? false,
+            overridesBuiltInTool: Arr::boolean($data, 'overridesBuiltInTool', false),
+            skipPermission: Arr::boolean($data, 'skipPermission', false),
             defer: $data['defer'] ?? 'auto',
         );
     }

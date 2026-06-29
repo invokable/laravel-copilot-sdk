@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\HostType;
 
 /**
@@ -37,7 +38,7 @@ readonly class SessionWorkingDirectoryContext implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            cwd: $data['cwd'] ?? '',
+            cwd: Arr::string($data, 'cwd', ''),
             gitRoot: $data['gitRoot'] ?? null,
             repository: $data['repository'] ?? null,
             hostType: isset($data['hostType']) ? HostType::tryFrom($data['hostType']) : null,

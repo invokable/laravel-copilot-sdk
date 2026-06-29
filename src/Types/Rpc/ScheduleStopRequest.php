@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Identifier of the scheduled prompt to remove.
@@ -23,7 +24,7 @@ readonly class ScheduleStopRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'] ?? 0,
+            id: Arr::integer($data, 'id', 0),
         );
     }
 

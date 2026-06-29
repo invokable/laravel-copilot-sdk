@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Request for setting the session filesystem provider.
@@ -27,9 +28,9 @@ readonly class SessionFsSetProviderRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            initialCwd: $data['initialCwd'],
-            sessionStatePath: $data['sessionStatePath'],
-            conventions: $data['conventions'] ?? 'posix',
+            initialCwd: Arr::string($data, 'initialCwd'),
+            sessionStatePath: Arr::string($data, 'sessionStatePath'),
+            conventions: Arr::string($data, 'conventions', 'posix'),
             capabilities: isset($data['capabilities']) ? SessionFsSetProviderCapabilities::fromArray($data['capabilities']) : null,
         );
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Snapshot cursor at the current tail of session event history.
@@ -20,7 +21,7 @@ readonly class EventLogTailResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            cursor: $data['cursor'] ?? '',
+            cursor: Arr::string($data, 'cursor', ''),
         );
     }
 

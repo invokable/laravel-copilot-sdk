@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of a shell kill request.
@@ -21,7 +22,7 @@ readonly class ShellKillResult implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            killed: (bool) $data['killed'],
+            killed: is_int($data['killed'] ?? null) ? (bool) Arr::integer($data, 'killed') : Arr::boolean($data, 'killed'),
         );
     }
 

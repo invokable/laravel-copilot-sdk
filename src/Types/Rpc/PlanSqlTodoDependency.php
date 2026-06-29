@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * A single dependency edge read from the session SQL `todo_deps` table, indicating
@@ -26,8 +27,8 @@ readonly class PlanSqlTodoDependency implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            dependsOn: $data['dependsOn'] ?? '',
-            todoId: $data['todoId'] ?? '',
+            dependsOn: Arr::string($data, 'dependsOn', ''),
+            todoId: Arr::string($data, 'todoId', ''),
         );
     }
 

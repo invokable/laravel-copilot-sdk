@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of session usage metrics query.
@@ -44,16 +45,16 @@ readonly class UsageGetMetricsResult implements Arrayable
         }
 
         return new self(
-            totalPremiumRequestCost: (float) $data['totalPremiumRequestCost'],
-            totalUserRequests: $data['totalUserRequests'],
+            totalPremiumRequestCost: is_int($data['totalPremiumRequestCost'] ?? null) ? (float) Arr::integer($data, 'totalPremiumRequestCost') : Arr::float($data, 'totalPremiumRequestCost'),
+            totalUserRequests: Arr::integer($data, 'totalUserRequests'),
             totalApiDurationMs: isset($data['totalApiDurationMs'])
                 ? (float) $data['totalApiDurationMs']
                 : (float) ($data['totalApiDuration'] ?? 0),
-            sessionStartTime: $data['sessionStartTime'],
+            sessionStartTime: Arr::integer($data, 'sessionStartTime'),
             codeChanges: CodeChanges::fromArray($data['codeChanges']),
             modelMetrics: $modelMetrics,
-            lastCallInputTokens: $data['lastCallInputTokens'],
-            lastCallOutputTokens: $data['lastCallOutputTokens'],
+            lastCallInputTokens: Arr::integer($data, 'lastCallInputTokens'),
+            lastCallOutputTokens: Arr::integer($data, 'lastCallOutputTokens'),
             currentModel: $data['currentModel'] ?? null,
         );
     }

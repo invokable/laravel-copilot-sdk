@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Parameters for registering runtime interest in an event type.
@@ -20,7 +21,7 @@ readonly class RegisterEventInterestParams implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            eventType: $data['eventType'] ?? '',
+            eventType: Arr::string($data, 'eventType', ''),
         );
     }
 

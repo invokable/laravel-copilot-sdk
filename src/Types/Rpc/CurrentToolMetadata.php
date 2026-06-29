@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Lightweight metadata for a currently initialized session tool.
@@ -35,8 +36,8 @@ readonly class CurrentToolMetadata implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'] ?? '',
-            description: $data['description'] ?? '',
+            name: Arr::string($data, 'name', ''),
+            description: Arr::string($data, 'description', ''),
             namespacedName: $data['namespacedName'] ?? null,
             mcpServerName: $data['mcpServerName'] ?? null,
             mcpToolName: $data['mcpToolName'] ?? null,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Configuration for a custom API provider.
@@ -58,7 +59,7 @@ readonly class ProviderConfig implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            baseUrl: $data['baseUrl'] ?? '',
+            baseUrl: Arr::string($data, 'baseUrl', ''),
             type: $data['type'] ?? null,
             wireApi: $data['wireApi'] ?? null,
             transport: $data['transport'] ?? null,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\SessionFSSqliteQueryType;
 
 /**
@@ -29,9 +30,9 @@ readonly class SessionFsSqliteQueryRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
-            query: $data['query'] ?? '',
+            query: Arr::string($data, 'query', ''),
             queryType: SessionFSSqliteQueryType::from($data['queryType']),
-            sessionId: $data['sessionId'] ?? '',
+            sessionId: Arr::string($data, 'sessionId', ''),
             params: isset($data['params']) ? (array) $data['params'] : null,
         );
     }
