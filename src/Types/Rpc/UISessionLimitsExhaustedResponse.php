@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\SessionLimitsExhaustedResponseAction;
 
 /**
@@ -16,7 +15,6 @@ use Revolution\Copilot\Enums\SessionLimitsExhaustedResponseAction;
 readonly class UISessionLimitsExhaustedResponse implements Arrayable
 {
     /**
-     * @param  SessionLimitsExhaustedResponseAction|string  $action
      * @param  ?float  $additionalAiCredits  AI Credits to add to the current max when action is 'add'.
      * @param  ?float  $maxAiCredits  New absolute max AI Credits when action is 'set'.
      */
