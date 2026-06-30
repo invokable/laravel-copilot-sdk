@@ -6,8 +6,8 @@ use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Enums\SessionVisibilityStatus;
 
 describe('New SessionEventType cases', function () {
-    it('has session.response_limits_changed case', function () {
-        expect(SessionEventType::SESSION_RESPONSE_LIMITS_CHANGED->value)->toBe('session.response_limits_changed');
+    it('has session.session_limits_changed case', function () {
+        expect(SessionEventType::SESSION_SESSION_LIMITS_CHANGED->value)->toBe('session.session_limits_changed');
     });
 
     it('has assistant.idle case', function () {
@@ -23,7 +23,7 @@ describe('New SessionEventType cases', function () {
     });
 
     it('can create from string', function () {
-        expect(SessionEventType::from('session.response_limits_changed'))->toBe(SessionEventType::SESSION_RESPONSE_LIMITS_CHANGED)
+        expect(SessionEventType::from('session.session_limits_changed'))->toBe(SessionEventType::SESSION_SESSION_LIMITS_CHANGED)
             ->and(SessionEventType::from('assistant.idle'))->toBe(SessionEventType::ASSISTANT_IDLE)
             ->and(SessionEventType::from('mcp.headers_refresh_required'))->toBe(SessionEventType::MCP_HEADERS_REFRESH_REQUIRED)
             ->and(SessionEventType::from('mcp.headers_refresh_completed'))->toBe(SessionEventType::MCP_HEADERS_REFRESH_COMPLETED);
