@@ -53,6 +53,20 @@ steps:
                 echo "Found $OPEN_PRS open sdk-sync PR(s). Skipping duplicate."
                 exit 1
             fi
+
+    -   name: Save open sdk-sync issues
+        if: steps.changes.outputs.status == 'changes-detected'
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            EXPR_GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+            gh issue list \
+              --repo "$EXPR_GITHUB_REPOSITORY" \
+              --label sdk-sync \
+              --state open \
+              --limit 100 \
+              --json number,title,url \
+              --jq '.[] | "#\(.number) \(.title) \(.url)"' > /tmp/gh-aw/open-sdk-sync-issues.txt
     
     -   name: Set up PHP (if changes detected)
         if: steps.changes.outputs.status == 'changes-detected'
@@ -113,10 +127,18 @@ The previous workflow steps have pre-computed:
 - `/tmp/gh-aw/commits.txt` — Commit log (current..latest)
 - `/tmp/gh-aw/diff-*.txt` — Diffs for critical files only
 - `/tmp/gh-aw/file-status.txt` — Which critical files changed
+- `/tmp/gh-aw/open-sdk-sync-issues.txt` — Open `sdk-sync` issues snapshot
 
 **Do not re-run git commands to fetch changes; use the pre-computed files above.**
 
-## Step 1: Check for Duplicate PRs (Fast-Track)
+## Step 1: Check Pending `sdk-sync` Issues
+
+Read `/tmp/gh-aw/open-sdk-sync-issues.txt` first.
+
+- If it contains unresolved implementation tasks from previous syncs, continue the sync while explicitly including those items in this implementation.
+- If a needed change cannot be completed in this run, create a **new issue** with label `sdk-sync` describing the deferred work, then reference it in the PR body.
+
+## Step 2: Check for Duplicate PRs (Fast-Track)
 
 Search for open PRs with label `sdk-sync`:
 ```bash
@@ -125,7 +147,7 @@ gh pr list --repo "${{ github.repository }}" --label sdk-sync --state open
 
 If an open PR exists, check its commit range. If it already covers the changes in `/tmp/gh-aw/commits.txt`, output "No additional changes to sync" and stop.
 
-## Step 2: Analyze Pre-Computed Changes
+## Step 3: Analyze Pre-Computed Changes
 
 Read the change files prepared by the workflow:
 
@@ -145,7 +167,7 @@ Read the change files prepared by the workflow:
 
 **Do not fetch additional diffs.** The files above are sufficient. If a file is missing from `/tmp/gh-aw/`, it means it did not change.
 
-## Step 3: Map to Laravel Implementation
+## Step 4: Map to Laravel Implementation
 
 Using the mapping table below, determine which Laravel files need updates:
 
@@ -168,14 +190,14 @@ Using the mapping table below, determine which Laravel files need updates:
 - **Client option key changes**: Update both `CopilotManager::client()` and `CopilotManager::useStdio()` `Arr::only()` filter
 - **Do not touch**: `src/Facades/Copilot.php`, `src/CopilotSdkServiceProvider.php`, `src/Ai/`
 
-## Step 4: Implement Changes
+## Step 5: Implement Changes
 
 1. Update submodule: Read `/tmp/gh-aw/latest-commit.txt` and check out that commit in `copilot-sdk/`
 2. Implement mapped Laravel changes (use Python version of rpc.py as reference — easier to read)
 3. For new type classes: ensure `readonly`, `Arrayable`, `fromArray()`, `toArray()`. Use `Arr::string()`, `Arr::integer()`, `Arr::float()`, `Arr::array()`, and `Arr::boolean()` where the type is clearly defined.
 4. For new RPC methods: add `Pending*` class in `src/Rpc/` and types in `src/Types/Rpc/`
 
-## Step 5: Add Tests
+## Step 6: Add Tests
 
 Add Pest tests for all new/changed classes:
 
@@ -186,7 +208,7 @@ Add Pest tests for all new/changed classes:
 
 **Minimal test coverage**: Each type should have tests for creation, default values, roundtrip conversion. See existing test files for patterns.
 
-## Step 6: Validate
+## Step 7: Validate
 
 Run:
 ```bash
@@ -196,7 +218,7 @@ composer run lint
 
 Fix any failures.
 
-## Step 7: Update Docs (Selective)
+## Step 8: Update Docs (Selective)
 
 Review your changes and update **only affected** docs in `docs/jp/`:
 - New/changed RPC methods → `docs/jp/rpc.md`
@@ -205,7 +227,7 @@ Review your changes and update **only affected** docs in `docs/jp/`:
 
 **Do not create new doc files.** Only update existing ones if directly affected.
 
-## Step 8: Create Pull Request
+## Step 9: Create Pull Request
 
 Title: "Sync with copilot-sdk: [brief description]" (e.g., "add new RPC methods for model switching")
 
@@ -213,6 +235,7 @@ Body:
 - Commit range: `github/copilot-sdk/<old>..<new>`
 - Summary of changes
 - List of modified Laravel files
+- Deferred implementation issues created/linked during this run (if any)
 - Link: `https://github.com/github/copilot-sdk/compare/<old>..<new>`
 
 ## Key Optimization Rules
