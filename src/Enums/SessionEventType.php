@@ -22,13 +22,14 @@ enum SessionEventType: string
     case SESSION_WARNING = 'session.warning';
     case SESSION_MODEL_CHANGE = 'session.model_change';
     case SESSION_MODE_CHANGED = 'session.mode_changed';
-    case SESSION_RESPONSE_LIMITS_CHANGED = 'session.response_limits_changed';
+    case SESSION_SESSION_LIMITS_CHANGED = 'session.session_limits_changed';
     case SESSION_PLAN_CHANGED = 'session.plan_changed';
     case SESSION_WORKSPACE_FILE_CHANGED = 'session.workspace_file_changed';
     case SESSION_HANDOFF = 'session.handoff';
     case SESSION_TRUNCATION = 'session.truncation';
     case SESSION_SNAPSHOT_REWIND = 'session.snapshot_rewind';
     case SESSION_SHUTDOWN = 'session.shutdown';
+    case SESSION_USAGE_CHECKPOINT = 'session.usage_checkpoint';
     case SESSION_USAGE_INFO = 'session.usage_info';
     case SESSION_BACKGROUND_TASKS_CHANGED = 'session.background_tasks_changed';
     case SESSION_COMPACTION_START = 'session.compaction_start';
@@ -92,6 +93,8 @@ enum SessionEventType: string
     case COMMAND_COMPLETED = 'command.completed';
     case AUTO_MODE_SWITCH_REQUESTED = 'auto_mode_switch.requested';
     case AUTO_MODE_SWITCH_COMPLETED = 'auto_mode_switch.completed';
+    case SESSION_LIMITS_EXHAUSTED_REQUESTED = 'session_limits_exhausted.requested';
+    case SESSION_LIMITS_EXHAUSTED_COMPLETED = 'session_limits_exhausted.completed';
     case COMMANDS_CHANGED = 'commands.changed';
 
     // Exit plan mode events (protocol v3+)

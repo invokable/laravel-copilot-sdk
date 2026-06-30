@@ -9,6 +9,8 @@ use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\Rpc\UIElicitationResult;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingElicitationRequest;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingSessionLimitsExhaustedRequest;
+use Revolution\Copilot\Types\Rpc\UISessionLimitsExhaustedResponse;
 
 /**
  * Pending UI RPC operations for a session.
@@ -43,6 +45,21 @@ class PendingUi
 
         return UIElicitationResult::fromArray(
             $this->client->request('session.ui.handlePendingElicitation', $paramsArray),
+        );
+    }
+
+    /**
+     * Resolves a pending session_limits_exhausted.requested event with the user's selected limit action.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function handlePendingSessionLimitsExhausted(UIHandlePendingSessionLimitsExhaustedRequest|array $params): UIElicitationResult
+    {
+        $paramsArray = ($params instanceof UIHandlePendingSessionLimitsExhaustedRequest ? $params : UIHandlePendingSessionLimitsExhaustedRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return UIElicitationResult::fromArray(
+            $this->client->request('session.ui.handlePendingSessionLimitsExhausted', $paramsArray),
         );
     }
 }
