@@ -5,20 +5,27 @@
       "version": "v9.0.0",
       "sha": "3a2844b7e9c422d3c10d287c895573f7108da1b3"
     },
-    "github/gh-aw-actions/setup-cli@v0.80.9": {
+    "github/gh-aw-actions/setup-cli@v0.81.6": {
       "repo": "github/gh-aw-actions/setup-cli",
-      "version": "v0.80.9",
-      "sha": "8c7d04ebf1ece56cd381446125da3e0f6896294a"
+      "version": "v0.81.6",
+      "sha": "ba6380cc6e5be5d21677bebe04d52fb48e3abec7"
     },
-    "github/gh-aw-actions/setup@v0.80.9": {
+    "github/gh-aw-actions/setup@v0.81.6": {
       "repo": "github/gh-aw-actions/setup",
-      "version": "v0.80.9",
-      "sha": "8c7d04ebf1ece56cd381446125da3e0f6896294a"
+      "version": "v0.81.6",
+      "sha": "ba6380cc6e5be5d21677bebe04d52fb48e3abec7"
     },
     "shivammathur/setup-php@2.37.2": {
       "repo": "shivammathur/setup-php",
       "version": "2.37.2",
       "sha": "f3e473d116dcccaddc5834248c87452386958240"
+    }
+  },
+  "containers": {
+    "ghcr.io/github/gh-aw-firewall/cli-proxy:0.27.11": {
+      "image": "ghcr.io/github/gh-aw-firewall/cli-proxy:0.27.11",
+      "digest": "sha256:1f989a7f2869c6a1b5f76bbbc645027966aa7e87b066d94734a901a7f371dfcd",
+      "pinned_image": "ghcr.io/github/gh-aw-firewall/cli-proxy:0.27.11@sha256:1f989a7f2869c6a1b5f76bbbc645027966aa7e87b066d94734a901a7f371dfcd"
     }
   }
 }
