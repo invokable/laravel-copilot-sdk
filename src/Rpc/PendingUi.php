@@ -10,7 +10,6 @@ use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\Rpc\UIElicitationResult;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingSessionLimitsExhaustedRequest;
-use Revolution\Copilot\Types\Rpc\UISessionLimitsExhaustedResponse;
 
 /**
  * Pending UI RPC operations for a session.
