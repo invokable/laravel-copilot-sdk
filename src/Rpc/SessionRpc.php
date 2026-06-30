@@ -171,6 +171,18 @@ class SessionRpc
     }
 
     /**
+     * Completions RPC operations.
+     *
+     * Used to get host-driven completion items for the composer input.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function completions(): PendingCompletions
+    {
+        return new PendingCompletions($this->client, $this->sessionId);
+    }
+
+    /**
      * Session log RPC operations.
      *
      * Used to log messages to the session timeline.

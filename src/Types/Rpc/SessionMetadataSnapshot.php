@@ -18,6 +18,7 @@ readonly class SessionMetadataSnapshot implements Arrayable
     /**
      * @param  ?array<string, mixed>  $remoteMetadata
      * @param  ?array<string, mixed>  $workspace
+     * @param  SessionLimitsConfig|null  $sessionLimits  Current session limits, or null when no limits are active
      */
     public function __construct(
         public string $sessionId,
@@ -33,6 +34,7 @@ readonly class SessionMetadataSnapshot implements Arrayable
         public ?string $summary = null,
         public ?string $selectedModel = null,
         public ?array $workspace = null,
+        public ?SessionLimitsConfig $sessionLimits = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -41,6 +43,10 @@ readonly class SessionMetadataSnapshot implements Arrayable
         if (is_string($currentMode)) {
             $currentMode = AgentMode::tryFrom($currentMode) ?? $currentMode;
         }
+
+        $sessionLimits = isset($data['sessionLimits']) && is_array($data['sessionLimits'])
+            ? SessionLimitsConfig::fromArray($data['sessionLimits'])
+            : null;
 
         return new self(
             sessionId: Arr::string($data, 'sessionId', ''),
@@ -56,6 +62,7 @@ readonly class SessionMetadataSnapshot implements Arrayable
             summary: $data['summary'] ?? null,
             selectedModel: $data['selectedModel'] ?? null,
             workspace: isset($data['workspace']) && is_array($data['workspace']) ? $data['workspace'] : null,
+            sessionLimits: $sessionLimits,
         );
     }
 
@@ -79,6 +86,7 @@ readonly class SessionMetadataSnapshot implements Arrayable
             'summary' => $this->summary,
             'selectedModel' => $this->selectedModel,
             'workspace' => $this->workspace,
+            'sessionLimits' => $this->sessionLimits?->toArray(),
         ], fn ($value): bool => $value !== null);
     }
 }

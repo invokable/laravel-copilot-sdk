@@ -83,6 +83,32 @@ describe('SessionEventType', function () {
             ->and(SessionEventType::from('auto_mode_switch.completed'))->toBe(SessionEventType::AUTO_MODE_SWITCH_COMPLETED);
     });
 
+    it('has session limits changed event type', function () {
+        expect(SessionEventType::SESSION_SESSION_LIMITS_CHANGED->value)->toBe('session.session_limits_changed');
+    });
+
+    it('can create session limits changed from string', function () {
+        expect(SessionEventType::from('session.session_limits_changed'))->toBe(SessionEventType::SESSION_SESSION_LIMITS_CHANGED);
+    });
+
+    it('has usage checkpoint event type', function () {
+        expect(SessionEventType::SESSION_USAGE_CHECKPOINT->value)->toBe('session.usage_checkpoint');
+    });
+
+    it('can create usage checkpoint from string', function () {
+        expect(SessionEventType::from('session.usage_checkpoint'))->toBe(SessionEventType::SESSION_USAGE_CHECKPOINT);
+    });
+
+    it('has session limits exhausted event types', function () {
+        expect(SessionEventType::SESSION_LIMITS_EXHAUSTED_REQUESTED->value)->toBe('session_limits_exhausted.requested')
+            ->and(SessionEventType::SESSION_LIMITS_EXHAUSTED_COMPLETED->value)->toBe('session_limits_exhausted.completed');
+    });
+
+    it('can create session limits exhausted event types from string', function () {
+        expect(SessionEventType::from('session_limits_exhausted.requested'))->toBe(SessionEventType::SESSION_LIMITS_EXHAUSTED_REQUESTED)
+            ->and(SessionEventType::from('session_limits_exhausted.completed'))->toBe(SessionEventType::SESSION_LIMITS_EXHAUSTED_COMPLETED);
+    });
+
     it('has assistant message start event type', function () {
         expect(SessionEventType::ASSISTANT_MESSAGE_START->value)->toBe('assistant.message_start');
     });
