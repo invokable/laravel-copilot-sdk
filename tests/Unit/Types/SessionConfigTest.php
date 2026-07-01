@@ -10,6 +10,7 @@ use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
+use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 
 describe('SessionConfig', function () {
     it('can be created from array with all fields', function () {
@@ -463,5 +464,65 @@ describe('SessionConfig', function () {
         $config = SessionConfig::fromArray(['enableCitations' => true]);
 
         expect($config->enableCitations)->toBeTrue();
+    });
+
+    it('accepts excludedBuiltinAgents parameter', function () {
+        $config = new SessionConfig(excludedBuiltinAgents: ['agent1', 'agent2']);
+
+        expect($config->excludedBuiltinAgents)->toBe(['agent1', 'agent2']);
+    });
+
+    it('includes excludedBuiltinAgents in toArray', function () {
+        $config = new SessionConfig(excludedBuiltinAgents: ['agent1']);
+
+        expect($config->toArray())->toHaveKey('excludedBuiltinAgents')
+            ->and($config->toArray()['excludedBuiltinAgents'])->toBe(['agent1']);
+    });
+
+    it('excludes excludedBuiltinAgents from toArray when null', function () {
+        $config = new SessionConfig;
+
+        expect($config->toArray())->not->toHaveKey('excludedBuiltinAgents');
+    });
+
+    it('can be created from array with excludedBuiltinAgents', function () {
+        $config = SessionConfig::fromArray(['excludedBuiltinAgents' => ['agent1', 'agent2']]);
+
+        expect($config->excludedBuiltinAgents)->toBe(['agent1', 'agent2']);
+    });
+
+    it('accepts sessionLimits parameter', function () {
+        $limits = new SessionLimitsConfig(maxAiCredits: 100.0);
+        $config = new SessionConfig(sessionLimits: $limits);
+
+        expect($config->sessionLimits)->toBeInstanceOf(SessionLimitsConfig::class)
+            ->and($config->sessionLimits->maxAiCredits)->toBe(100.0);
+    });
+
+    it('includes sessionLimits in toArray', function () {
+        $config = new SessionConfig(sessionLimits: new SessionLimitsConfig(maxAiCredits: 50.0));
+
+        expect($config->toArray())->toHaveKey('sessionLimits')
+            ->and($config->toArray()['sessionLimits'])->toBe(['maxAiCredits' => 50.0]);
+    });
+
+    it('excludes sessionLimits from toArray when null', function () {
+        $config = new SessionConfig;
+
+        expect($config->toArray())->not->toHaveKey('sessionLimits');
+    });
+
+    it('can be created from array with sessionLimits', function () {
+        $config = SessionConfig::fromArray(['sessionLimits' => ['maxAiCredits' => 75.0]]);
+
+        expect($config->sessionLimits)->toBeInstanceOf(SessionLimitsConfig::class)
+            ->and($config->sessionLimits->maxAiCredits)->toBe(75.0);
+    });
+
+    it('accepts sessionLimits as SessionLimitsConfig instance in fromArray', function () {
+        $limits = new SessionLimitsConfig(maxAiCredits: 25.0);
+        $config = SessionConfig::fromArray(['sessionLimits' => $limits]);
+
+        expect($config->sessionLimits)->toBe($limits);
     });
 });

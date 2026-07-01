@@ -175,6 +175,13 @@ $config = new SessionConfig(
     // もしくは除外するツール
     excludedTools: ['shell'],
 
+    // 除外するビルトインエージェント（v1.0.5+）
+    // 指定されたビルトインエージェントはセッションから非表示になり、同名のカスタムエージェントがない限り選択・呼び出しできない
+    excludedBuiltinAgents: ['coding'],
+
+    // セッションのAIクレジット上限（実験的機能）
+    sessionLimits: new SessionLimitsConfig(maxAiCredits: 100.0),
+
     // MCPサーバー設定
     mcpServers: [
         'github' => [
