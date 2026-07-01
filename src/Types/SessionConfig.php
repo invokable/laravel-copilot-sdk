@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
+use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 
 /**
  * Configuration for creating a session.
@@ -160,7 +161,14 @@ readonly class SessionConfig implements Arrayable
      * @param  ?bool  $enableSessionStore  When true, enables the cross-session store for search and retrieval.
      * @param  ?bool  $enableSkills  When true, enables skill loading.
      * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of `prompt`.
+     * @param  ?array  $excludedBuiltinAgents  Names of built-in agents to exclude from the session. Excluded built-in
+     *                                         agents are hidden from discovery and cannot be selected or invoked unless
+     *                                         a custom agent with the same name is configured.
      * @param  ?bool  $enableCitations  Experimental: enable native model citations, normalized onto the `assistant.message` event.
+     * @param  SessionLimitsConfig|array|null  $sessionLimits  Limits applied to this session's current accounting window.
+     *
+     *                                                         @experimental
+     *
      * @param  ?array  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
      *                                  path as CLI-fetched assignments. Applies to both session creation and resume. @internal
      */
@@ -231,6 +239,8 @@ readonly class SessionConfig implements Arrayable
         public ?bool $enableSkills = null,
         public ?string $displayPrompt = null,
         public ?bool $enableCitations = null,
+        public ?array $excludedBuiltinAgents = null,
+        public SessionLimitsConfig|array|null $sessionLimits = null,
         public ?array $expAssignments = null,
     ) {}
 
@@ -309,6 +319,13 @@ readonly class SessionConfig implements Arrayable
                 : LargeToolOutputConfig::fromArray($data['largeOutput']);
         }
 
+        $sessionLimits = null;
+        if (isset($data['sessionLimits'])) {
+            $sessionLimits = $data['sessionLimits'] instanceof SessionLimitsConfig
+                ? $data['sessionLimits']
+                : SessionLimitsConfig::fromArray($data['sessionLimits']);
+        }
+
         return new self(
             sessionId: $data['sessionId'] ?? null,
             clientName: $data['clientName'] ?? null,
@@ -376,6 +393,8 @@ readonly class SessionConfig implements Arrayable
             enableSkills: $data['enableSkills'] ?? null,
             displayPrompt: $data['displayPrompt'] ?? null,
             enableCitations: $data['enableCitations'] ?? null,
+            excludedBuiltinAgents: $data['excludedBuiltinAgents'] ?? null,
+            sessionLimits: $sessionLimits,
             expAssignments: $data['expAssignments'] ?? null,
         );
     }
@@ -432,6 +451,10 @@ readonly class SessionConfig implements Arrayable
         $largeOutput = $this->largeOutput instanceof LargeToolOutputConfig
             ? $this->largeOutput->toArray()
             : $this->largeOutput;
+
+        $sessionLimits = $this->sessionLimits instanceof SessionLimitsConfig
+            ? $this->sessionLimits->toArray()
+            : $this->sessionLimits;
 
         return array_filter([
             'sessionId' => $this->sessionId,
@@ -500,6 +523,8 @@ readonly class SessionConfig implements Arrayable
             'enableSkills' => $this->enableSkills,
             'displayPrompt' => $this->displayPrompt,
             'enableCitations' => $this->enableCitations,
+            'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
+            'sessionLimits' => $sessionLimits,
             'expAssignments' => $this->expAssignments,
         ], fn ($value) => $value !== null);
     }
