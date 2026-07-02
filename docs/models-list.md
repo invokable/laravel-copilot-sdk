@@ -22,6 +22,7 @@ The available models may change depending on Copilot CLI updates and your organi
  │ gpt-5-mini              │ GPT-5 mini                  │ 264000             │ Yes            │ Yes                       │ Yes                         │
  │ gemini-3.1-pro-preview  │ Gemini 3.1 Pro              │ 1000000            │ Yes            │ Yes                       │ No                          │
  │ gemini-3.5-flash        │ Gemini 3.5 Flash            │ 1000000            │ Yes            │ Yes                       │ No                          │
+ │ kimi-k2.7-code          │ Kimi K2.7 Code              │ 256000             │ Yes            │ No                        │ Yes                         │
  │ mai-code-1-flash-picker │ MAI-Code-1-Flash            │ 256000             │ No             │ Yes                       │ Yes                         │
  └─────────────────────────┴─────────────────────────────┴────────────────────┴────────────────┴───────────────────────────┴─────────────────────────────┘
 ```
