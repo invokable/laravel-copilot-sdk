@@ -94,4 +94,21 @@ describe('ExternalToolTextResultForLlm', function () {
 
         expect($array)->toBe($data);
     });
+
+    it('can include toolReferences', function () {
+        $result = ExternalToolTextResultForLlm::fromArray([
+            'textResultForLlm' => 'deferred',
+            'toolReferences' => ['bash', 'python'],
+        ]);
+
+        expect($result->toolReferences)->toBe(['bash', 'python'])
+            ->and($result->toArray())->toHaveKey('toolReferences', ['bash', 'python']);
+    });
+
+    it('defaults toolReferences to null', function () {
+        $result = ExternalToolTextResultForLlm::fromArray(['textResultForLlm' => 'result']);
+
+        expect($result->toolReferences)->toBeNull()
+            ->and($result->toArray())->not->toHaveKey('toolReferences');
+    });
 });

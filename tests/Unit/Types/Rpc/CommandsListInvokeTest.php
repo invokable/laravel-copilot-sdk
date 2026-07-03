@@ -99,6 +99,36 @@ describe('SlashCommandInput', function () {
         expect($array)->toHaveKey('hint', 'Enter path')
             ->and($array)->not->toHaveKey('completion');
     });
+
+    it('can be created with choices', function () {
+        $input = SlashCommandInput::fromArray([
+            'hint' => 'Select mode',
+            'choices' => [
+                ['name' => 'on', 'description' => 'Enable'],
+                ['name' => 'off', 'description' => 'Disable'],
+            ],
+        ]);
+
+        expect($input->choices)->toHaveCount(2)
+            ->and($input->choices[0]->name)->toBe('on')
+            ->and($input->choices[1]->name)->toBe('off');
+    });
+
+    it('includes choices in toArray', function () {
+        $input = SlashCommandInput::fromArray([
+            'hint' => 'Select mode',
+            'choices' => [['name' => 'on', 'description' => 'Enable']],
+        ]);
+
+        expect($input->toArray())->toHaveKey('choices');
+    });
+
+    it('defaults choices to null', function () {
+        $input = SlashCommandInput::fromArray(['hint' => 'text']);
+
+        expect($input->choices)->toBeNull()
+            ->and($input->toArray())->not->toHaveKey('choices');
+    });
 });
 
 describe('SlashCommandInfo', function () {

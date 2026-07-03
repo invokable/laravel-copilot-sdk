@@ -23,6 +23,7 @@ readonly class ExternalToolTextResultForLlm implements Arrayable
      * @param  ?string  $sessionLog  Detailed log content for timeline display
      * @param  ?array  $toolTelemetry  Optional tool-specific telemetry
      * @param  ?array  $contents  Structured content blocks from the tool
+     * @param  ?string[]  $toolReferences  Tool references returned by a tool-search override: names of deferred tools to surface to the model.
      */
     public function __construct(
         public string $textResultForLlm,
@@ -31,6 +32,7 @@ readonly class ExternalToolTextResultForLlm implements Arrayable
         public ?string $sessionLog = null,
         public ?array $toolTelemetry = null,
         public ?array $contents = null,
+        public ?array $toolReferences = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -42,6 +44,7 @@ readonly class ExternalToolTextResultForLlm implements Arrayable
             sessionLog: $data['sessionLog'] ?? null,
             toolTelemetry: $data['toolTelemetry'] ?? null,
             contents: $data['contents'] ?? null,
+            toolReferences: $data['toolReferences'] ?? null,
         );
     }
 
@@ -54,6 +57,7 @@ readonly class ExternalToolTextResultForLlm implements Arrayable
             'sessionLog' => $this->sessionLog,
             'toolTelemetry' => $this->toolTelemetry,
             'contents' => $this->contents,
+            'toolReferences' => $this->toolReferences,
         ], fn ($v) => $v !== null);
     }
 }
