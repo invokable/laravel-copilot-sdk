@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\MetadataContextAttributionResult;
+use Revolution\Copilot\Types\Rpc\MetadataContextHeaviestMessagesRequest;
+use Revolution\Copilot\Types\Rpc\MetadataContextHeaviestMessagesResult;
 use Revolution\Copilot\Types\Rpc\MetadataContextInfoRequest;
 use Revolution\Copilot\Types\Rpc\MetadataContextInfoResult;
 use Revolution\Copilot\Types\Rpc\MetadataIsProcessingResult;
@@ -83,6 +86,37 @@ class PendingMetadata
 
         return MetadataRecomputeContextTokensResult::fromArray(
             $this->client->request('session.metadata.recomputeContextTokens', $paramsArray),
+        );
+    }
+
+    /**
+     * Returns the experimental per-source attribution breakdown of the session's current context window.
+     * Returns null until the session has initialized its system prompt and tool metadata.
+     *
+     * @experimental
+     */
+    public function getContextAttribution(): MetadataContextAttributionResult
+    {
+        return MetadataContextAttributionResult::fromArray(
+            $this->client->request('session.metadata.getContextAttribution', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Returns the largest individual messages currently in the session's context window, most-expensive first.
+     * Returns an empty list until the session has initialized.
+     *
+     * @experimental
+     */
+    public function getContextHeaviestMessages(MetadataContextHeaviestMessagesRequest|array $params = []): MetadataContextHeaviestMessagesResult
+    {
+        $paramsArray = ($params instanceof MetadataContextHeaviestMessagesRequest ? $params : MetadataContextHeaviestMessagesRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return MetadataContextHeaviestMessagesResult::fromArray(
+            $this->client->request('session.metadata.getContextHeaviestMessages', $paramsArray),
         );
     }
 }

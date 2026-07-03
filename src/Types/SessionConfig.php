@@ -82,6 +82,11 @@ readonly class SessionConfig implements Arrayable
      *                                         telemetry is enabled for GitHub-authenticated sessions.
      *                                         When a custom provider (BYOK) is configured, session telemetry
      *                                         is always disabled regardless of this setting.
+     * @param  ?bool  $enableGitHubTelemetryForwarding  Opts this session into GitHub telemetry forwarding.
+     *                                                   When true, the runtime forwards `gitHubTelemetry.event` notifications
+     *                                                   to this connection so the host can receive and handle telemetry events.
+     *
+     *                                                   @experimental
      * @param  SessionHooks|array|null  $hooks  Hook handlers for intercepting session lifecycle events.
      *                                          When provided, enables hooks callback allowing custom logic at various points.
      * @param  ?string  $workingDirectory  Working directory for the session. Tool operations will be relative to this directory.
@@ -198,6 +203,7 @@ readonly class SessionConfig implements Arrayable
         public ?Closure $onExitPlanModeRequest = null,
         public ?Closure $onAutoModeSwitchRequest = null,
         public ?bool $enableSessionTelemetry = null,
+        public ?bool $enableGitHubTelemetryForwarding = null,
         public SessionHooks|array|null $hooks = null,
         public ?string $workingDirectory = null,
         public ?bool $streaming = null,
@@ -352,6 +358,7 @@ readonly class SessionConfig implements Arrayable
             onExitPlanModeRequest: $data['onExitPlanModeRequest'] ?? $data['onExitPlanMode'] ?? null,
             onAutoModeSwitchRequest: $data['onAutoModeSwitchRequest'] ?? $data['onAutoModeSwitch'] ?? null,
             enableSessionTelemetry: $data['enableSessionTelemetry'] ?? null,
+            enableGitHubTelemetryForwarding: $data['enableGitHubTelemetryForwarding'] ?? null,
             hooks: $hooks,
             workingDirectory: $data['workingDirectory'] ?? null,
             streaming: $data['streaming'] ?? null,
@@ -482,6 +489,7 @@ readonly class SessionConfig implements Arrayable
             'onExitPlanModeRequest' => $this->onExitPlanModeRequest,
             'onAutoModeSwitchRequest' => $this->onAutoModeSwitchRequest,
             'enableSessionTelemetry' => $this->enableSessionTelemetry,
+            'enableGitHubTelemetryForwarding' => $this->enableGitHubTelemetryForwarding,
             'hooks' => $hooks,
             'workingDirectory' => $this->workingDirectory,
             'streaming' => $this->streaming,
