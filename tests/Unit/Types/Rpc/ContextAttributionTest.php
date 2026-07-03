@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
-use Revolution\Copilot\Types\Rpc\SessionContextAttribution;
-use Revolution\Copilot\Types\Rpc\SessionContextAttributionEntry;
+use Revolution\Copilot\Types\Rpc\ContextHeaviestMessage;
 use Revolution\Copilot\Types\Rpc\MetadataContextAttributionResult;
 use Revolution\Copilot\Types\Rpc\MetadataContextHeaviestMessagesRequest;
 use Revolution\Copilot\Types\Rpc\MetadataContextHeaviestMessagesResult;
-use Revolution\Copilot\Types\Rpc\ContextHeaviestMessage;
+use Revolution\Copilot\Types\Rpc\SessionContextAttribution;
+use Revolution\Copilot\Types\Rpc\SessionContextAttributionEntry;
 
 describe('SessionContextAttributionEntry', function () {
     it('implements Arrayable', function () {
@@ -138,7 +138,7 @@ describe('MetadataContextAttributionResult', function () {
     });
 
     it('omits null attribution from toArray', function () {
-        $result = new MetadataContextAttributionResult();
+        $result = new MetadataContextAttributionResult;
 
         expect($result->toArray())->not->toHaveKey('contextAttribution');
     });
@@ -151,7 +151,7 @@ describe('MetadataContextHeaviestMessagesRequest', function () {
     });
 
     it('defaults limit to null', function () {
-        $req = new MetadataContextHeaviestMessagesRequest();
+        $req = new MetadataContextHeaviestMessagesRequest;
 
         expect($req->limit)->toBeNull()
             ->and($req->toArray())->toBe([]);

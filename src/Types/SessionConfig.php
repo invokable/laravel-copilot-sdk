@@ -83,10 +83,11 @@ readonly class SessionConfig implements Arrayable
      *                                         When a custom provider (BYOK) is configured, session telemetry
      *                                         is always disabled regardless of this setting.
      * @param  ?bool  $enableGitHubTelemetryForwarding  Opts this session into GitHub telemetry forwarding.
-     *                                                   When true, the runtime forwards `gitHubTelemetry.event` notifications
-     *                                                   to this connection so the host can receive and handle telemetry events.
+     *                                                  When true, the runtime forwards `gitHubTelemetry.event` notifications
+     *                                                  to this connection so the host can receive and handle telemetry events.
      *
      *                                                   @experimental
+     *
      * @param  SessionHooks|array|null  $hooks  Hook handlers for intercepting session lifecycle events.
      *                                          When provided, enables hooks callback allowing custom logic at various points.
      * @param  ?string  $workingDirectory  Working directory for the session. Tool operations will be relative to this directory.
