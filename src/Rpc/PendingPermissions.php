@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\AllowAllPermissionSetResult;
+use Revolution\Copilot\Types\Rpc\AllowAllPermissionState;
 use Revolution\Copilot\Types\Rpc\PendingPermissionRequestList;
 use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
 use Revolution\Copilot\Types\Rpc\PermissionPromptShownNotification;
@@ -16,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\PermissionsModifyRulesResult;
 use Revolution\Copilot\Types\Rpc\PermissionsNotifyPromptShownResult;
 use Revolution\Copilot\Types\Rpc\PermissionsPendingRequestsRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsResetSessionApprovalsResult;
+use Revolution\Copilot\Types\Rpc\PermissionsSetAllowAllRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllResult;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredRequest;
@@ -150,6 +153,35 @@ class PendingPermissions
 
         return PermissionsNotifyPromptShownResult::fromArray(
             $this->client->request('session.permissions.notifyPromptShown', $paramsArray),
+        );
+    }
+
+    /**
+     * Set the allow-all mode for this session's permissions.
+     *
+     * @experimental
+     */
+    public function setAllowAll(PermissionsSetAllowAllRequest|array $params): AllowAllPermissionSetResult
+    {
+        $paramsArray = ($params instanceof PermissionsSetAllowAllRequest ? $params : PermissionsSetAllowAllRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return AllowAllPermissionSetResult::fromArray(
+            $this->client->request('session.permissions.setAllowAll', $paramsArray),
+        );
+    }
+
+    /**
+     * Get the current allow-all mode for this session's permissions.
+     *
+     * @experimental
+     */
+    public function getAllowAll(): AllowAllPermissionState
+    {
+        return AllowAllPermissionState::fromArray(
+            $this->client->request('session.permissions.getAllowAll', [
+                'sessionId' => $this->sessionId,
+            ]),
         );
     }
 }
