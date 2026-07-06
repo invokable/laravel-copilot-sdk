@@ -14,15 +14,18 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class ConnectRequest implements Arrayable
 {
     /**
-     * @param  ?string  $token  Connection token; required when the server was started with COPILOT_CONNECTION_TOKEN
+     * @param  ?bool    $enableGitHubTelemetryForwarding  Opt this connection in to GitHub telemetry forwarding.
+     * @param  ?string  $token                            Connection token; required when the server was started with COPILOT_CONNECTION_TOKEN
      */
     public function __construct(
+        public ?bool $enableGitHubTelemetryForwarding = null,
         public ?string $token = null,
     ) {}
 
     public static function fromArray(array $data): static
     {
         return new static(
+            enableGitHubTelemetryForwarding: isset($data['enableGitHubTelemetryForwarding']) ? (bool) $data['enableGitHubTelemetryForwarding'] : null,
             token: $data['token'] ?? null,
         );
     }
@@ -30,6 +33,7 @@ readonly class ConnectRequest implements Arrayable
     public function toArray(): array
     {
         return array_filter([
+            'enableGitHubTelemetryForwarding' => $this->enableGitHubTelemetryForwarding,
             'token' => $this->token,
         ], fn ($value) => $value !== null);
     }
