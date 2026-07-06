@@ -14,8 +14,8 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class ConnectRequest implements Arrayable
 {
     /**
-     * @param  ?bool    $enableGitHubTelemetryForwarding  Opt this connection in to GitHub telemetry forwarding.
-     * @param  ?string  $token                            Connection token; required when the server was started with COPILOT_CONNECTION_TOKEN
+     * @param  ?bool  $enableGitHubTelemetryForwarding  Opt this connection in to GitHub telemetry forwarding.
+     * @param  ?string  $token  Connection token; required when the server was started with COPILOT_CONNECTION_TOKEN
      */
     public function __construct(
         public ?bool $enableGitHubTelemetryForwarding = null,
