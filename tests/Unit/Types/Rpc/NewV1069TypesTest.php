@@ -139,7 +139,7 @@ describe('PermissionsSetAllowAllRequest', function () {
         expect($request->enabled)->toBeTrue()
             ->and($request->mode)->toBe(PermissionsAllowAllMode::Auto)
             ->and($request->model)->toBe('claude-3')
-            ->and($request->source)->toBe(PermissionsSetApproveAllSource::Rpc);
+            ->and($request->source)->toBe(PermissionsSetApproveAllSource::RPC);
     });
 
     it('converts to array excluding nulls', function () {
@@ -156,7 +156,7 @@ describe('PermissionsSetAllowAllRequest', function () {
             enabled: false,
             mode: PermissionsAllowAllMode::Off,
             model: 'gpt-4',
-            source: PermissionsSetApproveAllSource::SlashCommand,
+            source: PermissionsSetApproveAllSource::SLASH_COMMAND,
         );
 
         expect($request->toArray())->toBe([
