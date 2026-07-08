@@ -16,12 +16,14 @@ readonly class PluginsReloadRequest implements Arrayable
     /**
      * @param  ?bool  $deferRepoHooks  When true, skip repo-level hooks during the hook reload.
      * @param  ?bool  $reloadCustomAgents  Re-run custom-agent discovery after refreshing plugins. Defaults to true.
+     * @param  ?bool  $reloadExtensions  Re-discover and relaunch subprocess extensions after refreshing plugins. Defaults to true.
      * @param  ?bool  $reloadHooks  Re-load user, plugin, and repo hooks. Defaults to true.
      * @param  ?bool  $reloadMcp  Reload MCP server connections after refreshing plugins. Defaults to true.
      */
     public function __construct(
         public ?bool $deferRepoHooks = null,
         public ?bool $reloadCustomAgents = null,
+        public ?bool $reloadExtensions = null,
         public ?bool $reloadHooks = null,
         public ?bool $reloadMcp = null,
     ) {}
@@ -31,6 +33,7 @@ readonly class PluginsReloadRequest implements Arrayable
         return new self(
             deferRepoHooks: $data['deferRepoHooks'] ?? null,
             reloadCustomAgents: $data['reloadCustomAgents'] ?? null,
+            reloadExtensions: $data['reloadExtensions'] ?? null,
             reloadHooks: $data['reloadHooks'] ?? null,
             reloadMcp: $data['reloadMcp'] ?? null,
         );
@@ -41,6 +44,7 @@ readonly class PluginsReloadRequest implements Arrayable
         return array_filter([
             'deferRepoHooks' => $this->deferRepoHooks,
             'reloadCustomAgents' => $this->reloadCustomAgents,
+            'reloadExtensions' => $this->reloadExtensions,
             'reloadHooks' => $this->reloadHooks,
             'reloadMcp' => $this->reloadMcp,
         ], fn ($v) => $v !== null);
