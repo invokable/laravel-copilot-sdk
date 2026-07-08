@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
+use Revolution\Copilot\Enums\Verbosity;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 
@@ -177,6 +178,9 @@ readonly class SessionConfig implements Arrayable
      *
      * @param  ?array  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
      *                                  path as CLI-fetched assignments. Applies to both session creation and resume. @internal
+     * @param  Verbosity|string|null  $verbosity  Initial output verbosity level for supported models.
+     * @param  ?bool  $enableManagedSettings  When true, the runtime self-fetches enterprise managed settings at session
+     *                                        bootstrap. Requires `$gitHubToken` to be set.
      */
     public function __construct(
         public ?string $sessionId = null,
@@ -249,6 +253,8 @@ readonly class SessionConfig implements Arrayable
         public ?array $excludedBuiltinAgents = null,
         public SessionLimitsConfig|array|null $sessionLimits = null,
         public ?array $expAssignments = null,
+        public Verbosity|string|null $verbosity = null,
+        public ?bool $enableManagedSettings = null,
     ) {}
 
     /**
@@ -404,6 +410,8 @@ readonly class SessionConfig implements Arrayable
             excludedBuiltinAgents: $data['excludedBuiltinAgents'] ?? null,
             sessionLimits: $sessionLimits,
             expAssignments: $data['expAssignments'] ?? null,
+            verbosity: $data['verbosity'] ?? null,
+            enableManagedSettings: $data['enableManagedSettings'] ?? null,
         );
     }
 
@@ -415,6 +423,10 @@ readonly class SessionConfig implements Arrayable
         $reasoningEffort = $this->reasoningEffort instanceof ReasoningEffort
             ? $this->reasoningEffort->value
             : $this->reasoningEffort;
+
+        $verbosity = $this->verbosity instanceof Verbosity
+            ? $this->verbosity->value
+            : $this->verbosity;
 
         $systemMessage = $this->systemMessage instanceof SystemMessageConfig
             ? $this->systemMessage->toArray()
@@ -535,6 +547,8 @@ readonly class SessionConfig implements Arrayable
             'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
             'sessionLimits' => $sessionLimits,
             'expAssignments' => $this->expAssignments,
+            'verbosity' => $verbosity,
+            'enableManagedSettings' => $this->enableManagedSettings,
         ], fn ($value) => $value !== null);
     }
 }

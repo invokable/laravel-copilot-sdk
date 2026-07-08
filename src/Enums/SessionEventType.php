@@ -66,6 +66,7 @@ enum SessionEventType: string
     case ASSISTANT_INTENT = 'assistant.intent';
     case ASSISTANT_REASONING = 'assistant.reasoning';
     case ASSISTANT_REASONING_DELTA = 'assistant.reasoning_delta';
+    case ASSISTANT_TOOL_CALL_DELTA = 'assistant.tool_call_delta';
     case ASSISTANT_STREAMING_DELTA = 'assistant.streaming_delta';
     case ASSISTANT_MESSAGE = 'assistant.message';
     case ASSISTANT_MESSAGE_START = 'assistant.message_start';
