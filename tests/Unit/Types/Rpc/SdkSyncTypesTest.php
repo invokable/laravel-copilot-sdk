@@ -66,7 +66,7 @@ describe('PluginsReloadRequest reloadExtensions', function () {
     });
 
     it('defaults reloadExtensions to null', function () {
-        $req = new PluginsReloadRequest();
+        $req = new PluginsReloadRequest;
         expect($req->reloadExtensions)->toBeNull();
     });
 });
