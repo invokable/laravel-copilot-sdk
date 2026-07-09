@@ -9,12 +9,14 @@ use Exception;
 use Generator;
 use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Str;
-use Laravel\Ai\Contracts\Gateway\TextGateway;
+use Laravel\Ai\Contracts\Gateway\StepTextGateway;
 use Laravel\Ai\Contracts\Providers\TextProvider;
+use Laravel\Ai\Gateway\StepContext;
+use Laravel\Ai\Gateway\StepResponse;
 use Laravel\Ai\Gateway\TextGenerationOptions;
+use Laravel\Ai\Responses\Data\FinishReason;
 use Laravel\Ai\Responses\Data\Meta;
 use Laravel\Ai\Responses\Data\Usage;
-use Laravel\Ai\Responses\TextResponse;
 use Laravel\Ai\Streaming\Events\StreamEvent;
 use Laravel\Ai\Streaming\Events\TextDelta;
 use Revolution\Copilot\Contracts\CopilotSession;
@@ -26,7 +28,7 @@ use Revolution\Copilot\Types\SystemMessageConfig;
 /**
  * Laravel AI SDK Integration.
  */
-class CopilotGateway implements TextGateway
+class CopilotGateway implements StepTextGateway
 {
     protected ?Closure $invokingToolCallback = null;
 
@@ -39,8 +41,17 @@ class CopilotGateway implements TextGateway
      *
      * @throws Exception
      */
-    public function generateText(TextProvider $provider, string $model, ?string $instructions, array $messages = [], array $tools = [], ?array $schema = null, ?TextGenerationOptions $options = null, ?int $timeout = null): TextResponse
-    {
+    public function generateTextStep(
+        TextProvider $provider,
+        string $model,
+        ?string $instructions,
+        array $messages,
+        array $tools,
+        ?array $schema,
+        ?TextGenerationOptions $options,
+        ?int $timeout,
+        StepContext $stepContext,
+    ): StepResponse {
         $config = new SessionConfig(
             model: $model,
             systemMessage: new SystemMessageConfig(
@@ -51,8 +62,10 @@ class CopilotGateway implements TextGateway
         $prompt = last($messages)->content;
         $response = Copilot::run($prompt, config: $config);
 
-        return new TextResponse(
+        return new StepResponse(
             text: $response->content(),
+            toolCalls: [],
+            finishReason: FinishReason::Stop,
             usage: new Usage,
             meta: new Meta(
                 provider: $provider->name(),
@@ -66,8 +79,18 @@ class CopilotGateway implements TextGateway
      *
      * @param  array<string, Type>|null  $schema
      */
-    public function streamText(string $invocationId, TextProvider $provider, string $model, ?string $instructions, array $messages = [], array $tools = [], ?array $schema = null, ?TextGenerationOptions $options = null, ?int $timeout = null): Generator
-    {
+    public function generateStreamStep(
+        string $invocationId,
+        TextProvider $provider,
+        string $model,
+        ?string $instructions,
+        array $messages,
+        array $tools,
+        ?array $schema,
+        ?TextGenerationOptions $options,
+        ?int $timeout,
+        StepContext $stepContext,
+    ): Generator {
         $config = new SessionConfig(
             model: $model,
             systemMessage: new SystemMessageConfig(
