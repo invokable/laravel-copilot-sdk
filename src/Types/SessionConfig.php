@@ -177,7 +177,7 @@ readonly class SessionConfig implements Arrayable
      *                                                         @experimental
      *
      * @param  ?array  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
-     *                                  path as CLI-fetched assignments. Applies to both session creation and resume. @internal
+     *                                  path as CLI-fetched assignments. Applies to both session creation and resume.
      * @param  Verbosity|string|null  $verbosity  Initial output verbosity level for supported models.
      * @param  ?bool  $enableManagedSettings  When true, the runtime self-fetches enterprise managed settings at session
      *                                        bootstrap. Requires `$gitHubToken` to be set.
