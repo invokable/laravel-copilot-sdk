@@ -96,6 +96,7 @@ enum SessionEventType: string
     case AUTO_MODE_SWITCH_COMPLETED = 'auto_mode_switch.completed';
     case SESSION_LIMITS_EXHAUSTED_REQUESTED = 'session_limits_exhausted.requested';
     case SESSION_LIMITS_EXHAUSTED_COMPLETED = 'session_limits_exhausted.completed';
+    case AUTO_MODE_RESOLVED = 'session.auto_mode_resolved';
     case COMMANDS_CHANGED = 'commands.changed';
 
     // Exit plan mode events (protocol v3+)
@@ -128,6 +129,11 @@ enum SessionEventType: string
 
     // MCP App events
     case MCP_APP_TOOL_CALL_COMPLETE = 'mcp_app.tool_call_complete';
+
+    // MCP list change events
+    case MCP_TOOLS_LIST_CHANGED = 'mcp.tools.list_changed';
+    case MCP_RESOURCES_LIST_CHANGED = 'mcp.resources.list_changed';
+    case MCP_PROMPTS_LIST_CHANGED = 'mcp.prompts.list_changed';
 
     // Custom notification events
     case SESSION_CUSTOM_NOTIFICATION = 'session.custom_notification';

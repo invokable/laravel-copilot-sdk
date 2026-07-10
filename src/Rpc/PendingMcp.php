@@ -145,4 +145,14 @@ class PendingMcp
             $this->client->request('session.mcp.isServerRunning', $paramsArray),
         );
     }
+
+    /**
+     * MCP resources RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function resources(): PendingMcpResources
+    {
+        return new PendingMcpResources($this->client, $this->sessionId);
+    }
 }

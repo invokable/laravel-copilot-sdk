@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\SendMessagesRequest;
+use Revolution\Copilot\Types\Rpc\SendMessagesResult;
 
 /**
  * Typed session-scoped RPC methods.
@@ -322,5 +324,24 @@ class SessionRpc
         $this->client->request('session.suspend', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Send zero or more user messages to the session in a single turn.
+     *
+     * All provided messages are appended in order, then exactly one agent turn runs.
+     * When the list is empty, one turn runs over existing history with no new user message.
+     * Remote-backed (Mission Control) sessions do not support this method.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function sendMessages(SendMessagesRequest|array $params): SendMessagesResult
+    {
+        $paramsArray = ($params instanceof SendMessagesRequest ? $params : SendMessagesRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SendMessagesResult::fromArray(
+            $this->client->request('session.sendMessages', $paramsArray),
+        );
     }
 }
