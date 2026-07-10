@@ -14,7 +14,7 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class McpResourcesListResult implements Arrayable
 {
     /**
-     * @param  McpResource[]  $resources   Resources advertised by the server
+     * @param  McpResource[]  $resources  Resources advertised by the server
      * @param  string|null  $nextCursor  Opaque cursor for the next page, if the server has more resources
      */
     public function __construct(

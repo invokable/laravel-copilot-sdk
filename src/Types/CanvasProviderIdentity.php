@@ -18,7 +18,7 @@ use Illuminate\Support\Arr;
 readonly class CanvasProviderIdentity implements Arrayable
 {
     /**
-     * @param  string  $id    Opaque, stable provider id used verbatim as the canvas extension id.
+     * @param  string  $id  Opaque, stable provider id used verbatim as the canvas extension id.
      * @param  string|null  $name  Optional display name surfaced as the canvas extension name.
      */
     public function __construct(

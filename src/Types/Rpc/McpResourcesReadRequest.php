@@ -16,7 +16,7 @@ readonly class McpResourcesReadRequest implements Arrayable
 {
     /**
      * @param  string  $serverName  Name of the MCP server hosting the resource
-     * @param  string  $uri         Resource URI
+     * @param  string  $uri  Resource URI
      */
     public function __construct(
         public string $serverName,

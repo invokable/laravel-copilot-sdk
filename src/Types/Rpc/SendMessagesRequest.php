@@ -16,14 +16,14 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class SendMessagesRequest implements Arrayable
 {
     /**
-     * @param  SendMessageItem[]  $messages     The user messages to append to the conversation, in order
-     * @param  string|null  $mode         How to deliver the messages (`enqueue` or `immediate`)
-     * @param  bool|null  $prepend      If true, adds the messages to the front of the queue
-     * @param  string|null  $agentMode    The UI mode the agent was in when these messages were sent
+     * @param  SendMessageItem[]  $messages  The user messages to append to the conversation, in order
+     * @param  string|null  $mode  How to deliver the messages (`enqueue` or `immediate`)
+     * @param  bool|null  $prepend  If true, adds the messages to the front of the queue
+     * @param  string|null  $agentMode  The UI mode the agent was in when these messages were sent
      * @param  array|null  $requestHeaders  Custom HTTP headers to include in outbound model requests
      * @param  string|null  $traceparent  W3C Trace Context traceparent header
-     * @param  string|null  $tracestate   W3C Trace Context tracestate header
-     * @param  bool|null  $wait         If true, await completion of the agentic loop before returning
+     * @param  string|null  $tracestate  W3C Trace Context tracestate header
+     * @param  bool|null  $wait  If true, await completion of the agentic loop before returning
      */
     public function __construct(
         public array $messages,

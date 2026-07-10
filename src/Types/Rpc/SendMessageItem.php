@@ -15,9 +15,9 @@ use Illuminate\Support\Arr;
 readonly class SendMessageItem implements Arrayable
 {
     /**
-     * @param  string  $prompt         The user message text
+     * @param  string  $prompt  The user message text
      * @param  string|null  $displayPrompt  If provided, this is shown in the timeline instead of `prompt`
-     * @param  array|null  $attachments   Optional attachments to include with this message
+     * @param  array|null  $attachments  Optional attachments to include with this message
      * @param  string|null  $requiredTool  If set, the request will fail if the named tool is not available
      */
     public function __construct(

@@ -11,11 +11,9 @@ use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Enums\Verbosity;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
-use Revolution\Copilot\Types\CanvasProviderIdentity;
 
 /**
  * Configuration for creating a session.
- *
  */
 readonly class SessionConfig implements Arrayable
 {

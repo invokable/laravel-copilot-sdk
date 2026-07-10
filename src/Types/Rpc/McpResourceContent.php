@@ -15,11 +15,11 @@ use Illuminate\Support\Arr;
 readonly class McpResourceContent implements Arrayable
 {
     /**
-     * @param  string  $uri        The resource URI
+     * @param  string  $uri  The resource URI
      * @param  string|null  $mimeType  MIME type of the content
-     * @param  string|null  $text      Text content (e.g. HTML)
-     * @param  string|null  $blob      Base64-encoded binary content
-     * @param  array|null  $_meta     Resource-level metadata (CSP, permissions, etc.)
+     * @param  string|null  $text  Text content (e.g. HTML)
+     * @param  string|null  $blob  Base64-encoded binary content
+     * @param  array|null  $_meta  Resource-level metadata (CSP, permissions, etc.)
      */
     public function __construct(
         public string $uri,
