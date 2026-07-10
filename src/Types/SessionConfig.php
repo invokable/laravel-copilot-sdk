@@ -11,9 +11,11 @@ use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Enums\Verbosity;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
+use Revolution\Copilot\Types\CanvasProviderIdentity;
 
 /**
  * Configuration for creating a session.
+ *
  */
 readonly class SessionConfig implements Arrayable
 {
@@ -181,6 +183,9 @@ readonly class SessionConfig implements Arrayable
      * @param  Verbosity|string|null  $verbosity  Initial output verbosity level for supported models.
      * @param  ?bool  $enableManagedSettings  When true, the runtime self-fetches enterprise managed settings at session
      *                                        bootstrap. Requires `$gitHubToken` to be set.
+     * @param  CanvasProviderIdentity|array|null  $canvasProvider  Stable identity for a host/SDK connection that supplies
+     *                                                             built-in canvases. When set, the runtime uses `id` verbatim
+     *                                                             as the agent-facing canvas extension id.
      */
     public function __construct(
         public ?string $sessionId = null,
@@ -255,6 +260,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $expAssignments = null,
         public Verbosity|string|null $verbosity = null,
         public ?bool $enableManagedSettings = null,
+        public CanvasProviderIdentity|array|null $canvasProvider = null,
     ) {}
 
     /**
@@ -412,6 +418,9 @@ readonly class SessionConfig implements Arrayable
             expAssignments: $data['expAssignments'] ?? null,
             verbosity: $data['verbosity'] ?? null,
             enableManagedSettings: $data['enableManagedSettings'] ?? null,
+            canvasProvider: isset($data['canvasProvider'])
+                ? ($data['canvasProvider'] instanceof CanvasProviderIdentity ? $data['canvasProvider'] : CanvasProviderIdentity::fromArray($data['canvasProvider']))
+                : null,
         );
     }
 
@@ -549,6 +558,9 @@ readonly class SessionConfig implements Arrayable
             'expAssignments' => $this->expAssignments,
             'verbosity' => $verbosity,
             'enableManagedSettings' => $this->enableManagedSettings,
+            'canvasProvider' => $this->canvasProvider instanceof CanvasProviderIdentity
+                ? $this->canvasProvider->toArray()
+                : $this->canvasProvider,
         ], fn ($value) => $value !== null);
     }
 }

@@ -294,6 +294,24 @@ $result = $session->rpc()->mcp()->listTools(new McpListToolsRequest(serverName: 
 use Revolution\Copilot\Types\Rpc\McpStopServerRequest;
 
 $session->rpc()->mcp()->stopServer(new McpStopServerRequest(serverName: 'my-server'));
+
+// MCPリソースの一覧を取得（experimental）
+use Revolution\Copilot\Types\Rpc\McpResourcesListRequest;
+
+$result = $session->rpc()->mcp()->resources()->list(new McpResourcesListRequest(serverName: 'my-server'));
+// $result->resources - McpResource の配列（uri, name, title, mimeType など）
+// $result->nextCursor - 次ページのカーソル（存在する場合）
+
+// MCPリソースを取得（experimental）
+use Revolution\Copilot\Types\Rpc\McpResourcesReadRequest;
+
+$result = $session->rpc()->mcp()->resources()->read(new McpResourcesReadRequest(serverName: 'my-server', uri: 'ui://example'));
+// $result->contents - McpResourceContent の配列
+
+// MCPリソーステンプレートの一覧を取得（experimental）
+use Revolution\Copilot\Types\Rpc\McpResourcesListTemplatesRequest;
+
+$result = $session->rpc()->mcp()->resources()->listTemplates(new McpResourcesListTemplatesRequest(serverName: 'my-server'));
 // MCP OAuthログイン（認証が必要なMCPサーバー向け）
 $result = $session->rpc()->mcp()->login(new McpOauthLoginRequest(serverName: 'my-server'));
 // $result->authorizationUrl - OAuthフローのURL（認証が必要な場合）
