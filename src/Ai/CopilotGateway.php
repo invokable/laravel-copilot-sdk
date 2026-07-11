@@ -66,7 +66,10 @@ class CopilotGateway implements StepTextGateway
             text: $response->content(),
             toolCalls: [],
             finishReason: FinishReason::Stop,
-            usage: new Usage,
+            usage: new Usage(
+                promptTokens: 0,
+                completionTokens: $response->integer('outputTokens'),
+            ),
             meta: new Meta(
                 provider: $provider->name(),
                 model: $model,
