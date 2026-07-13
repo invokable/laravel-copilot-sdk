@@ -19,6 +19,7 @@ readonly class ToolResultObject implements Arrayable
      * @param  ?string  $error  Error message, if any
      * @param  ?string  $sessionLog  Session log
      * @param  ?array  $toolTelemetry  Tool telemetry data
+     * @param  ?string[]  $toolReferences  Names of tools returned by a tool-search tool.
      */
     public function __construct(
         public string $textResultForLlm,
@@ -27,6 +28,7 @@ readonly class ToolResultObject implements Arrayable
         public ?string $error = null,
         public ?string $sessionLog = null,
         public ?array $toolTelemetry = null,
+        public ?array $toolReferences = null,
     ) {}
 
     /**
@@ -41,6 +43,7 @@ readonly class ToolResultObject implements Arrayable
             error: $data['error'] ?? null,
             sessionLog: $data['sessionLog'] ?? null,
             toolTelemetry: $data['toolTelemetry'] ?? null,
+            toolReferences: $data['toolReferences'] ?? null,
         );
     }
 
@@ -56,6 +59,7 @@ readonly class ToolResultObject implements Arrayable
             'error' => $this->error,
             'sessionLog' => $this->sessionLog,
             'toolTelemetry' => $this->toolTelemetry,
+            'toolReferences' => $this->toolReferences,
         ], fn ($value) => $value !== null);
     }
 }

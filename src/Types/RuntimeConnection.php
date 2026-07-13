@@ -19,6 +19,7 @@ readonly class RuntimeConnection implements Arrayable
      * @param  ?string  $url  Existing runtime URL for URI connections.
      * @param  ?int  $port  Reserved for future SDK-spawned TCP runtime support.
      * @param  ?string  $connectionToken  Token sent during the connect handshake for authenticated TCP/URI connections.
+     * @param  ?array<string, string>  $env  Environment variables for the spawned runtime child process (stdio/tcp only).
      */
     public function __construct(
         public RuntimeConnectionKind|string $kind,
@@ -27,18 +28,20 @@ readonly class RuntimeConnection implements Arrayable
         public ?string $url = null,
         public ?int $port = null,
         public ?string $connectionToken = null,
+        public ?array $env = null,
     ) {}
 
-    public static function forStdio(?string $path = null, ?array $args = null): self
+    public static function forStdio(?string $path = null, ?array $args = null, ?array $env = null): self
     {
         return new self(
             kind: RuntimeConnectionKind::STDIO,
             path: $path,
             args: $args,
+            env: $env,
         );
     }
 
-    public static function forTcp(?int $port = null, ?string $connectionToken = null, ?string $path = null, ?array $args = null): self
+    public static function forTcp(?int $port = null, ?string $connectionToken = null, ?string $path = null, ?array $args = null, ?array $env = null): self
     {
         return new self(
             kind: RuntimeConnectionKind::TCP,
@@ -46,6 +49,7 @@ readonly class RuntimeConnection implements Arrayable
             args: $args,
             port: $port,
             connectionToken: $connectionToken,
+            env: $env,
         );
     }
 
@@ -67,6 +71,7 @@ readonly class RuntimeConnection implements Arrayable
             url: $data['url'] ?? null,
             port: $data['port'] ?? null,
             connectionToken: $data['connectionToken'] ?? null,
+            env: $data['env'] ?? null,
         );
     }
 
@@ -86,6 +91,7 @@ readonly class RuntimeConnection implements Arrayable
             'url' => $this->url,
             'port' => $this->port,
             'connectionToken' => $this->connectionToken,
+            'env' => $this->env,
         ], fn ($value) => $value !== null);
     }
 }

@@ -47,6 +47,7 @@ readonly class SessionConfig implements Arrayable
      *                            When the CLI has a TUI, each command appears as `/name` for the user to invoke.
      *                            Each entry should have 'name', 'handler', and optionally 'description'.
      * @param  SystemMessageConfig|array|null  $systemMessage  System message configuration. Controls how the system prompt is constructed.
+     * @param  ToolSearchConfig|array|null  $toolSearch  Override for the runtime's built-in tool-search behavior.
      * @param  ?array  $availableTools  List of source-qualified tool filters to allow. When specified, only these tools will be available.
      *                                  Examples: `builtin:*`, `builtin:bash`, `mcp:*`, `mcp:github-read_issue`, `custom:*`.
      * @param  ?array  $excludedTools  List of source-qualified tool filters to disable. When both lists are set,
@@ -199,6 +200,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $tools = null,
         public ?array $commands = null,
         public SystemMessageConfig|array|null $systemMessage = null,
+        public ToolSearchConfig|array|null $toolSearch = null,
         public ?array $availableTools = null,
         public ?array $excludedTools = null,
         public ProviderConfig|array|null $provider = null,
@@ -271,6 +273,13 @@ readonly class SessionConfig implements Arrayable
             $systemMessage = $data['systemMessage'] instanceof SystemMessageConfig
                 ? $data['systemMessage']
                 : SystemMessageConfig::fromArray($data['systemMessage']);
+        }
+
+        $toolSearch = null;
+        if (isset($data['toolSearch'])) {
+            $toolSearch = $data['toolSearch'] instanceof ToolSearchConfig
+                ? $data['toolSearch']
+                : ToolSearchConfig::fromArray($data['toolSearch']);
         }
 
         $provider = null;
@@ -357,6 +366,7 @@ readonly class SessionConfig implements Arrayable
             tools: $data['tools'] ?? null,
             commands: $data['commands'] ?? null,
             systemMessage: $systemMessage,
+            toolSearch: $toolSearch,
             availableTools: $data['availableTools'] ?? null,
             excludedTools: $data['excludedTools'] ?? null,
             provider: $provider,
@@ -439,6 +449,10 @@ readonly class SessionConfig implements Arrayable
             ? $this->systemMessage->toArray()
             : $this->systemMessage;
 
+        $toolSearch = $this->toolSearch instanceof ToolSearchConfig
+            ? $this->toolSearch->toArray()
+            : $this->toolSearch;
+
         $provider = $this->provider instanceof ProviderConfig
             ? $this->provider->toArray()
             : $this->provider;
@@ -497,6 +511,7 @@ readonly class SessionConfig implements Arrayable
             'tools' => $this->tools,
             'commands' => $this->commands,
             'systemMessage' => $systemMessage,
+            'toolSearch' => $toolSearch,
             'availableTools' => $this->availableTools,
             'excludedTools' => $this->excludedTools,
             'provider' => $provider,
