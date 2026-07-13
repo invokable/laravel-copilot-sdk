@@ -107,4 +107,32 @@ describe('ToolResultObject', function () {
 
         expect($result)->toBeInstanceOf(Arrayable::class);
     });
+
+    it('can be created with toolReferences', function () {
+        $result = new ToolResultObject(
+            textResultForLlm: 'search result',
+            toolReferences: ['bash', 'read_file'],
+        );
+
+        expect($result->toolReferences)->toBe(['bash', 'read_file']);
+    });
+
+    it('includes toolReferences in toArray when set', function () {
+        $result = new ToolResultObject(
+            textResultForLlm: 'result',
+            toolReferences: ['tool1', 'tool2'],
+        );
+
+        expect($result->toArray())->toHaveKey('toolReferences')
+            ->and($result->toArray()['toolReferences'])->toBe(['tool1', 'tool2']);
+    });
+
+    it('can parse toolReferences from array', function () {
+        $result = ToolResultObject::fromArray([
+            'textResultForLlm' => 'result',
+            'toolReferences' => ['tool_a', 'tool_b'],
+        ]);
+
+        expect($result->toolReferences)->toBe(['tool_a', 'tool_b']);
+    });
 });
