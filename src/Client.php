@@ -293,6 +293,7 @@ class Client implements CopilotClient
             'overridesBuiltInTool' => $tool['overridesBuiltInTool'] ?? null,
             'skipPermission' => $tool['skipPermission'] ?? null,
             'defer' => $tool['defer'] ?? null,
+            'metadata' => $tool['metadata'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
         $commands = $config['commands'] ?? [];
@@ -363,6 +364,7 @@ class Client implements CopilotClient
             'enableSkills' => $config['enableSkills'] ?? null,
             'enableCitations' => $config['enableCitations'] ?? null,
             'excludedBuiltinAgents' => $config['excludedBuiltinAgents'] ?? null,
+            'includedBuiltinAgents' => $config['includedBuiltinAgents'] ?? null,
             'sessionLimits' => $config['sessionLimits'] ?? null,
         ], fn ($v) => $v !== null));
 
@@ -441,6 +443,7 @@ class Client implements CopilotClient
             'overridesBuiltInTool' => $tool['overridesBuiltInTool'] ?? null,
             'skipPermission' => $tool['skipPermission'] ?? null,
             'defer' => $tool['defer'] ?? null,
+            'metadata' => $tool['metadata'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
         $commands = $config['commands'] ?? [];
@@ -513,6 +516,7 @@ class Client implements CopilotClient
             'enableSkills' => $config['enableSkills'] ?? null,
             'enableCitations' => $config['enableCitations'] ?? null,
             'excludedBuiltinAgents' => $config['excludedBuiltinAgents'] ?? null,
+            'includedBuiltinAgents' => $config['includedBuiltinAgents'] ?? null,
             'sessionLimits' => $config['sessionLimits'] ?? null,
         ], fn ($v) => $v !== null));
 
