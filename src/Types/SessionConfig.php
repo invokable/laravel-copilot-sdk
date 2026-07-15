@@ -172,6 +172,9 @@ readonly class SessionConfig implements Arrayable
      * @param  ?array  $excludedBuiltinAgents  Names of built-in agents to exclude from the session. Excluded built-in
      *                                         agents are hidden from discovery and cannot be selected or invoked unless
      *                                         a custom agent with the same name is configured.
+     * @param  ?array  $includedBuiltinAgents  Built-in subagent names to include in this session. When specified, only
+     *                                         these built-ins are available, subject to runtime availability and exclusions.
+     *                                         Custom agents with the same name remain available.
      * @param  ?bool  $enableCitations  Experimental: enable native model citations, normalized onto the `assistant.message` event.
      * @param  SessionLimitsConfig|array|null  $sessionLimits  Limits applied to this session's current accounting window.
      *
@@ -256,6 +259,7 @@ readonly class SessionConfig implements Arrayable
         public ?string $displayPrompt = null,
         public ?bool $enableCitations = null,
         public ?array $excludedBuiltinAgents = null,
+        public ?array $includedBuiltinAgents = null,
         public SessionLimitsConfig|array|null $sessionLimits = null,
         public ?array $expAssignments = null,
         public Verbosity|string|null $verbosity = null,
@@ -422,6 +426,7 @@ readonly class SessionConfig implements Arrayable
             displayPrompt: $data['displayPrompt'] ?? null,
             enableCitations: $data['enableCitations'] ?? null,
             excludedBuiltinAgents: $data['excludedBuiltinAgents'] ?? null,
+            includedBuiltinAgents: $data['includedBuiltinAgents'] ?? null,
             sessionLimits: $sessionLimits,
             expAssignments: $data['expAssignments'] ?? null,
             verbosity: $data['verbosity'] ?? null,
@@ -567,6 +572,7 @@ readonly class SessionConfig implements Arrayable
             'displayPrompt' => $this->displayPrompt,
             'enableCitations' => $this->enableCitations,
             'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
+            'includedBuiltinAgents' => $this->includedBuiltinAgents,
             'sessionLimits' => $sessionLimits,
             'expAssignments' => $this->expAssignments,
             'verbosity' => $verbosity,

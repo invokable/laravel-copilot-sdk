@@ -22,6 +22,7 @@ readonly class Tool implements Arrayable
      * @param  bool  $overridesBuiltInTool  Whether this tool overrides a built-in tool with the same name
      * @param  bool  $skipPermission  Whether to skip permission prompt for this tool
      * @param  ?string  $defer  Controls whether the tool may be deferred (loaded lazily via tool search) rather than always pre-loaded. When `"auto"`, the tool can be deferred and surfaced through tool search. When `"never"`, the tool is always pre-loaded. Optional; defaults to `"auto"`.
+     * @param  ?array  $metadata  Opaque, host-defined metadata associated with the tool definition. Keys are namespaced and are not part of the stable public API.
      */
     public function __construct(
         public string $name,
@@ -31,6 +32,7 @@ readonly class Tool implements Arrayable
         public bool $overridesBuiltInTool = false,
         public bool $skipPermission = false,
         public ?string $defer = 'auto',
+        public ?array $metadata = null,
     ) {}
 
     /**
@@ -44,6 +46,7 @@ readonly class Tool implements Arrayable
         bool $overridesBuiltInTool = false,
         bool $skipPermission = false,
         ?string $defer = 'auto',
+        ?array $metadata = null,
     ): array {
         return new self(
             name: $name,
@@ -53,6 +56,7 @@ readonly class Tool implements Arrayable
             overridesBuiltInTool: $overridesBuiltInTool,
             skipPermission: $skipPermission,
             defer: $defer,
+            metadata: $metadata,
         )->toArray();
     }
 
@@ -71,6 +75,7 @@ readonly class Tool implements Arrayable
             overridesBuiltInTool: Arr::boolean($data, 'overridesBuiltInTool', false),
             skipPermission: Arr::boolean($data, 'skipPermission', false),
             defer: $data['defer'] ?? 'auto',
+            metadata: $data['metadata'] ?? null,
         );
     }
 
@@ -98,6 +103,10 @@ readonly class Tool implements Arrayable
 
         if ($this->defer !== null) {
             $array['defer'] = $this->defer;
+        }
+
+        if ($this->metadata !== null) {
+            $array['metadata'] = $this->metadata;
         }
 
         return $array;
