@@ -47,6 +47,7 @@ readonly class SessionConfig implements Arrayable
      *                            When the CLI has a TUI, each command appears as `/name` for the user to invoke.
      *                            Each entry should have 'name', 'handler', and optionally 'description'.
      * @param  SystemMessageConfig|array|null  $systemMessage  System message configuration. Controls how the system prompt is constructed.
+     * @param  ToolSearchConfig|array|null  $toolSearch  Override for the runtime's built-in tool-search behavior.
      * @param  ?array  $availableTools  List of source-qualified tool filters to allow. When specified, only these tools will be available.
      *                                  Examples: `builtin:*`, `builtin:bash`, `mcp:*`, `mcp:github-read_issue`, `custom:*`.
      * @param  ?array  $excludedTools  List of source-qualified tool filters to disable. When both lists are set,
@@ -171,6 +172,9 @@ readonly class SessionConfig implements Arrayable
      * @param  ?array  $excludedBuiltinAgents  Names of built-in agents to exclude from the session. Excluded built-in
      *                                         agents are hidden from discovery and cannot be selected or invoked unless
      *                                         a custom agent with the same name is configured.
+     * @param  ?array  $includedBuiltinAgents  Built-in subagent names to include in this session. When specified, only
+     *                                         these built-ins are available, subject to runtime availability and exclusions.
+     *                                         Custom agents with the same name remain available.
      * @param  ?bool  $enableCitations  Experimental: enable native model citations, normalized onto the `assistant.message` event.
      * @param  SessionLimitsConfig|array|null  $sessionLimits  Limits applied to this session's current accounting window.
      *
@@ -199,6 +203,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $tools = null,
         public ?array $commands = null,
         public SystemMessageConfig|array|null $systemMessage = null,
+        public ToolSearchConfig|array|null $toolSearch = null,
         public ?array $availableTools = null,
         public ?array $excludedTools = null,
         public ProviderConfig|array|null $provider = null,
@@ -254,6 +259,7 @@ readonly class SessionConfig implements Arrayable
         public ?string $displayPrompt = null,
         public ?bool $enableCitations = null,
         public ?array $excludedBuiltinAgents = null,
+        public ?array $includedBuiltinAgents = null,
         public SessionLimitsConfig|array|null $sessionLimits = null,
         public ?array $expAssignments = null,
         public Verbosity|string|null $verbosity = null,
@@ -271,6 +277,13 @@ readonly class SessionConfig implements Arrayable
             $systemMessage = $data['systemMessage'] instanceof SystemMessageConfig
                 ? $data['systemMessage']
                 : SystemMessageConfig::fromArray($data['systemMessage']);
+        }
+
+        $toolSearch = null;
+        if (isset($data['toolSearch'])) {
+            $toolSearch = $data['toolSearch'] instanceof ToolSearchConfig
+                ? $data['toolSearch']
+                : ToolSearchConfig::fromArray($data['toolSearch']);
         }
 
         $provider = null;
@@ -357,6 +370,7 @@ readonly class SessionConfig implements Arrayable
             tools: $data['tools'] ?? null,
             commands: $data['commands'] ?? null,
             systemMessage: $systemMessage,
+            toolSearch: $toolSearch,
             availableTools: $data['availableTools'] ?? null,
             excludedTools: $data['excludedTools'] ?? null,
             provider: $provider,
@@ -412,6 +426,7 @@ readonly class SessionConfig implements Arrayable
             displayPrompt: $data['displayPrompt'] ?? null,
             enableCitations: $data['enableCitations'] ?? null,
             excludedBuiltinAgents: $data['excludedBuiltinAgents'] ?? null,
+            includedBuiltinAgents: $data['includedBuiltinAgents'] ?? null,
             sessionLimits: $sessionLimits,
             expAssignments: $data['expAssignments'] ?? null,
             verbosity: $data['verbosity'] ?? null,
@@ -438,6 +453,10 @@ readonly class SessionConfig implements Arrayable
         $systemMessage = $this->systemMessage instanceof SystemMessageConfig
             ? $this->systemMessage->toArray()
             : $this->systemMessage;
+
+        $toolSearch = $this->toolSearch instanceof ToolSearchConfig
+            ? $this->toolSearch->toArray()
+            : $this->toolSearch;
 
         $provider = $this->provider instanceof ProviderConfig
             ? $this->provider->toArray()
@@ -497,6 +516,7 @@ readonly class SessionConfig implements Arrayable
             'tools' => $this->tools,
             'commands' => $this->commands,
             'systemMessage' => $systemMessage,
+            'toolSearch' => $toolSearch,
             'availableTools' => $this->availableTools,
             'excludedTools' => $this->excludedTools,
             'provider' => $provider,
@@ -552,6 +572,7 @@ readonly class SessionConfig implements Arrayable
             'displayPrompt' => $this->displayPrompt,
             'enableCitations' => $this->enableCitations,
             'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
+            'includedBuiltinAgents' => $this->includedBuiltinAgents,
             'sessionLimits' => $sessionLimits,
             'expAssignments' => $this->expAssignments,
             'verbosity' => $verbosity,

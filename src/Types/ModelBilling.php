@@ -15,10 +15,12 @@ readonly class ModelBilling implements Arrayable
     /**
      * @param  ?float  $multiplier  Billing cost multiplier relative to the base rate
      * @param  ModelBillingTokenPrices|null  $tokenPrices  Token-level pricing information for this model
+     * @param  ModelBillingPromo|null  $promo  Active server-driven promotion for this model, if any.
      */
     public function __construct(
         public ?float $multiplier = null,
         public ?ModelBillingTokenPrices $tokenPrices = null,
+        public ?ModelBillingPromo $promo = null,
     ) {}
 
     /**
@@ -29,6 +31,7 @@ readonly class ModelBilling implements Arrayable
         return new self(
             multiplier: isset($data['multiplier']) ? (float) $data['multiplier'] : null,
             tokenPrices: isset($data['tokenPrices']) ? ModelBillingTokenPrices::fromArray($data['tokenPrices']) : null,
+            promo: isset($data['promo']) ? ModelBillingPromo::fromArray($data['promo']) : null,
         );
     }
 
@@ -40,6 +43,7 @@ readonly class ModelBilling implements Arrayable
         return array_filter([
             'multiplier' => $this->multiplier,
             'tokenPrices' => $this->tokenPrices?->toArray(),
+            'promo' => $this->promo?->toArray(),
         ], fn ($v) => $v !== null);
     }
 }

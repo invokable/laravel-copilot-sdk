@@ -12,6 +12,7 @@ describe('OpenCanvasInstance', function () {
             'extensionId' => 'ext-456',
             'instanceId' => 'instance-789',
             'extensionName' => 'Test Extension',
+            'icon' => '/path/to/icon.png',
             'input' => ['config' => 'value'],
             'status' => 'active',
             'title' => 'Test Canvas',
@@ -22,6 +23,7 @@ describe('OpenCanvasInstance', function () {
             ->and($instance->extensionId)->toBe('ext-456')
             ->and($instance->instanceId)->toBe('instance-789')
             ->and($instance->extensionName)->toBe('Test Extension')
+            ->and($instance->icon)->toBe('/path/to/icon.png')
             ->and($instance->input)->toBe(['config' => 'value'])
             ->and($instance->status)->toBe('active')
             ->and($instance->title)->toBe('Test Canvas')
@@ -39,6 +41,7 @@ describe('OpenCanvasInstance', function () {
             ->and($instance->extensionId)->toBe('ext-def')
             ->and($instance->instanceId)->toBe('instance-ghi')
             ->and($instance->extensionName)->toBeNull()
+            ->and($instance->icon)->toBeNull()
             ->and($instance->input)->toBeNull()
             ->and($instance->status)->toBeNull()
             ->and($instance->title)->toBeNull()

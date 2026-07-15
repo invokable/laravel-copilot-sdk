@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\ModelBilling;
+use Revolution\Copilot\Types\ModelBillingPromo;
 use Revolution\Copilot\Types\Rpc\ModelBillingTokenPrices;
 
 describe('ModelBilling', function () {
@@ -58,5 +59,26 @@ describe('ModelBilling', function () {
         );
 
         expect($billing->toArray())->toHaveKey('tokenPrices');
+    });
+
+    it('can be created with promo', function () {
+        $billing = ModelBilling::fromArray([
+            'multiplier' => 1.0,
+            'promo' => [
+                'endsAt' => '2026-12-31T23:59:59Z',
+                'discountPercent' => 20.0,
+            ],
+        ]);
+
+        expect($billing->promo)->toBeInstanceOf(ModelBillingPromo::class)
+            ->and($billing->promo->discountPercent)->toBe(20.0);
+    });
+
+    it('includes promo in toArray when set', function () {
+        $billing = new ModelBilling(
+            promo: new ModelBillingPromo(endsAt: '2026-12-31T23:59:59Z', discountPercent: 10.0),
+        );
+
+        expect($billing->toArray())->toHaveKey('promo');
     });
 });
