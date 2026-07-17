@@ -144,4 +144,20 @@ describe('SessionEventType', function () {
         expect(SessionEventType::from('session.todos_changed'))->toBe(SessionEventType::SESSION_TODOS_CHANGED)
             ->and(SessionEventType::from('session.binary_asset'))->toBe(SessionEventType::SESSION_BINARY_ASSET);
     });
+
+    it('has assistant server tool progress event type', function () {
+        expect(SessionEventType::ASSISTANT_SERVER_TOOL_PROGRESS->value)->toBe('assistant.server_tool_progress');
+    });
+
+    it('can create assistant server tool progress from string', function () {
+        expect(SessionEventType::from('assistant.server_tool_progress'))->toBe(SessionEventType::ASSISTANT_SERVER_TOOL_PROGRESS);
+    });
+
+    it('has managed settings resolved event type', function () {
+        expect(SessionEventType::MANAGED_SETTINGS_RESOLVED->value)->toBe('session.managed_settings_resolved');
+    });
+
+    it('can create managed settings resolved from string', function () {
+        expect(SessionEventType::from('session.managed_settings_resolved'))->toBe(SessionEventType::MANAGED_SETTINGS_RESOLVED);
+    });
 });

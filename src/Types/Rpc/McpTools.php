@@ -17,10 +17,12 @@ readonly class McpTools implements Arrayable
     /**
      * @param  string  $name  Tool name.
      * @param  ?string  $description  Tool description, when provided.
+     * @param  ?McpToolUi  $ui  Normalized MCP Apps discovery metadata.
      */
     public function __construct(
         public string $name,
         public ?string $description = null,
+        public ?McpToolUi $ui = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -28,6 +30,7 @@ readonly class McpTools implements Arrayable
         return new self(
             name: Arr::string($data, 'name'),
             description: $data['description'] ?? null,
+            ui: isset($data['ui']) ? McpToolUi::fromArray($data['ui']) : null,
         );
     }
 
@@ -36,6 +39,7 @@ readonly class McpTools implements Arrayable
         return array_filter([
             'name' => $this->name,
             'description' => $this->description,
+            'ui' => $this->ui?->toArray(),
         ], fn ($v) => $v !== null);
     }
 }

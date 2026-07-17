@@ -64,6 +64,7 @@ enum SessionEventType: string
     case ASSISTANT_TURN_START = 'assistant.turn_start';
     case ASSISTANT_IDLE = 'assistant.idle';
     case ASSISTANT_INTENT = 'assistant.intent';
+    case ASSISTANT_SERVER_TOOL_PROGRESS = 'assistant.server_tool_progress';
     case ASSISTANT_REASONING = 'assistant.reasoning';
     case ASSISTANT_REASONING_DELTA = 'assistant.reasoning_delta';
     case ASSISTANT_TOOL_CALL_DELTA = 'assistant.tool_call_delta';
@@ -97,6 +98,7 @@ enum SessionEventType: string
     case SESSION_LIMITS_EXHAUSTED_REQUESTED = 'session_limits_exhausted.requested';
     case SESSION_LIMITS_EXHAUSTED_COMPLETED = 'session_limits_exhausted.completed';
     case AUTO_MODE_RESOLVED = 'session.auto_mode_resolved';
+    case MANAGED_SETTINGS_RESOLVED = 'session.managed_settings_resolved';
     case COMMANDS_CHANGED = 'commands.changed';
 
     // Exit plan mode events (protocol v3+)
