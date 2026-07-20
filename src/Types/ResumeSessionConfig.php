@@ -133,8 +133,8 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?bool  $enableSessionStore  When true, enables the cross-session store for search and retrieval.
      * @param  ?bool  $enableSkills  When true, enables skill loading.
      * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of the original prompt.
-     * @param  ?array  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
-     *                                  path as CLI-fetched assignments. Applies to both session creation and resume. @internal
+     * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
+     *                                                                    path as CLI-fetched assignments. Applies to both session creation and resume. @internal
      */
     public function __construct(
         public ?string $clientName = null,
@@ -201,7 +201,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?bool $enableSessionStore = null,
         public ?bool $enableSkills = null,
         public ?string $displayPrompt = null,
-        public ?array $expAssignments = null,
+        public CopilotExpAssignmentResponse|array|null $expAssignments = null,
     ) {}
 
     /**
@@ -330,7 +330,9 @@ readonly class ResumeSessionConfig implements Arrayable
             enableSessionStore: $data['enableSessionStore'] ?? null,
             enableSkills: $data['enableSkills'] ?? null,
             displayPrompt: $data['displayPrompt'] ?? null,
-            expAssignments: $data['expAssignments'] ?? null,
+            expAssignments: isset($data['expAssignments'])
+                ? ($data['expAssignments'] instanceof CopilotExpAssignmentResponse ? $data['expAssignments'] : CopilotExpAssignmentResponse::fromArray($data['expAssignments']))
+                : null,
         );
     }
 
@@ -378,6 +380,10 @@ readonly class ResumeSessionConfig implements Arrayable
         $largeOutput = $this->largeOutput instanceof LargeToolOutputConfig
             ? $this->largeOutput->toArray()
             : $this->largeOutput;
+
+        $expAssignments = $this->expAssignments instanceof CopilotExpAssignmentResponse
+            ? $this->expAssignments->toArray()
+            : $this->expAssignments;
 
         return array_filter([
             'clientName' => $this->clientName,
@@ -444,7 +450,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'enableSessionStore' => $this->enableSessionStore,
             'enableSkills' => $this->enableSkills,
             'displayPrompt' => $this->displayPrompt,
-            'expAssignments' => $this->expAssignments,
+            'expAssignments' => $expAssignments,
         ], fn ($value) => $value !== null);
     }
 }

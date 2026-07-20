@@ -180,8 +180,8 @@ readonly class SessionConfig implements Arrayable
      *
      *                                                         @experimental
      *
-     * @param  ?array  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
-     *                                  path as CLI-fetched assignments. Applies to both session creation and resume.
+     * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
+     *                                                                    path as CLI-fetched assignments. Applies to both session creation and resume.
      * @param  Verbosity|string|null  $verbosity  Initial output verbosity level for supported models.
      * @param  ?bool  $enableManagedSettings  When true, the runtime self-fetches enterprise managed settings at session
      *                                        bootstrap. Requires `$gitHubToken` to be set.
@@ -261,7 +261,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $excludedBuiltinAgents = null,
         public ?array $includedBuiltinAgents = null,
         public SessionLimitsConfig|array|null $sessionLimits = null,
-        public ?array $expAssignments = null,
+        public CopilotExpAssignmentResponse|array|null $expAssignments = null,
         public Verbosity|string|null $verbosity = null,
         public ?bool $enableManagedSettings = null,
         public CanvasProviderIdentity|array|null $canvasProvider = null,
@@ -428,7 +428,9 @@ readonly class SessionConfig implements Arrayable
             excludedBuiltinAgents: $data['excludedBuiltinAgents'] ?? null,
             includedBuiltinAgents: $data['includedBuiltinAgents'] ?? null,
             sessionLimits: $sessionLimits,
-            expAssignments: $data['expAssignments'] ?? null,
+            expAssignments: isset($data['expAssignments'])
+                ? ($data['expAssignments'] instanceof CopilotExpAssignmentResponse ? $data['expAssignments'] : CopilotExpAssignmentResponse::fromArray($data['expAssignments']))
+                : null,
             verbosity: $data['verbosity'] ?? null,
             enableManagedSettings: $data['enableManagedSettings'] ?? null,
             canvasProvider: isset($data['canvasProvider'])
@@ -502,6 +504,10 @@ readonly class SessionConfig implements Arrayable
             ? $this->sessionLimits->toArray()
             : $this->sessionLimits;
 
+        $expAssignments = $this->expAssignments instanceof CopilotExpAssignmentResponse
+            ? $this->expAssignments->toArray()
+            : $this->expAssignments;
+
         return array_filter([
             'sessionId' => $this->sessionId,
             'clientName' => $this->clientName,
@@ -574,7 +580,7 @@ readonly class SessionConfig implements Arrayable
             'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
             'includedBuiltinAgents' => $this->includedBuiltinAgents,
             'sessionLimits' => $sessionLimits,
-            'expAssignments' => $this->expAssignments,
+            'expAssignments' => $expAssignments,
             'verbosity' => $verbosity,
             'enableManagedSettings' => $this->enableManagedSettings,
             'canvasProvider' => $this->canvasProvider instanceof CanvasProviderIdentity
