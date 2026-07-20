@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\AuthInfoType;
 use Revolution\Copilot\Enums\SectionOverrideAction;
 use Revolution\Copilot\Enums\SystemMessageSection;
+use Revolution\Copilot\Types\CopilotExpAssignmentResponse;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\AccountAllUsers;
 use Revolution\Copilot\Types\Rpc\AccountGetCurrentAuthResult;
@@ -70,11 +71,19 @@ describe('expAssignments in SessionConfig', function () {
     it('roundtrips expAssignments', function () {
         $config = SessionConfig::fromArray([
             'model' => 'gpt-5',
-            'expAssignments' => ['ff_new_feature' => true],
+            'expAssignments' => [
+                'Features' => ['ff_new_feature'],
+                'AssignmentContext' => 'session',
+            ],
         ]);
 
-        expect($config->expAssignments)->toBe(['ff_new_feature' => true]);
-        expect($config->toArray())->toHaveKey('expAssignments');
+        expect($config->expAssignments)->toBeInstanceOf(CopilotExpAssignmentResponse::class);
+        expect($config->toArray()['expAssignments'])->toBe([
+            'Features' => ['ff_new_feature'],
+            'Flights' => [],
+            'Configs' => [],
+            'AssignmentContext' => 'session',
+        ]);
     });
 
     it('omits expAssignments when null', function () {
@@ -94,11 +103,19 @@ describe('expAssignments in ResumeSessionConfig', function () {
 
     it('roundtrips expAssignments', function () {
         $config = ResumeSessionConfig::fromArray([
-            'expAssignments' => ['ff_abc' => false],
+            'expAssignments' => [
+                'Features' => ['ff_abc'],
+                'AssignmentContext' => 'resume',
+            ],
         ]);
 
-        expect($config->expAssignments)->toBe(['ff_abc' => false]);
-        expect($config->toArray())->toHaveKey('expAssignments');
+        expect($config->expAssignments)->toBeInstanceOf(CopilotExpAssignmentResponse::class);
+        expect($config->toArray()['expAssignments'])->toBe([
+            'Features' => ['ff_abc'],
+            'Flights' => [],
+            'Configs' => [],
+            'AssignmentContext' => 'resume',
+        ]);
     });
 
     it('omits expAssignments when null', function () {
