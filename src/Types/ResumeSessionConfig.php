@@ -134,7 +134,7 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?bool  $enableSkills  When true, enables skill loading.
      * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of the original prompt.
      * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
-     *                                                                    path as CLI-fetched assignments. Applies to both session creation and resume. @internal
+     *                                                                   path as CLI-fetched assignments. Applies to both session creation and resume. @internal
      */
     public function __construct(
         public ?string $clientName = null,
