@@ -22,10 +22,9 @@ permissions:
   pull-requests: read
   issues: read
 
+model: claude-haiku-4.5
 engine:
   id: copilot
-  model: claude-haiku-4.5
-
 checkout:
   - path: .
     submodules: recursive
