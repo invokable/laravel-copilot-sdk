@@ -610,6 +610,53 @@ $connected = $session->rpc()->remote()->connectRemoteSession(new ConnectRemoteSe
 
 詳細は [Remote Sessions](./remote-sessions.md) を参照してください.
 
+### factory (experimental: ファクトリーAPI)
+
+```php
+use Revolution\Copilot\Types\Rpc\FactoryRunRequest;
+use Revolution\Copilot\Types\Rpc\FactoryGetRunRequest;
+use Revolution\Copilot\Types\Rpc\FactoryCancelRequest;
+use Revolution\Copilot\Types\Rpc\FactoryLogRequest;
+use Revolution\Copilot\Types\Rpc\FactoryLogLine;
+use Revolution\Copilot\Types\Rpc\FactoryAgentRequest;
+use Revolution\Copilot\Types\Rpc\FactoryJournalGetRequest;
+use Revolution\Copilot\Types\Rpc\FactoryJournalPutRequest;
+
+// 登録済みファクトリーをトップレベルで実行
+$result = $session->rpc()->factory()->run(new FactoryRunRequest(
+    args: ['path' => '.'],
+    name: 'my-factory',
+));
+// $result->runId, $result->status, $result->result など
+
+// 実行中/完了したファクトリー実行のエンベロープを取得
+$result = $session->rpc()->factory()->getRun(new FactoryGetRunRequest(runId: $result->runId));
+
+// ファクトリー実行のキャンセルを要求
+$result = $session->rpc()->factory()->cancel(new FactoryCancelRequest(runId: $result->runId));
+
+// ファクトリーの進捗ログをまとめて記録
+$session->rpc()->factory()->log(new FactoryLogRequest(
+    runId: $result->runId,
+    lines: [new FactoryLogLine(kind: 'info', seq: 1, text: '処理中...')],
+));
+
+// ファクトリースコープのサブエージェントを1件実行
+$agentResult = $session->rpc()->factory()->agent(new FactoryAgentRequest(
+    factoryRunId: $result->runId,
+    opts: [],
+    prompt: 'ファイルを検索',
+));
+
+// ファクトリージャーナルの取得/書き込み
+$journal = $session->rpc()->factory()->journal()->get(new FactoryJournalGetRequest(runId: $result->runId, key: 'progress'));
+$session->rpc()->factory()->journal()->put(new FactoryJournalPutRequest(
+    runId: $result->runId,
+    key: 'progress',
+    resultJson: ['step' => 1],
+));
+```
+
 ## SessionFS コールバック型
 
 セッションスコープのファイルシステム操作のためのコールバック型（Request/Result）が定義されています。これらはCopilot CLIがクライアントにコールバックする際のリクエスト/レスポンスの型です。

@@ -62,6 +62,7 @@ enum SessionEventType: string
 
     // Assistant events
     case ASSISTANT_TURN_START = 'assistant.turn_start';
+    case ASSISTANT_TURN_RETRY = 'assistant.turn_retry';
     case ASSISTANT_IDLE = 'assistant.idle';
     case ASSISTANT_INTENT = 'assistant.intent';
     case ASSISTANT_SERVER_TOOL_PROGRESS = 'assistant.server_tool_progress';
@@ -84,6 +85,7 @@ enum SessionEventType: string
     case TOOL_EXECUTION_PARTIAL_RESULT = 'tool.execution_partial_result';
     case TOOL_EXECUTION_PROGRESS = 'tool.execution_progress';
     case TOOL_EXECUTION_COMPLETE = 'tool.execution_complete';
+    case TOOL_SEARCH_ACTIVATED = 'tool_search.activated';
 
     // External tool events (protocol v3+, broadcast via session events)
     case EXTERNAL_TOOL_REQUESTED = 'external_tool.requested';
@@ -99,6 +101,7 @@ enum SessionEventType: string
     case SESSION_LIMITS_EXHAUSTED_COMPLETED = 'session_limits_exhausted.completed';
     case AUTO_MODE_RESOLVED = 'session.auto_mode_resolved';
     case MANAGED_SETTINGS_RESOLVED = 'session.managed_settings_resolved';
+    case MANAGED_SETTINGS_ENFORCED = 'session.managed_settings_enforced';
     case COMMANDS_CHANGED = 'commands.changed';
 
     // Exit plan mode events (protocol v3+)
@@ -162,4 +165,5 @@ enum SessionEventType: string
 
     // Model events
     case MODEL_CALL_FAILURE = 'model.call_failure';
+    case MODEL_CALL_START = 'model.call_start';
 }

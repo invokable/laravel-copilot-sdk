@@ -11,6 +11,7 @@ use Revolution\Copilot\Rpc\PendingFleet;
 use Revolution\Copilot\Rpc\PendingHistory;
 use Revolution\Copilot\Rpc\PendingInstructions;
 use Revolution\Copilot\Rpc\PendingLog;
+use Revolution\Copilot\Rpc\PendingFactory;
 use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Rpc\PendingMetadata;
 use Revolution\Copilot\Rpc\PendingMode;
@@ -118,6 +119,12 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->mcp())->toBeInstanceOf(PendingMcp::class);
+    });
+
+    it('returns PendingFactory from factory()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->factory())->toBeInstanceOf(PendingFactory::class);
     });
 
     it('returns PendingPlugins from plugins()', function () {

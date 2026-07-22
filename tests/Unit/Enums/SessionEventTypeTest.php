@@ -160,4 +160,36 @@ describe('SessionEventType', function () {
     it('can create managed settings resolved from string', function () {
         expect(SessionEventType::from('session.managed_settings_resolved'))->toBe(SessionEventType::MANAGED_SETTINGS_RESOLVED);
     });
+
+    it('has managed settings enforced event type', function () {
+        expect(SessionEventType::MANAGED_SETTINGS_ENFORCED->value)->toBe('session.managed_settings_enforced');
+    });
+
+    it('can create managed settings enforced from string', function () {
+        expect(SessionEventType::from('session.managed_settings_enforced'))->toBe(SessionEventType::MANAGED_SETTINGS_ENFORCED);
+    });
+
+    it('has assistant turn retry event type', function () {
+        expect(SessionEventType::ASSISTANT_TURN_RETRY->value)->toBe('assistant.turn_retry');
+    });
+
+    it('can create assistant turn retry from string', function () {
+        expect(SessionEventType::from('assistant.turn_retry'))->toBe(SessionEventType::ASSISTANT_TURN_RETRY);
+    });
+
+    it('has model call start event type', function () {
+        expect(SessionEventType::MODEL_CALL_START->value)->toBe('model.call_start');
+    });
+
+    it('can create model call start from string', function () {
+        expect(SessionEventType::from('model.call_start'))->toBe(SessionEventType::MODEL_CALL_START);
+    });
+
+    it('has tool search activated event type', function () {
+        expect(SessionEventType::TOOL_SEARCH_ACTIVATED->value)->toBe('tool_search.activated');
+    });
+
+    it('can create tool search activated from string', function () {
+        expect(SessionEventType::from('tool_search.activated'))->toBe(SessionEventType::TOOL_SEARCH_ACTIVATED);
+    });
 });
