@@ -104,6 +104,7 @@ describe('LlmInferenceHTTPRequestChunkRequest', function () {
 
         expect($request->data)->toBe('chunk data')
             ->and($request->requestId)->toBe('req-123')
+            ->and($request->agentInvocationId)->toBeNull()
             ->and($request->binary)->toBeNull()
             ->and($request->cancel)->toBeNull()
             ->and($request->end)->toBeNull();
@@ -113,6 +114,7 @@ describe('LlmInferenceHTTPRequestChunkRequest', function () {
         $request = LlmInferenceHTTPRequestChunkRequest::fromArray([
             'data' => 'binary-encoded',
             'requestId' => 'req-456',
+            'agentInvocationId' => 'invocation-789',
             'binary' => true,
             'cancel' => false,
             'cancelReason' => 'user aborted',
@@ -120,6 +122,7 @@ describe('LlmInferenceHTTPRequestChunkRequest', function () {
         ]);
 
         expect($request->data)->toBe('binary-encoded')
+            ->and($request->agentInvocationId)->toBe('invocation-789')
             ->and($request->binary)->toBeTrue()
             ->and($request->end)->toBeTrue()
             ->and($request->cancelReason)->toBe('user aborted');
