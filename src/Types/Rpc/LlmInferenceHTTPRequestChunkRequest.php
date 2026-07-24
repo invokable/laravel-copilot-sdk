@@ -15,6 +15,7 @@ readonly class LlmInferenceHTTPRequestChunkRequest implements Arrayable
     /**
      * @param  string  $data  Body byte range. UTF-8 text when `binary` is absent or false; base64-encoded when `binary` is true.
      * @param  string  $requestId  Matches the requestId from the originating httpRequestStart frame.
+     * @param  ?string  $agentInvocationId  Identity of the agent invocation (one agentic loop) this body chunk belongs to, matching the `agentInvocationId` semantics on httpRequestStart. Carried per chunk so a persistent transport can attribute successive turns correctly.
      * @param  ?bool  $binary  When true, `data` is base64-encoded bytes.
      * @param  ?bool  $cancel  When true, the runtime is cancelling the in-flight request.
      * @param  ?string  $cancelReason  Optional human-readable reason for the cancellation.
@@ -23,6 +24,7 @@ readonly class LlmInferenceHTTPRequestChunkRequest implements Arrayable
     public function __construct(
         public string $data,
         public string $requestId,
+        public ?string $agentInvocationId = null,
         public ?bool $binary = null,
         public ?bool $cancel = null,
         public ?string $cancelReason = null,
@@ -34,6 +36,7 @@ readonly class LlmInferenceHTTPRequestChunkRequest implements Arrayable
         return new self(
             data: Arr::string($data, 'data'),
             requestId: Arr::string($data, 'requestId'),
+            agentInvocationId: $data['agentInvocationId'] ?? null,
             binary: $data['binary'] ?? null,
             cancel: $data['cancel'] ?? null,
             cancelReason: $data['cancelReason'] ?? null,
@@ -46,6 +49,7 @@ readonly class LlmInferenceHTTPRequestChunkRequest implements Arrayable
         return array_filter([
             'data' => $this->data,
             'requestId' => $this->requestId,
+            'agentInvocationId' => $this->agentInvocationId,
             'binary' => $this->binary,
             'cancel' => $this->cancel,
             'cancelReason' => $this->cancelReason,
