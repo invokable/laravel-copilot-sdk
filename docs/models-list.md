@@ -28,6 +28,7 @@ The available models may change depending on Copilot CLI updates and your organi
  │ gemini-3.6-flash        │ Gemini 3.6 Flash            │ 1000000            │ Yes            │ Yes                       │ No                          │
  │ gemini-3.5-flash        │ Gemini 3.5 Flash            │ 1000000            │ Yes            │ Yes                       │ No                          │
  │ kimi-k2.7-code          │ Kimi K2.7 Code              │ 256000             │ Yes            │ No                        │ Yes                         │
+ │ grok-4.5                │ Grok 4.5                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ mai-code-1-flash-picker │ MAI-Code-1-Flash            │ 256000             │ No             │ Yes                       │ Yes                         │
  └─────────────────────────┴─────────────────────────────┴────────────────────┴────────────────┴───────────────────────────┴─────────────────────────────┘
 ```
