@@ -51,6 +51,7 @@ trait HasHooks
             'sessionStart' => $this->hooks->onSessionStart,
             'sessionEnd' => $this->hooks->onSessionEnd,
             'errorOccurred' => $this->hooks->onErrorOccurred,
+            'agentStop' => $this->hooks->onAgentStop,
         ];
 
         $handler = $handlerMap[$hookType] ?? null;

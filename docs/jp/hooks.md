@@ -121,6 +121,7 @@ Copilot::start(function (CopilotSession $session) {
 | `onPreMcpToolCall` | MCPツール実行直前 | MCPメタデータの検査・設定・削除 |
 | `onErrorOccurred` | セッション内エラー発生時 | リトライ、通知、エラー分類処理 |
 | `onSessionEnd` | セッション終了時 | クリーンアップ、メトリクス記録、終了サマリ |
+| `onAgentStop` | トップレベルエージェントが自然に停止した時 | `decision: 'block'` で継続実行させ、`reason` をフォローアップメッセージとして投入 |
 
 `null` を返すとデフォルト動作が継続されます。
 
@@ -262,6 +263,21 @@ Copilot::start(function (CopilotSession $session) {
 | `errorHandling` | `?string` | `retry` / `skip` / `abort` |
 | `retryCount` | `?int` | リトライ回数 |
 | `userNotification` | `?string` | 利用者への通知文 |
+
+### `AgentStopHookInput`
+
+| プロパティ | 型 | 説明 |
+|---|---|---|
+| `stopReason` | `?string` | 停止理由（例: `"end_turn"`） |
+| `transcriptPath` | `?string` | セッショントランスクリプトのパス（存在する場合） |
+| `stopHookActive` | `?bool` | 直前の `block` 決定による再入かどうか |
+
+### `AgentStopHookOutput`
+
+| プロパティ | 型 | 説明 |
+|---|---|---|
+| `decision` | `?string` | `"block"` を返すとエージェントの停止をキャンセルして継続 |
+| `reason` | `?string` | 継続時にフォローアップメッセージとして投入される理由 |
 
 ### `PreMcpToolCallHookInput`
 
