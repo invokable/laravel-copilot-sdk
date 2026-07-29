@@ -21,6 +21,7 @@ readonly class SessionHooks implements Arrayable
      * @param  ?Closure  $onSessionEnd  Called when a session ends
      * @param  ?Closure  $onErrorOccurred  Called when an error occurs
      * @param  ?Closure  $onPreMcpToolCall  Called before an MCP tool call is dispatched
+     * @param  ?Closure  $onAgentStop  Called when the top-level agent reaches a natural terminal stop
      */
     public function __construct(
         public ?Closure $onPreToolUse = null,
@@ -31,6 +32,7 @@ readonly class SessionHooks implements Arrayable
         public ?Closure $onSessionEnd = null,
         public ?Closure $onErrorOccurred = null,
         public ?Closure $onPreMcpToolCall = null,
+        public ?Closure $onAgentStop = null,
     ) {}
 
     /**
@@ -47,6 +49,7 @@ readonly class SessionHooks implements Arrayable
             onSessionEnd: $data['onSessionEnd'] ?? null,
             onErrorOccurred: $data['onErrorOccurred'] ?? null,
             onPreMcpToolCall: $data['onPreMcpToolCall'] ?? null,
+            onAgentStop: $data['onAgentStop'] ?? null,
         );
     }
 
@@ -64,6 +67,7 @@ readonly class SessionHooks implements Arrayable
             'onSessionEnd' => $this->onSessionEnd,
             'onErrorOccurred' => $this->onErrorOccurred,
             'onPreMcpToolCall' => $this->onPreMcpToolCall,
+            'onAgentStop' => $this->onAgentStop,
         ], fn ($value) => $value !== null);
     }
 }

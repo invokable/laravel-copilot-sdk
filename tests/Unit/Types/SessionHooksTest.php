@@ -15,6 +15,7 @@ describe('SessionHooks', function () {
         $sessionEnd = fn () => null;
         $errorOccurred = fn () => null;
         $preMcpToolCall = fn () => null;
+        $agentStop = fn () => null;
 
         $hooks = new SessionHooks(
             onPreToolUse: $preToolUse,
@@ -25,6 +26,7 @@ describe('SessionHooks', function () {
             onSessionEnd: $sessionEnd,
             onErrorOccurred: $errorOccurred,
             onPreMcpToolCall: $preMcpToolCall,
+            onAgentStop: $agentStop,
         );
 
         expect($hooks->onPreToolUse)->toBe($preToolUse)
@@ -34,7 +36,8 @@ describe('SessionHooks', function () {
             ->and($hooks->onSessionStart)->toBe($sessionStart)
             ->and($hooks->onSessionEnd)->toBe($sessionEnd)
             ->and($hooks->onErrorOccurred)->toBe($errorOccurred)
-            ->and($hooks->onPreMcpToolCall)->toBe($preMcpToolCall);
+            ->and($hooks->onPreMcpToolCall)->toBe($preMcpToolCall)
+            ->and($hooks->onAgentStop)->toBe($agentStop);
     });
 
     it('can be created with no hooks', function () {
@@ -47,7 +50,8 @@ describe('SessionHooks', function () {
             ->and($hooks->onSessionStart)->toBeNull()
             ->and($hooks->onSessionEnd)->toBeNull()
             ->and($hooks->onErrorOccurred)->toBeNull()
-            ->and($hooks->onPreMcpToolCall)->toBeNull();
+            ->and($hooks->onPreMcpToolCall)->toBeNull()
+            ->and($hooks->onAgentStop)->toBeNull();
     });
 
     it('can be created with partial hooks', function () {
@@ -92,7 +96,8 @@ describe('SessionHooks', function () {
             ->and($hooks->onSessionStart)->toBeNull()
             ->and($hooks->onSessionEnd)->toBeNull()
             ->and($hooks->onErrorOccurred)->toBeNull()
-            ->and($hooks->onPreMcpToolCall)->toBeNull();
+            ->and($hooks->onPreMcpToolCall)->toBeNull()
+            ->and($hooks->onAgentStop)->toBeNull();
     });
 
     it('can convert to array with all hooks', function () {
