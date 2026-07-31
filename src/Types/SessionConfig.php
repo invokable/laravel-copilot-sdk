@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Enums\Verbosity;
+use Revolution\Copilot\Types\GitHubMcpToolConfig;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 
@@ -159,6 +160,7 @@ readonly class SessionConfig implements Arrayable
      *                                                         written to a temp file and a reference is returned to the model.
      * @param  ?string  $extensionSdkPath  Optional override path to a `copilot-sdk/` folder to inject into extension subprocesses.
      * @param  ?bool  $enableMcpApps  Enable MCP Apps (SEP-1865) UI passthrough on this session. Experimental.
+     * @param  GitHubMcpToolConfig|array|null  $githubMcpToolConfig  Configuration for the built-in GitHub MCP server.
      * @param  ?string  $mcpOAuthTokenStorage  Controls how MCP OAuth tokens are stored ("persistent" or "in-memory").
      * @param  ?bool  $skipEmbeddingRetrieval  When true, skips embedding-based retrieval for this session.
      * @param  ?string  $embeddingCacheStorage  Controls how the embedding cache is stored ("persistent" or "in-memory").
@@ -247,6 +249,7 @@ readonly class SessionConfig implements Arrayable
         public LargeToolOutputConfig|array|null $largeOutput = null,
         public ?string $extensionSdkPath = null,
         public ?bool $enableMcpApps = null,
+        public GitHubMcpToolConfig|array|null $githubMcpToolConfig = null,
         public ?string $mcpOAuthTokenStorage = null,
         public ?bool $skipEmbeddingRetrieval = null,
         public ?string $embeddingCacheStorage = null,
@@ -414,6 +417,11 @@ readonly class SessionConfig implements Arrayable
             largeOutput: $largeOutput,
             extensionSdkPath: $data['extensionSdkPath'] ?? null,
             enableMcpApps: $data['enableMcpApps'] ?? null,
+            githubMcpToolConfig: isset($data['githubMcpToolConfig'])
+                ? ($data['githubMcpToolConfig'] instanceof GitHubMcpToolConfig
+                    ? $data['githubMcpToolConfig']
+                    : GitHubMcpToolConfig::fromArray($data['githubMcpToolConfig']))
+                : null,
             mcpOAuthTokenStorage: $data['mcpOAuthTokenStorage'] ?? null,
             skipEmbeddingRetrieval: $data['skipEmbeddingRetrieval'] ?? null,
             embeddingCacheStorage: $data['embeddingCacheStorage'] ?? null,
@@ -566,6 +574,9 @@ readonly class SessionConfig implements Arrayable
             'largeOutput' => $largeOutput,
             'extensionSdkPath' => $this->extensionSdkPath,
             'enableMcpApps' => $this->enableMcpApps,
+            'githubMcpToolConfig' => $this->githubMcpToolConfig instanceof GitHubMcpToolConfig
+                ? $this->githubMcpToolConfig->toArray()
+                : $this->githubMcpToolConfig,
             'mcpOAuthTokenStorage' => $this->mcpOAuthTokenStorage,
             'skipEmbeddingRetrieval' => $this->skipEmbeddingRetrieval,
             'embeddingCacheStorage' => $this->embeddingCacheStorage,
