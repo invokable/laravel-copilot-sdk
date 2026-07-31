@@ -9,7 +9,6 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Enums\Verbosity;
-use Revolution\Copilot\Types\GitHubMcpToolConfig;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 
