@@ -428,8 +428,8 @@ describe('Client', function () {
             ->with('session.create', Mockery::on(fn ($params) => ($params['availableTools'] ?? null) === ['builtin:*']
                 && ($params['excludedTools'] ?? null) === ['mcp:github-delete_repository']
                 && ($params['toolFilterPrecedence'] ?? null) === 'excluded'
+                && ($params['customAgentsLocalOnly'] ?? null) === true
                 && ! array_key_exists('skipCustomInstructions', $params)
-                && ! array_key_exists('customAgentsLocalOnly', $params)
                 && ! array_key_exists('coauthorEnabled', $params)
                 && ! array_key_exists('manageScheduleEnabled', $params)))
             ->once()
@@ -468,6 +468,53 @@ describe('Client', function () {
         ]);
 
         expect($session)->toBe($mockSession);
+    });
+
+    it('createSession forwards enableManagedSettings to the Session constructor', function () {
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(4);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', [])
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.create', Mockery::any())
+            ->once()
+            ->andReturn(['sessionId' => 'test-session-123']);
+
+        $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with([]);
+        $mockSession->shouldReceive('setCapabilities')->once()->with(null);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
+
+        $capturedParameters = null;
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+        $this->app->bind(Session::class, function ($app, $parameters) use (&$capturedParameters, $mockSession) {
+            $capturedParameters = $parameters;
+
+            return $mockSession;
+        });
+
+        $client = new Client;
+        $client->start();
+        $session = $client->createSession([
+            'enableManagedSettings' => true,
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
+
+        expect($session)->toBe($mockSession)
+            ->and($capturedParameters['managedSettingsEnabled'] ?? null)->toBeTrue();
     });
 
     it('createSession sends cloud plugin and directory options in RPC request', function () {

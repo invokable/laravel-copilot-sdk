@@ -19,6 +19,25 @@ describe('PermissionHandler', function () {
         expect($result)->toBe(['kind' => 'approve-once']);
     });
 
+    it('approveAll closure throws when managed settings are enabled', function () {
+        $handler = PermissionHandler::approveAll();
+
+        expect(fn () => $handler(['kind' => 'shell'], [
+            'sessionId' => 'test-session',
+            'managedSettingsEnabled' => true,
+        ]))->toThrow(RuntimeException::class, 'approveAll cannot be used when managed settings are enabled.');
+    });
+
+    it('approveAll closure returns no-result when managed approval is required', function () {
+        $handler = PermissionHandler::approveAll();
+        $result = $handler(
+            ['kind' => 'shell', 'managedApprovalRequired' => true],
+            ['sessionId' => 'test-session', 'managedSettingsEnabled' => false],
+        );
+
+        expect($result)->toBe(['kind' => PermissionRequestResultKind::NO_RESULT]);
+    });
+
     it('approveSafety returns a closure', function () {
         $handler = PermissionHandler::approveSafety();
 

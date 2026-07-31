@@ -169,22 +169,6 @@ describe('SessionEventType', function () {
         expect(SessionEventType::from('session.managed_settings_enforced'))->toBe(SessionEventType::MANAGED_SETTINGS_ENFORCED);
     });
 
-    it('has assistant turn retry event type', function () {
-        expect(SessionEventType::ASSISTANT_TURN_RETRY->value)->toBe('assistant.turn_retry');
-    });
-
-    it('can create assistant turn retry from string', function () {
-        expect(SessionEventType::from('assistant.turn_retry'))->toBe(SessionEventType::ASSISTANT_TURN_RETRY);
-    });
-
-    it('has model call start event type', function () {
-        expect(SessionEventType::MODEL_CALL_START->value)->toBe('model.call_start');
-    });
-
-    it('can create model call start from string', function () {
-        expect(SessionEventType::from('model.call_start'))->toBe(SessionEventType::MODEL_CALL_START);
-    });
-
     it('has tool search activated event type', function () {
         expect(SessionEventType::TOOL_SEARCH_ACTIVATED->value)->toBe('tool_search.activated');
     });

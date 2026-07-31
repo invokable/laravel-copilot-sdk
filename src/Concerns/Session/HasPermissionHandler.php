@@ -47,8 +47,13 @@ trait HasPermissionHandler
         }
 
         try {
-            return ($this->permissionHandler)($request, ['sessionId' => $this->sessionId]);
-        } catch (Throwable) {
+            return ($this->permissionHandler)($request, [
+                'sessionId' => $this->sessionId,
+                'managedSettingsEnabled' => $this->managedSettingsEnabled,
+            ]);
+        } catch (Throwable $e) {
+            report($e);
+
             return PermissionDecision::userNotAvailable();
         }
     }
@@ -63,7 +68,10 @@ trait HasPermissionHandler
     {
         $fiber = new \Fiber(function () use ($requestId, $permissionRequest): void {
             try {
-                $result = ($this->permissionHandler)($permissionRequest, ['sessionId' => $this->sessionId]);
+                $result = ($this->permissionHandler)($permissionRequest, [
+                    'sessionId' => $this->sessionId,
+                    'managedSettingsEnabled' => $this->managedSettingsEnabled,
+                ]);
 
                 if (($result['kind'] ?? null) === PermissionDecision::NO_RESULT) {
                     return;
@@ -75,7 +83,9 @@ trait HasPermissionHandler
                         result: $result,
                     )
                 );
-            } catch (Throwable) {
+            } catch (Throwable $e) {
+                report($e);
+
                 try {
                     $this->rpc()->permissions()->handlePendingPermissionRequest(
                         new PermissionDecisionRequest(

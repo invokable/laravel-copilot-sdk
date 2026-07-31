@@ -45,6 +45,9 @@ $config = new SessionConfig(
 $response = Copilot::run(prompt: 'Hello', config: $config);
 ```
 
+> [!NOTE]
+> `enableManagedSettings: true`のセッションで`approveAll()`を使うと`RuntimeException`がスローされます。詳細は後述の[Managed Settings](#managed-settings)を参照してください。
+
 ## PermissionHandler::approveSafety()
 
 危険性の高い`shell`, `write`のみ拒否して他を自動的に許可する場合は `PermissionHandler::approveSafety()` を使います。
@@ -172,15 +175,40 @@ kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool" | "memory" | "h
   "possibleUrls" => [],
   "hasWriteFileRedirection" => false,
   "canOfferSessionApproval" => false,
+  "managedApprovalRequired" => false,
 ]
 ```
+
+`managedApprovalRequired`が`true`の場合、組織のManaged Settingsによってこのリクエストは自動承認できません。`PermissionHandler::approveAll()`はこの場合`no-result`を返し、Copilot CLI側の標準フローに委ねます。
 
 ### $invocation
 ```php
 [
   "sessionId" => "...",
+  "managedSettingsEnabled" => false,
 ]
 ```
+
+`managedSettingsEnabled`は`SessionConfig`の`enableManagedSettings`（後述）から渡されます。
+
+## Managed Settings
+
+組織のManaged Settingsが有効なセッションでは、`enableManagedSettings: true`を指定します。
+
+```php
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    enableManagedSettings: true,
+    onPermissionRequest: function (array $request, array $invocation) {
+        // $invocation['managedSettingsEnabled'] === true
+        // ...
+    },
+);
+```
+
+> [!CAUTION]
+> Managed Settingsが有効な場合、`PermissionHandler::approveAll()`は`RuntimeException`をスローします。すべてを自動承認するハンドラはManaged Settingsのポリシーを回避してしまうため、意図的に禁止されています。ハンドラ内で発生した例外は内部でキャッチされ`user-not-available`として扱われるので、この場合は自動的にリクエストが拒否されます。カスタムハンドラで`$invocation['managedSettingsEnabled']`を見て個別に判定してください。
 
 ## レスポンス
 

@@ -332,6 +332,7 @@ class Client implements CopilotClient
             'mcpServers' => $config['mcpServers'] ?? null,
             'envValueMode' => 'direct',
             'customAgents' => $config['customAgents'] ?? null,
+            'customAgentsLocalOnly' => $config['customAgentsLocalOnly'] ?? null,
             'defaultAgent' => $config['defaultAgent'] ?? null,
             'agent' => $config['agent'] ?? null,
             'configDir' => $config['configDir'] ?? null,
@@ -378,6 +379,7 @@ class Client implements CopilotClient
             'sessionId' => $sessionId,
             'client' => $this->rpcClient,
             'workspacePath' => $workspacePath,
+            'managedSettingsEnabled' => (bool) ($config['enableManagedSettings'] ?? false),
         ]);
         $session->registerTools($tools);
         $session->registerCommands($commands);
@@ -484,6 +486,7 @@ class Client implements CopilotClient
             'mcpServers' => $config['mcpServers'] ?? null,
             'envValueMode' => 'direct',
             'customAgents' => $config['customAgents'] ?? null,
+            'customAgentsLocalOnly' => $config['customAgentsLocalOnly'] ?? null,
             'defaultAgent' => $config['defaultAgent'] ?? null,
             'agent' => $config['agent'] ?? null,
             'configDir' => $config['configDir'] ?? null,
@@ -531,6 +534,7 @@ class Client implements CopilotClient
             'sessionId' => $resumedSessionId,
             'client' => $this->rpcClient,
             'workspacePath' => $workspacePath,
+            'managedSettingsEnabled' => (bool) ($config['enableManagedSettings'] ?? false),
         ]);
         $session->registerTools($tools);
         $session->registerCommands($commands);
