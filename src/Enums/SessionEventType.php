@@ -62,7 +62,6 @@ enum SessionEventType: string
 
     // Assistant events
     case ASSISTANT_TURN_START = 'assistant.turn_start';
-    case ASSISTANT_TURN_RETRY = 'assistant.turn_retry';
     case ASSISTANT_IDLE = 'assistant.idle';
     case ASSISTANT_INTENT = 'assistant.intent';
     case ASSISTANT_SERVER_TOOL_PROGRESS = 'assistant.server_tool_progress';
@@ -165,5 +164,4 @@ enum SessionEventType: string
 
     // Model events
     case MODEL_CALL_FAILURE = 'model.call_failure';
-    case MODEL_CALL_START = 'model.call_start';
 }

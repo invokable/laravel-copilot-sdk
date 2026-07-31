@@ -443,6 +443,25 @@ describe('Session', function () {
         expect($result)->toBe(['kind' => 'user-not-available']);
     });
 
+    it('handlePermissionRequest passes managedSettingsEnabled through the invocation context', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient, managedSettingsEnabled: true);
+
+        $receivedInvocation = null;
+        $session->registerPermissionHandler(function (array $request, array $invocation) use (&$receivedInvocation) {
+            $receivedInvocation = $invocation;
+
+            return ['kind' => 'approve-once'];
+        });
+
+        $session->handlePermissionRequest(['toolName' => 'bash']);
+
+        expect($receivedInvocation)->toBe([
+            'sessionId' => 'test-session',
+            'managedSettingsEnabled' => true,
+        ]);
+    });
+
     it('sendAndWait returns event with exception on session error', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')

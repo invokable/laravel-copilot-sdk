@@ -102,6 +102,7 @@ class Session implements CopilotSession
         public readonly string $sessionId,
         protected JsonRpcClient $client,
         public readonly ?string $workspacePath = null,
+        protected bool $managedSettingsEnabled = false,
     ) {
         //
     }
