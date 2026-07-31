@@ -28,6 +28,7 @@ use Revolution\Copilot\Transport\TcpTransport;
 use Revolution\Copilot\Types\CommandDefinition;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
+use Revolution\Copilot\Types\GitHubMcpToolConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
@@ -353,6 +354,7 @@ class Client implements CopilotClient
             'largeOutput' => $config['largeOutput'] ?? null,
             'extensionSdkPath' => $config['extensionSdkPath'] ?? null,
             'enableMcpApps' => $config['enableMcpApps'] ?? null,
+            'githubMcpToolConfig' => $this->normalizeGitHubMcpToolConfig($config['githubMcpToolConfig'] ?? null),
             'mcpOAuthTokenStorage' => $config['mcpOAuthTokenStorage'] ?? null,
             'skipEmbeddingRetrieval' => $config['skipEmbeddingRetrieval'] ?? null,
             'embeddingCacheStorage' => $config['embeddingCacheStorage'] ?? null,
@@ -505,6 +507,7 @@ class Client implements CopilotClient
             'largeOutput' => $config['largeOutput'] ?? null,
             'extensionSdkPath' => $config['extensionSdkPath'] ?? null,
             'enableMcpApps' => $config['enableMcpApps'] ?? null,
+            'githubMcpToolConfig' => $this->normalizeGitHubMcpToolConfig($config['githubMcpToolConfig'] ?? null),
             'mcpOAuthTokenStorage' => $config['mcpOAuthTokenStorage'] ?? null,
             'skipEmbeddingRetrieval' => $config['skipEmbeddingRetrieval'] ?? null,
             'embeddingCacheStorage' => $config['embeddingCacheStorage'] ?? null,
@@ -565,6 +568,18 @@ class Client implements CopilotClient
         ResumeSession::dispatch($session);
 
         return $session;
+    }
+
+    /**
+     * Normalize the githubMcpToolConfig option into a plain array for the RPC payload.
+     */
+    private function normalizeGitHubMcpToolConfig(GitHubMcpToolConfig|array|null $config): ?array
+    {
+        if ($config === null) {
+            return null;
+        }
+
+        return $config instanceof GitHubMcpToolConfig ? $config->toArray() : $config;
     }
 
     private function applyPostCreateOptionsPatch(string $sessionId, Session $session, array $config): void
