@@ -1,0 +1,32 @@
+name: gh-aw upgrade
+
+on:
+  schedule:
+    - cron: "0 18 * * *" # 毎日 UTC 18:00 (JST 4:00)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup gh-aw
+        uses: github/gh-aw/actions/setup-cli@ec7e9b22470f36052c927b9a642f93a525bcef9a # v0.84.0
+        with:
+          version: v0.84.0
+
+      - name: git config
+        run: |
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Run gh aw upgrade
+        run: gh aw upgrade --pre-releases --create-pull-request --yes
+        env:
+          GH_TOKEN: ${{ github.token }}
