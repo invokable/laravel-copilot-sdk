@@ -8,12 +8,14 @@ describe('FactoryExecuteRequest', function () {
     it('can be created from array', function () {
         $request = FactoryExecuteRequest::fromArray([
             'args' => ['a' => 1],
+            'executionToken' => 'token-1',
             'name' => 'my-factory',
             'runId' => 'run-1',
             'sessionId' => 'session-1',
         ]);
 
         expect($request->args)->toBe(['a' => 1])
+            ->and($request->executionToken)->toBe('token-1')
             ->and($request->name)->toBe('my-factory')
             ->and($request->runId)->toBe('run-1')
             ->and($request->sessionId)->toBe('session-1');
@@ -22,6 +24,7 @@ describe('FactoryExecuteRequest', function () {
     it('converts to array correctly', function () {
         $request = new FactoryExecuteRequest(
             args: ['a' => 1],
+            executionToken: 'token-1',
             name: 'my-factory',
             runId: 'run-1',
             sessionId: 'session-1',
@@ -29,6 +32,7 @@ describe('FactoryExecuteRequest', function () {
 
         expect($request->toArray())->toBe([
             'args' => ['a' => 1],
+            'executionToken' => 'token-1',
             'name' => 'my-factory',
             'runId' => 'run-1',
             'sessionId' => 'session-1',

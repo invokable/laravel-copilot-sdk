@@ -29,8 +29,8 @@ readonly class FactoryExecuteResult implements Arrayable
 
     public function toArray(): array
     {
-        return [
+        return array_filter([
             'result' => $this->result,
-        ];
+        ], fn ($v) => $v !== null);
     }
 }

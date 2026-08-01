@@ -7,9 +7,11 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\AgentGetCurrentResult;
 use Revolution\Copilot\Types\Rpc\AgentList;
+use Revolution\Copilot\Types\Rpc\AgentListRequest;
 use Revolution\Copilot\Types\Rpc\AgentReloadResult;
 use Revolution\Copilot\Types\Rpc\AgentSelectRequest;
 use Revolution\Copilot\Types\Rpc\AgentSelectResult;
+use Revolution\Copilot\Types\Rpc\SessionAgentListRequest;
 
 /**
  * Pending agent RPC operations for a session.
@@ -26,12 +28,15 @@ class PendingAgent
     /**
      * List available agents.
      */
-    public function list(): AgentList
+    public function list(SessionAgentListRequest|AgentListRequest|array|null $params = null): AgentList
     {
+        $paramsArray = $params === null
+            ? []
+            : ($params instanceof AgentListRequest ? $params : AgentListRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
         return AgentList::fromArray(
-            $this->client->request('session.agent.list', [
-                'sessionId' => $this->sessionId,
-            ]),
+            $this->client->request('session.agent.list', $paramsArray),
         );
     }
 

@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
+use Revolution\Copilot\Enums\FactoryDurableOperation;
 use Revolution\Copilot\Enums\FactoryRunFailureKind;
 use Revolution\Copilot\Enums\FactoryRunFailureType;
 
@@ -22,6 +23,8 @@ readonly class FactoryRunFailure implements Arrayable
      * @param  FactoryRunFailureKind|string|null  $kind  Resource ceiling that stopped the run.
      * @param  ?float  $value  Approved effective ceiling that was reached.
      * @param  ?string  $reason  Human-readable reason the resume did not proceed.
+     * @param  ?string  $code  Error code for a durable-storage failure.
+     * @param  FactoryDurableOperation|string|null  $operation  Storage operation that failed for a durable failure.
      */
     public function __construct(
         public string $runId,
@@ -29,6 +32,8 @@ readonly class FactoryRunFailure implements Arrayable
         public FactoryRunFailureKind|string|null $kind = null,
         public ?float $value = null,
         public ?string $reason = null,
+        public ?string $code = null,
+        public FactoryDurableOperation|string|null $operation = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -41,6 +46,10 @@ readonly class FactoryRunFailure implements Arrayable
                 : null,
             value: $data['value'] ?? null,
             reason: $data['reason'] ?? null,
+            code: $data['code'] ?? null,
+            operation: isset($data['operation'])
+                ? ($data['operation'] instanceof FactoryDurableOperation ? $data['operation'] : FactoryDurableOperation::from($data['operation']))
+                : null,
         );
     }
 
@@ -52,6 +61,8 @@ readonly class FactoryRunFailure implements Arrayable
             'kind' => $this->kind instanceof FactoryRunFailureKind ? $this->kind->value : $this->kind,
             'value' => $this->value,
             'reason' => $this->reason,
+            'code' => $this->code,
+            'operation' => $this->operation instanceof FactoryDurableOperation ? $this->operation->value : $this->operation,
         ], fn ($v) => $v !== null);
     }
 }

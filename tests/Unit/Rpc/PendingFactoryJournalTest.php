@@ -15,6 +15,7 @@ describe('PendingFactoryJournal', function () {
         $client->shouldReceive('request')
             ->once()
             ->with('session.factory.journal.get', [
+                'executionToken' => 'token-1',
                 'key' => 'my-key',
                 'runId' => 'run-1',
                 'sessionId' => 'session-xyz',
@@ -22,7 +23,7 @@ describe('PendingFactoryJournal', function () {
             ->andReturn(['hit' => true, 'resultJson' => ['a' => 1]]);
 
         $pending = new PendingFactoryJournal($client, 'session-xyz');
-        $result = $pending->get(new FactoryJournalGetRequest(key: 'my-key', runId: 'run-1'));
+        $result = $pending->get(new FactoryJournalGetRequest(executionToken: 'token-1', key: 'my-key', runId: 'run-1'));
 
         expect($result)->toBeInstanceOf(FactoryJournalGetResult::class)
             ->and($result->hit)->toBeTrue()
@@ -34,6 +35,7 @@ describe('PendingFactoryJournal', function () {
         $client->shouldReceive('request')
             ->once()
             ->with('session.factory.journal.put', [
+                'executionToken' => 'token-1',
                 'key' => 'my-key',
                 'resultJson' => ['a' => 1],
                 'runId' => 'run-1',
@@ -42,7 +44,7 @@ describe('PendingFactoryJournal', function () {
             ->andReturn([]);
 
         $pending = new PendingFactoryJournal($client, 'session-xyz');
-        $result = $pending->put(new FactoryJournalPutRequest(key: 'my-key', resultJson: ['a' => 1], runId: 'run-1'));
+        $result = $pending->put(new FactoryJournalPutRequest(executionToken: 'token-1', key: 'my-key', resultJson: ['a' => 1], runId: 'run-1'));
 
         expect($result)->toBeInstanceOf(FactoryAckResult::class);
     });

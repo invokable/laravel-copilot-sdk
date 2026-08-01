@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\QueueBeginDeferredIdleDrainRequest;
+use Revolution\Copilot\Types\Rpc\QueueBeginDeferredIdleDrainResult;
+use Revolution\Copilot\Types\Rpc\QueueFinishDeferredIdleDrainRequest;
+use Revolution\Copilot\Types\Rpc\QueueFinishDeferredIdleDrainResult;
 use Revolution\Copilot\Types\Rpc\QueuePendingItemsResult;
 use Revolution\Copilot\Types\Rpc\QueueRemoveMostRecentResult;
 
@@ -52,5 +56,39 @@ class PendingQueue
         $this->client->request('session.queue.clear', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Begins a native deferred-idle drain.
+     *
+     * @internal This method is part of the runtime orchestration surface.
+     */
+    public function beginDeferredIdleDrain(QueueBeginDeferredIdleDrainRequest|array $params): QueueBeginDeferredIdleDrainResult
+    {
+        $paramsArray = ($params instanceof QueueBeginDeferredIdleDrainRequest
+            ? $params
+            : QueueBeginDeferredIdleDrainRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return QueueBeginDeferredIdleDrainResult::fromArray(
+            $this->client->request('session.queue.beginDeferredIdleDrain', $paramsArray),
+        );
+    }
+
+    /**
+     * Finishes a native deferred-idle drain.
+     *
+     * @internal This method is part of the runtime orchestration surface.
+     */
+    public function finishDeferredIdleDrain(QueueFinishDeferredIdleDrainRequest|array $params): QueueFinishDeferredIdleDrainResult
+    {
+        $paramsArray = ($params instanceof QueueFinishDeferredIdleDrainRequest
+            ? $params
+            : QueueFinishDeferredIdleDrainRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return QueueFinishDeferredIdleDrainResult::fromArray(
+            $this->client->request('session.queue.finishDeferredIdleDrain', $paramsArray),
+        );
     }
 }

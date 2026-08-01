@@ -107,6 +107,9 @@ enum SessionEventType: string
     case EXIT_PLAN_MODE_REQUESTED = 'exit_plan_mode.requested';
     case EXIT_PLAN_MODE_COMPLETED = 'exit_plan_mode.completed';
 
+    // Factory events
+    case FACTORY_RUN_UPDATED = 'factory.run_updated';
+
     // Permission events
     case PERMISSION_REQUESTED = 'permission.requested';
     case PERMISSION_COMPLETED = 'permission.completed';

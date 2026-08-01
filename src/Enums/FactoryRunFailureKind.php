@@ -12,5 +12,6 @@ namespace Revolution\Copilot\Enums;
 enum FactoryRunFailureKind: string
 {
     case MAX_TOTAL_SUBAGENTS = 'maxTotalSubagents';
-    case TIMEOUT = 'timeout';
+    case TIMEOUT = 'timeoutSeconds';
+    case MAX_AI_CREDITS = 'maxAiCredits';
 }

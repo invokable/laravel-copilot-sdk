@@ -11,14 +11,14 @@ describe('FactoryRunFailure', function () {
         $failure = FactoryRunFailure::fromArray([
             'runId' => 'run-1',
             'type' => 'factory_limit_reached',
-            'kind' => 'timeout',
-            'value' => 60000.0,
+            'kind' => 'timeoutSeconds',
+            'value' => 60.0,
         ]);
 
         expect($failure->runId)->toBe('run-1')
             ->and($failure->type)->toBe(FactoryRunFailureType::FACTORY_LIMIT_REACHED)
             ->and($failure->kind)->toBe(FactoryRunFailureKind::TIMEOUT)
-            ->and($failure->value)->toBe(60000.0);
+            ->and($failure->value)->toBe(60.0);
     });
 
     it('converts to array correctly', function () {

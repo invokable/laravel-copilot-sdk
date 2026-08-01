@@ -16,11 +16,13 @@ readonly class FactoryAgentRequest implements Arrayable
 {
     /**
      * @param  string  $factoryRunId  Factory run identifier that owns the subagent.
+     * @param  string  $executionToken  Capability token authorizing this factory execution.
      * @param  FactoryAgentOptions|array  $opts  Subagent execution options.
      * @param  string  $prompt  Prompt to send to the subagent.
      */
     public function __construct(
         public string $factoryRunId,
+        public string $executionToken,
         public FactoryAgentOptions|array $opts,
         public string $prompt,
     ) {}
@@ -31,6 +33,7 @@ readonly class FactoryAgentRequest implements Arrayable
 
         return new self(
             factoryRunId: Arr::string($data, 'factoryRunId'),
+            executionToken: Arr::string($data, 'executionToken'),
             opts: $opts instanceof FactoryAgentOptions ? $opts : FactoryAgentOptions::fromArray($opts),
             prompt: Arr::string($data, 'prompt'),
         );
@@ -42,6 +45,7 @@ readonly class FactoryAgentRequest implements Arrayable
 
         return [
             'factoryRunId' => $this->factoryRunId,
+            'executionToken' => $this->executionToken,
             'opts' => $opts,
             'prompt' => $this->prompt,
         ];
