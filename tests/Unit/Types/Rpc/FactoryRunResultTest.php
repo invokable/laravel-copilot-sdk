@@ -26,8 +26,8 @@ describe('FactoryRunResult', function () {
             'failure' => [
                 'runId' => 'run-1',
                 'type' => 'factory_limit_reached',
-                'kind' => 'timeout',
-                'value' => 1000.0,
+                'kind' => 'timeoutSeconds',
+                'value' => 1.0,
             ],
         ]);
 

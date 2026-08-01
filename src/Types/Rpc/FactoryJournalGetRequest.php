@@ -15,10 +15,12 @@ use Illuminate\Support\Arr;
 readonly class FactoryJournalGetRequest implements Arrayable
 {
     /**
+     * @param  string  $executionToken  Capability token authorizing this factory execution.
      * @param  string  $key  Namespaced journal key.
      * @param  string  $runId  Factory run identifier.
      */
     public function __construct(
+        public string $executionToken,
         public string $key,
         public string $runId,
     ) {}
@@ -26,6 +28,7 @@ readonly class FactoryJournalGetRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
+            executionToken: Arr::string($data, 'executionToken'),
             key: Arr::string($data, 'key'),
             runId: Arr::string($data, 'runId'),
         );
@@ -34,6 +37,7 @@ readonly class FactoryJournalGetRequest implements Arrayable
     public function toArray(): array
     {
         return [
+            'executionToken' => $this->executionToken,
             'key' => $this->key,
             'runId' => $this->runId,
         ];

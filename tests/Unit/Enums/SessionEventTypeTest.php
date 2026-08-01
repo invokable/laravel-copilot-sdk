@@ -29,6 +29,11 @@ describe('SessionEventType', function () {
         expect(SessionEventType::SESSION_CUSTOM_AGENTS_UPDATED->value)->toBe('session.custom_agents_updated');
     });
 
+    it('has the factory run updated event type', function () {
+        expect(SessionEventType::FACTORY_RUN_UPDATED->value)->toBe('factory.run_updated')
+            ->and(SessionEventType::from('factory.run_updated'))->toBe(SessionEventType::FACTORY_RUN_UPDATED);
+    });
+
     it('can create custom agents updated from string', function () {
         expect(SessionEventType::from('session.custom_agents_updated'))->toBe(SessionEventType::SESSION_CUSTOM_AGENTS_UPDATED);
     });

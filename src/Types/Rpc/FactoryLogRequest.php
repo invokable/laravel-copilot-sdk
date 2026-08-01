@@ -15,10 +15,12 @@ use Illuminate\Support\Arr;
 readonly class FactoryLogRequest implements Arrayable
 {
     /**
+     * @param  string  $executionToken  Capability token authorizing this factory execution.
      * @param  array<FactoryLogLine>  $lines  Ordered progress lines to append.
      * @param  string  $runId  Factory run identifier.
      */
     public function __construct(
+        public string $executionToken,
         public array $lines,
         public string $runId,
     ) {}
@@ -26,6 +28,7 @@ readonly class FactoryLogRequest implements Arrayable
     public static function fromArray(array $data): self
     {
         return new self(
+            executionToken: Arr::string($data, 'executionToken'),
             lines: array_map(
                 fn (array $line) => FactoryLogLine::fromArray($line),
                 $data['lines'] ?? [],
@@ -37,6 +40,7 @@ readonly class FactoryLogRequest implements Arrayable
     public function toArray(): array
     {
         return [
+            'executionToken' => $this->executionToken,
             'lines' => array_map(fn (FactoryLogLine $line) => $line->toArray(), $this->lines),
             'runId' => $this->runId,
         ];

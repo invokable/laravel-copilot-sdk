@@ -16,12 +16,14 @@ readonly class FactoryExecuteRequest implements Arrayable
 {
     /**
      * @param  mixed  $args  Factory input value.
+     * @param  string  $executionToken  Capability token authorizing this factory execution.
      * @param  string  $name  Registered factory name.
      * @param  string  $runId  Factory run identifier.
      * @param  string  $sessionId  Target session identifier
      */
     public function __construct(
         public mixed $args,
+        public string $executionToken,
         public string $name,
         public string $runId,
         public string $sessionId,
@@ -31,6 +33,7 @@ readonly class FactoryExecuteRequest implements Arrayable
     {
         return new self(
             args: $data['args'] ?? null,
+            executionToken: Arr::string($data, 'executionToken'),
             name: Arr::string($data, 'name'),
             runId: Arr::string($data, 'runId'),
             sessionId: Arr::string($data, 'sessionId'),
@@ -41,6 +44,7 @@ readonly class FactoryExecuteRequest implements Arrayable
     {
         return [
             'args' => $this->args,
+            'executionToken' => $this->executionToken,
             'name' => $this->name,
             'runId' => $this->runId,
             'sessionId' => $this->sessionId,

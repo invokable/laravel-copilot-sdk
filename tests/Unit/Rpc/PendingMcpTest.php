@@ -8,6 +8,8 @@ use Revolution\Copilot\Types\Rpc\McpDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
+use Revolution\Copilot\Types\Rpc\McpOauthRespondRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthRespondResult;
 use Revolution\Copilot\Types\Rpc\McpServerList;
 
 describe('PendingMcp', function () {
@@ -163,4 +165,19 @@ describe('PendingMcp', function () {
         expect($result)->toBeInstanceOf(McpOauthLoginResult::class)
             ->and($result->authorizationUrl)->toBeNull();
     });
+
+    it('calls session.mcp.oauth.respond and returns result', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.mcp.oauth.respond', ['requestId' => 'oauth-1', 'sessionId' => 'session-abc'])
+            ->andReturn(['success' => true]);
+
+        $pending = new PendingMcp($client, 'session-abc');
+        $result = $pending->respond(new McpOauthRespondRequest(requestId: 'oauth-1'));
+
+        expect($result)->toBeInstanceOf(McpOauthRespondResult::class)
+            ->and($result->success)->toBeTrue();
+    });
+
 });

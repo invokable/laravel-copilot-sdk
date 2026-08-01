@@ -6,9 +6,11 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingAgent;
 use Revolution\Copilot\Types\Rpc\AgentGetCurrentResult;
 use Revolution\Copilot\Types\Rpc\AgentList;
+use Revolution\Copilot\Types\Rpc\AgentListRequest;
 use Revolution\Copilot\Types\Rpc\AgentReloadResult;
 use Revolution\Copilot\Types\Rpc\AgentSelectRequest;
 use Revolution\Copilot\Types\Rpc\AgentSelectResult;
+use Revolution\Copilot\Types\Rpc\SessionAgentListRequest;
 
 describe('PendingAgent', function () {
     it('calls session.agent.list and returns result', function () {
@@ -32,6 +34,38 @@ describe('PendingAgent', function () {
         expect($result)->toBeInstanceOf(AgentList::class)
             ->and($result->agents)->toHaveCount(1)
             ->and($result->agents[0]->name)->toBe('test-agent');
+    });
+
+    it('passes optional prompt and built-in agent list controls', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.agent.list', [
+                'includeBuiltInAgents' => true,
+                'includePrompt' => true,
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn([
+                'agents' => [[
+                    'name' => 'test-agent',
+                    'displayName' => 'Test Agent',
+                    'description' => 'A test agent',
+                    'prompt' => 'Use concise answers.',
+                ]],
+            ]);
+
+        $result = (new PendingAgent($client, 'session-abc'))->list(new SessionAgentListRequest(
+            includeBuiltInAgents: true,
+            includePrompt: true,
+        ));
+
+        expect($result->agents[0]->prompt)->toBe('Use concise answers.');
+    });
+
+    it('accepts the shared agent list request shape', function () {
+        expect(AgentListRequest::fromArray([
+            'includePrompt' => true,
+        ])->toArray())->toBe(['includePrompt' => true]);
     });
 
     it('calls session.agent.getCurrent and returns result', function () {

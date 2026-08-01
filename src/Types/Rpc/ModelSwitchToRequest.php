@@ -22,6 +22,7 @@ readonly class ModelSwitchToRequest implements Arrayable
      * @param  Verbosity|string|null  $verbosity  Output verbosity level for supported models.
      * @param  ModelCapabilitiesOverride|array|null  $modelCapabilities  Override individual model capabilities resolved by the runtime.
      * @param  string|null  $contextTier  Explicit context tier ("default" or "long_context"). Null clears any previous choice.
+     * @param  ?bool  $deferIfModelChangeQueued  Defer the switch when a model change is already queued rather than applying it immediately.
      */
     public function __construct(
         public string $modelId,
@@ -30,6 +31,7 @@ readonly class ModelSwitchToRequest implements Arrayable
         public Verbosity|string|null $verbosity = null,
         public ModelCapabilitiesOverride|array|null $modelCapabilities = null,
         public ?string $contextTier = null,
+        public ?bool $deferIfModelChangeQueued = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -47,6 +49,7 @@ readonly class ModelSwitchToRequest implements Arrayable
             verbosity: $data['verbosity'] ?? null,
             modelCapabilities: $modelCapabilities,
             contextTier: $data['contextTier'] ?? null,
+            deferIfModelChangeQueued: $data['deferIfModelChangeQueued'] ?? null,
         );
     }
 
@@ -71,6 +74,7 @@ readonly class ModelSwitchToRequest implements Arrayable
             'verbosity' => $verbosity,
             'modelCapabilities' => $modelCapabilities,
             'contextTier' => $this->contextTier,
+            'deferIfModelChangeQueued' => $this->deferIfModelChangeQueued,
         ], fn ($v) => $v !== null);
     }
 }

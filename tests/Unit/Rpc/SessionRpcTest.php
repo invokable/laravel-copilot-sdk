@@ -11,6 +11,7 @@ use Revolution\Copilot\Rpc\PendingFactory;
 use Revolution\Copilot\Rpc\PendingFleet;
 use Revolution\Copilot\Rpc\PendingHistory;
 use Revolution\Copilot\Rpc\PendingInstructions;
+use Revolution\Copilot\Rpc\PendingLimitPrediction;
 use Revolution\Copilot\Rpc\PendingLog;
 use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Rpc\PendingMetadata;
@@ -173,6 +174,12 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->schedule())->toBeInstanceOf(PendingSchedule::class);
+    });
+
+    it('returns PendingLimitPrediction from limitPrediction()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->limitPrediction())->toBeInstanceOf(PendingLimitPrediction::class);
     });
 
     it('calls session.suspend via suspend()', function () {

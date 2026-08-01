@@ -20,6 +20,7 @@ readonly class EventLogReadRequest implements Arrayable
      * @param  ?int  $waitMs  Milliseconds to wait for new events at the tail
      * @param  array<string>|string|null  $types  Either "*" or a non-empty list of event types
      * @param  EventsAgentScope|string|null  $agentScope  Agent-scope filter for returned events
+     * @param  ?bool  $includeEphemeral  Whether to include ephemeral (non-persisted) events in the results
      */
     public function __construct(
         public ?string $cursor = null,
@@ -27,6 +28,7 @@ readonly class EventLogReadRequest implements Arrayable
         public ?int $waitMs = null,
         public array|string|null $types = null,
         public EventsAgentScope|string|null $agentScope = null,
+        public ?bool $includeEphemeral = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -42,6 +44,7 @@ readonly class EventLogReadRequest implements Arrayable
             waitMs: $data['waitMs'] ?? null,
             types: $data['types'] ?? null,
             agentScope: $agentScope,
+            includeEphemeral: $data['includeEphemeral'] ?? null,
         );
     }
 
@@ -57,6 +60,7 @@ readonly class EventLogReadRequest implements Arrayable
             'waitMs' => $this->waitMs,
             'types' => $this->types,
             'agentScope' => $agentScope,
+            'includeEphemeral' => $this->includeEphemeral,
         ], fn ($value): bool => $value !== null);
     }
 }

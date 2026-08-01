@@ -325,6 +325,16 @@ class SessionRpc
     }
 
     /**
+     * Session limit prediction RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function limitPrediction(): PendingLimitPrediction
+    {
+        return new PendingLimitPrediction($this->client, $this->sessionId);
+    }
+
+    /**
      * Suspend the current session.
      *
      * Suspends the session, pausing its execution until resumed.

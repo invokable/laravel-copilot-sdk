@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\QueuePendingItemsKind;
+use Revolution\Copilot\Enums\SendAgentMode;
 use Revolution\Copilot\Types\Rpc\QueuePendingItems;
 use Revolution\Copilot\Types\Rpc\QueuePendingItemsResult;
 use Revolution\Copilot\Types\Rpc\QueueRemoveMostRecentResult;
@@ -27,18 +28,22 @@ describe('QueuePendingItems', function () {
 
     it('converts to array', function () {
         $item = new QueuePendingItems(
+            id: 'q-1',
             displayText: 'tell me something',
             kind: QueuePendingItemsKind::Message,
+            agentMode: SendAgentMode::INTERACTIVE,
         );
 
         expect($item->toArray())->toBe([
+            'id' => 'q-1',
             'displayText' => 'tell me something',
             'kind' => 'message',
+            'agentMode' => 'interactive',
         ]);
     });
 
     it('implements Arrayable', function () {
-        $item = new QueuePendingItems(displayText: 'x', kind: QueuePendingItemsKind::Command);
+        $item = new QueuePendingItems(id: 'q-1', displayText: 'x', kind: QueuePendingItemsKind::Command, agentMode: SendAgentMode::INTERACTIVE);
         expect($item)->toBeInstanceOf(Arrayable::class);
     });
 });
@@ -69,7 +74,7 @@ describe('QueuePendingItemsResult', function () {
 
     it('converts to array', function () {
         $result = new QueuePendingItemsResult(
-            items: [new QueuePendingItems(displayText: '/model gpt-4', kind: QueuePendingItemsKind::Command)],
+            items: [new QueuePendingItems(id: 'q-1', displayText: '/model gpt-4', kind: QueuePendingItemsKind::Command, agentMode: SendAgentMode::INTERACTIVE)],
             steeringMessages: [],
         );
 

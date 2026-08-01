@@ -9,8 +9,14 @@ use Revolution\Copilot\Types\Rpc\FactoryAckResult;
 use Revolution\Copilot\Types\Rpc\FactoryAgentRequest;
 use Revolution\Copilot\Types\Rpc\FactoryAgentResult;
 use Revolution\Copilot\Types\Rpc\FactoryCancelRequest;
+use Revolution\Copilot\Types\Rpc\FactoryGetRunProgressRequest;
 use Revolution\Copilot\Types\Rpc\FactoryGetRunRequest;
+use Revolution\Copilot\Types\Rpc\FactoryListRunsResult;
 use Revolution\Copilot\Types\Rpc\FactoryLogRequest;
+use Revolution\Copilot\Types\Rpc\FactoryProgressPage;
+use Revolution\Copilot\Types\Rpc\FactoryResumeRequest;
+use Revolution\Copilot\Types\Rpc\FactoryResumeResult;
+use Revolution\Copilot\Types\Rpc\FactoryRunDetail;
 use Revolution\Copilot\Types\Rpc\FactoryRunRequest;
 use Revolution\Copilot\Types\Rpc\FactoryRunResult;
 
@@ -40,6 +46,19 @@ class PendingFactory
     }
 
     /**
+     * Resume a factory run using its persisted name, arguments, journal, and accounting.
+     */
+    public function resume(FactoryResumeRequest|array $params): FactoryResumeResult
+    {
+        $paramsArray = ($params instanceof FactoryResumeRequest ? $params : FactoryResumeRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return FactoryResumeResult::fromArray(
+            $this->client->request('session.factory.resume', $paramsArray),
+        );
+    }
+
+    /**
      * Get the current or settled envelope for a factory run.
      */
     public function getRun(FactoryGetRunRequest|array $params): FactoryRunResult
@@ -49,6 +68,44 @@ class PendingFactory
 
         return FactoryRunResult::fromArray(
             $this->client->request('session.factory.getRun', $paramsArray),
+        );
+    }
+
+    /**
+     * List durable factory runs for this session in creation order.
+     */
+    public function listRuns(): FactoryListRunsResult
+    {
+        return FactoryListRunsResult::fromArray(
+            $this->client->request('session.factory.listRuns', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Get durable and live observability detail for one factory run.
+     */
+    public function getRunDetail(FactoryGetRunRequest|array $params): FactoryRunDetail
+    {
+        $paramsArray = ($params instanceof FactoryGetRunRequest ? $params : FactoryGetRunRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return FactoryRunDetail::fromArray(
+            $this->client->request('session.factory.getRunDetail', $paramsArray),
+        );
+    }
+
+    /**
+     * Page durable progress for one factory run.
+     */
+    public function getRunProgress(FactoryGetRunProgressRequest|array $params): FactoryProgressPage
+    {
+        $paramsArray = ($params instanceof FactoryGetRunProgressRequest ? $params : FactoryGetRunProgressRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return FactoryProgressPage::fromArray(
+            $this->client->request('session.factory.getRunProgress', $paramsArray),
         );
     }
 

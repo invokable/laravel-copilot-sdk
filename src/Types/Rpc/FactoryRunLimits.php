@@ -16,12 +16,14 @@ readonly class FactoryRunLimits implements Arrayable
     /**
      * @param  ?int  $maxConcurrentSubagents  Maximum number of factory subagents that may run concurrently.
      * @param  ?int  $maxTotalSubagents  Maximum total number of factory subagents that may be admitted.
-     * @param  ?float  $timeout  Factory active-run timeout in milliseconds.
+     * @param  ?float  $timeoutSeconds  Factory active-run timeout, in seconds.
+     * @param  ?float  $maxAiCredits  Maximum AI credits the run may consume.
      */
     public function __construct(
         public ?int $maxConcurrentSubagents = null,
         public ?int $maxTotalSubagents = null,
-        public ?float $timeout = null,
+        public ?float $timeoutSeconds = null,
+        public ?float $maxAiCredits = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -29,7 +31,8 @@ readonly class FactoryRunLimits implements Arrayable
         return new self(
             maxConcurrentSubagents: $data['maxConcurrentSubagents'] ?? null,
             maxTotalSubagents: $data['maxTotalSubagents'] ?? null,
-            timeout: $data['timeout'] ?? null,
+            timeoutSeconds: $data['timeoutSeconds'] ?? null,
+            maxAiCredits: $data['maxAiCredits'] ?? null,
         );
     }
 
@@ -38,7 +41,8 @@ readonly class FactoryRunLimits implements Arrayable
         return array_filter([
             'maxConcurrentSubagents' => $this->maxConcurrentSubagents,
             'maxTotalSubagents' => $this->maxTotalSubagents,
-            'timeout' => $this->timeout,
+            'timeoutSeconds' => $this->timeoutSeconds,
+            'maxAiCredits' => $this->maxAiCredits,
         ], fn ($v) => $v !== null);
     }
 }

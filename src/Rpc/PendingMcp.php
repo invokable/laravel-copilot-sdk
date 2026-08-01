@@ -15,11 +15,17 @@ use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingResult;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
+use Revolution\Copilot\Types\Rpc\McpOauthRespondRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthRespondResult;
 use Revolution\Copilot\Types\Rpc\McpServerList;
 use Revolution\Copilot\Types\Rpc\McpStopServerRequest;
 
 /**
  * Pending MCP server RPC operations for a session.
+ *
+ * External client registration is intentionally not exposed here: the upstream
+ * API accepts in-process MCP client, transport, and config instances that
+ * cannot be represented by Laravel's JSON-RPC transport.
  *
  * @experimental This API group is experimental and may change or be removed.
  */
@@ -100,6 +106,19 @@ class PendingMcp
 
         return McpOauthLoginResult::fromArray(
             $this->client->request('session.mcp.oauth.login', $paramsArray),
+        );
+    }
+
+    /**
+     * Resolves a pending MCP OAuth request emitted as mcp.oauth_required.
+     */
+    public function respond(McpOauthRespondRequest|array $params): McpOauthRespondResult
+    {
+        $paramsArray = ($params instanceof McpOauthRespondRequest ? $params : McpOauthRespondRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return McpOauthRespondResult::fromArray(
+            $this->client->request('session.mcp.oauth.respond', $paramsArray),
         );
     }
 

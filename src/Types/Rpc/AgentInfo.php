@@ -17,12 +17,14 @@ readonly class AgentInfo implements Arrayable
      * @param  string  $displayName  Human-readable display name
      * @param  string  $description  Description of the agent's purpose
      * @param  string|null  $path  Absolute local file path of the agent definition. Only set for file-based agents loaded from disk; remote agents do not have a path.
+     * @param  string|null  $prompt  Custom agent system prompt, when available.
      */
     public function __construct(
         public string $name,
         public string $displayName,
         public string $description,
         public ?string $path = null,
+        public ?string $prompt = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -32,6 +34,7 @@ readonly class AgentInfo implements Arrayable
             displayName: Arr::string($data, 'displayName'),
             description: Arr::string($data, 'description'),
             path: $data['path'] ?? null,
+            prompt: $data['prompt'] ?? null,
         );
     }
 
@@ -45,6 +48,10 @@ readonly class AgentInfo implements Arrayable
 
         if ($this->path !== null) {
             $result['path'] = $this->path;
+        }
+
+        if ($this->prompt !== null) {
+            $result['prompt'] = $this->prompt;
         }
 
         return $result;
