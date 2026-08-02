@@ -22,7 +22,7 @@ permissions:
   pull-requests: read
   issues: read
 
-model: claude-haiku-4.5
+model: gpt-5.6-luna?effort=high
 engine:
   id: copilot
 checkout:
