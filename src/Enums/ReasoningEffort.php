@@ -16,4 +16,5 @@ enum ReasoningEffort: string
     case MEDIUM = 'medium';
     case HIGH = 'high';
     case XHIGH = 'xhigh';
+    case MAX = 'max';
 }

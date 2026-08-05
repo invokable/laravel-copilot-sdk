@@ -48,6 +48,7 @@ trait HasHooks
             'postToolUseFailure' => $this->hooks->onPostToolUseFailure,
             'preMcpToolCall' => $this->hooks->onPreMcpToolCall,
             'userPromptSubmitted' => $this->hooks->onUserPromptSubmitted,
+            'userPromptTransformed' => $this->hooks->onUserPromptTransformed,
             'sessionStart' => $this->hooks->onSessionStart,
             'sessionEnd' => $this->hooks->onSessionEnd,
             'errorOccurred' => $this->hooks->onErrorOccurred,

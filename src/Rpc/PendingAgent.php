@@ -11,6 +11,7 @@ use Revolution\Copilot\Types\Rpc\AgentListRequest;
 use Revolution\Copilot\Types\Rpc\AgentReloadResult;
 use Revolution\Copilot\Types\Rpc\AgentSelectRequest;
 use Revolution\Copilot\Types\Rpc\AgentSelectResult;
+use Revolution\Copilot\Types\Rpc\AgentSetPromptRequest;
 use Revolution\Copilot\Types\Rpc\SessionAgentListRequest;
 
 /**
@@ -24,6 +25,21 @@ class PendingAgent
         protected JsonRpcClient $client,
         protected string $sessionId,
     ) {}
+
+    /**
+     * Set an in-memory authored prompt override for an available agent.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function setPrompt(AgentSetPromptRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof AgentSetPromptRequest
+            ? $params
+            : AgentSetPromptRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.agent.setPrompt', $paramsArray);
+    }
 
     /**
      * List available agents.

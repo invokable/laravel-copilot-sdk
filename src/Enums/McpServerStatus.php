@@ -16,5 +16,6 @@ enum McpServerStatus: string
     case NEEDS_AUTH = 'needs-auth';
     case PENDING = 'pending';
     case DISABLED = 'disabled';
+    case STOPPED = 'stopped';
     case NOT_CONFIGURED = 'not_configured';
 }

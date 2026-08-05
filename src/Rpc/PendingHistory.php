@@ -7,6 +7,8 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\HistoryCompactRequest;
 use Revolution\Copilot\Types\Rpc\HistoryCompactResult;
+use Revolution\Copilot\Types\Rpc\HistoryClearContextRequest;
+use Revolution\Copilot\Types\Rpc\HistoryClearContextResult;
 use Revolution\Copilot\Types\Rpc\HistoryListRewindPointsResult;
 use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindResult;
@@ -26,6 +28,23 @@ class PendingHistory
         protected JsonRpcClient $client,
         protected string $sessionId,
     ) {}
+
+    /**
+     * Clear the conversation while preserving system/developer messages and seed a fresh prompt.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function clearContext(HistoryClearContextRequest|array $params): HistoryClearContextResult
+    {
+        $paramsArray = ($params instanceof HistoryClearContextRequest
+            ? $params
+            : HistoryClearContextRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return HistoryClearContextResult::fromArray(
+            $this->client->request('session.history.clearContext', $paramsArray),
+        );
+    }
 
     /**
      * Compact the session history.

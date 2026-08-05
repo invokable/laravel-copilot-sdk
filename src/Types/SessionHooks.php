@@ -17,6 +17,7 @@ readonly class SessionHooks implements Arrayable
      * @param  ?Closure  $onPostToolUse  Called after a tool is executed successfully
      * @param  ?Closure  $onPostToolUseFailure  Called after a tool execution fails
      * @param  ?Closure  $onUserPromptSubmitted  Called when the user submits a prompt
+     * @param  ?Closure  $onUserPromptTransformed  Called after the runtime transforms a submitted prompt and before it is stored
      * @param  ?Closure  $onSessionStart  Called when a session starts
      * @param  ?Closure  $onSessionEnd  Called when a session ends
      * @param  ?Closure  $onErrorOccurred  Called when an error occurs
@@ -28,6 +29,7 @@ readonly class SessionHooks implements Arrayable
         public ?Closure $onPostToolUse = null,
         public ?Closure $onPostToolUseFailure = null,
         public ?Closure $onUserPromptSubmitted = null,
+        public ?Closure $onUserPromptTransformed = null,
         public ?Closure $onSessionStart = null,
         public ?Closure $onSessionEnd = null,
         public ?Closure $onErrorOccurred = null,
@@ -45,6 +47,7 @@ readonly class SessionHooks implements Arrayable
             onPostToolUse: $data['onPostToolUse'] ?? null,
             onPostToolUseFailure: $data['onPostToolUseFailure'] ?? null,
             onUserPromptSubmitted: $data['onUserPromptSubmitted'] ?? null,
+            onUserPromptTransformed: $data['onUserPromptTransformed'] ?? null,
             onSessionStart: $data['onSessionStart'] ?? null,
             onSessionEnd: $data['onSessionEnd'] ?? null,
             onErrorOccurred: $data['onErrorOccurred'] ?? null,
@@ -63,6 +66,7 @@ readonly class SessionHooks implements Arrayable
             'onPostToolUse' => $this->onPostToolUse,
             'onPostToolUseFailure' => $this->onPostToolUseFailure,
             'onUserPromptSubmitted' => $this->onUserPromptSubmitted,
+            'onUserPromptTransformed' => $this->onUserPromptTransformed,
             'onSessionStart' => $this->onSessionStart,
             'onSessionEnd' => $this->onSessionEnd,
             'onErrorOccurred' => $this->onErrorOccurred,

@@ -13,6 +13,7 @@ use Revolution\Copilot\Types\Rpc\McpListToolsRequest;
 use Revolution\Copilot\Types\Rpc\McpListToolsResult;
 use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingResult;
+use Revolution\Copilot\Types\Rpc\McpOauthAuthenticationStateChangedRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondRequest;
@@ -94,6 +95,21 @@ class PendingMcp
         return McpOauthHandlePendingResult::fromArray(
             $this->client->request('session.mcp.oauth.handlePendingRequest', $paramsArray),
         );
+    }
+
+    /**
+     * Notify the session that persisted MCP OAuth credentials changed.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function authenticationStateChanged(McpOauthAuthenticationStateChangedRequest|array $params = []): void
+    {
+        $paramsArray = ($params instanceof McpOauthAuthenticationStateChangedRequest
+            ? $params
+            : McpOauthAuthenticationStateChangedRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.mcp.oauth.authenticationStateChanged', $paramsArray);
     }
 
     /**

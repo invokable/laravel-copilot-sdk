@@ -22,10 +22,11 @@ describe('ReasoningEffort', function () {
     it('has all expected cases', function () {
         $cases = ReasoningEffort::cases();
 
-        expect($cases)->toHaveCount(4)
+        expect($cases)->toHaveCount(5)
             ->and($cases)->toContain(ReasoningEffort::LOW)
             ->and($cases)->toContain(ReasoningEffort::MEDIUM)
             ->and($cases)->toContain(ReasoningEffort::HIGH)
-            ->and($cases)->toContain(ReasoningEffort::XHIGH);
+            ->and($cases)->toContain(ReasoningEffort::XHIGH)
+            ->and($cases)->toContain(ReasoningEffort::MAX);
     });
 });

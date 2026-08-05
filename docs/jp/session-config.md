@@ -28,6 +28,9 @@ $config = new SessionConfig(
     // 推論レベル。対応しているモデルでのみ設定可能。
     reasoningEffort: ReasoningEffort::HIGH,
 
+    // 実験的機能を有効化（未指定時はランタイムの既定値）
+    enableExperimentalMode: true,
+
     // モデルのcapabilitiesをオーバーライド。ランタイムのデフォルトにdeep-mergeされる。
     // modelCapabilities: new ModelCapabilitiesOverride(
     //     supports: new ModelCapabilitiesOverrideSupports(vision: true, reasoningEffort: true),
@@ -216,6 +219,9 @@ $config = new SessionConfig(
 
     // カスタム指示ファイルを検索する追加ディレクトリ
     instructionDirectories: [],
+
+    // ワーキングディレクトリ以外にエージェントがアクセスできる追加ディレクトリ
+    additionalDirectories: ['/path/to/shared'],
 
     // 無効なスキル
     disabledSkills: [],
