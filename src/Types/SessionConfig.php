@@ -31,7 +31,7 @@ readonly class SessionConfig implements Arrayable
      * @param  ?string  $contextTier  Context window tier ("default" or "long_context"). Use "long_context" to pin
      *                                the session to the long-context tier when supported.
      * @param  ?bool  $enableExperimentalMode  Controls whether the session enables experimental features.
-     *                                          Defaults to false in empty mode; otherwise the runtime decides when unset.
+     *                                         Defaults to false in empty mode; otherwise the runtime decides when unset.
      * @param  ModelCapabilitiesOverride|array|null  $modelCapabilities  Per-property overrides for model capabilities, deep-merged over runtime defaults.
      * @param  ?string  $configDir  Override the default configuration directory location.
      *                              When specified, the session will use this directory for storing config and state.
@@ -96,8 +96,8 @@ readonly class SessionConfig implements Arrayable
      *                                          When provided, enables hooks callback allowing custom logic at various points.
      * @param  ?string  $workingDirectory  Working directory for the session. Tool operations will be relative to this directory.
      * @param  ?array  $additionalDirectories  Additional directories the agent may access beyond the working directory.
-     *                                          Relative paths are resolved against the session's working directory.
-     *                                          Re-supply these directories when resuming a session.
+     *                                         Relative paths are resolved against the session's working directory.
+     *                                         Re-supply these directories when resuming a session.
      * @param  ?bool  $streaming  Enable streaming of assistant message and reasoning chunks.
      *                            When true, ephemeral assistant.message_delta and assistant.reasoning_delta
      *                            events are sent as the response is generated.

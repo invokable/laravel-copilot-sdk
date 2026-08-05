@@ -26,7 +26,7 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?string  $reasoningSummary  Reasoning summary mode for models that support configurable reasoning summaries.
      * @param  ?string  $contextTier  Context window tier ("default" or "long_context").
      * @param  ?bool  $enableExperimentalMode  Controls whether the session enables experimental features.
-     *                                          Defaults to false in empty mode; otherwise the runtime decides when unset.
+     *                                         Defaults to false in empty mode; otherwise the runtime decides when unset.
      * @param  ModelCapabilitiesOverride|array|null  $modelCapabilities  Per-property overrides for model capabilities, deep-merged over runtime defaults.
      * @param  ?string  $configDir  Override the default configuration directory location.
      *                              When specified, the session will use this directory for storing config and state.
@@ -75,8 +75,8 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                          When provided, enables hooks callback allowing custom logic at various points.
      * @param  ?string  $workingDirectory  Working directory for the session. Tool operations will be relative to this directory.
      * @param  ?array  $additionalDirectories  Additional directories the agent may access beyond the working directory.
-     *                                          Relative paths are resolved against the session's working directory.
-     *                                          Re-supply these directories when resuming a session.
+     *                                         Relative paths are resolved against the session's working directory.
+     *                                         Re-supply these directories when resuming a session.
      * @param  ?bool  $streaming  Enable streaming of assistant message and reasoning chunks.
      *                            When true, ephemeral assistant.message_delta and assistant.reasoning_delta
      *                            events are sent as the response is generated.

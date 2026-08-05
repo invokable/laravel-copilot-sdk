@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\HistoryCompactRequest;
-use Revolution\Copilot\Types\Rpc\HistoryCompactResult;
 use Revolution\Copilot\Types\Rpc\HistoryClearContextRequest;
 use Revolution\Copilot\Types\Rpc\HistoryClearContextResult;
+use Revolution\Copilot\Types\Rpc\HistoryCompactRequest;
+use Revolution\Copilot\Types\Rpc\HistoryCompactResult;
 use Revolution\Copilot\Types\Rpc\HistoryListRewindPointsResult;
 use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindResult;

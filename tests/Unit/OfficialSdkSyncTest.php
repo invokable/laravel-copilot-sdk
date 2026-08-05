@@ -10,15 +10,15 @@ use Revolution\Copilot\Rpc\PendingAgent;
 use Revolution\Copilot\Rpc\PendingHistory;
 use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Rpc\PendingServerExtensions;
-use Revolution\Copilot\Types\ResumeSessionConfig;
-use Revolution\Copilot\Types\SessionConfig;
-use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookInput;
 use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookOutput;
+use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\AgentSetPromptRequest;
 use Revolution\Copilot\Types\Rpc\EventLogReadRequest;
 use Revolution\Copilot\Types\Rpc\HistoryClearContextResult;
 use Revolution\Copilot\Types\Rpc\McpOauthAuthenticationStateChangedRequest;
+use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\SessionHooks;
 
 test('session configs serialize the latest official options', function () {
     $config = new SessionConfig(
