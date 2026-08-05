@@ -158,6 +158,11 @@ $result = Copilot::client()->rpc()->instructions()->getDiscoveryPaths();
 $result = Copilot::client()->rpc()->instructions()->getDiscoveryPaths(
     new InstructionsGetDiscoveryPathsRequest(location: 'repository')
 );
+
+// extensions (experimental: 永続化された拡張機能の管理)
+$result = Copilot::client()->rpc()->extensions()->discover();
+Copilot::client()->rpc()->extensions()->enable(['ids' => ['user:demo']]);
+Copilot::client()->rpc()->extensions()->disable(['ids' => ['plugin:demo']]);
 ```
 
 ## SessionRpc

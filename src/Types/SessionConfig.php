@@ -30,6 +30,8 @@ readonly class SessionConfig implements Arrayable
      *                                     Use "none" to suppress summary output regardless of whether reasoning is enabled.
      * @param  ?string  $contextTier  Context window tier ("default" or "long_context"). Use "long_context" to pin
      *                                the session to the long-context tier when supported.
+     * @param  ?bool  $enableExperimentalMode  Controls whether the session enables experimental features.
+     *                                          Defaults to false in empty mode; otherwise the runtime decides when unset.
      * @param  ModelCapabilitiesOverride|array|null  $modelCapabilities  Per-property overrides for model capabilities, deep-merged over runtime defaults.
      * @param  ?string  $configDir  Override the default configuration directory location.
      *                              When specified, the session will use this directory for storing config and state.
@@ -93,6 +95,9 @@ readonly class SessionConfig implements Arrayable
      * @param  SessionHooks|array|null  $hooks  Hook handlers for intercepting session lifecycle events.
      *                                          When provided, enables hooks callback allowing custom logic at various points.
      * @param  ?string  $workingDirectory  Working directory for the session. Tool operations will be relative to this directory.
+     * @param  ?array  $additionalDirectories  Additional directories the agent may access beyond the working directory.
+     *                                          Relative paths are resolved against the session's working directory.
+     *                                          Re-supply these directories when resuming a session.
      * @param  ?bool  $streaming  Enable streaming of assistant message and reasoning chunks.
      *                            When true, ephemeral assistant.message_delta and assistant.reasoning_delta
      *                            events are sent as the response is generated.
@@ -267,6 +272,8 @@ readonly class SessionConfig implements Arrayable
         public Verbosity|string|null $verbosity = null,
         public ?bool $enableManagedSettings = null,
         public CanvasProviderIdentity|array|null $canvasProvider = null,
+        public ?bool $enableExperimentalMode = null,
+        public ?array $additionalDirectories = null,
     ) {}
 
     /**
@@ -365,6 +372,7 @@ readonly class SessionConfig implements Arrayable
             reasoningEffort: $data['reasoningEffort'] ?? null,
             reasoningSummary: $data['reasoningSummary'] ?? null,
             contextTier: $data['contextTier'] ?? null,
+            enableExperimentalMode: $data['enableExperimentalMode'] ?? null,
             modelCapabilities: $modelCapabilities,
             configDir: $data['configDir'] ?? null,
             configDirectory: $data['configDirectory'] ?? null,
@@ -388,6 +396,7 @@ readonly class SessionConfig implements Arrayable
             enableGitHubTelemetryForwarding: $data['enableGitHubTelemetryForwarding'] ?? null,
             hooks: $hooks,
             workingDirectory: $data['workingDirectory'] ?? null,
+            additionalDirectories: $data['additionalDirectories'] ?? null,
             streaming: $data['streaming'] ?? null,
             includeSubAgentStreamingEvents: $data['includeSubAgentStreamingEvents'] ?? null,
             mcpServers: $data['mcpServers'] ?? null,
@@ -522,6 +531,7 @@ readonly class SessionConfig implements Arrayable
             'reasoningEffort' => $reasoningEffort,
             'reasoningSummary' => $this->reasoningSummary,
             'contextTier' => $this->contextTier,
+            'enableExperimentalMode' => $this->enableExperimentalMode,
             'modelCapabilities' => $modelCapabilities,
             'configDir' => $this->configDir,
             'configDirectory' => $this->configDirectory,
@@ -545,6 +555,7 @@ readonly class SessionConfig implements Arrayable
             'enableGitHubTelemetryForwarding' => $this->enableGitHubTelemetryForwarding,
             'hooks' => $hooks,
             'workingDirectory' => $this->workingDirectory,
+            'additionalDirectories' => $this->additionalDirectories,
             'streaming' => $this->streaming,
             'includeSubAgentStreamingEvents' => $this->includeSubAgentStreamingEvents,
             'mcpServers' => $this->mcpServers,

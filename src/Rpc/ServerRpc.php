@@ -114,6 +114,16 @@ class ServerRpc
     }
 
     /**
+     * Server-level extension RPC operations.
+     *
+     * @experimental This API group is part of an experimental API and may change or be removed.
+     */
+    public function extensions(): PendingServerExtensions
+    {
+        return new PendingServerExtensions($this->client);
+    }
+
+    /**
      * Server-level instructions RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.

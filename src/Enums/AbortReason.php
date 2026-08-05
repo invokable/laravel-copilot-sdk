@@ -12,4 +12,5 @@ enum AbortReason: string
     case UserInitiated = 'user_initiated';
     case RemoteCommand = 'remote_command';
     case UserAbort = 'user_abort';
+    case AutopilotCreditLimit = 'autopilot_credit_limit';
 }

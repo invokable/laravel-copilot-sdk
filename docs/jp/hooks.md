@@ -9,6 +9,7 @@
 flowchart LR
     A[Session starts] -->|onSessionStart| B[User prompt]
     B -->|onUserPromptSubmitted| C[Pre tool]
+    C -->|onUserPromptTransformed| C
     C -->|onPreToolUse| D[Tool execution]
     D -->|onPostToolUse| E{Continue?}
     E -->|yes| C
@@ -39,6 +40,8 @@ use Revolution\Copilot\Types\Hooks\SessionStartHookInput;
 use Revolution\Copilot\Types\Hooks\SessionStartHookOutput;
 use Revolution\Copilot\Types\Hooks\UserPromptSubmittedHookInput;
 use Revolution\Copilot\Types\Hooks\UserPromptSubmittedHookOutput;
+use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookInput;
+use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookOutput;
 
 Copilot::start(function (CopilotSession $session) {
     $response = $session->sendAndWait(prompt: 'READMEの要点をまとめて');
@@ -60,6 +63,13 @@ Copilot::start(function (CopilotSession $session) {
             }
 
             return null;
+        },
+
+        // 生成コンテキスト適用後、履歴保存前の変換済みプロンプトを調整
+        onUserPromptTransformed: function (UserPromptTransformedHookInput $input): ?UserPromptTransformedHookOutput {
+            return new UserPromptTransformedHookOutput(
+                modifiedTransformedPrompt: trim($input->transformedPrompt),
+            );
         },
 
         onPreToolUse: function (PreToolUseHookInput $input): ?PreToolUseHookOutput {
@@ -116,6 +126,7 @@ Copilot::start(function (CopilotSession $session) {
 |---|---|---|
 | `onSessionStart` | セッション開始（new/resume/startup） | 初期コンテキスト注入、設定上書き |
 | `onUserPromptSubmitted` | ユーザープロンプト送信時 | プロンプト補強、テンプレート展開、入力フィルタ |
+| `onUserPromptTransformed` | ランタイムによる変換後、履歴保存前 | 変換済みプロンプトの最終調整 |
 | `onPreToolUse` | ツール実行前 | 許可/拒否/要確認、引数改変、出力抑制 |
 | `onPostToolUse` | ツール実行後 | 結果改変、機密情報マスク、監査ログ |
 | `onPreMcpToolCall` | MCPツール実行直前 | MCPメタデータの検査・設定・削除 |
@@ -216,6 +227,19 @@ Copilot::start(function (CopilotSession $session) {
 | `modifiedPrompt` | `?string` | 改変後プロンプト |
 | `additionalContext` | `?string` | 補足コンテキスト |
 | `suppressOutput` | `?bool` | 応答表示の抑制 |
+
+### `UserPromptTransformedHookInput`
+
+| プロパティ | 型 | 説明 |
+|---|---|---|
+| `prompt` | `string` | ユーザーが送信した元のプロンプト |
+| `transformedPrompt` | `string` | ランタイムのコンテキスト変換後プロンプト |
+
+### `UserPromptTransformedHookOutput`
+
+| プロパティ | 型 | 説明 |
+|---|---|---|
+| `modifiedTransformedPrompt` | `?string` | 最終的に保存・送信する変換済みプロンプト |
 
 ### `SessionStartHookInput`
 

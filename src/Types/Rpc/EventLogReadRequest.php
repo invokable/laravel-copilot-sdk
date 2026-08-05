@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\EventsAgentScope;
+use Revolution\Copilot\Enums\EventsReadDirection;
 
 /**
  * Parameters for reading session events from the event log.
@@ -20,6 +21,8 @@ readonly class EventLogReadRequest implements Arrayable
      * @param  ?int  $waitMs  Milliseconds to wait for new events at the tail
      * @param  array<string>|string|null  $types  Either "*" or a non-empty list of event types
      * @param  EventsAgentScope|string|null  $agentScope  Agent-scope filter for returned events
+     * @param  array<string>|null  $agentIds  Optional subagent identifiers to include
+     * @param  EventsReadDirection|string|null  $direction  Direction to page through persisted history
      * @param  ?bool  $includeEphemeral  Whether to include ephemeral (non-persisted) events in the results
      */
     public function __construct(
@@ -29,6 +32,8 @@ readonly class EventLogReadRequest implements Arrayable
         public array|string|null $types = null,
         public EventsAgentScope|string|null $agentScope = null,
         public ?bool $includeEphemeral = null,
+        public ?array $agentIds = null,
+        public EventsReadDirection|string|null $direction = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -36,6 +41,10 @@ readonly class EventLogReadRequest implements Arrayable
         $agentScope = $data['agentScope'] ?? null;
         if (is_string($agentScope)) {
             $agentScope = EventsAgentScope::tryFrom($agentScope) ?? $agentScope;
+        }
+        $direction = $data['direction'] ?? null;
+        if (is_string($direction)) {
+            $direction = EventsReadDirection::tryFrom($direction) ?? $direction;
         }
 
         return new self(
@@ -45,6 +54,8 @@ readonly class EventLogReadRequest implements Arrayable
             types: $data['types'] ?? null,
             agentScope: $agentScope,
             includeEphemeral: $data['includeEphemeral'] ?? null,
+            agentIds: $data['agentIds'] ?? null,
+            direction: $direction,
         );
     }
 
@@ -53,6 +64,9 @@ readonly class EventLogReadRequest implements Arrayable
         $agentScope = $this->agentScope instanceof EventsAgentScope
             ? $this->agentScope->value
             : $this->agentScope;
+        $direction = $this->direction instanceof EventsReadDirection
+            ? $this->direction->value
+            : $this->direction;
 
         return array_filter([
             'cursor' => $this->cursor,
@@ -61,6 +75,8 @@ readonly class EventLogReadRequest implements Arrayable
             'types' => $this->types,
             'agentScope' => $agentScope,
             'includeEphemeral' => $this->includeEphemeral,
+            'agentIds' => $this->agentIds,
+            'direction' => $direction,
         ], fn ($value): bool => $value !== null);
     }
 }
