@@ -67,6 +67,14 @@ steps:
               --limit 100 \
               --json number,title,url \
               --jq '.[] | "#\(.number) \(.title) \(.url)"' > /tmp/gh-aw/open-sdk-sync-issues.txt
+    -   name: Set up PHP (if changes detected)
+        if: steps.changes.outputs.status == 'changes-detected'
+        uses: shivammathur/setup-php@2.37.2
+        with:
+            php-version: 8.5
+            extensions: mbstring
+    -   name: Install Composer dependencies
+        run: composer install -q --no-interaction --prefer-dist --optimize-autoloader
 
 permissions:
   contents: read
