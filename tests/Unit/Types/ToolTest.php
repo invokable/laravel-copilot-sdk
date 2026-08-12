@@ -185,6 +185,18 @@ describe('Tool', function () {
         expect($tool)->toBeInstanceOf(Arrayable::class);
     });
 
+    it('supports terminal tools', function () {
+        $tool = Tool::define(
+            name: 'finish',
+            description: 'Ends the current turn.',
+            parameters: null,
+            isTerminal: true,
+        );
+
+        expect($tool['isTerminal'])->toBeTrue()
+            ->and(Tool::fromArray($tool)->isTerminal)->toBeTrue();
+    });
+
     it('can be created without a handler for declaration-only tools', function () {
         $tool = new Tool(
             name: 'declaration_tool',

@@ -193,6 +193,19 @@ $config = new SessionConfig(
         ],
     ],
 
+    // セッションで無効にするMCPサーバー名
+    disabledMcpServers: ['github'],
+
+    // ファイル変更履歴を有効化（rewind / 累積diff用）
+    enableFileChangeTracking: true,
+
+    // ホストから注入するManaged Settings（権限制御）
+    managedSettings: [
+        'permissions' => [
+            'deny' => ['Shell(rm *)'],
+        ],
+    ],
+
     // カスタムエージェント
     customAgents: [
         [

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\Verbosity;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\PluginsReloadRequest;
+use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 
 describe('ModelSwitchToRequest verbosity', function () {
@@ -104,5 +105,33 @@ describe('SessionConfig verbosity and enableManagedSettings', function () {
         ]);
         expect($config->verbosity)->toBe('low')
             ->and($config->enableManagedSettings)->toBeTrue();
+    });
+
+    it('round trips file tracking, disabled MCP servers, and managed settings', function () {
+        $config = SessionConfig::fromArray([
+            'enableFileChangeTracking' => true,
+            'disabledMcpServers' => ['github'],
+            'managedSettings' => ['permissions' => ['deny' => ['Shell(rm *)']]],
+        ]);
+
+        expect($config->toArray())
+            ->toHaveKey('enableFileChangeTracking', true)
+            ->toHaveKey('disabledMcpServers', ['github'])
+            ->toHaveKey('managedSettings', ['permissions' => ['deny' => ['Shell(rm *)']]]);
+    });
+
+    it('supports the same managed settings fields when resuming', function () {
+        $config = ResumeSessionConfig::fromArray([
+            'enableManagedSettings' => true,
+            'enableFileChangeTracking' => true,
+            'disabledMcpServers' => ['github'],
+            'managedSettings' => ['permissions' => ['allow' => ['Read(**)']]],
+        ]);
+
+        expect($config->toArray())
+            ->toHaveKey('enableManagedSettings', true)
+            ->toHaveKey('enableFileChangeTracking', true)
+            ->toHaveKey('disabledMcpServers', ['github'])
+            ->toHaveKey('managedSettings', ['permissions' => ['allow' => ['Read(**)']]]);
     });
 });

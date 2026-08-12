@@ -11,6 +11,7 @@ use Revolution\Copilot\Types\Rpc\FactoryAgentResult;
 use Revolution\Copilot\Types\Rpc\FactoryCancelRequest;
 use Revolution\Copilot\Types\Rpc\FactoryGetRunProgressRequest;
 use Revolution\Copilot\Types\Rpc\FactoryGetRunRequest;
+use Revolution\Copilot\Types\Rpc\FactoryListRunsRequest;
 use Revolution\Copilot\Types\Rpc\FactoryListRunsResult;
 use Revolution\Copilot\Types\Rpc\FactoryLogRequest;
 use Revolution\Copilot\Types\Rpc\FactoryProgressPage;
@@ -74,12 +75,15 @@ class PendingFactory
     /**
      * List durable factory runs for this session in creation order.
      */
-    public function listRuns(): FactoryListRunsResult
+    public function listRuns(FactoryListRunsRequest|array|null $params = null): FactoryListRunsResult
     {
+        $paramsArray = $params === null
+            ? []
+            : ($params instanceof FactoryListRunsRequest ? $params->toArray() : FactoryListRunsRequest::fromArray($params)->toArray());
+        $paramsArray['sessionId'] = $this->sessionId;
+
         return FactoryListRunsResult::fromArray(
-            $this->client->request('session.factory.listRuns', [
-                'sessionId' => $this->sessionId,
-            ]),
+            $this->client->request('session.factory.listRuns', $paramsArray),
         );
     }
 

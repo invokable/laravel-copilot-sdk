@@ -615,12 +615,21 @@ $connected = $session->rpc()->remote()->connectRemoteSession(new ConnectRemoteSe
 
 詳細は [Remote Sessions](./remote-sessions.md) を参照してください.
 
+### managedSettings (experimental: 管理設定)
+
+```php
+$managedSettings = $client->rpc()->managedSettings()->read();
+// $managedSettings->settingsJson - 検証済みのデバイス管理設定
+// $managedSettings->errorMessage - 検出/検証エラー（存在する場合）
+```
+
 ### factory (experimental: ファクトリーAPI)
 
 ```php
 use Revolution\Copilot\Types\Rpc\FactoryRunRequest;
 use Revolution\Copilot\Types\Rpc\FactoryGetRunRequest;
 use Revolution\Copilot\Types\Rpc\FactoryCancelRequest;
+use Revolution\Copilot\Types\Rpc\FactoryListRunsRequest;
 use Revolution\Copilot\Types\Rpc\FactoryLogRequest;
 use Revolution\Copilot\Types\Rpc\FactoryLogLine;
 use Revolution\Copilot\Types\Rpc\FactoryAgentRequest;
@@ -636,6 +645,12 @@ $result = $session->rpc()->factory()->run(new FactoryRunRequest(
 
 // 実行中/完了したファクトリー実行のエンベロープを取得
 $result = $session->rpc()->factory()->getRun(new FactoryGetRunRequest(runId: $result->runId));
+
+// ファクトリー実行をページングして一覧取得
+$page = $session->rpc()->factory()->listRuns(new FactoryListRunsRequest(
+    afterSeq: 0,
+    limit: 50,
+));
 
 // ファクトリー実行のキャンセルを要求
 $result = $session->rpc()->factory()->cancel(new FactoryCancelRequest(runId: $result->runId));

@@ -295,6 +295,7 @@ class Client implements CopilotClient
             'skipPermission' => $tool['skipPermission'] ?? null,
             'defer' => $tool['defer'] ?? null,
             'metadata' => $tool['metadata'] ?? null,
+            'isTerminal' => $tool['isTerminal'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
         $commands = $config['commands'] ?? [];
@@ -371,6 +372,10 @@ class Client implements CopilotClient
             'excludedBuiltinAgents' => $config['excludedBuiltinAgents'] ?? null,
             'includedBuiltinAgents' => $config['includedBuiltinAgents'] ?? null,
             'sessionLimits' => $config['sessionLimits'] ?? null,
+            'enableManagedSettings' => $config['enableManagedSettings'] ?? null,
+            'managedSettings' => $config['managedSettings'] ?? null,
+            'enableFileChangeTracking' => $config['enableFileChangeTracking'] ?? null,
+            'disabledMcpServers' => $config['disabledMcpServers'] ?? null,
         ], fn ($v) => $v !== null));
 
         $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
@@ -381,7 +386,8 @@ class Client implements CopilotClient
             'sessionId' => $sessionId,
             'client' => $this->rpcClient,
             'workspacePath' => $workspacePath,
-            'managedSettingsEnabled' => (bool) ($config['enableManagedSettings'] ?? false),
+            'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
+                || array_key_exists('managedSettings', $config),
         ]);
         $session->registerTools($tools);
         $session->registerCommands($commands);
@@ -450,6 +456,7 @@ class Client implements CopilotClient
             'skipPermission' => $tool['skipPermission'] ?? null,
             'defer' => $tool['defer'] ?? null,
             'metadata' => $tool['metadata'] ?? null,
+            'isTerminal' => $tool['isTerminal'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
         $commands = $config['commands'] ?? [];
@@ -528,6 +535,10 @@ class Client implements CopilotClient
             'excludedBuiltinAgents' => $config['excludedBuiltinAgents'] ?? null,
             'includedBuiltinAgents' => $config['includedBuiltinAgents'] ?? null,
             'sessionLimits' => $config['sessionLimits'] ?? null,
+            'enableManagedSettings' => $config['enableManagedSettings'] ?? null,
+            'managedSettings' => $config['managedSettings'] ?? null,
+            'enableFileChangeTracking' => $config['enableFileChangeTracking'] ?? null,
+            'disabledMcpServers' => $config['disabledMcpServers'] ?? null,
         ], fn ($v) => $v !== null));
 
         $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');
@@ -538,7 +549,8 @@ class Client implements CopilotClient
             'sessionId' => $resumedSessionId,
             'client' => $this->rpcClient,
             'workspacePath' => $workspacePath,
-            'managedSettingsEnabled' => (bool) ($config['enableManagedSettings'] ?? false),
+            'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
+                || array_key_exists('managedSettings', $config),
         ]);
         $session->registerTools($tools);
         $session->registerCommands($commands);
