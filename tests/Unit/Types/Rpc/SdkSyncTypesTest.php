@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\Verbosity;
+use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\PluginsReloadRequest;
-use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 
 describe('ModelSwitchToRequest verbosity', function () {
