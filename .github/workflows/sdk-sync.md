@@ -82,7 +82,7 @@ permissions:
   issues: read
   pull-requests: read
 
-model: gpt-5.6-luna?effort=high
+model: claude-sonnet-5
 engine:
   id: copilot
   agent: laravel-sdk-sync

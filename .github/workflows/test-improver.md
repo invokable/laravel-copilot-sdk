@@ -22,7 +22,7 @@ permissions:
   pull-requests: read
   issues: read
 
-model: gpt-5.6-luna?effort=high
+model: gpt-5.6-luna
 engine:
   id: copilot
 checkout:
