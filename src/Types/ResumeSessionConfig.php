@@ -141,6 +141,10 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of the original prompt.
      * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
      *                                                                   path as CLI-fetched assignments. Applies to both session creation and resume. @internal
+     * @param  ?bool  $enableManagedSettings  When true, the runtime self-fetches enterprise managed settings.
+     * @param  ?bool  $enableFileChangeTracking  Opt in to capturing file changes for session rewind and cumulative diffs.
+     * @param  ?array  $disabledMcpServers  Exact MCP server names to disable for this session.
+     * @param  ManagedSettings|array|null  $managedSettings  Host-injected enterprise managed permissions for this session.
      */
     public function __construct(
         public ?string $clientName = null,
@@ -211,6 +215,10 @@ readonly class ResumeSessionConfig implements Arrayable
         public CopilotExpAssignmentResponse|array|null $expAssignments = null,
         public ?bool $enableExperimentalMode = null,
         public ?array $additionalDirectories = null,
+        public ?bool $enableManagedSettings = null,
+        public ?bool $enableFileChangeTracking = null,
+        public ?array $disabledMcpServers = null,
+        public ManagedSettings|array|null $managedSettings = null,
     ) {}
 
     /**
@@ -349,6 +357,12 @@ readonly class ResumeSessionConfig implements Arrayable
             expAssignments: isset($data['expAssignments'])
                 ? ($data['expAssignments'] instanceof CopilotExpAssignmentResponse ? $data['expAssignments'] : CopilotExpAssignmentResponse::fromArray($data['expAssignments']))
                 : null,
+            enableManagedSettings: $data['enableManagedSettings'] ?? null,
+            enableFileChangeTracking: $data['enableFileChangeTracking'] ?? null,
+            disabledMcpServers: $data['disabledMcpServers'] ?? null,
+            managedSettings: isset($data['managedSettings'])
+                ? ($data['managedSettings'] instanceof ManagedSettings ? $data['managedSettings'] : ManagedSettings::fromArray($data['managedSettings']))
+                : null,
         );
     }
 
@@ -472,6 +486,12 @@ readonly class ResumeSessionConfig implements Arrayable
             'enableSkills' => $this->enableSkills,
             'displayPrompt' => $this->displayPrompt,
             'expAssignments' => $expAssignments,
+            'enableManagedSettings' => $this->enableManagedSettings,
+            'enableFileChangeTracking' => $this->enableFileChangeTracking,
+            'disabledMcpServers' => $this->disabledMcpServers,
+            'managedSettings' => $this->managedSettings instanceof ManagedSettings
+                ? $this->managedSettings->toArray()
+                : $this->managedSettings,
         ], fn ($value) => $value !== null);
     }
 }

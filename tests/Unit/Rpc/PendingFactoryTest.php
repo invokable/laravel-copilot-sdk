@@ -11,6 +11,7 @@ use Revolution\Copilot\Types\Rpc\FactoryAgentResult;
 use Revolution\Copilot\Types\Rpc\FactoryCancelRequest;
 use Revolution\Copilot\Types\Rpc\FactoryGetRunProgressRequest;
 use Revolution\Copilot\Types\Rpc\FactoryGetRunRequest;
+use Revolution\Copilot\Types\Rpc\FactoryListRunsRequest;
 use Revolution\Copilot\Types\Rpc\FactoryListRunsResult;
 use Revolution\Copilot\Types\Rpc\FactoryLogLine;
 use Revolution\Copilot\Types\Rpc\FactoryLogRequest;
@@ -150,6 +151,33 @@ describe('PendingFactory', function () {
 
         expect($result)->toBeInstanceOf(FactoryListRunsResult::class)
             ->and($result->runs)->toBe([]);
+    });
+
+    it('pages session.factory.listRuns', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.factory.listRuns', [
+                'afterSeq' => 10,
+                'limit' => 25,
+                'sessionId' => 'session-xyz',
+            ])
+            ->andReturn([
+                'runs' => [],
+                'oldestSeq' => 11,
+                'newestSeq' => 35,
+                'hasMoreNewer' => true,
+                'omittedOlder' => 10,
+            ]);
+
+        $result = (new PendingFactory($client, 'session-xyz'))->listRuns(
+            new FactoryListRunsRequest(afterSeq: 10, limit: 25),
+        );
+
+        expect($result->oldestSeq)->toBe(11)
+            ->and($result->newestSeq)->toBe(35)
+            ->and($result->hasMoreNewer)->toBeTrue()
+            ->and($result->omittedOlder)->toBe(10);
     });
 
     it('calls session.factory.getRunDetail and returns result', function () {

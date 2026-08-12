@@ -64,6 +64,7 @@ Artisan::command('copilot:tools', function () {
                 overridesBuiltInTool: false,
                 skipPermission: false, // trueにするとパーミッションプロンプトなしで実行
                 defer: 'auto', // ツールを常にプリロードするのではなく、遅延ロード（ツール検索による遅延ロード）するかどうかを制御します。`"auto"` の場合、ツールは遅延ロードされ、ツール検索によって表示されます。`"never"` の場合、ツールは常にプリロードされます。オプション。デフォルトは `"auto" です。
+                isTerminal: false, // trueにすると成功した呼び出しで現在のエージェントターンを終了
             ),
         ],
     );
@@ -98,6 +99,10 @@ Tool::define(
     skipPermission: true,
 ),
 ```
+
+## isTerminal
+
+`isTerminal: true` を指定すると、ツールが成功した時点で現在のエージェントターンを終了します。
 
 ## $invocation
 

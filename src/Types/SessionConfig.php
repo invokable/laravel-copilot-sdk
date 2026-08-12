@@ -194,6 +194,9 @@ readonly class SessionConfig implements Arrayable
      * @param  CanvasProviderIdentity|array|null  $canvasProvider  Stable identity for a host/SDK connection that supplies
      *                                                             built-in canvases. When set, the runtime uses `id` verbatim
      *                                                             as the agent-facing canvas extension id.
+     * @param  ?bool  $enableFileChangeTracking  Opt in to capturing file changes for session rewind and cumulative diffs.
+     * @param  ?array  $disabledMcpServers  Exact MCP server names to disable for this session.
+     * @param  ManagedSettings|array|null  $managedSettings  Host-injected enterprise managed permissions for this session.
      */
     public function __construct(
         public ?string $sessionId = null,
@@ -274,6 +277,9 @@ readonly class SessionConfig implements Arrayable
         public CanvasProviderIdentity|array|null $canvasProvider = null,
         public ?bool $enableExperimentalMode = null,
         public ?array $additionalDirectories = null,
+        public ?bool $enableFileChangeTracking = null,
+        public ?array $disabledMcpServers = null,
+        public ManagedSettings|array|null $managedSettings = null,
     ) {}
 
     /**
@@ -452,6 +458,11 @@ readonly class SessionConfig implements Arrayable
             canvasProvider: isset($data['canvasProvider'])
                 ? ($data['canvasProvider'] instanceof CanvasProviderIdentity ? $data['canvasProvider'] : CanvasProviderIdentity::fromArray($data['canvasProvider']))
                 : null,
+            enableFileChangeTracking: $data['enableFileChangeTracking'] ?? null,
+            disabledMcpServers: $data['disabledMcpServers'] ?? null,
+            managedSettings: isset($data['managedSettings'])
+                ? ($data['managedSettings'] instanceof ManagedSettings ? $data['managedSettings'] : ManagedSettings::fromArray($data['managedSettings']))
+                : null,
         );
     }
 
@@ -607,6 +618,11 @@ readonly class SessionConfig implements Arrayable
             'canvasProvider' => $this->canvasProvider instanceof CanvasProviderIdentity
                 ? $this->canvasProvider->toArray()
                 : $this->canvasProvider,
+            'enableFileChangeTracking' => $this->enableFileChangeTracking,
+            'disabledMcpServers' => $this->disabledMcpServers,
+            'managedSettings' => $this->managedSettings instanceof ManagedSettings
+                ? $this->managedSettings->toArray()
+                : $this->managedSettings,
         ], fn ($value) => $value !== null);
     }
 }

@@ -470,7 +470,7 @@ describe('Client', function () {
         expect($session)->toBe($mockSession);
     });
 
-    it('createSession forwards enableManagedSettings to the Session constructor', function () {
+    it('createSession forwards managed settings options to RPC and Session', function () {
         $mockStdioTransport = Mockery::mock(StdioTransport::class);
 
         $mockProcessManager = Mockery::mock(ProcessManager::class);
@@ -486,7 +486,10 @@ describe('Client', function () {
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
-            ->with('session.create', Mockery::any())
+            ->with('session.create', Mockery::on(fn ($params) => ($params['enableManagedSettings'] ?? null) === true
+                && ($params['managedSettings'] ?? null) === ['permissions' => ['deny' => ['Shell(rm *)']]]
+                && ($params['enableFileChangeTracking'] ?? null) === true
+                && ($params['disabledMcpServers'] ?? null) === ['github']))
             ->once()
             ->andReturn(['sessionId' => 'test-session-123']);
 
@@ -510,6 +513,9 @@ describe('Client', function () {
         $client->start();
         $session = $client->createSession([
             'enableManagedSettings' => true,
+            'managedSettings' => ['permissions' => ['deny' => ['Shell(rm *)']]],
+            'enableFileChangeTracking' => true,
+            'disabledMcpServers' => ['github'],
             'onPermissionRequest' => PermissionHandler::approveAll(),
         ]);
 

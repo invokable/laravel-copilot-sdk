@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Arr;
 
 /**
  * Result of listing factory runs.
@@ -18,6 +19,10 @@ readonly class FactoryListRunsResult implements Arrayable
      */
     public function __construct(
         public array $runs,
+        public ?int $oldestSeq = null,
+        public ?int $newestSeq = null,
+        public ?bool $hasMoreNewer = null,
+        public ?int $omittedOlder = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -27,13 +32,21 @@ readonly class FactoryListRunsResult implements Arrayable
                 fn ($run) => $run instanceof FactoryRunSummary ? $run : FactoryRunSummary::fromArray($run),
                 $data['runs'] ?? [],
             ),
+            oldestSeq: isset($data['oldestSeq']) ? Arr::integer($data, 'oldestSeq') : null,
+            newestSeq: isset($data['newestSeq']) ? Arr::integer($data, 'newestSeq') : null,
+            hasMoreNewer: isset($data['hasMoreNewer']) ? Arr::boolean($data, 'hasMoreNewer') : null,
+            omittedOlder: isset($data['omittedOlder']) ? Arr::integer($data, 'omittedOlder') : null,
         );
     }
 
     public function toArray(): array
     {
-        return [
+        return array_filter([
             'runs' => array_map(fn (FactoryRunSummary $run) => $run->toArray(), $this->runs),
-        ];
+            'oldestSeq' => $this->oldestSeq,
+            'newestSeq' => $this->newestSeq,
+            'hasMoreNewer' => $this->hasMoreNewer,
+            'omittedOlder' => $this->omittedOlder,
+        ], fn ($value) => $value !== null);
     }
 }

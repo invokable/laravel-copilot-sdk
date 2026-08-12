@@ -23,6 +23,7 @@ readonly class Tool implements Arrayable
      * @param  bool  $skipPermission  Whether to skip permission prompt for this tool
      * @param  ?string  $defer  Controls whether the tool may be deferred (loaded lazily via tool search) rather than always pre-loaded. When `"auto"`, the tool can be deferred and surfaced through tool search. When `"never"`, the tool is always pre-loaded. Optional; defaults to `"auto"`.
      * @param  ?array  $metadata  Opaque, host-defined metadata associated with the tool definition. Keys are namespaced and are not part of the stable public API.
+     * @param  bool  $isTerminal  Whether a successful call ends the current agent turn.
      */
     public function __construct(
         public string $name,
@@ -33,6 +34,7 @@ readonly class Tool implements Arrayable
         public bool $skipPermission = false,
         public ?string $defer = 'auto',
         public ?array $metadata = null,
+        public bool $isTerminal = false,
     ) {}
 
     /**
@@ -47,6 +49,7 @@ readonly class Tool implements Arrayable
         bool $skipPermission = false,
         ?string $defer = 'auto',
         ?array $metadata = null,
+        bool $isTerminal = false,
     ): array {
         return new self(
             name: $name,
@@ -57,13 +60,14 @@ readonly class Tool implements Arrayable
             skipPermission: $skipPermission,
             defer: $defer,
             metadata: $metadata,
+            isTerminal: $isTerminal,
         )->toArray();
     }
 
     /**
      * Create from array.
      *
-     * @param  array{name: string, description?: string, parameters?: array, handler?: callable, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string}  $data
+     * @param  array{name: string, description?: string, parameters?: array, handler?: callable, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string, metadata?: array, isTerminal?: bool}  $data
      */
     public static function fromArray(array $data): self
     {
@@ -76,13 +80,14 @@ readonly class Tool implements Arrayable
             skipPermission: Arr::boolean($data, 'skipPermission', false),
             defer: $data['defer'] ?? 'auto',
             metadata: $data['metadata'] ?? null,
+            isTerminal: Arr::boolean($data, 'isTerminal', false),
         );
     }
 
     /**
      * Convert to array.
      *
-     * @return array{name: string, description: string|null, parameters: array|null, handler: Closure, overridesBuiltInTool?: bool, skipPermission?: bool}
+     * @return array{name: string, description: string|null, parameters: array|null, handler: Closure|null, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string, metadata?: array, isTerminal?: bool}
      */
     public function toArray(): array
     {
@@ -107,6 +112,10 @@ readonly class Tool implements Arrayable
 
         if ($this->metadata !== null) {
             $array['metadata'] = $this->metadata;
+        }
+
+        if ($this->isTerminal) {
+            $array['isTerminal'] = true;
         }
 
         return $array;

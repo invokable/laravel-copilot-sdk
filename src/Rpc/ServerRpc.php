@@ -142,6 +142,16 @@ class ServerRpc
     }
 
     /**
+     * Server-level managed settings RPC operations.
+     *
+     * @experimental This API group is experimental and may be changed or removed.
+     */
+    public function managedSettings(): PendingServerManagedSettings
+    {
+        return new PendingServerManagedSettings($this->client);
+    }
+
+    /**
      * LLM inference callback provider RPC operations.
      *
      * Allows this client to register as the LLM inference provider and deliver
