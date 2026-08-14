@@ -462,6 +462,25 @@ describe('Session', function () {
         ]);
     });
 
+    it('handlePermissionRequest unwraps an attributed handler result', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient);
+
+        $session->registerPermissionHandler(fn (array $request, array $invocation) => [
+            'kind' => 'attributed',
+            'result' => ['kind' => 'approve-once'],
+            'decisionContext' => [
+                'outcome' => 'auto_approved',
+                'source' => 'judge_recommendation',
+                'surface' => 'sdk',
+            ],
+        ]);
+
+        $result = $session->handlePermissionRequest(['toolName' => 'bash']);
+
+        expect($result)->toBe(['kind' => 'approve-once']);
+    });
+
     it('sendAndWait returns event with exception on session error', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')

@@ -277,3 +277,24 @@ return ['kind' => $select];
 return PermissionDecision::noResult();
 // または ['kind' => 'no-result']
 ```
+
+## Decision Context（実験的機能）
+
+`decisionContext`はパーミッション判断がどこで・どのように行われたかを示す情報のみのデータで、**パーミッションの挙動自体には影響しません**。ランタイム側で自動承認のテレメトリを正しく帰属させるために使われます。
+
+`PermissionDecision::attributed()`で通常の判断結果に`decisionContext`を付与できます。
+
+```php
+use Revolution\Copilot\Support\PermissionDecision;
+
+return PermissionDecision::attributed(
+    PermissionDecision::approveOnce(),
+    [
+        'outcome' => 'auto_approved', // auto_approved | autopilot_denied | prompted_user
+        'source' => 'judge_recommendation', // judge_recommendation | human_response | host_policy | unattended_fallback
+        'surface' => 'sdk', // tui | prompt_mode | copilot_app | sdk
+    ],
+);
+```
+
+`outcome`・`source`・`surface`はそれぞれ`Revolution\Copilot\Enums\PermissionDecisionOutcome`・`PermissionDecisionSource`・`PermissionDecisionSurface`のバッキング値と対応しています。

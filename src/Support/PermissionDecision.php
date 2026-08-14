@@ -59,6 +59,24 @@ final readonly class PermissionDecision
     }
 
     /**
+     * Pair a permission decision with the context describing how and where it was
+     * made, so the runtime can attribute auto-approval telemetry.
+     *
+     * The context is informational only and never changes permission behavior.
+     *
+     * @param  array  $result  A decision array built via one of this class's factory methods.
+     * @param  array{outcome: string, source: string, surface: string}  $decisionContext  See {@see \Revolution\Copilot\Types\Rpc\PermissionDecisionContext}.
+     */
+    public static function attributed(array $result, array $decisionContext): array
+    {
+        return [
+            'kind' => 'attributed',
+            'result' => $result,
+            'decisionContext' => $decisionContext,
+        ];
+    }
+
+    /**
      * Array for Laravel\Prompts\select.
      */
     public static function select(): array
