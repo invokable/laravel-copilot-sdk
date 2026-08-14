@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Concerns\Session;
 
 use Closure;
 use Revolution\Copilot\Support\PermissionDecision;
+use Revolution\Copilot\Types\Rpc\PermissionDecisionContext;
 use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
 use Throwable;
 
@@ -47,10 +48,12 @@ trait HasPermissionHandler
         }
 
         try {
-            return ($this->permissionHandler)($request, [
+            $handlerResult = ($this->permissionHandler)($request, [
                 'sessionId' => $this->sessionId,
                 'managedSettingsEnabled' => $this->managedSettingsEnabled,
             ]);
+
+            return $this->extractDecisionResult($handlerResult);
         } catch (Throwable $e) {
             report($e);
 
@@ -68,10 +71,13 @@ trait HasPermissionHandler
     {
         $fiber = new \Fiber(function () use ($requestId, $permissionRequest): void {
             try {
-                $result = ($this->permissionHandler)($permissionRequest, [
+                $handlerResult = ($this->permissionHandler)($permissionRequest, [
                     'sessionId' => $this->sessionId,
                     'managedSettingsEnabled' => $this->managedSettingsEnabled,
                 ]);
+
+                $result = $this->extractDecisionResult($handlerResult);
+                $decisionContext = $this->extractDecisionContext($handlerResult);
 
                 if (($result['kind'] ?? null) === PermissionDecision::NO_RESULT) {
                     return;
@@ -81,6 +87,7 @@ trait HasPermissionHandler
                     new PermissionDecisionRequest(
                         requestId: $requestId,
                         result: $result,
+                        decisionContext: $decisionContext,
                     )
                 );
             } catch (Throwable $e) {
@@ -100,5 +107,34 @@ trait HasPermissionHandler
         });
 
         $fiber->start();
+    }
+
+    /**
+     * Extract the plain decision result array from a handler return value,
+     * unwrapping an attributed result (`['kind' => 'attributed', 'result' => ..., 'decisionContext' => ...]`) if present.
+     *
+     * @internal
+     */
+    protected function extractDecisionResult(array $handlerResult): array
+    {
+        if (($handlerResult['kind'] ?? null) === 'attributed') {
+            return $handlerResult['result'] ?? [];
+        }
+
+        return $handlerResult;
+    }
+
+    /**
+     * Extract the optional {@see PermissionDecisionContext} from an attributed handler return value.
+     *
+     * @internal
+     */
+    protected function extractDecisionContext(array $handlerResult): ?PermissionDecisionContext
+    {
+        if (($handlerResult['kind'] ?? null) === 'attributed' && isset($handlerResult['decisionContext'])) {
+            return PermissionDecisionContext::fromArray($handlerResult['decisionContext']);
+        }
+
+        return null;
     }
 }

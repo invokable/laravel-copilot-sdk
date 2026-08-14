@@ -25,6 +25,17 @@ describe('PermissionDecision', function () {
             ->and(PermissionDecision::noResult())->toBe(['kind' => 'no-result']);
     });
 
+    it('builds attributed decisions', function () {
+        expect(PermissionDecision::attributed(
+            PermissionDecision::approveOnce(),
+            ['outcome' => 'auto_approved', 'source' => 'judge_recommendation', 'surface' => 'sdk'],
+        ))->toBe([
+            'kind' => 'attributed',
+            'result' => ['kind' => 'approve-once'],
+            'decisionContext' => ['outcome' => 'auto_approved', 'source' => 'judge_recommendation', 'surface' => 'sdk'],
+        ]);
+    });
+
     it('provides select choices', function () {
         expect(PermissionDecision::select())->toHaveKeys([
             'approve-once',

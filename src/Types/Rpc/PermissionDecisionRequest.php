@@ -22,10 +22,12 @@ readonly class PermissionDecisionRequest implements Arrayable
     /**
      * @param  string  $requestId  The ID of the pending permission request to handle
      * @param  array  $result  Permission decision result; see class docblock for structure
+     * @param  PermissionDecisionContext|null  $decisionContext  Optional informational context describing how and where the decision was made. Never changes permission behavior.
      */
     public function __construct(
         public string $requestId,
         public array $result,
+        public ?PermissionDecisionContext $decisionContext = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -33,14 +35,16 @@ readonly class PermissionDecisionRequest implements Arrayable
         return new self(
             requestId: Arr::string($data, 'requestId'),
             result: Arr::array($data, 'result'),
+            decisionContext: isset($data['decisionContext']) ? PermissionDecisionContext::fromArray($data['decisionContext']) : null,
         );
     }
 
     public function toArray(): array
     {
-        return [
+        return array_filter([
             'requestId' => $this->requestId,
             'result' => $this->result,
-        ];
+            'decisionContext' => $this->decisionContext?->toArray(),
+        ], fn ($value) => $value !== null);
     }
 }
