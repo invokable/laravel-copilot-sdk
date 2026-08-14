@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Support;
 
+use Revolution\Copilot\Types\Rpc\PermissionDecisionContext;
+
 final readonly class PermissionDecision
 {
     public const string APPROVE_ONCE = 'approve-once';
@@ -65,7 +67,7 @@ final readonly class PermissionDecision
      * The context is informational only and never changes permission behavior.
      *
      * @param  array  $result  A decision array built via one of this class's factory methods.
-     * @param  array{outcome: string, source: string, surface: string}  $decisionContext  See {@see \Revolution\Copilot\Types\Rpc\PermissionDecisionContext}.
+     * @param  array{outcome: string, source: string, surface: string}  $decisionContext  See {@see PermissionDecisionContext}.
      */
     public static function attributed(array $result, array $decisionContext): array
     {
