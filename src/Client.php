@@ -583,6 +583,13 @@ class Client implements CopilotClient
 
         $this->sessions[$resumedSessionId] = $session;
 
+        if (! empty($config['mcpServers'])) {
+            $this->rpcClient->request('session.mcp.reloadWithConfig', [
+                'sessionId' => $resumedSessionId,
+                'config' => ['mcpServers' => $config['mcpServers']],
+            ]);
+        }
+
         $this->applyPostCreateOptionsPatch($resumedSessionId, $session, $config);
 
         ResumeSession::dispatch($session);

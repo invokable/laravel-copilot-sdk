@@ -110,6 +110,8 @@ enum SessionEventType: string
 
     // Factory events
     case FACTORY_RUN_UPDATED = 'factory.run_updated';
+    case FACTORY_RUN_STARTED = 'factory.run_started';
+    case FACTORY_RUN_SETTLED = 'factory.run_settled';
 
     // Permission events
     case PERMISSION_REQUESTED = 'permission.requested';
@@ -148,6 +150,9 @@ enum SessionEventType: string
 
     // Skill events
     case SKILL_INVOKED = 'skill.invoked';
+
+    // UI events
+    case UI_EPHEMERAL_QUERY = 'ui.ephemeral_query';
 
     // Subagent events
     case SUBAGENT_STARTED = 'subagent.started';
