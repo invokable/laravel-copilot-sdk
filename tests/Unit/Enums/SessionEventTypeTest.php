@@ -181,4 +181,22 @@ describe('SessionEventType', function () {
     it('can create tool search activated from string', function () {
         expect(SessionEventType::from('tool_search.activated'))->toBe(SessionEventType::TOOL_SEARCH_ACTIVATED);
     });
+
+    it('has ui ephemeral query event type', function () {
+        expect(SessionEventType::UI_EPHEMERAL_QUERY->value)->toBe('ui.ephemeral_query');
+    });
+
+    it('can create ui ephemeral query from string', function () {
+        expect(SessionEventType::from('ui.ephemeral_query'))->toBe(SessionEventType::UI_EPHEMERAL_QUERY);
+    });
+
+    it('has factory run started and settled event types', function () {
+        expect(SessionEventType::FACTORY_RUN_STARTED->value)->toBe('factory.run_started')
+            ->and(SessionEventType::FACTORY_RUN_SETTLED->value)->toBe('factory.run_settled');
+    });
+
+    it('can create factory run started and settled from string', function () {
+        expect(SessionEventType::from('factory.run_started'))->toBe(SessionEventType::FACTORY_RUN_STARTED)
+            ->and(SessionEventType::from('factory.run_settled'))->toBe(SessionEventType::FACTORY_RUN_SETTLED);
+    });
 });
