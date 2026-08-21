@@ -297,26 +297,36 @@ describe('PlanSqlTodosRow', function () {
             'id' => 'todo-1',
             'status' => 'pending',
             'title' => 'My Todo',
+            'createdAt' => '2024-01-01 12:00:00',
         ]);
 
         expect($row->description)->toBe('Do something')
             ->and($row->id)->toBe('todo-1')
             ->and($row->status)->toBe('pending')
-            ->and($row->title)->toBe('My Todo');
+            ->and($row->title)->toBe('My Todo')
+            ->and($row->createdAt)->toBe('2024-01-01 12:00:00');
     });
 
     it('handles all null defaults', function () {
         $row = PlanSqlTodosRow::fromArray([]);
 
         expect($row->id)->toBeNull()
-            ->and($row->title)->toBeNull();
+            ->and($row->title)->toBeNull()
+            ->and($row->createdAt)->toBeNull();
     });
 
     it('converts to array omitting nulls', function () {
         $row = new PlanSqlTodosRow(id: 'todo-1', title: 'Task');
 
         expect($row->toArray())->toBe(['id' => 'todo-1', 'title' => 'Task'])
-            ->and($row->toArray())->not->toHaveKey('description');
+            ->and($row->toArray())->not->toHaveKey('description')
+            ->and($row->toArray())->not->toHaveKey('createdAt');
+    });
+
+    it('includes createdAt in array when set', function () {
+        $row = new PlanSqlTodosRow(id: 'todo-1', createdAt: '2024-01-01 12:00:00');
+
+        expect($row->toArray())->toBe(['id' => 'todo-1', 'createdAt' => '2024-01-01 12:00:00']);
     });
 });
 

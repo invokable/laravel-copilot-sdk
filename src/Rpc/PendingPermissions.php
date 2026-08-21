@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\AllowAllPermissionSetResult;
-use Revolution\Copilot\Types\Rpc\AllowAllPermissionState;
 use Revolution\Copilot\Types\Rpc\PendingPermissionRequestList;
 use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
 use Revolution\Copilot\Types\Rpc\PermissionPromptShownNotification;
 use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureParams;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureResult;
+use Revolution\Copilot\Types\Rpc\PermissionsGetModeResult;
 use Revolution\Copilot\Types\Rpc\PermissionsModifyRulesParams;
 use Revolution\Copilot\Types\Rpc\PermissionsModifyRulesResult;
 use Revolution\Copilot\Types\Rpc\PermissionsNotifyPromptShownResult;
 use Revolution\Copilot\Types\Rpc\PermissionsPendingRequestsRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsResetSessionApprovalsResult;
-use Revolution\Copilot\Types\Rpc\PermissionsSetAllowAllRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllResult;
+use Revolution\Copilot\Types\Rpc\PermissionsSetModeRequest;
+use Revolution\Copilot\Types\Rpc\PermissionsSetModeResult;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredResult;
 
@@ -157,29 +157,32 @@ class PendingPermissions
     }
 
     /**
-     * Set the allow-all mode for this session's permissions.
+     * Set the permission mode for this session's permissions.
+     *
+     * `manual` follows the normal approval flow, `assisted` attaches LLM safety
+     * recommendations, and `allow-all` automatically approves permission requests.
      *
      * @experimental
      */
-    public function setAllowAll(PermissionsSetAllowAllRequest|array $params): AllowAllPermissionSetResult
+    public function setMode(PermissionsSetModeRequest|array $params): PermissionsSetModeResult
     {
-        $paramsArray = ($params instanceof PermissionsSetAllowAllRequest ? $params : PermissionsSetAllowAllRequest::fromArray($params))->toArray();
+        $paramsArray = ($params instanceof PermissionsSetModeRequest ? $params : PermissionsSetModeRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        return AllowAllPermissionSetResult::fromArray(
-            $this->client->request('session.permissions.setAllowAll', $paramsArray),
+        return PermissionsSetModeResult::fromArray(
+            $this->client->request('session.permissions.setMode', $paramsArray),
         );
     }
 
     /**
-     * Get the current allow-all mode for this session's permissions.
+     * Get the current permission mode for this session's permissions.
      *
      * @experimental
      */
-    public function getAllowAll(): AllowAllPermissionState
+    public function getMode(): PermissionsGetModeResult
     {
-        return AllowAllPermissionState::fromArray(
-            $this->client->request('session.permissions.getAllowAll', [
+        return PermissionsGetModeResult::fromArray(
+            $this->client->request('session.permissions.getMode', [
                 'sessionId' => $this->sessionId,
             ]),
         );

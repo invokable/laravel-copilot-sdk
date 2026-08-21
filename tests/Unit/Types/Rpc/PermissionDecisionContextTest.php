@@ -12,16 +12,16 @@ describe('PermissionDecisionContext', function () {
     it('maps from and to array', function () {
         $context = PermissionDecisionContext::fromArray([
             'outcome' => 'auto_approved',
-            'source' => 'judge_recommendation',
+            'source' => 'assisted_approval',
             'surface' => 'sdk',
         ]);
 
         expect($context->outcome)->toBe(PermissionDecisionOutcome::AUTO_APPROVED)
-            ->and($context->source)->toBe(PermissionDecisionSource::JUDGE_RECOMMENDATION)
+            ->and($context->source)->toBe(PermissionDecisionSource::ASSISTED_APPROVAL)
             ->and($context->surface)->toBe(PermissionDecisionSurface::SDK)
             ->and($context->toArray())->toBe([
                 'outcome' => 'auto_approved',
-                'source' => 'judge_recommendation',
+                'source' => 'assisted_approval',
                 'surface' => 'sdk',
             ]);
     });

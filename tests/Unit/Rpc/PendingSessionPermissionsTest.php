@@ -20,6 +20,7 @@ use Revolution\Copilot\Types\Rpc\PermissionPromptShownNotification;
 use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureParams;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureResult;
+use Revolution\Copilot\Types\Rpc\PermissionsGetModeResult;
 use Revolution\Copilot\Types\Rpc\PermissionsModifyRulesParams;
 use Revolution\Copilot\Types\Rpc\PermissionsModifyRulesResult;
 use Revolution\Copilot\Types\Rpc\PermissionsNotifyPromptShownResult;
@@ -28,6 +29,8 @@ use Revolution\Copilot\Types\Rpc\PermissionsPathsUpdatePrimaryResult;
 use Revolution\Copilot\Types\Rpc\PermissionsResetSessionApprovalsResult;
 use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllResult;
+use Revolution\Copilot\Types\Rpc\PermissionsSetModeRequest;
+use Revolution\Copilot\Types\Rpc\PermissionsSetModeResult;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredResult;
 use Revolution\Copilot\Types\Rpc\PermissionsUrlsSetUnrestrictedModeResult;
@@ -56,6 +59,8 @@ function makePermissionsClient(array &$sentMessages): JsonRpcClient
                     'session.permissions.pendingRequests' => ['items' => []],
                     'session.permissions.paths.list' => ['directories' => ['/workspace'], 'primary' => '/workspace'],
                     'session.permissions.paths.isPathWithinAllowedDirectories', 'session.permissions.paths.isPathWithinWorkspace' => ['allowed' => true],
+                    'session.permissions.setMode' => ['success' => true, 'mode' => 'allow-all'],
+                    'session.permissions.getMode' => ['mode' => 'manual'],
                     default => ['success' => true],
                 };
                 $response = JsonRpcMessage::response($request['id'], $result);
@@ -182,6 +187,47 @@ describe('PendingSessionPermissions', function () {
         $decoded = decodePermissionsJsonMessage($sentMessages[0]);
         expect($result)->toBeInstanceOf(PermissionsSetApproveAllResult::class)
             ->and($decoded['params']['enabled'])->toBeFalse();
+    });
+
+    it('setMode sends correct method and returns result', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $pending = new PendingPermissions($client, 'session-abc');
+        $result = $pending->setMode(new PermissionsSetModeRequest(mode: \Revolution\Copilot\Enums\PermissionMode::AllowAll));
+
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+        expect($result)->toBeInstanceOf(PermissionsSetModeResult::class)
+            ->and($result->mode)->toBe(\Revolution\Copilot\Enums\PermissionMode::AllowAll)
+            ->and($decoded['method'])->toBe('session.permissions.setMode')
+            ->and($decoded['params']['sessionId'])->toBe('session-abc')
+            ->and($decoded['params']['mode'])->toBe('allow-all');
+    });
+
+    it('setMode accepts array params', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $pending = new PendingPermissions($client, 'session-abc');
+        $result = $pending->setMode(['mode' => 'assisted']);
+
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+        expect($result)->toBeInstanceOf(PermissionsSetModeResult::class)
+            ->and($decoded['params']['mode'])->toBe('assisted');
+    });
+
+    it('getMode sends correct method and maps result', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $pending = new PendingPermissions($client, 'session-abc');
+        $result = $pending->getMode();
+
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+        expect($result)->toBeInstanceOf(PermissionsGetModeResult::class)
+            ->and($result->mode)->toBe(\Revolution\Copilot\Enums\PermissionMode::Manual)
+            ->and($decoded['method'])->toBe('session.permissions.getMode')
+            ->and($decoded['params']['sessionId'])->toBe('session-abc');
     });
 
     it('resetSessionApprovals sends correct method and returns result', function () {

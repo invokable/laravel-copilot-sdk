@@ -9,8 +9,8 @@ namespace Revolution\Copilot\Enums;
  */
 enum PermissionDecisionSource: string
 {
-    /** The response followed the auto-approval judge recommendation. */
-    case JUDGE_RECOMMENDATION = 'judge_recommendation';
+    /** The response followed the assisted-approval judge recommendation. */
+    case ASSISTED_APPROVAL = 'assisted_approval';
 
     /** A human supplied the response through an interactive prompt. */
     case HUMAN_RESPONSE = 'human_response';

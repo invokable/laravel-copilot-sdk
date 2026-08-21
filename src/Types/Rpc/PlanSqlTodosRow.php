@@ -18,12 +18,15 @@ readonly class PlanSqlTodosRow implements Arrayable
      * @param  ?string  $id  Todo identifier.
      * @param  ?string  $status  Todo status.
      * @param  ?string  $title  Todo title.
+     * @param  ?string  $createdAt  Todo creation time, as stored by the session SQL schema's
+     *                              `datetime('now')` default: `YYYY-MM-DD HH:MM:SS` in UTC.
      */
     public function __construct(
         public ?string $description = null,
         public ?string $id = null,
         public ?string $status = null,
         public ?string $title = null,
+        public ?string $createdAt = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -33,6 +36,7 @@ readonly class PlanSqlTodosRow implements Arrayable
             id: $data['id'] ?? null,
             status: $data['status'] ?? null,
             title: $data['title'] ?? null,
+            createdAt: $data['createdAt'] ?? null,
         );
     }
 
@@ -43,6 +47,7 @@ readonly class PlanSqlTodosRow implements Arrayable
             'id' => $this->id,
             'status' => $this->status,
             'title' => $this->title,
+            'createdAt' => $this->createdAt,
         ], fn ($v) => $v !== null);
     }
 }

@@ -11,6 +11,7 @@ use Revolution\Copilot\Types\Rpc\McpIsServerRunningRequest;
 use Revolution\Copilot\Types\Rpc\McpIsServerRunningResult;
 use Revolution\Copilot\Types\Rpc\McpListToolsRequest;
 use Revolution\Copilot\Types\Rpc\McpListToolsResult;
+use Revolution\Copilot\Types\Rpc\MoveMcpLoadingToBackgroundResult;
 use Revolution\Copilot\Types\Rpc\McpOauthAuthenticationStateChangedRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingResult;
@@ -79,6 +80,23 @@ class PendingMcp
         return $this->client->request('session.mcp.reload', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Releases any turns waiting on an in-flight MCP load without cancelling the load,
+     * letting the agent proceed while MCP servers finish connecting in the background.
+     *
+     * No-op when no MCP load is in flight or waiting turns were already released.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function moveLoadingToBackground(): MoveMcpLoadingToBackgroundResult
+    {
+        return MoveMcpLoadingToBackgroundResult::fromArray(
+            $this->client->request('session.mcp.moveLoadingToBackground', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
     }
 
     /**

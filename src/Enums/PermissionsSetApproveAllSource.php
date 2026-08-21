@@ -13,4 +13,5 @@ enum PermissionsSetApproveAllSource: string
     case CLI_FLAG = 'cli_flag';
     case RPC = 'rpc';
     case SLASH_COMMAND = 'slash_command';
+    case USER_SETTING = 'user_setting';
 }
