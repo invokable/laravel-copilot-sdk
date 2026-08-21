@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\CatalogCandidateKind;
 use Revolution\Copilot\Enums\CatalogCapability;
 use Revolution\Copilot\Types\Rpc\CardDigest;
 use Revolution\Copilot\Types\Rpc\CatalogAiSkillCandidate;
@@ -78,6 +79,17 @@ describe('CatalogSearchRequest', function () {
 
         expect($arr)->not->toHaveKey('limit')
             ->and($arr)->not->toHaveKey('kinds');
+    });
+
+    it('round-trips candidate kind enums as wire values', function () {
+        $req = CatalogSearchRequest::fromArray([
+            'contract' => ['protocolVersion' => 1, 'requiredCapabilities' => []],
+            'query' => 'github',
+            'kinds' => ['mcp-server'],
+        ]);
+
+        expect($req->kinds[0])->toBe(CatalogCandidateKind::McpServer)
+            ->and($req->toArray()['kinds'])->toBe(['mcp-server']);
     });
 });
 
