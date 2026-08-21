@@ -15,7 +15,6 @@ use Revolution\Copilot\Enums\CatalogMediaType;
  */
 readonly class CatalogMalformedCardError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     public function __construct(

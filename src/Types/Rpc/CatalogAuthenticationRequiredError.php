@@ -12,7 +12,6 @@ use Revolution\Copilot\Enums\CatalogAuthenticationRequiredReason;
  */
 readonly class CatalogAuthenticationRequiredError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     public function __construct(

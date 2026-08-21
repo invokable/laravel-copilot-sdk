@@ -14,7 +14,6 @@ use Revolution\Copilot\Enums\CatalogInvalidRequestField;
  */
 readonly class CatalogInvalidRequestError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     public function __construct(

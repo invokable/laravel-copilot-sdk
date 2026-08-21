@@ -13,7 +13,6 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class CatalogSearchSucceeded implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     /**

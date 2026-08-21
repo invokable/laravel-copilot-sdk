@@ -12,7 +12,6 @@ use Revolution\Copilot\Enums\CatalogUnsafeRetrievalReason;
  */
 readonly class CatalogUnsafeRetrievalError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     public function __construct(

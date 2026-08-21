@@ -15,7 +15,6 @@ use Revolution\Copilot\Enums\CatalogHandleType;
  */
 readonly class CatalogHandleRejectedError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     public function __construct(

@@ -15,7 +15,6 @@ use Revolution\Copilot\Enums\CatalogNegotiationRefusedReason;
  */
 readonly class CatalogNegotiationRefusedError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     /**

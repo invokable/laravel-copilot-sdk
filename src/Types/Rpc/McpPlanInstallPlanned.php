@@ -13,7 +13,6 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class McpPlanInstallPlanned implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     public function __construct(

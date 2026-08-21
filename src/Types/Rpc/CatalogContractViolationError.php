@@ -12,7 +12,6 @@ use Revolution\Copilot\Enums\CatalogContractViolationReason;
  */
 readonly class CatalogContractViolationError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     public function __construct(

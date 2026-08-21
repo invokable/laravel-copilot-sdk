@@ -12,7 +12,6 @@ use Revolution\Copilot\Enums\CatalogNotInstallableReason;
  */
 readonly class CatalogNotInstallableError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     public function __construct(

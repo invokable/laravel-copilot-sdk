@@ -2,8 +2,14 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\McpPlanInstallSourceCardKind;
+use Revolution\Copilot\Enums\McpPlanScope;
+use Revolution\Copilot\Enums\McpServerCardEmbeddedKind;
+use Revolution\Copilot\Enums\McpServerCardMediaType;
+use Revolution\Copilot\Enums\McpServerCardUrlKind;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
+use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\McpConfigAddRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigEnableRequest;
@@ -12,6 +18,10 @@ use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
+use Revolution\Copilot\Types\Rpc\McpPlanInstallRequest;
+use Revolution\Copilot\Types\Rpc\McpPlanInstallSourceCard;
+use Revolution\Copilot\Types\Rpc\McpServerCardEmbedded;
+use Revolution\Copilot\Types\Rpc\McpServerCardUrl;
 use Revolution\Copilot\Types\Rpc\McpServerValue;
 
 describe('PendingServerMcpConfig', function () {
@@ -291,7 +301,7 @@ describe('PendingServerMcpConfig', function () {
 
 describe('PendingServerMcpConfig planInstall (typed objects)', function () {
     it('calls mcp.planInstall with typed McpPlanInstallRequest (card source, embedded) and returns raw array', function () {
-        $client = Mockery::mock(\Revolution\Copilot\JsonRpc\JsonRpcClient::class);
+        $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
             ->with(
@@ -302,22 +312,22 @@ describe('PendingServerMcpConfig planInstall (typed objects)', function () {
             )
             ->andReturn(['kind' => 'unavailable', 'reason' => 'planning-unavailable', 'message' => 'Planning not enabled.']);
 
-        $pending = new \Revolution\Copilot\Rpc\PendingServerMcpConfig($client);
+        $pending = new PendingServerMcpConfig($client);
         $result = $pending->planInstall(
-            new \Revolution\Copilot\Types\Rpc\McpPlanInstallRequest(
-                contract: new \Revolution\Copilot\Types\Rpc\CatalogClientContract(
+            new McpPlanInstallRequest(
+                contract: new CatalogClientContract(
                     protocolVersion: 1,
                     requiredCapabilities: ['mcp-server-card', 'mcp-install-planning'],
                 ),
-                source: new \Revolution\Copilot\Types\Rpc\McpPlanInstallSourceCard(
-                    kind: \Revolution\Copilot\Enums\McpPlanInstallSourceCardKind::Card,
-                    card: new \Revolution\Copilot\Types\Rpc\McpServerCardEmbedded(
-                        kind: \Revolution\Copilot\Enums\McpServerCardEmbeddedKind::Embedded,
-                        mediaType: \Revolution\Copilot\Enums\McpServerCardMediaType::McpServerCard,
+                source: new McpPlanInstallSourceCard(
+                    kind: McpPlanInstallSourceCardKind::Card,
+                    card: new McpServerCardEmbedded(
+                        kind: McpServerCardEmbeddedKind::Embedded,
+                        mediaType: McpServerCardMediaType::McpServerCard,
                         data: '{"name":"test-mcp"}',
                     ),
                 ),
-                scope: \Revolution\Copilot\Enums\McpPlanScope::User,
+                scope: McpPlanScope::User,
             ),
         );
 
@@ -326,7 +336,7 @@ describe('PendingServerMcpConfig planInstall (typed objects)', function () {
     });
 
     it('calls mcp.planInstall with typed McpPlanInstallRequest (url card source) and serializes scope', function () {
-        $client = Mockery::mock(\Revolution\Copilot\JsonRpc\JsonRpcClient::class);
+        $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
             ->with(
@@ -337,19 +347,19 @@ describe('PendingServerMcpConfig planInstall (typed objects)', function () {
             )
             ->andReturn(['kind' => 'planned', 'plan' => [], 'negotiated' => []]);
 
-        $pending = new \Revolution\Copilot\Rpc\PendingServerMcpConfig($client);
+        $pending = new PendingServerMcpConfig($client);
         $result = $pending->planInstall(
-            new \Revolution\Copilot\Types\Rpc\McpPlanInstallRequest(
-                contract: new \Revolution\Copilot\Types\Rpc\CatalogClientContract(1, []),
-                source: new \Revolution\Copilot\Types\Rpc\McpPlanInstallSourceCard(
-                    kind: \Revolution\Copilot\Enums\McpPlanInstallSourceCardKind::Card,
-                    card: new \Revolution\Copilot\Types\Rpc\McpServerCardUrl(
-                        kind: \Revolution\Copilot\Enums\McpServerCardUrlKind::Url,
-                        mediaType: \Revolution\Copilot\Enums\McpServerCardMediaType::McpServerCard,
+            new McpPlanInstallRequest(
+                contract: new CatalogClientContract(1, []),
+                source: new McpPlanInstallSourceCard(
+                    kind: McpPlanInstallSourceCardKind::Card,
+                    card: new McpServerCardUrl(
+                        kind: McpServerCardUrlKind::Url,
+                        mediaType: McpServerCardMediaType::McpServerCard,
                         url: 'https://example.com/mcp-card.json',
                     ),
                 ),
-                scope: \Revolution\Copilot\Enums\McpPlanScope::User,
+                scope: McpPlanScope::User,
             ),
         );
 

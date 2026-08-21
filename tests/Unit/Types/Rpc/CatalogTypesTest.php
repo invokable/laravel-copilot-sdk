@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\CatalogCandidateKind;
 use Revolution\Copilot\Enums\CatalogCapability;
-use Revolution\Copilot\Types\Rpc\CardDigest;
 use Revolution\Copilot\Types\Rpc\CatalogAiSkillCandidate;
-use Revolution\Copilot\Types\Rpc\CatalogAiSkillCandidateProvenance;
 use Revolution\Copilot\Types\Rpc\CatalogCandidateSourceEmbedded;
 use Revolution\Copilot\Types\Rpc\CatalogCandidateSourceUrl;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogMcpServerCandidate;
-use Revolution\Copilot\Types\Rpc\CatalogMcpServerCandidateProvenance;
 use Revolution\Copilot\Types\Rpc\CatalogNegotiatedContract;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSearchSucceeded;
@@ -200,7 +197,7 @@ describe('CatalogUnsupportedKindError', function () {
         ]);
 
         expect($error->kind)->toBe('unsupported-kind')
-            ->and($error->requestedKinds[0])->toBe(\Revolution\Copilot\Enums\CatalogCandidateKind::AiSkill)
+            ->and($error->requestedKinds[0])->toBe(CatalogCandidateKind::AiSkill)
             ->and($error->toArray()['supportedKinds'])->toBe(['mcp-server']);
     });
 });

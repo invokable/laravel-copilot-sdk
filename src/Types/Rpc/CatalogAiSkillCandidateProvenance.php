@@ -13,7 +13,6 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class CatalogAiSkillCandidateProvenance implements Arrayable
 {
-    /** @var string */
     public string $mediaType;
 
     public function __construct(

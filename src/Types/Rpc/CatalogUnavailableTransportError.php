@@ -12,7 +12,6 @@ use Revolution\Copilot\Enums\CatalogUnavailableTransportReason;
  */
 readonly class CatalogUnavailableTransportError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     public function __construct(

@@ -13,13 +13,10 @@ use Illuminate\Contracts\Support\Arrayable;
  */
 readonly class CatalogAiSkillCandidate implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
-    /** @var string */
     public string $mediaType;
 
-    /** @var string */
     public string $installability;
 
     public function __construct(

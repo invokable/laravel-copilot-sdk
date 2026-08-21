@@ -14,7 +14,6 @@ use Revolution\Copilot\Enums\McpPlanPolicySource;
  */
 readonly class CatalogPolicyRejectedError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     public function __construct(

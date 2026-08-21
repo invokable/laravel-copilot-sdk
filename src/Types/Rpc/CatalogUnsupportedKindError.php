@@ -14,7 +14,6 @@ use Revolution\Copilot\Enums\CatalogCandidateKind;
  */
 readonly class CatalogUnsupportedKindError implements Arrayable
 {
-    /** @var string */
     public string $kind;
 
     /**

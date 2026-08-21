@@ -3,14 +3,17 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\McpPlanConfigurationOperation;
+use Revolution\Copilot\Enums\McpPlanInstallSourceCandidateKind;
 use Revolution\Copilot\Enums\McpPlanPackageInstallMethod;
 use Revolution\Copilot\Enums\McpPlanPackageTransport;
 use Revolution\Copilot\Enums\McpPlanPolicyDecision;
 use Revolution\Copilot\Enums\McpPlanPolicySource;
+use Revolution\Copilot\Enums\McpPlanRemoteInstallMethod;
+use Revolution\Copilot\Enums\McpPlanRemoteTransport;
 use Revolution\Copilot\Enums\McpPlanScope;
 use Revolution\Copilot\Types\Rpc\CardDigest;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
-use Revolution\Copilot\Types\Rpc\CatalogNegotiatedContract;
+use Revolution\Copilot\Types\Rpc\CatalogNegotiationRefusedError;
 use Revolution\Copilot\Types\Rpc\McpInstallPlan;
 use Revolution\Copilot\Types\Rpc\McpPlanConfigurationChange;
 use Revolution\Copilot\Types\Rpc\McpPlanInstallPlanned;
@@ -18,7 +21,6 @@ use Revolution\Copilot\Types\Rpc\McpPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\McpPlanInstallSourceCandidate;
 use Revolution\Copilot\Types\Rpc\McpPlanInstallSourceCard;
 use Revolution\Copilot\Types\Rpc\McpPlanPolicyResult;
-use Revolution\Copilot\Types\Rpc\McpPlanProvenance;
 use Revolution\Copilot\Types\Rpc\McpPlanRequiredValueEnum;
 use Revolution\Copilot\Types\Rpc\McpPlanRequiredValueScalar;
 use Revolution\Copilot\Types\Rpc\McpPlanResourceIdentity;
@@ -254,7 +256,7 @@ describe('McpPlanInstallRequest', function () {
         $req = new McpPlanInstallRequest(
             contract: new CatalogClientContract(1, []),
             source: new McpPlanInstallSourceCandidate(
-                \Revolution\Copilot\Enums\McpPlanInstallSourceCandidateKind::Candidate,
+                McpPlanInstallSourceCandidateKind::Candidate,
                 'h1',
                 's1',
             ),
@@ -315,8 +317,8 @@ describe('McpPlanTransportChoiceRemote', function () {
         ]);
 
         expect($choice->choiceId)->toBe('rc1')
-            ->and($choice->transport)->toBe(\Revolution\Copilot\Enums\McpPlanRemoteTransport::StreamableHttp)
-            ->and($choice->installMethod)->toBe(\Revolution\Copilot\Enums\McpPlanRemoteInstallMethod::Remote)
+            ->and($choice->transport)->toBe(McpPlanRemoteTransport::StreamableHttp)
+            ->and($choice->installMethod)->toBe(McpPlanRemoteInstallMethod::Remote)
             ->and($choice->endpoint)->toBe('https://mcp.example.com/sse');
     });
 
@@ -448,7 +450,7 @@ describe('McpPlanInstallSourceCard with embedded card', function () {
 
 describe('CatalogNegotiationRefusedError', function () {
     it('can be created from array and round-trips via toArray', function () {
-        $error = \Revolution\Copilot\Types\Rpc\CatalogNegotiationRefusedError::fromArray([
+        $error = CatalogNegotiationRefusedError::fromArray([
             'reason' => 'unsupported-protocol-version',
             'runtimeProtocolVersion' => 5,
             'minimumSupportedProtocolVersion' => 3,

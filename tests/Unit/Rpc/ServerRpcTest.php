@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Rpc\PendingCatalog;
 use Revolution\Copilot\Rpc\PendingServerAccount;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Rpc\PendingServerModels;
@@ -59,7 +60,7 @@ describe('ServerRpc', function () {
     it('returns PendingCatalog from catalog()', function () {
         $rpc = new ServerRpc(createMockRpcClient());
 
-        expect($rpc->catalog())->toBeInstanceOf(\Revolution\Copilot\Rpc\PendingCatalog::class);
+        expect($rpc->catalog())->toBeInstanceOf(PendingCatalog::class);
     });
 });
 
