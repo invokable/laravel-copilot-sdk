@@ -9,6 +9,7 @@ use Revolution\Copilot\Types\Rpc\ConnectRequest;
 use Revolution\Copilot\Types\Rpc\ConnectResult;
 use Revolution\Copilot\Types\Rpc\PingRequest;
 use Revolution\Copilot\Types\Rpc\PingResult;
+use Revolution\Copilot\Rpc\PendingCatalog;
 
 /**
  * Typed server-scoped RPC methods (no session required).
@@ -162,5 +163,15 @@ class ServerRpc
     public function llmInference(): PendingServerLlmInference
     {
         return new PendingServerLlmInference($this->client);
+    }
+
+    /**
+     * Returns a pending catalog RPC handler.
+     *
+     * @experimental
+     */
+    public function catalog(): PendingCatalog
+    {
+        return new PendingCatalog($this->client);
     }
 }

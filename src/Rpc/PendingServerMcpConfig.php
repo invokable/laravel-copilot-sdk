@@ -105,4 +105,21 @@ class PendingServerMcpConfig
     {
         $this->client->request('mcp.config.reload', []);
     }
+
+    /**
+     * Computes a side-effect-free install plan for a single MCP server candidate.
+     *
+     * Returns an associative array whose `kind` key identifies the result
+     * variant (`planned`, `negotiation-refused`, `invalid-request`, etc.).
+     *
+     * @experimental
+     */
+    public function planInstall(\Revolution\Copilot\Types\Rpc\McpPlanInstallRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof \Revolution\Copilot\Types\Rpc\McpPlanInstallRequest
+            ? $params
+            : \Revolution\Copilot\Types\Rpc\McpPlanInstallRequest::fromArray($params))->toArray();
+
+        return $this->client->request('mcp.planInstall', $paramsArray);
+    }
 }

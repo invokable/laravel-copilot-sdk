@@ -266,4 +266,25 @@ describe('PendingServerMcpConfig', function () {
 
         expect(true)->toBeTrue();
     });
+
+    it('calls mcp.planInstall with typed params and returns raw array', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'mcp.planInstall',
+                Mockery::on(fn ($p) => $p['contract']['protocolVersion'] === 1
+                    && $p['source']['kind'] === 'candidate'),
+            )
+            ->andReturn(['kind' => 'planned', 'plan' => [], 'negotiated' => []]);
+
+        $pending = new PendingServerMcpConfig($client);
+        $result = $pending->planInstall([
+            'contract' => ['protocolVersion' => 1, 'requiredCapabilities' => []],
+            'source' => ['kind' => 'candidate', 'candidateHandle' => 'h1', 'searchId' => 'sid1'],
+        ]);
+
+        expect($result)->toBeArray()
+            ->and($result['kind'])->toBe('planned');
+    });
 });
