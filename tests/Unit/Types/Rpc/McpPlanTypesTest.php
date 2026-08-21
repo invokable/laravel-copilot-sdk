@@ -449,7 +449,7 @@ describe('McpPlanInstallSourceCard with embedded card', function () {
 describe('CatalogNegotiationRefusedError', function () {
     it('can be created from array and round-trips via toArray', function () {
         $error = \Revolution\Copilot\Types\Rpc\CatalogNegotiationRefusedError::fromArray([
-            'reason' => 'protocol-version-too-old',
+            'reason' => 'unsupported-protocol-version',
             'runtimeProtocolVersion' => 5,
             'minimumSupportedProtocolVersion' => 3,
             'supportedCapabilities' => ['mcp-server-card', 'mcp-install-planning'],
