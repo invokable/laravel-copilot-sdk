@@ -179,7 +179,7 @@ describe('McpServerCardUrl', function () {
     it('can be created from array', function () {
         $card = McpServerCardUrl::fromArray([
             'kind' => 'url',
-            'mediaType' => 'application/vnd.github.mcp-server-card.v0+json',
+            'mediaType' => 'application/mcp-server-card+json',
             'url' => 'https://example.com/card.json',
         ]);
 
@@ -192,7 +192,7 @@ describe('McpServerCardEmbedded', function () {
     it('can be created from array', function () {
         $card = McpServerCardEmbedded::fromArray([
             'kind' => 'embedded',
-            'mediaType' => 'application/vnd.github.mcp-server-card.v0+json',
+            'mediaType' => 'application/mcp-server-card+json',
             'data' => '{"name":"test"}',
         ]);
 
@@ -220,7 +220,7 @@ describe('McpPlanInstallSourceCard', function () {
             'kind' => 'card',
             'card' => [
                 'kind' => 'url',
-                'mediaType' => 'application/vnd.github.mcp-server-card.v0+json',
+                'mediaType' => 'application/mcp-server-card+json',
                 'url' => 'https://example.com/card.json',
             ],
         ]);
@@ -275,7 +275,7 @@ describe('McpPlanInstallPlanned', function () {
                     'authority' => 'auth',
                     'validatedAt' => '2025-01-01T00:00:00Z',
                     'cardDigest' => ['algorithm' => 'sha256-rfc8785', 'value' => 'abc'],
-                    'mediaType' => 'application/vnd.github.mcp-server-card.v0+json',
+                    'mediaType' => 'application/mcp-server-card+json',
                 ],
                 'transportChoices' => [
                     [

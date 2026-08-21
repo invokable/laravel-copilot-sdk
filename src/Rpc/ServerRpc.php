@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Rpc\PendingCatalog;
 use Revolution\Copilot\Types\Rpc\ConnectRequest;
 use Revolution\Copilot\Types\Rpc\ConnectResult;
 use Revolution\Copilot\Types\Rpc\PingRequest;
 use Revolution\Copilot\Types\Rpc\PingResult;
-use Revolution\Copilot\Rpc\PendingCatalog;
 
 /**
  * Typed server-scoped RPC methods (no session required).

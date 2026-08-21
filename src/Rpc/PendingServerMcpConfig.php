@@ -13,6 +13,7 @@ use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
+use Revolution\Copilot\Types\Rpc\McpPlanInstallRequest;
 
 /**
  * Pending MCP configuration RPC operations (server-scoped).
@@ -114,11 +115,11 @@ class PendingServerMcpConfig
      *
      * @experimental
      */
-    public function planInstall(\Revolution\Copilot\Types\Rpc\McpPlanInstallRequest|array $params): array
+    public function planInstall(McpPlanInstallRequest|array $params): array
     {
-        $paramsArray = ($params instanceof \Revolution\Copilot\Types\Rpc\McpPlanInstallRequest
+        $paramsArray = ($params instanceof McpPlanInstallRequest
             ? $params
-            : \Revolution\Copilot\Types\Rpc\McpPlanInstallRequest::fromArray($params))->toArray();
+            : McpPlanInstallRequest::fromArray($params))->toArray();
 
         return $this->client->request('mcp.planInstall', $paramsArray);
     }

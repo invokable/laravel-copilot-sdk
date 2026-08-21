@@ -14,6 +14,7 @@ use Revolution\Copilot\Types\Rpc\CatalogMcpServerCandidateProvenance;
 use Revolution\Copilot\Types\Rpc\CatalogNegotiatedContract;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSearchSucceeded;
+use Revolution\Copilot\Types\Rpc\CatalogUnsupportedKindError;
 
 describe('CatalogClientContract', function () {
     it('can be created from array', function () {
@@ -99,20 +100,21 @@ describe('CatalogMcpServerCandidate', function () {
     it('can be created from array', function () {
         $candidate = CatalogMcpServerCandidate::fromArray([
             'kind' => 'mcp-server',
-            'candidateHandle' => 'hdl1',
-            'mediaType' => 'application/vnd.github.mcp-server-card.v0+json',
+            'handle' => 'hdl1',
+            'handleExpiresAt' => '2025-01-01T01:00:00Z',
+            'mediaType' => 'application/mcp-server-card+json',
             'installability' => 'installable',
             'displayName' => 'GitHub MCP',
             'source' => ['kind' => 'url', 'url' => 'https://example.com/card.json'],
             'provenance' => [
                 'authority' => 'https://api.example.com',
                 'observedAt' => '2025-01-01T00:00:00Z',
-                'mediaType' => 'application/vnd.github.mcp-server-card.v0+json',
+                'mediaType' => 'application/mcp-server-card+json',
             ],
         ]);
 
         expect($candidate->displayName)->toBe('GitHub MCP')
-            ->and($candidate->candidateHandle)->toBe('hdl1')
+            ->and($candidate->handle)->toBe('hdl1')
             ->and($candidate->source)->toBeInstanceOf(CatalogCandidateSourceUrl::class);
     });
 });
@@ -121,7 +123,8 @@ describe('CatalogAiSkillCandidate', function () {
     it('can be created from array', function () {
         $candidate = CatalogAiSkillCandidate::fromArray([
             'kind' => 'ai-skill',
-            'candidateHandle' => 'hdl2',
+            'handle' => 'hdl2',
+            'handleExpiresAt' => '2025-01-01T01:00:00Z',
             'displayName' => 'My AI Skill',
             'source' => ['kind' => 'url', 'url' => 'https://example.com/skill.json'],
             'provenance' => [
@@ -155,15 +158,16 @@ describe('CatalogSearchSucceeded', function () {
             'candidates' => [
                 [
                     'kind' => 'mcp-server',
-                    'candidateHandle' => 'h1',
-                    'mediaType' => 'application/vnd.github.mcp-server-card.v0+json',
+                    'handle' => 'h1',
+                    'handleExpiresAt' => '2025-01-01T01:00:00Z',
+                    'mediaType' => 'application/mcp-server-card+json',
                     'installability' => 'installable',
                     'displayName' => 'Test',
                     'source' => ['kind' => 'url', 'url' => 'https://example.com'],
                     'provenance' => [
                         'authority' => 'https://api.example.com',
                         'observedAt' => '2025-01-01T00:00:00Z',
-                        'mediaType' => 'application/vnd.github.mcp-server-card.v0+json',
+                        'mediaType' => 'application/mcp-server-card+json',
                     ],
                 ],
             ],
@@ -172,5 +176,19 @@ describe('CatalogSearchSucceeded', function () {
         ]);
 
         expect($result->candidates[0])->toBeInstanceOf(CatalogMcpServerCandidate::class);
+    });
+});
+
+describe('CatalogUnsupportedKindError', function () {
+    it('maps requested and supported kinds', function () {
+        $error = CatalogUnsupportedKindError::fromArray([
+            'requestedKinds' => ['ai-skill'],
+            'supportedKinds' => ['mcp-server'],
+            'message' => 'AI skills are not available.',
+        ]);
+
+        expect($error->kind)->toBe('unsupported-kind')
+            ->and($error->requestedKinds[0])->toBe(\Revolution\Copilot\Enums\CatalogCandidateKind::AiSkill)
+            ->and($error->toArray()['supportedKinds'])->toBe(['mcp-server']);
     });
 });
