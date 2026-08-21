@@ -11,7 +11,6 @@ use Revolution\Copilot\Types\Rpc\McpIsServerRunningRequest;
 use Revolution\Copilot\Types\Rpc\McpIsServerRunningResult;
 use Revolution\Copilot\Types\Rpc\McpListToolsRequest;
 use Revolution\Copilot\Types\Rpc\McpListToolsResult;
-use Revolution\Copilot\Types\Rpc\MoveMcpLoadingToBackgroundResult;
 use Revolution\Copilot\Types\Rpc\McpOauthAuthenticationStateChangedRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingResult;
@@ -21,6 +20,7 @@ use Revolution\Copilot\Types\Rpc\McpOauthRespondRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondResult;
 use Revolution\Copilot\Types\Rpc\McpServerList;
 use Revolution\Copilot\Types\Rpc\McpStopServerRequest;
+use Revolution\Copilot\Types\Rpc\MoveMcpLoadingToBackgroundResult;
 
 /**
  * Pending MCP server RPC operations for a session.

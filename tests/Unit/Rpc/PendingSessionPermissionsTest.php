@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Revolt\EventLoop;
 use Revolution\Copilot\Contracts\Transport;
+use Revolution\Copilot\Enums\PermissionMode;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\JsonRpc\JsonRpcMessage;
 use Revolution\Copilot\Rpc\PendingPermissions;
@@ -194,11 +195,11 @@ describe('PendingSessionPermissions', function () {
         $client = makePermissionsClient($sentMessages);
 
         $pending = new PendingPermissions($client, 'session-abc');
-        $result = $pending->setMode(new PermissionsSetModeRequest(mode: \Revolution\Copilot\Enums\PermissionMode::AllowAll));
+        $result = $pending->setMode(new PermissionsSetModeRequest(mode: PermissionMode::AllowAll));
 
         $decoded = decodePermissionsJsonMessage($sentMessages[0]);
         expect($result)->toBeInstanceOf(PermissionsSetModeResult::class)
-            ->and($result->mode)->toBe(\Revolution\Copilot\Enums\PermissionMode::AllowAll)
+            ->and($result->mode)->toBe(PermissionMode::AllowAll)
             ->and($decoded['method'])->toBe('session.permissions.setMode')
             ->and($decoded['params']['sessionId'])->toBe('session-abc')
             ->and($decoded['params']['mode'])->toBe('allow-all');
@@ -225,7 +226,7 @@ describe('PendingSessionPermissions', function () {
 
         $decoded = decodePermissionsJsonMessage($sentMessages[0]);
         expect($result)->toBeInstanceOf(PermissionsGetModeResult::class)
-            ->and($result->mode)->toBe(\Revolution\Copilot\Enums\PermissionMode::Manual)
+            ->and($result->mode)->toBe(PermissionMode::Manual)
             ->and($decoded['method'])->toBe('session.permissions.getMode')
             ->and($decoded['params']['sessionId'])->toBe('session-abc');
     });

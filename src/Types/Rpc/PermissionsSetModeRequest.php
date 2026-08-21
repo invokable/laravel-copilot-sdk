@@ -21,8 +21,8 @@ readonly class PermissionsSetModeRequest implements Arrayable
      *                                `assisted` attaches LLM safety recommendations; `allow-all` automatically
      *                                approves permission requests.
      * @param  string|null  $assistedApprovalModel  Optional judge model id for assisted mode. When omitted,
-     *                                               the session resolves the provider default: `gpt-5.5` for
-     *                                               CAPI sessions and the active session model for BYOK sessions.
+     *                                              the session resolves the provider default: `gpt-5.5` for
+     *                                              CAPI sessions and the active session model for BYOK sessions.
      * @param  PermissionModeSource|string|null  $source  Optional source for permission-mode telemetry.
      */
     public function __construct(
