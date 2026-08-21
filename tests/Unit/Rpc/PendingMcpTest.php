@@ -11,6 +11,7 @@ use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondResult;
 use Revolution\Copilot\Types\Rpc\McpServerList;
+use Revolution\Copilot\Types\Rpc\MoveMcpLoadingToBackgroundResult;
 
 describe('PendingMcp', function () {
     it('calls session.mcp.list and returns result', function () {
@@ -129,6 +130,20 @@ describe('PendingMcp', function () {
         $result = $pending->reload();
 
         expect($result)->toBe([]);
+    });
+
+    it('calls session.mcp.moveLoadingToBackground and returns result', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.mcp.moveLoadingToBackground', ['sessionId' => 'session-abc'])
+            ->andReturn(['movedToBackground' => true]);
+
+        $pending = new PendingMcp($client, 'session-abc');
+        $result = $pending->moveLoadingToBackground();
+
+        expect($result)->toBeInstanceOf(MoveMcpLoadingToBackgroundResult::class)
+            ->and($result->movedToBackground)->toBeTrue();
     });
 
     it('calls session.mcp.oauth.login with typed params', function () {

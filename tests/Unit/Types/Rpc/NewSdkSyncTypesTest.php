@@ -137,11 +137,29 @@ describe('AccountLoginRequest', function () {
             ->and($request->token)->toBe('gho_secret123');
     });
 
+    it('can be created without login', function () {
+        $request = new AccountLoginRequest(
+            host: 'https://github.com',
+            token: 'gho_secret123',
+        );
+
+        expect($request->login)->toBeNull()
+            ->and($request->toArray())->not->toHaveKey('login');
+    });
+
     it('roundtrips via array', function () {
         $data = ['host' => 'https://github.com', 'login' => 'octocat', 'token' => 'gho_token'];
         $request = AccountLoginRequest::fromArray($data);
 
         expect($request->toArray())->toBe($data);
+    });
+
+    it('roundtrips via array without login', function () {
+        $data = ['host' => 'https://github.com', 'token' => 'gho_token'];
+        $request = AccountLoginRequest::fromArray($data);
+
+        expect($request->login)->toBeNull()
+            ->and($request->toArray())->toBe($data);
     });
 });
 

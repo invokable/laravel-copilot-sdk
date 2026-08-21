@@ -283,6 +283,8 @@ $session->rpc()->mcp()->list();
 $session->rpc()->mcp()->enable(new McpEnableRequest(serverName: 'server-name'));
 $session->rpc()->mcp()->disable(new McpDisableRequest(serverName: 'server-name'));
 $session->rpc()->mcp()->reload();
+// 進行中のMCPロードをバックグラウンドに移行(待機中のターンを解放)
+$session->rpc()->mcp()->moveLoadingToBackground();
 // MCPサーバーが実行中かどうかを確認
 use Revolution\Copilot\Types\Rpc\McpIsServerRunningRequest;
 
@@ -373,6 +375,10 @@ $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDec
 ));
 // セッション内のすべての権限リクエストを自動承認
 $session->rpc()->permissions()->setApproveAll(new PermissionsSetApproveAllRequest(enabled: true));
+// 権限モードを設定 (manual / assisted / allow-all)
+$session->rpc()->permissions()->setMode(new PermissionsSetModeRequest(mode: PermissionMode::AllowAll));
+// 現在の権限モードを取得
+$mode = $session->rpc()->permissions()->getMode();
 // セッションスコープの権限承認をリセット
 $session->rpc()->permissions()->resetSessionApprovals();
 // 現在pending中の権限リクエスト一覧を取得
