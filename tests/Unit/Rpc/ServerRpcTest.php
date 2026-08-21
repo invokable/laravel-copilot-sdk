@@ -55,6 +55,12 @@ describe('ServerRpc', function () {
 
         expect($rpc->skills())->toBeInstanceOf(PendingServerSkills::class);
     });
+
+    it('returns PendingCatalog from catalog()', function () {
+        $rpc = new ServerRpc(createMockRpcClient());
+
+        expect($rpc->catalog())->toBeInstanceOf(\Revolution\Copilot\Rpc\PendingCatalog::class);
+    });
 });
 
 function createMockRpcClient(): JsonRpcClient

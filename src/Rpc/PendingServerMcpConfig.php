@@ -13,6 +13,7 @@ use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
+use Revolution\Copilot\Types\Rpc\McpPlanInstallRequest;
 
 /**
  * Pending MCP configuration RPC operations (server-scoped).
@@ -104,5 +105,22 @@ class PendingServerMcpConfig
     public function reload(): void
     {
         $this->client->request('mcp.config.reload', []);
+    }
+
+    /**
+     * Computes a side-effect-free install plan for a single MCP server candidate.
+     *
+     * Returns an associative array whose `kind` key identifies the result
+     * variant (`planned`, `negotiation-refused`, `invalid-request`, etc.).
+     *
+     * @experimental
+     */
+    public function planInstall(McpPlanInstallRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof McpPlanInstallRequest
+            ? $params
+            : McpPlanInstallRequest::fromArray($params))->toArray();
+
+        return $this->client->request('mcp.planInstall', $paramsArray);
     }
 }
