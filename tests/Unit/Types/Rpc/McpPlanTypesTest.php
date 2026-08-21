@@ -302,3 +302,172 @@ describe('McpPlanInstallPlanned', function () {
             ->and($planned->plan->transportChoices[0])->toBeInstanceOf(McpPlanTransportChoicePackage::class);
     });
 });
+
+describe('McpPlanTransportChoiceRemote', function () {
+    it('can be created from array', function () {
+        $choice = McpPlanTransportChoiceRemote::fromArray([
+            'choiceId' => 'rc1',
+            'transport' => 'streamable-http',
+            'installMethod' => 'remote',
+            'endpoint' => 'https://mcp.example.com/sse',
+            'requiredValues' => [],
+            'secretPlaceholders' => [],
+        ]);
+
+        expect($choice->choiceId)->toBe('rc1')
+            ->and($choice->transport)->toBe(\Revolution\Copilot\Enums\McpPlanRemoteTransport::StreamableHttp)
+            ->and($choice->installMethod)->toBe(\Revolution\Copilot\Enums\McpPlanRemoteInstallMethod::Remote)
+            ->and($choice->endpoint)->toBe('https://mcp.example.com/sse');
+    });
+
+    it('round-trips via toArray', function () {
+        $choice = McpPlanTransportChoiceRemote::fromArray([
+            'choiceId' => 'rc2',
+            'transport' => 'sse',
+            'installMethod' => 'remote',
+            'endpoint' => 'https://mcp.example.com/events',
+            'requiredValues' => [
+                ['kind' => 'scalar', 'key' => 'TOKEN', 'category' => 'environment-variable', 'valueType' => 'string', 'required' => true, 'isRepeated' => false],
+            ],
+            'secretPlaceholders' => [
+                ['key' => 'API_SECRET', 'placeholder' => '$API_SECRET', 'title' => 'API Secret'],
+            ],
+        ]);
+
+        $arr = $choice->toArray();
+
+        expect($arr['choiceId'])->toBe('rc2')
+            ->and($arr['transport'])->toBe('sse')
+            ->and($arr['installMethod'])->toBe('remote')
+            ->and($arr['requiredValues'])->toHaveCount(1)
+            ->and($arr['secretPlaceholders'])->toHaveCount(1);
+    });
+});
+
+describe('McpPlanInstallPlanned with remote transport', function () {
+    it('builds a plan with a remote transport choice', function () {
+        $planned = McpPlanInstallPlanned::fromArray([
+            'plan' => [
+                'planHandle' => 'ph-remote',
+                'planHandleExpiresAt' => '2025-12-31T00:00:00Z',
+                'identity' => ['canonicalName' => 'io.example/remote-mcp', 'serverName' => 'remote-mcp'],
+                'provenance' => [
+                    'authority' => 'https://registry.example.com',
+                    'validatedAt' => '2025-01-01T00:00:00Z',
+                    'cardDigest' => ['algorithm' => 'sha256-rfc8785', 'value' => 'deadbeef'],
+                    'mediaType' => 'application/mcp-server-card+json',
+                ],
+                'transportChoices' => [
+                    [
+                        'choiceId' => 'rc1',
+                        'transport' => 'streamable-http',
+                        'installMethod' => 'remote',
+                        'endpoint' => 'https://mcp.example.com/mcp',
+                        'requiredValues' => [],
+                        'secretPlaceholders' => [],
+                    ],
+                ],
+                'target' => ['scope' => 'user', 'configKey' => 'remote-mcp'],
+                'policy' => ['decision' => 'allowed', 'source' => 'none'],
+                'configurationChanges' => [],
+                'reloadRequired' => true,
+                'requiresInteractiveConfiguration' => false,
+            ],
+            'negotiated' => ['runtimeProtocolVersion' => 1, 'grantedCapabilities' => ['mcp-server-card']],
+        ]);
+
+        expect($planned->kind)->toBe('planned')
+            ->and($planned->plan->reloadRequired)->toBeTrue()
+            ->and($planned->plan->transportChoices[0])->toBeInstanceOf(McpPlanTransportChoiceRemote::class)
+            ->and($planned->plan->transportChoices[0]->endpoint)->toBe('https://mcp.example.com/mcp');
+    });
+});
+
+describe('McpPlanInstallPlanned toArray round-trip', function () {
+    it('serializes and deserializes symmetrically', function () {
+        $original = [
+            'plan' => [
+                'planHandle' => 'ph-rt',
+                'planHandleExpiresAt' => '2025-12-31T00:00:00Z',
+                'identity' => ['canonicalName' => 'io.example/rt-mcp', 'serverName' => 'rt-mcp'],
+                'provenance' => [
+                    'authority' => 'https://registry.example.com',
+                    'validatedAt' => '2025-01-01T00:00:00Z',
+                    'cardDigest' => ['algorithm' => 'sha256-rfc8785', 'value' => 'aabbcc'],
+                    'mediaType' => 'application/mcp-server-card+json',
+                ],
+                'transportChoices' => [
+                    [
+                        'choiceId' => 'c1',
+                        'transport' => 'stdio',
+                        'installMethod' => 'package',
+                        'packageType' => 'npm',
+                        'packageIdentifier' => '@org/rt-pkg',
+                        'requiredValues' => [],
+                        'secretPlaceholders' => [],
+                    ],
+                ],
+                'target' => ['scope' => 'user', 'configKey' => 'rt-mcp'],
+                'policy' => ['decision' => 'allowed', 'source' => 'none'],
+                'configurationChanges' => [
+                    ['operation' => 'add', 'scope' => 'user', 'configKey' => 'rt-mcp', 'changedFields' => ['command'], 'secretReferences' => []],
+                ],
+                'reloadRequired' => false,
+                'requiresInteractiveConfiguration' => false,
+            ],
+            'negotiated' => ['runtimeProtocolVersion' => 2, 'grantedCapabilities' => []],
+        ];
+
+        $planned = McpPlanInstallPlanned::fromArray($original);
+        $arr = $planned->toArray();
+
+        expect($arr['kind'])->toBe('planned')
+            ->and($arr['plan']['planHandle'])->toBe('ph-rt')
+            ->and($arr['plan']['configurationChanges'])->toHaveCount(1)
+            ->and($arr['plan']['configurationChanges'][0]['operation'])->toBe('add')
+            ->and($arr['negotiated']['runtimeProtocolVersion'])->toBe(2);
+    });
+});
+
+describe('McpPlanInstallSourceCard with embedded card', function () {
+    it('can be created from array with embedded card', function () {
+        $src = McpPlanInstallSourceCard::fromArray([
+            'kind' => 'card',
+            'card' => [
+                'kind' => 'embedded',
+                'mediaType' => 'application/mcp-server-card+json',
+                'data' => '{"name":"embedded-mcp"}',
+            ],
+        ]);
+
+        expect($src->card)->toBeInstanceOf(McpServerCardEmbedded::class)
+            ->and($src->card->data)->toBe('{"name":"embedded-mcp"}')
+            ->and($src->toArray()['card']['kind'])->toBe('embedded');
+    });
+});
+
+describe('CatalogNegotiationRefusedError', function () {
+    it('can be created from array and round-trips via toArray', function () {
+        $error = \Revolution\Copilot\Types\Rpc\CatalogNegotiationRefusedError::fromArray([
+            'reason' => 'protocol-version-too-old',
+            'runtimeProtocolVersion' => 5,
+            'minimumSupportedProtocolVersion' => 3,
+            'supportedCapabilities' => ['mcp-server-card', 'mcp-install-planning'],
+            'unsupportedCapabilities' => ['future-feature'],
+            'message' => 'Caller protocol version 1 is below minimum 3.',
+        ]);
+
+        expect($error->kind)->toBe('negotiation-refused')
+            ->and($error->runtimeProtocolVersion)->toBe(5)
+            ->and($error->minimumSupportedProtocolVersion)->toBe(3)
+            ->and($error->supportedCapabilities)->toHaveCount(2)
+            ->and($error->unsupportedCapabilities)->toBe(['future-feature'])
+            ->and($error->message)->toContain('protocol version');
+
+        $arr = $error->toArray();
+
+        expect($arr['kind'])->toBe('negotiation-refused')
+            ->and($arr['supportedCapabilities'])->toBe(['mcp-server-card', 'mcp-install-planning'])
+            ->and($arr['unsupportedCapabilities'])->toBe(['future-feature']);
+    });
+});
