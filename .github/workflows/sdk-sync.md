@@ -106,6 +106,8 @@ safe-outputs:
     fallback-as-issue: true
     if-no-changes: ignore
     signed-commits: false
+  create-issue:
+    labels: [sdk-sync, copilot]
 
 network:
   allowed:
