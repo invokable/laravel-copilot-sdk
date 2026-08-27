@@ -13,7 +13,7 @@
     "skills": [
         "infer-conventions",
         "laravel-best-practices",
-        "ai-sdk-development",
-        "pest-testing"
+        "testing-best-practices",
+        "ai-sdk-development"
     ]
 }
