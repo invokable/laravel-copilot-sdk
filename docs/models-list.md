@@ -3,7 +3,7 @@
 The available models may change depending on Copilot CLI updates and your organization's policies.
 
 ```plaintext
- ┌─────────────────────────┬───────────────────── ┌─────────────────────────┬─────────────────────────────┬────────────────────┬────────────────┬───────────────────────────┬─────────────────────────────┐
+ ┌─────────────────────────┬─────────────────────────────┬────────────────────┬────────────────┬───────────────────────────┬─────────────────────────────┐
  │ ID                      │ Display Name                │ Max Context Tokens │ Vision Support │ Supports Reasoning Effort │ Supports Structured Outputs │
  ├─────────────────────────┼─────────────────────────────┼────────────────────┼────────────────┼───────────────────────────┼─────────────────────────────┤
  │ auto                    │ Auto                        │ 0                  │ No             │ No                        │ No                          │
@@ -26,10 +26,6 @@ The available models may change depending on Copilot CLI updates and your organi
  │ gpt-5-mini              │ GPT-5 mini                  │ 264000             │ Yes            │ Yes                       │ Yes                         │
  │ mai-code-1.1-flash      │ MAI-Code-1.1-Flash          │ 256000             │ Yes            │ Yes                       │ Yes                         │
  │ mai-code-1-flash-picker │ MAI-Code-1-Flash            │ 256000             │ No             │ Yes                       │ Yes                         │
- │ gemini-3.7-flash        │ Gemini 3.7 Flash            │ 1000000            │ Yes            │ Yes                       │ No                          │
- │ gemini-3.6-flash        │ Gemini 3.6 Flash            │ 1000000            │ Yes            │ Yes                       │ No                          │
- │ gemini-3.5-flash        │ Gemini 3.5 Flash            │ 1000000            │ Yes            │ Yes                       │ No                          │
- │ gemini-3.1-pro-preview  │ Gemini 3.1 Pro              │ 1000000            │ Yes            │ Yes                       │ No                          │
  │ grok-4.5                │ Grok 4.5                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ kimi-k3                 │ Kimi K3                     │ 1048576            │ Yes            │ Yes                       │ Yes                         │
  │ kimi-k2.7-code          │ Kimi K2.7 Code              │ 256000             │ Yes            │ No                        │ Yes                         │
