@@ -40,13 +40,13 @@ readonly class PermissionDecisionContext implements Arrayable
 
     public function toArray(): array
     {
-        return [
+        return array_filter([
             'outcome' => $this->outcome->value,
             'source' => $this->source->value,
             'surface' => $this->surface->value,
             'responseCapability' => $this->responseCapability instanceof PermissionResponseCapability
                 ? $this->responseCapability->value
                 : $this->responseCapability,
-        ];
+        ], fn ($value) => $value !== null);
     }
 }
