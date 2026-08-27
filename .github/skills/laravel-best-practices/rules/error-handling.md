@@ -1,18 +1,15 @@
 # Error Handling Best Practices
 
-## Choose Where to Report and Render Exceptions
+## Exception Reporting and Rendering
 
-Laravel supports exception-specific methods and centralized handler callbacks. Follow the pattern already established by the project.
+There are two valid approaches — choose one and apply it consistently across the project.
 
-Exception methods keep behavior beside the exception definition:
+**Co-location on the exception class** — keeps behavior alongside the exception definition, easier to find:
 
 ```php
 class InvalidOrderException extends Exception
 {
-    public function report(): void
-    {
-        // Send the exception to a custom reporter.
-    }
+    public function report(): void { /* custom reporting */ }
 
     public function render(Request $request): Response
     {
@@ -21,40 +18,38 @@ class InvalidOrderException extends Exception
 }
 ```
 
-Centralized callbacks in `bootstrap/app.php` keep the application's exception policy together:
+**Centralized in `bootstrap/app.php`** — all exception handling in one place, easier to see the full picture:
 
 ```php
 ->withExceptions(function (Exceptions $exceptions) {
-    $exceptions->report(function (InvalidOrderException $e) {
-        // Send the exception to a custom reporter.
-    });
+    $exceptions->report(function (InvalidOrderException $e) { /* ... */ });
     $exceptions->render(function (InvalidOrderException $e, Request $request) {
         return response()->view('errors.invalid-order', status: 422);
     });
 })
 ```
 
-An exception's `report()` method suppresses Laravel's default reporting unless it returns `false`. A report callback allows default reporting unless it returns `false` or is chained with `stop()`. Use `ShouldntReport` or `dontReport()` when the handler should not report an exception at all. By contrast, returning `false` from a `render()` method or render callback defers to Laravel's default rendering.
+Check the existing codebase and follow whichever pattern is already established.
 
-## Mark Exceptions the Handler Should Not Report
+## Use `ShouldntReport` for Exceptions That Should Never Log
 
-Implementing `ShouldntReport` prevents Laravel's exception handler from reporting that exception type and keeps the policy visible on the class. It does not prevent application code from logging the exception explicitly.
+More discoverable than listing classes in `dontReport()`.
 
 ```php
 class PodcastProcessingException extends Exception implements ShouldntReport {}
 ```
 
-## Throttle High-Volume Exception Reports
+## Throttle High-Volume Exceptions
 
-A failing integration can flood logs or error tracking. Configure `throttle()` with a `Lottery` or `Limit` result to sample or rate-limit matching exception reports. Choose keys deliberately when separate exception classes, tenants, or integrations need independent limits.
+A single failing integration can flood error tracking. Use `throttle()` to rate-limit per exception type.
 
-## Prevent Duplicate Reports of One Exception Instance
+## Enable `dontReportDuplicates()`
 
-Enable `dontReportDuplicates()` when the same exception object may pass through multiple `report($exception)` calls. It deduplicates by object identity, not by exception class or message.
+Prevents the same exception instance from being logged multiple times when `report($e)` is called in multiple catch blocks.
 
-## Define JSON Rendering for API Routes
+## Force JSON Error Rendering for API Routes
 
-Laravel normally uses request content negotiation to decide whether to render an exception as JSON. If the application's API contract requires JSON regardless of the `Accept` header, define that policy explicitly for the relevant routes.
+Laravel auto-detects `Accept: application/json` but API clients may not set it. Explicitly declare JSON rendering for API routes.
 
 ```php
 $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
@@ -64,7 +59,7 @@ $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
 
 ## Add Context to Exception Classes
 
-Attach structured data to an exception through `context()`. Laravel merges that data into the exception's log context when the handler reports it.
+Attach structured data to exceptions at the source via a `context()` method — Laravel includes it automatically in the log entry.
 
 ```php
 class InvalidOrderException extends Exception

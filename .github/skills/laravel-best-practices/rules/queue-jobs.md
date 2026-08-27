@@ -1,82 +1,82 @@
-# Queue and Job Best Practices
+# Queue & Job Best Practices
 
-## Keep Reservation Time Longer Than Execution Time
+## Set `retry_after` Greater Than `timeout`
 
-For queue drivers that use Laravel's `retry_after` setting, configure it to exceed the longest worker or job timeout by a safety margin. When a reservation expires, another worker can reserve the same job while the first process is still running. Keep the worker's `--timeout` several seconds shorter than `retry_after`.
+If `retry_after` is shorter than the job's `timeout`, the queue worker re-dispatches the job while it's still running, causing duplicate execution.
 
+Incorrect (`retry_after` ≤ `timeout`):
 ```php
-// Job
-public $timeout = 120;
+class ProcessReport implements ShouldQueue
+{
+    public $timeout = 120;
+}
 
-// config/queue.php for the connection
-'retry_after' => 150,
+// config/queue.php — retry_after: 90 ← job retried while still running!
 ```
 
-Amazon Simple Queue Service uses its visibility timeout instead of Laravel's `retry_after`; configure that timeout at the queue level. Because workers can also stop after side effects but before acknowledging a job, make important jobs idempotent even with correct timeout settings.
+Correct (`retry_after` > `timeout`):
+```php
+class ProcessReport implements ShouldQueue
+{
+    public $timeout = 120;
+}
 
-## Back Off Transient Failures
+// config/queue.php — retry_after: 180 ← safely longer than any job timeout
+```
 
-Use progressively longer delays when a dependency needs time to recover. Do not retry permanent validation or business-rule failures.
+## Use Exponential Backoff
 
+Use progressively longer delays between retries to avoid hammering failing services.
+
+Incorrect (fixed retry interval):
 ```php
 class SyncWithStripe implements ShouldQueue
 {
-    public $tries = 4;
+    public $tries = 3;
+    // Default: retries immediately, overwhelming the API
+}
+```
 
+Correct (exponential backoff):
+```php
+class SyncWithStripe implements ShouldQueue
+{
+    public $tries = 3;
     public $backoff = [1, 5, 10];
 }
 ```
 
-Rate-limiting and exception-throttling middleware can release jobs back to the queue. Released attempts may still count toward the maximum attempt limit, so configure `$tries` or `retryUntil()` to allow the intended retry window.
+## Implement `ShouldBeUnique`
 
-## Use Unique Jobs for Dispatch Deduplication
-
-Implement `ShouldBeUnique` when only one queued instance of a logical job should exist. Uniqueness uses a cache lock and is not a substitute for idempotent processing or a database constraint.
+Prevent duplicate job processing.
 
 ```php
 class GenerateInvoice implements ShouldQueue, ShouldBeUnique
 {
-    public $uniqueFor = 3600;
-
     public function uniqueId(): string
     {
-        return (string) $this->order->id;
+        return $this->order->id;
     }
+
+    public $uniqueFor = 3600;
 }
 ```
 
-All dispatching processes must use a shared cache that supports locks. Unique-job constraints do not apply to jobs within batches.
+## Always Implement `failed()`
 
-Use `ShouldBeUniqueUntilProcessing` only when the lock should be released immediately before processing begins, allowing another instance to be dispatched while the first is running:
-
-```php
-class UpdateSearchIndex implements ShouldQueue, ShouldBeUniqueUntilProcessing
-{
-    // ...
-}
-```
-
-## Handle Terminal Failure When Needed
-
-Implement `failed()` when the application must update state, alert an operator, or record domain-specific context after all attempts are exhausted. Logging every failure in each job may duplicate the queue system's failure reporting.
-
-Laravel invokes `failed()` on a new job instance, so mutations made to the job during `handle()` are not available there.
+Handle errors explicitly — don't rely on silent failure.
 
 ```php
 public function failed(?Throwable $exception): void
 {
     $this->podcast->update(['status' => 'failed']);
-
-    Log::error('Podcast processing failed', [
-        'podcast_id' => $this->podcast->id,
-        'exception' => $exception,
-    ]);
+    Log::error('Processing failed', ['id' => $this->podcast->id, 'error' => $exception->getMessage()]);
 }
 ```
 
-## Rate Limit External Calls
+## Rate Limit External API Calls in Jobs
 
-Use queue middleware such as `RateLimited` when jobs share a third-party API quota. Define the named limiter and choose release delays and attempt limits together.
+Use `RateLimited` middleware to throttle jobs calling third-party APIs.
 
 ```php
 public function middleware(): array
@@ -85,33 +85,60 @@ public function middleware(): array
 }
 ```
 
-## Batch Jobs for Group Coordination
+## Batch Related Jobs
 
-Use `Bus::batch()` to monitor a group of jobs and run callbacks when the batch completes or encounters failures. A batch is not a database transaction: completed jobs are not rolled back when another job fails. By default, one failed job cancels the batch; call `allowFailures()` only when partial failure is acceptable.
+Use `Bus::batch()` when jobs should succeed or fail together.
 
 ```php
 Bus::batch([
     new ImportCsvChunk($chunk1),
     new ImportCsvChunk($chunk2),
 ])
-    ->then(fn (Batch $batch) => Notification::send($user, new ImportComplete))
-    ->catch(fn (Batch $batch, Throwable $exception) => Log::error('Import batch failed', [
-        'exception' => $exception,
-    ]))
-    ->dispatch();
+->then(fn (Batch $batch) => Notification::send($user, new ImportComplete))
+->catch(fn (Batch $batch, Throwable $e) => Log::error('Batch failed'))
+->dispatch();
 ```
 
-## Configure Time-Based Retry Limits Deliberately
+## `retryUntil()` Needs `$tries = 0`
 
-Use `retryUntil()` as the time-based alternative to a maximum attempt count. Laravel may attempt the job any number of times until this deadline, subject to other failure conditions such as maximum exceptions. The method takes precedence over attempt-based limits, so setting `$tries = 0` is not required.
+When using time-based retry limits, set `$tries = 0` to avoid premature failure.
 
 ```php
-public function retryUntil(): DateTimeInterface
+public $tries = 0;
+
+public function retryUntil(): \DateTimeInterface
 {
     return now()->addHours(4);
 }
 ```
 
-## Use Horizon for Redis Queue Operations
+## Use `ShouldBeUniqueUntilProcessing` for Early Lock Release
 
-Laravel Horizon provides monitoring, balancing, metrics, and supervisor configuration for Redis queues. It does not support non-Redis queue drivers.
+`ShouldBeUnique` holds the lock until the job completes. `ShouldBeUniqueUntilProcessing` releases it when processing starts, allowing new instances to queue.
+
+```php
+class UpdateSearchIndex implements ShouldQueue, ShouldBeUniqueUntilProcessing
+{
+    // Lock releases when processing begins, not when it finishes
+}
+```
+
+## Use Horizon for Complex Queue Scenarios
+
+Use Laravel Horizon when you need monitoring, auto-scaling, failure tracking, or multiple queues with different priorities.
+
+```php
+// config/horizon.php
+'environments' => [
+    'production' => [
+        'supervisor-1' => [
+            'connection' => 'redis',
+            'queue' => ['high', 'default', 'low'],
+            'balance' => 'auto',
+            'minProcesses' => 1,
+            'maxProcesses' => 10,
+            'tries' => 3,
+        ],
+    ],
+],
+```

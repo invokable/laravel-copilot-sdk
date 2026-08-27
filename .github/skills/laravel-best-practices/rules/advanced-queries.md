@@ -1,8 +1,8 @@
-# Advanced Query Best Practices
+# Advanced Query Patterns
 
-## Select Single Relationship Values with Subqueries
+## Use `addSelect()` Subqueries for Single Values from Has-Many
 
-When only one value from a has-many relationship is needed, consider a correlated subquery with `addSelect()` instead of loading the entire relationship. This selects the value as part of the main query without an additional relationship query.
+Instead of eager-loading an entire has-many relationship for a single value (like the latest timestamp), use a correlated subquery via `addSelect()`. This pulls the value directly in the main SQL query — zero extra queries.
 
 ```php
 public function scopeWithLastLoginAt($query): void
@@ -16,14 +16,14 @@ public function scopeWithLastLoginAt($query): void
 }
 ```
 
-## Create Dynamic Relationships with a Subquery Foreign Key
+## Create Dynamic Relationships via Subquery FK
 
-The same pattern can select a foreign key and expose the selected model through a `belongsTo` relationship. Eager loading that relationship still executes a separate query, but it avoids loading the full has-many collection.
+Extend the `addSelect()` pattern to fetch a foreign key via subquery, then define a `belongsTo` relationship on that virtual attribute. This provides a fully-hydrated related model without loading the entire collection.
 
 ```php
 public function lastLogin(): BelongsTo
 {
-    return $this->belongsTo(Login::class, 'last_login_id');
+    return $this->belongsTo(Login::class);
 }
 
 public function scopeWithLastLogin($query): void
@@ -37,9 +37,9 @@ public function scopeWithLastLogin($query): void
 }
 ```
 
-## Combine Related Counts with Conditional Aggregates
+## Use Conditional Aggregates Instead of Multiple Count Queries
 
-Combine several counts over the same filtered data set into one query by using conditional aggregates. Use `toBase()` when only scalar values are needed and model hydration provides no benefit. Confirm the expression syntax against the application's database engine.
+Replace N separate `count()` queries with a single query using `CASE WHEN` inside `selectRaw()`. Use `toBase()` to skip model hydration when you only need scalar values.
 
 ```php
 $statuses = Feature::toBase()
@@ -49,50 +49,50 @@ $statuses = Feature::toBase()
     ->first();
 ```
 
-## Reuse Loaded Parent Models with `setRelation()`
+## Use `setRelation()` to Prevent Circular N+1
 
-When a parent and its children are already loaded and code also accesses `$child->parent`, set the inverse relationship to the existing parent instance. This avoids an additional lazy-loading query for each child.
+When a parent model is eager-loaded with its children, and the view also needs `$child->parent`, use `setRelation()` to inject the already-loaded parent rather than letting Eloquent fire N additional queries.
 
 ```php
 $feature->load('comments.user');
 $feature->comments->each->setRelation('feature', $feature);
 ```
 
-## Compare `whereHas()` with an `IN` Subquery
+## Prefer `whereIn` + Subquery Over `whereHas`
 
-`whereHas()` typically produces an `EXISTS` subquery, while `whereIn()` can express the same filter with an `IN` subquery. Either form may be faster depending on the database engine, indexes, cardinality, and query plan. Measure both forms with representative data; neither subquery loads its result set into PHP memory.
+`whereHas()` emits a correlated `EXISTS` subquery that re-executes per row. Using `whereIn()` with a `select('id')` subquery lets the database use an index lookup instead, without loading data into PHP memory.
 
-Option using `EXISTS`:
+Incorrect (correlated EXISTS re-executes per row):
 
 ```php
 $query->whereHas('company', fn ($q) => $q->where('name', 'like', $term));
 ```
 
-Option using `IN`:
+Correct (index-friendly subquery, no PHP memory overhead):
 
 ```php
 $query->whereIn('company_id', Company::where('name', 'like', $term)->select('id'));
 ```
 
-## Measure Two Simple Queries Against One Complex Query
+## Sometimes Two Simple Queries Beat One Complex Query
 
-Two targeted queries can outperform one complex correlated subquery or join when the first query is highly selective. They also add a database round trip, can transfer a large identifier list, and do not provide a single-query consistency snapshot. Decide from query plans and production-like measurements.
+Running a small, targeted secondary query and passing its results via `whereIn` is often faster than a single complex correlated subquery or join. The additional round-trip is worthwhile when the secondary query is highly selective and uses its own index.
 
-## Design Composite Indexes for the Query
+## Use Compound Indexes Matching `orderBy` Column Order
 
-For common multi-column sorts, consider a composite index whose column order supports the query's filters and ordering. Database engines may combine indexes or choose an explicit sort, so matching the `ORDER BY` list alone does not guarantee that an index will be used. Verify the query plan.
+When ordering by multiple columns, create a single compound index in the same column order as the `ORDER BY` clause. Individual single-column indexes cannot combine for multi-column sorts — the database will filesort without a compound index.
 
 ```php
 // Migration
 $table->index(['last_name', 'first_name']);
 
-// Query that this index may support
+// Query — column order must match the index
 User::query()->orderBy('last_name')->orderBy('first_name')->paginate();
 ```
 
-## Consider a Correlated Subquery for Has-Many Ordering
+## Use Correlated Subqueries for Has-Many Ordering
 
-When sorting by one value from a has-many relationship, a direct join can duplicate parent rows unless it first reduces the related table to one row per parent. A correlated subquery in `orderBy()` is often simpler, but its performance depends on the query plan and supporting indexes.
+When sorting by a value from a has-many relationship, avoid joins (they duplicate rows). Use a correlated subquery inside `orderBy()` instead, paired with an `addSelect` scope for eager loading.
 
 ```php
 public function scopeOrderByLastLogin($query): void

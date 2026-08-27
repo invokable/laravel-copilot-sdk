@@ -1,8 +1,8 @@
 # Eloquent Best Practices
 
-## Define Precise Relationship Types
+## Use Correct Relationship Types
 
-Define the relationship that matches the database association, and declare its concrete return type.
+Use `hasMany`, `belongsTo`, `morphMany`, etc. with proper return type hints.
 
 ```php
 public function comments(): HasMany
@@ -20,8 +20,7 @@ public function author(): BelongsTo
 
 Extract reusable query constraints into local scopes to avoid duplication.
 
-Duplicated constraints:
-
+Incorrect:
 ```php
 $active = User::where('verified', true)->whereNotNull('activated_at')->get();
 $articles = Article::whereHas('user', function ($q) {
@@ -29,8 +28,7 @@ $articles = Article::whereHas('user', function ($q) {
 })->get();
 ```
 
-Reusable local scope:
-
+Correct:
 ```php
 #[Scope]
 protected function active(Builder $query): Builder
@@ -47,8 +45,7 @@ $articles = Article::whereHas('user', fn ($q) => $q->active())->get();
 
 Global scopes silently modify every query on the model, making debugging difficult. Prefer local scopes and reserve global scopes for truly universal constraints like soft deletes or multi-tenancy.
 
-Global scope tradeoff:
-
+Incorrect (global scope for a conditional filter):
 ```php
 class PublishedScope implements Scope
 {
@@ -57,12 +54,10 @@ class PublishedScope implements Scope
         $builder->where('published', true);
     }
 }
-
-// Admin panels, reports, and jobs now omit drafts unless the scope is removed.
+// Now admin panels, reports, and background jobs all silently skip drafts
 ```
 
-Explicit local scope:
-
+Correct (local scope you opt into):
 ```php
 #[Scope]
 protected function published(Builder $query): Builder
@@ -89,18 +84,16 @@ protected function casts(): array
 }
 ```
 
-## Cast Date and Time Attributes
+## Cast Date Columns Properly
 
-Cast a date or timestamp attribute when application code should treat it as a Carbon instance. Eloquent already casts the conventional `created_at` and `updated_at` timestamps.
+Always cast date columns. Use Carbon instances in templates instead of formatting strings manually.
 
-Manual parsing in the template:
-
+Incorrect:
 ```blade
-{{ Carbon::parse($order->ordered_at)->toDateString() }}
+{{ Carbon::createFromFormat('Y-d-m H-i', $order->ordered_at)->toDateString() }}
 ```
 
-Model cast:
-
+Correct:
 ```php
 protected function casts(): array
 {
@@ -117,27 +110,24 @@ protected function casts(): array
 
 ## Use `whereBelongsTo()` for Relationship Queries
 
-`whereBelongsTo()` expresses the relationship constraint without manually specifying its foreign key.
+Cleaner than manually specifying foreign keys.
 
-Foreign key constraint:
-
+Incorrect:
 ```php
 Post::where('user_id', $user->id)->get();
 ```
 
-Relationship-aware constraint:
-
+Correct:
 ```php
 Post::whereBelongsTo($user)->get();
 Post::whereBelongsTo($user, 'author')->get();
 ```
 
-## Keep Application Queries Model-Aware
+## Avoid Hardcoded Table Names in Queries
 
-Prefer Eloquent models and relationships for model-backed application queries. They preserve casts, scopes, and model table configuration. The query builder and raw SQL legitimately require table names, so use them when their lower-level behavior is intentional.
+Never use string literals for table names in raw queries, joins, or subqueries. Hardcoded table names make it impossible to find all places a model is used and break refactoring (e.g., renaming a table requires hunting through every raw string).
 
-Lower-level alternatives:
-
+Incorrect:
 ```php
 DB::table('users')->where('active', true)->get();
 
@@ -146,13 +136,15 @@ $query->join('companies', 'companies.id', '=', 'users.company_id');
 DB::select('SELECT * FROM orders WHERE status = ?', ['pending']);
 ```
 
-Model-aware queries:
-
+Correct — reference the model's table:
 ```php
+DB::table((new User)->getTable())->where('active', true)->get();
+
+// Even better — use Eloquent or the query builder instead of raw SQL
 User::where('active', true)->get();
 Order::where('status', 'pending')->get();
 ```
 
-When a query builder operation should follow a model's configured table name, use `(new User)->getTable()`. For complex joins or raw SQL, explicit table names may be clearer; keep those references covered by tests when schema changes are possible.
+Prefer Eloquent queries and relationships over `DB::table()` whenever possible — they already reference the model's table. When `DB::table()` or raw joins are unavoidable, always use `(new Model)->getTable()` to keep the reference traceable.
 
-In migrations, use explicit table names rather than application models. Migrations are historical snapshots, while models and their scopes can change after a migration is deployed.
+**Exception — migrations:** In migrations, hardcoded table names via `DB::table('settings')` are acceptable and preferred. Models change over time but migrations are frozen snapshots — referencing a model that is later renamed or deleted would break the migration.

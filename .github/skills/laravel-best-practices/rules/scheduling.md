@@ -1,50 +1,32 @@
 # Task Scheduling Best Practices
 
-## Prevent Unwanted Overlap
+## Use `withoutOverlapping()` on Variable-Duration Tasks
 
-Use `withoutOverlapping()` when a second run must not begin while the previous run holds the lock. This is appropriate for variable-duration tasks that are not safe to run concurrently.
+Without it, a long-running task spawns a second instance on the next tick, causing double-processing or resource exhaustion.
 
-```php
-Schedule::command('reports:generate')
-    ->everyFifteenMinutes()
-    ->withoutOverlapping(30);
-```
+## Use `onOneServer()` on Multi-Server Deployments
 
-The optional value is the lock expiration time in minutes, not the task timeout. Choose it carefully: the default is 24 hours, stale locks can be cleared with `php artisan schedule:clear-cache`, and an expiration that is too short can permit overlap while the first task still runs. The task itself should still tolerate retries and partial execution where practical.
+Without it, every server runs the same task simultaneously. Requires a shared cache driver (Redis, database, Memcached).
 
-## Run a Task on One Server
+## Use `runInBackground()` for Concurrent Long Tasks
 
-Use `onOneServer()` when only one scheduler node should run an eligible task. Scheduler nodes must use the same default cache store, and that store must support atomic locks. Supported stores include `database`, `memcached`, `dynamodb`, and `redis`.
+By default, tasks at the same tick run sequentially. A slow first task delays all subsequent ones. `runInBackground()` runs them as separate processes.
 
-```php
-Schedule::command('billing:charge')->daily()->onOneServer();
-```
+## Use `environments()` to Restrict Tasks
 
-Name scheduled closures before applying `onOneServer()`, especially when scheduling the same closure with different parameters, so each task has a distinct lock identity.
-
-## Run Eligible Commands in the Background
-
-Tasks due at the same time run sequentially by default. Use `runInBackground()` when an independent, long-running scheduled command should not delay later tasks.
+Prevent accidental execution of production-only tasks (billing, reporting) on staging.
 
 ```php
-Schedule::command('analytics:process')->hourly()->runInBackground();
+Schedule::command('billing:charge')->monthly()->environments(['production']);
 ```
 
-Laravel restricts `runInBackground()` to tasks scheduled with `command()` and `exec()`; it is not available for scheduled closures. Ensure background processes have appropriate logging and failure monitoring.
+## Use `takeUntilTimeout()` for Time-Bounded Processing
 
-## Restrict Tasks by Environment
+A task running every 15 minutes that processes an unbounded cursor can overlap with the next run. Bound execution time.
 
-Use `environments()` when a task should run only in named application environments. Treat this as an operational safeguard, not an authorization control.
+## Use Schedule Groups for Shared Configuration
 
-```php
-Schedule::command('billing:charge')
-    ->monthly()
-    ->environments(['production']);
-```
-
-## Group Shared Configuration
-
-Use schedule groups when several tasks genuinely share frequency or constraints.
+Avoid repeating `->onOneServer()->timezone('America/New_York')` across many tasks.
 
 ```php
 Schedule::daily()
@@ -55,7 +37,3 @@ Schedule::daily()
         Schedule::command('emails:prune');
     });
 ```
-
-## Bound Work Inside the Task
-
-The scheduler does not provide a `takeUntilTimeout()` event method or terminate arbitrary tasks at a deadline. Bound work in the command or job itself by processing finite chunks, checking a deadline, or dispatching queue jobs with suitable timeouts. Use operating-system or process controls when hard termination is required.

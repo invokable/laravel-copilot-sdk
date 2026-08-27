@@ -1,9 +1,18 @@
 # Security Best Practices
 
-## Control Mass Assignment
+## Mass Assignment Protection
 
-Define `$fillable` when a model is populated from request-derived arrays, or deliberately guard attributes by another consistent model convention. Laravel models guard all attributes by default; `$guarded = []` opts out of that protection.
+Every model must define `$fillable` (whitelist) or `$guarded` (blacklist).
 
+Incorrect:
+```php
+class User extends Model
+{
+    protected $guarded = []; // All fields are mass assignable
+}
+```
+
+Correct:
 ```php
 class User extends Model
 {
@@ -15,71 +24,82 @@ class User extends Model
 }
 ```
 
-Do not pass untrusted request data to a model with `$guarded = []`. Mass-assignment protection controls which attributes `create()`, `fill()`, and `update()` may set; it does not validate values or authorize the operation.
+Never use `$guarded = []` on models that accept user input.
 
-## Authorize Protected Actions
+## Authorize Every Action
 
-Use policies, gates, or form request authorization for actions that depend on the current user's permissions. Authentication alone does not establish permission, and validation is not authorization.
+Use policies or gates in controllers. Never skip authorization.
 
+Incorrect:
 ```php
-public function update(UpdatePostRequest $request, Post $post): RedirectResponse
+public function update(UpdatePostRequest $request, Post $post)
+{
+    $post->update($request->validated());
+}
+```
+
+Correct:
+```php
+public function update(UpdatePostRequest $request, Post $post)
 {
     Gate::authorize('update', $post);
 
     $post->update($request->validated());
-
-    return redirect()->route('posts.show', $post);
 }
 ```
 
-Authorization may instead live in the form request:
+Or via Form Request:
 
 ```php
 public function authorize(): bool
 {
-    return $this->user()?->can('update', $this->route('post')) ?? false;
+    return $this->user()->can('update', $this->route('post'));
 }
 ```
 
-Public actions intentionally available to everyone do not need a redundant authorization check.
+## Prevent SQL Injection
 
-## Bind Query Parameters
-
-Use Eloquent, the query builder, or explicit bindings instead of interpolating untrusted values into Structured Query Language (SQL). Bindings protect values, not identifiers such as column names or sort directions; map user-selected identifiers to an allow-list.
+Always use parameter binding. Never interpolate user input into queries.
 
 Incorrect:
-
 ```php
 DB::select("SELECT * FROM users WHERE name = '{$request->name}'");
 ```
 
 Correct:
-
 ```php
 User::where('name', $request->name)->get();
-User::whereRaw('LOWER(name) = ?', [$request->string('name')->lower()->toString()])->get();
+
+// Raw expressions with bindings
+User::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->get();
 ```
 
-## Escape Output in Its Context
+## Escape Output to Prevent XSS
 
-Blade's `{{ }}` syntax HTML-escapes output. Use `{!! !!}` only for content that has been sanitized for the exact HTML context in which it is rendered. Escaping rules differ for HTML, URLs, JavaScript, and Cascading Style Sheets.
+Use `{{ }}` for HTML escaping. Only use `{!! !!}` for trusted, pre-sanitized content.
 
-Incorrect for untrusted content:
-
+Incorrect:
 ```blade
 {!! $user->bio !!}
 ```
 
 Correct:
-
 ```blade
 {{ $user->bio }}
 ```
 
-## Apply Cross-Site Request Forgery Protection
+## CSRF Protection
 
-Include `@csrf` in state-changing Blade forms handled by Laravel's `web` middleware. Routes intentionally excluded from cross-site request forgery (CSRF) verification, such as validated third-party webhooks, need their own authenticity check.
+Include `@csrf` in all POST/PUT/PATCH/DELETE Blade forms. Inertia doesn't use `@csrf`; its HTTP client sends the `XSRF-TOKEN` cookie back as the `X-XSRF-TOKEN` header, which Laravel accepts in place of the `_token` field.
 
+Incorrect:
+```blade
+<form method="POST" action="/posts">
+    <input type="text" name="title">
+</form>
+```
+
+Correct:
 ```blade
 <form method="POST" action="/posts">
     @csrf
@@ -87,27 +107,21 @@ Include `@csrf` in state-changing Blade forms handled by Laravel's `web` middlew
 </form>
 ```
 
-Inertia applications commonly use Axios, which returns the encrypted `XSRF-TOKEN` cookie in the `X-XSRF-TOKEN` header. Confirm equivalent configuration when using another HTTP client. Do not disable CSRF protection merely to fix a token mismatch.
+## Rate Limit Auth and API Routes
 
-## Rate Limit Sensitive Endpoints
-
-Apply suitable rate limits to login attempts, password recovery, verification messages, and expensive or abuse-prone application programming interface (API) routes. Choose the limiter key deliberately; an Internet Protocol (IP) address alone can unfairly group users behind a shared network, while an account identifier alone can enable targeted denial of service.
+Apply `throttle` middleware to authentication and API routes.
 
 ```php
 RateLimiter::for('login', function (Request $request) {
-    return Limit::perMinute(5)->by(Str::transliterate(
-        Str::lower($request->string('email')).'|'.$request->ip()
-    ));
+    return Limit::perMinute(5)->by($request->ip());
 });
 
 Route::post('/login', LoginController::class)->middleware('throttle:login');
 ```
 
-Rate limiting reduces abuse; it does not replace authentication, authorization, or upstream denial-of-service protection.
+## Validate File Uploads
 
-## Validate and Store Uploads Safely
-
-Validate expected content type, dimensions where relevant, and size. Laravel's `mimes` rule reads the file contents and guesses a Multipurpose Internet Mail Extensions (MIME) type corresponding to the listed extensions; it does not validate the user-assigned filename extension. The `extensions` rule checks that extension and should not be used by itself.
+Validate MIME type and size. Both `mimes` and `mimetypes` read the file's contents to guess its MIME type; `mimes` just expresses the allow-list as extensions. The `extensions` rule checks only the client-supplied filename, so never rely on it alone. Never trust client-provided filenames.
 
 ```php
 public function rules(): array
@@ -118,28 +132,56 @@ public function rules(): array
 }
 ```
 
-Use Laravel's storage methods to generate a filename, and store untrusted files outside a publicly executable location. Public files can require additional controls, such as image re-encoding, content-disposition headers, and explicit blocking of active formats.
+Store with generated filenames:
 
 ```php
-$path = $request->file('avatar')->store('avatars');
+$path = $request->file('avatar')->store('avatars', 'public');
 ```
 
-## Keep Secrets Out of Application Code
+## Keep Secrets Out of Code
 
-Do not commit populated environment files or hard-code credentials. Read environment variables in configuration files, then use `config()` in application code so configuration caching works correctly. See the configuration rules for encrypted environment files and external secret stores.
+Never commit `.env`. Access secrets via `config()` only.
+
+Incorrect:
+```php
+$key = env('API_KEY');
+```
+
+Correct:
+```php
+// config/services.php
+'api_key' => env('API_KEY'),
+
+// In application code
+$key = config('services.api_key');
+```
 
 ## Audit Dependencies
 
-Run `composer audit` regularly and in continuous integration. Review findings for exploitability and update or mitigate affected packages promptly.
+Run `composer audit` periodically to check for known vulnerabilities in dependencies. Automate this in CI to catch issues before deployment.
 
 ```bash
 composer audit
 ```
 
-## Encrypt Sensitive Attributes When Appropriate
+## Encrypt Sensitive Database Fields
 
-Use an `encrypted` cast for sensitive values that must be recoverable, and use `$hidden` to omit them from array and JavaScript Object Notation (JSON) serialization. Hidden attributes remain accessible in PHP, and encryption does not replace access control. Encrypted values cannot be meaningfully queried and should use a `TEXT` or larger column because ciphertext length is variable.
+Use `encrypted` cast for API keys/tokens and mark the attribute as `hidden`.
 
+Incorrect:
+```php
+class Integration extends Model
+{
+    protected function casts(): array
+    {
+        return [
+            'api_key' => 'string',
+        ];
+    }
+}
+```
+
+Correct:
 ```php
 class Integration extends Model
 {
