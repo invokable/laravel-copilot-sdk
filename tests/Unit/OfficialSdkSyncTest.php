@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\DiscoveredExtensionMode;
-use Revolution\Copilot\Enums\PermissionResponseCapability;
 use Revolution\Copilot\Enums\EventsReadDirection;
+use Revolution\Copilot\Enums\PermissionResponseCapability;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
@@ -14,18 +14,19 @@ use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Rpc\PendingServerExtensions;
 use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookInput;
 use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookOutput;
+use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\AgentSetPromptRequest;
+use Revolution\Copilot\Types\Rpc\ConnectClientInfo;
 use Revolution\Copilot\Types\Rpc\EventLogReadRequest;
 use Revolution\Copilot\Types\Rpc\HistoryClearContextResult;
 use Revolution\Copilot\Types\Rpc\McpOauthAuthenticationStateChangedRequest;
-use Revolution\Copilot\Types\SessionConfig;
-use Revolution\Copilot\Types\SessionHooks;
-use Revolution\Copilot\Types\ModelInfo;
-use Revolution\Copilot\Types\Rpc\ConnectClientInfo;
 use Revolution\Copilot\Types\Rpc\ModelMessage;
 use Revolution\Copilot\Types\Rpc\QueuePendingItemsResult;
 use Revolution\Copilot\Types\Rpc\SettableTokenAuthInfo;
+use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\SessionHooks;
 
 test('session configs serialize the latest official options', function () {
     $config = new SessionConfig(
@@ -94,7 +95,7 @@ test('latest authentication, telemetry, queue, and model metadata round trip', f
 test('new permission capability and model call finished event are represented', function () {
     expect(PermissionResponseCapability::INTERACTIVE->value)->toBe('interactive');
 
-    $event = \Revolution\Copilot\Types\SessionEvent::fromArray([
+    $event = SessionEvent::fromArray([
         'id' => 'event-1',
         'timestamp' => '2026-01-01T00:00:00Z',
         'type' => 'model.call_finished',
