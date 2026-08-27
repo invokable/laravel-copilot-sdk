@@ -9,6 +9,7 @@ use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\PermissionDecisionOutcome;
 use Revolution\Copilot\Enums\PermissionDecisionSource;
 use Revolution\Copilot\Enums\PermissionDecisionSurface;
+use Revolution\Copilot\Enums\PermissionResponseCapability;
 
 /**
  * Optional informational context describing how and where the permission decision
@@ -22,6 +23,7 @@ readonly class PermissionDecisionContext implements Arrayable
         public PermissionDecisionOutcome $outcome,
         public PermissionDecisionSource $source,
         public PermissionDecisionSurface $surface,
+        public PermissionResponseCapability|string|null $responseCapability = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -30,6 +32,9 @@ readonly class PermissionDecisionContext implements Arrayable
             outcome: PermissionDecisionOutcome::from(Arr::string($data, 'outcome')),
             source: PermissionDecisionSource::from(Arr::string($data, 'source')),
             surface: PermissionDecisionSurface::from(Arr::string($data, 'surface')),
+            responseCapability: isset($data['responseCapability'])
+                ? (PermissionResponseCapability::tryFrom($data['responseCapability']) ?? $data['responseCapability'])
+                : null,
         );
     }
 
@@ -39,6 +44,9 @@ readonly class PermissionDecisionContext implements Arrayable
             'outcome' => $this->outcome->value,
             'source' => $this->source->value,
             'surface' => $this->surface->value,
+            'responseCapability' => $this->responseCapability instanceof PermissionResponseCapability
+                ? $this->responseCapability->value
+                : $this->responseCapability,
         ];
     }
 }

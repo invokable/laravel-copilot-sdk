@@ -22,6 +22,7 @@ readonly class AuthInfo implements Arrayable
      * @param  string|null  $login  Authenticated login.
      * @param  string|null  $token  Token value.
      * @param  string|null  $apiKey  API key value.
+     * @param  string|null  $registrationId  Opaque SDK credential registration identifier.
      */
     public function __construct(
         public string $host,
@@ -32,6 +33,7 @@ readonly class AuthInfo implements Arrayable
         public ?string $login = null,
         public ?string $token = null,
         public ?string $apiKey = null,
+        public ?string $registrationId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -47,6 +49,7 @@ readonly class AuthInfo implements Arrayable
             login: $data['login'] ?? null,
             token: $data['token'] ?? null,
             apiKey: $data['apiKey'] ?? null,
+            registrationId: $data['registrationId'] ?? null,
         );
     }
 
@@ -61,6 +64,7 @@ readonly class AuthInfo implements Arrayable
             'login' => $this->login,
             'token' => $this->token,
             'apiKey' => $this->apiKey,
+            'registrationId' => $this->registrationId,
         ], fn ($value) => $value !== null);
     }
 }

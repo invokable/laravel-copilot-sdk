@@ -108,6 +108,29 @@ $content = Copilot::start(function (CopilotSession $session) {
 dump($content);
 ```
 
+### Per-session GitHub token provider
+
+For applications serving multiple users, provide a callback that returns a short-lived
+token without storing it in the session configuration:
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Support\PermissionHandler;
+use Revolution\Copilot\Types\SessionConfig;
+
+$session = Copilot::client()->createSession(new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveAll(),
+    gitHubTokenProvider: fn (array $request) => [
+        'kind' => 'token',
+        'accessToken' => auth()->user()->github_token,
+        'expiresIn' => 3600,
+    ],
+));
+```
+
+The callback receives `host`, `sessionId`, and `reason` (`initial` or `refresh`).
+`gitHubToken` and `gitHubTokenProvider` are mutually exclusive.
+
 ### `copilot()` helper
 
 Alternatively, you can use the `copilot()` helper function.

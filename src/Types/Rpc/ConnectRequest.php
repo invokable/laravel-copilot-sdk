@@ -20,11 +20,13 @@ readonly class ConnectRequest implements Arrayable
     public function __construct(
         public ?bool $enableGitHubTelemetryForwarding = null,
         public ?string $token = null,
+        public ?ConnectClientInfo $clientInfo = null,
     ) {}
 
     public static function fromArray(array $data): static
     {
         return new static(
+            clientInfo: isset($data['clientInfo']) ? ConnectClientInfo::fromArray($data['clientInfo']) : null,
             enableGitHubTelemetryForwarding: isset($data['enableGitHubTelemetryForwarding']) ? (bool) $data['enableGitHubTelemetryForwarding'] : null,
             token: $data['token'] ?? null,
         );
@@ -33,6 +35,7 @@ readonly class ConnectRequest implements Arrayable
     public function toArray(): array
     {
         return array_filter([
+            'clientInfo' => $this->clientInfo?->toArray(),
             'enableGitHubTelemetryForwarding' => $this->enableGitHubTelemetryForwarding,
             'token' => $this->token,
         ], fn ($value) => $value !== null);

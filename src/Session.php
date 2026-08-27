@@ -88,6 +88,8 @@ class Session implements CopilotSession
      */
     protected bool $disconnected = false;
 
+    protected ?Closure $onDisconnected = null;
+
     /**
      * Wait state: last assistant message.
      */
@@ -113,6 +115,11 @@ class Session implements CopilotSession
     public function id(): string
     {
         return $this->sessionId;
+    }
+
+    public function setOnDisconnected(?Closure $callback): void
+    {
+        $this->onDisconnected = $callback;
     }
 
     /**
@@ -672,6 +679,10 @@ class Session implements CopilotSession
                 'sessionId' => $this->sessionId,
             ]);
         } finally {
+            if ($this->onDisconnected !== null) {
+                ($this->onDisconnected)();
+            }
+            $this->onDisconnected = null;
             $this->eventHandlers = [];
             $this->typedEventHandlers = [];
             $this->toolHandlers = [];

@@ -15,5 +15,6 @@ enum AuthInfoType: string
     case GH_CLI = 'gh-cli';
     case HMAC = 'hmac';
     case TOKEN = 'token';
+    case TOKEN_PROVIDER = 'token-provider';
     case USER = 'user';
 }

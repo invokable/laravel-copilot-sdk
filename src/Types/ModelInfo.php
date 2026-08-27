@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Types;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Types\Rpc\ModelMessage;
 
 /**
  * Information about an available model.
@@ -21,6 +22,9 @@ readonly class ModelInfo implements Arrayable
      * @param  ?ModelBilling  $billing  Billing information
      * @param  ?array  $supportedReasoningEfforts  Supported reasoning effort levels (only present if model supports reasoning effort)
      * @param  ReasoningEffort|string|null  $defaultReasoningEffort  Default reasoning effort level (only present if model supports reasoning effort)
+     * @param  ?ModelWarningText  $warningText  Service-published warning text.
+     * @param  ?array  $infoMessages  Service-published informational messages.
+     * @param  ?array  $warningMessages  Service-published warning messages.
      */
     public function __construct(
         public string $id,
@@ -30,6 +34,9 @@ readonly class ModelInfo implements Arrayable
         public ?ModelBilling $billing = null,
         public ?array $supportedReasoningEfforts = null,
         public ReasoningEffort|string|null $defaultReasoningEffort = null,
+        public ?ModelWarningText $warningText = null,
+        public ?array $infoMessages = null,
+        public ?array $warningMessages = null,
     ) {}
 
     /**
@@ -47,6 +54,13 @@ readonly class ModelInfo implements Arrayable
             billing: isset($data['billing']) ? ModelBilling::fromArray($data['billing']) : null,
             supportedReasoningEfforts: $data['supportedReasoningEfforts'] ?? null,
             defaultReasoningEffort: $data['defaultReasoningEffort'] ?? null,
+            warningText: isset($data['warningText']) ? ModelWarningText::fromArray($data['warningText']) : null,
+            infoMessages: isset($data['infoMessages'])
+                ? array_map(fn (array $message) => ModelMessage::fromArray($message), $data['infoMessages'])
+                : null,
+            warningMessages: isset($data['warningMessages'])
+                ? array_map(fn (array $message) => ModelMessage::fromArray($message), $data['warningMessages'])
+                : null,
         );
     }
 
@@ -67,6 +81,13 @@ readonly class ModelInfo implements Arrayable
             'billing' => $this->billing?->toArray(),
             'supportedReasoningEfforts' => $this->supportedReasoningEfforts,
             'defaultReasoningEffort' => $defaultReasoningEffort,
+            'warningText' => $this->warningText?->toArray(),
+            'infoMessages' => $this->infoMessages === null
+                ? null
+                : array_map(fn ($message) => $message instanceof ModelMessage ? $message->toArray() : $message, $this->infoMessages),
+            'warningMessages' => $this->warningMessages === null
+                ? null
+                : array_map(fn ($message) => $message instanceof ModelMessage ? $message->toArray() : $message, $this->warningMessages),
         ], fn ($v) => $v !== null);
     }
 }
