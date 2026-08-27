@@ -14,5 +14,5 @@ gh aw compile
 ```
 
 ```shell
-gh aw upgrade --pre-releases && gh aw compile
+gh aw upgrade && gh aw compile
 ```
