@@ -7,6 +7,7 @@ namespace Revolution\Copilot;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use Illuminate\Support\Str;
 use Revolution\Copilot\Concerns\Client\HandlesServerRequests;
 use Revolution\Copilot\Concerns\Client\ManagesModels;
 use Revolution\Copilot\Concerns\Client\ManagesSessions;
@@ -68,6 +69,13 @@ class Client implements CopilotClient
      * @var array<string, Session>
      */
     protected array $sessions = [];
+
+    /**
+     * Session-scoped GitHub token callbacks keyed by opaque registration ID.
+     *
+     * @var array<string, array{provider: callable, sessionId: ?string}>
+     */
+    protected array $gitHubTokenProviders = [];
 
     /**
      * Create a new CopilotClient.
@@ -196,6 +204,11 @@ class Client implements CopilotClient
                 fn (array $params) => $this->handleHooksInvoke($params),
             );
 
+            $this->rpcClient->setRequestHandler(
+                'gitHubToken.getToken',
+                fn (array $params) => $this->acquireGitHubToken($params),
+            );
+
             $this->state = ConnectionState::CONNECTED;
 
             // Verify protocol version
@@ -229,6 +242,7 @@ class Client implements CopilotClient
         }
 
         $this->sessions = [];
+        $this->gitHubTokenProviders = [];
 
         // Stop JSON-RPC client
         if ($this->rpcClient !== null) {
@@ -277,7 +291,13 @@ class Client implements CopilotClient
     {
         $this->ensureConnected();
 
-        $config = $this->normalizeSessionConfigAliases(is_array($config) ? $config : $config->toArray());
+        $config = $this->normalizeSessionConfigAliases(is_array($config)
+            ? $config
+            : [...$config->toArray(), 'gitHubTokenProvider' => $config->gitHubTokenProvider]);
+
+        if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
+            throw new \InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
+        }
 
         if (! isset($config['onPermissionRequest']) || ! is_callable($config['onPermissionRequest'])) {
             throw new \InvalidArgumentException(
@@ -285,6 +305,10 @@ class Client implements CopilotClient
                 .'For example, to allow all permissions, use new SessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
             );
         }
+
+        $tokenProviderRegistrationId = $this->registerGitHubTokenProvider(
+            $config['gitHubTokenProvider'] ?? null,
+        );
 
         $tools = $config['tools'] ?? [];
         $toolsForRequest = array_map(fn ($tool) => array_filter([
@@ -305,7 +329,8 @@ class Client implements CopilotClient
             is_array($hooks) ? $hooks : $hooks->toArray(),
         ));
 
-        $response = $this->rpcClient->request('session.create', array_filter([
+        try {
+            $response = $this->rpcClient->request('session.create', array_filter([
             ...TraceContext::get(),
             'sessionId' => $config['sessionId'] ?? null,
             'clientName' => $config['clientName'] ?? null,
@@ -349,6 +374,7 @@ class Client implements CopilotClient
             'enableSessionTelemetry' => $config['enableSessionTelemetry'] ?? null,
             'enableGitHubTelemetryForwarding' => $config['enableGitHubTelemetryForwarding'] ?? null,
             'gitHubToken' => $config['gitHubToken'] ?? null,
+            'gitHubTokenProviderRegistrationId' => $tokenProviderRegistrationId,
             'remoteSession' => $config['remoteSession'] ?? null,
             'cloud' => $config['cloud'] ?? null,
             'canvases' => $config['canvases'] ?? null,
@@ -376,9 +402,17 @@ class Client implements CopilotClient
             'managedSettings' => $config['managedSettings'] ?? null,
             'enableFileChangeTracking' => $config['enableFileChangeTracking'] ?? null,
             'disabledMcpServers' => $config['disabledMcpServers'] ?? null,
-        ], fn ($v) => $v !== null));
+            'includedBuiltinSkills' => $config['includedBuiltinSkills'] ?? null,
+            ], fn ($v) => $v !== null));
+        } catch (Throwable $e) {
+            unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            throw $e;
+        }
 
         $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
+        if ($tokenProviderRegistrationId !== null) {
+            $this->gitHubTokenProviders[$tokenProviderRegistrationId]['sessionId'] = $sessionId;
+        }
         $workspacePath = $response['workspacePath'] ?? null;
         $capabilities = $response['capabilities'] ?? null;
 
@@ -389,6 +423,11 @@ class Client implements CopilotClient
             'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
                 || array_key_exists('managedSettings', $config),
         ]);
+        if ($tokenProviderRegistrationId !== null) {
+            $session->setOnDisconnected(function () use ($tokenProviderRegistrationId): void {
+                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            });
+        }
         $session->registerTools($tools);
         $session->registerCommands($commands);
         $session->setCapabilities($capabilities);
@@ -420,7 +459,12 @@ class Client implements CopilotClient
 
         $this->sessions[$sessionId] = $session;
 
-        $this->applyPostCreateOptionsPatch($sessionId, $session, $config);
+        try {
+            $this->applyPostCreateOptionsPatch($sessionId, $session, $config);
+        } catch (Throwable $e) {
+            unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            throw $e;
+        }
 
         CreateSession::dispatch($session);
 
@@ -438,7 +482,13 @@ class Client implements CopilotClient
     {
         $this->ensureConnected();
 
-        $config = $this->normalizeSessionConfigAliases(is_array($config) ? $config : $config->toArray());
+        $config = $this->normalizeSessionConfigAliases(is_array($config)
+            ? $config
+            : [...$config->toArray(), 'gitHubTokenProvider' => $config->gitHubTokenProvider]);
+
+        if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
+            throw new \InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
+        }
 
         if (! isset($config['onPermissionRequest']) || ! is_callable($config['onPermissionRequest'])) {
             throw new \InvalidArgumentException(
@@ -446,6 +496,11 @@ class Client implements CopilotClient
                 .'For example, to allow all permissions, use new ResumeSessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
             );
         }
+
+        $tokenProviderRegistrationId = $this->registerGitHubTokenProvider(
+            $config['gitHubTokenProvider'] ?? null,
+            $sessionId,
+        );
 
         $tools = $config['tools'] ?? [];
         $toolsForRequest = array_map(fn ($tool) => array_filter([
@@ -467,7 +522,8 @@ class Client implements CopilotClient
             is_array($hooks) ? $hooks : $hooks->toArray(),
         ));
 
-        $response = $this->rpcClient->request('session.resume', array_filter([
+        try {
+            $response = $this->rpcClient->request('session.resume', array_filter([
             ...TraceContext::get(),
             'sessionId' => $sessionId,
             'clientName' => $config['clientName'] ?? null,
@@ -513,6 +569,7 @@ class Client implements CopilotClient
             'enableSessionTelemetry' => $config['enableSessionTelemetry'] ?? null,
             'enableGitHubTelemetryForwarding' => $config['enableGitHubTelemetryForwarding'] ?? null,
             'gitHubToken' => $config['gitHubToken'] ?? null,
+            'gitHubTokenProviderRegistrationId' => $tokenProviderRegistrationId,
             'remoteSession' => $config['remoteSession'] ?? null,
             'canvases' => $config['canvases'] ?? null,
             'requestCanvasRenderer' => $config['requestCanvasRenderer'] ?? null,
@@ -539,7 +596,12 @@ class Client implements CopilotClient
             'managedSettings' => $config['managedSettings'] ?? null,
             'enableFileChangeTracking' => $config['enableFileChangeTracking'] ?? null,
             'disabledMcpServers' => $config['disabledMcpServers'] ?? null,
-        ], fn ($v) => $v !== null));
+            'includedBuiltinSkills' => $config['includedBuiltinSkills'] ?? null,
+            ], fn ($v) => $v !== null));
+        } catch (Throwable $e) {
+            unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            throw $e;
+        }
 
         $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');
         $workspacePath = $response['workspacePath'] ?? null;
@@ -552,6 +614,11 @@ class Client implements CopilotClient
             'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
                 || array_key_exists('managedSettings', $config),
         ]);
+        if ($tokenProviderRegistrationId !== null) {
+            $session->setOnDisconnected(function () use ($tokenProviderRegistrationId): void {
+                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            });
+        }
         $session->registerTools($tools);
         $session->registerCommands($commands);
         $session->setCapabilities($capabilities);
@@ -590,7 +657,12 @@ class Client implements CopilotClient
             ]);
         }
 
-        $this->applyPostCreateOptionsPatch($resumedSessionId, $session, $config);
+        try {
+            $this->applyPostCreateOptionsPatch($resumedSessionId, $session, $config);
+        } catch (Throwable $e) {
+            unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            throw $e;
+        }
 
         ResumeSession::dispatch($session);
 
@@ -607,6 +679,56 @@ class Client implements CopilotClient
         }
 
         return $config instanceof GitHubMcpToolConfig ? $config->toArray() : $config;
+    }
+
+    private function registerGitHubTokenProvider(?callable $provider, ?string $sessionId = null): ?string
+    {
+        if ($provider === null) {
+            return null;
+        }
+
+        $registrationId = (string) Str::uuid();
+        $this->gitHubTokenProviders[$registrationId] = [
+            'provider' => $provider,
+            'sessionId' => $sessionId,
+        ];
+
+        return $registrationId;
+    }
+
+    private function acquireGitHubToken(array $params): array
+    {
+        $registrationId = $params['registrationId'] ?? null;
+        $registration = $registrationId !== null ? ($this->gitHubTokenProviders[$registrationId] ?? null) : null;
+
+        if ($registration === null) {
+            throw new RuntimeException("No GitHub token provider registered for registration ID \"{$registrationId}\"");
+        }
+
+        $result = ($registration['provider'])([
+            'host' => $params['host'] ?? '',
+            'sessionId' => $params['sessionId'] ?? $registration['sessionId'],
+            'reason' => $params['reason'] ?? 'initial',
+        ]);
+
+        if ($result instanceof Arrayable) {
+            $result = $result->toArray();
+        }
+
+        if (! is_array($result)) {
+            throw new \UnexpectedValueException('GitHub token provider must return an array result');
+        }
+
+        return $result;
+    }
+
+    protected function forgetGitHubTokenProviderForSession(string $sessionId): void
+    {
+        foreach ($this->gitHubTokenProviders as $registrationId => $registration) {
+            if ($registration['sessionId'] === $sessionId) {
+                unset($this->gitHubTokenProviders[$registrationId]);
+            }
+        }
     }
 
     private function applyPostCreateOptionsPatch(string $sessionId, Session $session, array $config): void
@@ -780,7 +902,10 @@ class Client implements CopilotClient
         $expectedVersion = Protocol::version();
 
         try {
+            $clientInfo = data_get($this->options, 'client_info', data_get($this->options, 'clientInfo'));
+            $clientInfo = $clientInfo instanceof Arrayable ? $clientInfo->toArray() : $clientInfo;
             $serverVersion = $this->rpc()->connect(array_filter([
+                'clientInfo' => $clientInfo,
                 'token' => $this->connectionToken,
             ], fn ($value) => $value !== null))->protocolVersion;
         } catch (JsonRpcException $e) {

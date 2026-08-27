@@ -20,6 +20,7 @@ readonly class RunOptions implements Arrayable
     public function __construct(
         public FactoryRunLimits|array|null $limits = null,
         public ?string $resumeFromRunId = null,
+        public ?bool $autoApproveEdits = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -31,6 +32,7 @@ readonly class RunOptions implements Arrayable
                 ? ($limits instanceof FactoryRunLimits ? $limits : FactoryRunLimits::fromArray($limits))
                 : null,
             resumeFromRunId: $data['resumeFromRunId'] ?? null,
+            autoApproveEdits: $data['autoApproveEdits'] ?? null,
         );
     }
 
@@ -41,6 +43,7 @@ readonly class RunOptions implements Arrayable
         return array_filter([
             'limits' => $limits,
             'resumeFromRunId' => $this->resumeFromRunId,
+            'autoApproveEdits' => $this->autoApproveEdits,
         ], fn ($v) => $v !== null);
     }
 }

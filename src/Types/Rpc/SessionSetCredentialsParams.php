@@ -12,13 +12,17 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class SessionSetCredentialsParams implements Arrayable
 {
     public function __construct(
-        public ?AuthInfo $credentials = null,
+        public AuthInfo|SettableTokenAuthInfo|null $credentials = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            credentials: isset($data['credentials']) ? AuthInfo::fromArray($data['credentials']) : null,
+            credentials: isset($data['credentials'])
+                ? (($data['credentials']['type'] ?? null) === 'token'
+                    ? SettableTokenAuthInfo::fromArray($data['credentials'])
+                    : AuthInfo::fromArray($data['credentials']))
+                : null,
         );
     }
 

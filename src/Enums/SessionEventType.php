@@ -173,4 +173,5 @@ enum SessionEventType: string
 
     // Model events
     case MODEL_CALL_FAILURE = 'model.call_failure';
+    case MODEL_CALL_FINISHED = 'model.call_finished';
 }

@@ -145,6 +145,8 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?bool  $enableFileChangeTracking  Opt in to capturing file changes for session rewind and cumulative diffs.
      * @param  ?array  $disabledMcpServers  Exact MCP server names to disable for this session.
      * @param  ManagedSettings|array|null  $managedSettings  Host-injected enterprise managed permissions for this session.
+     * @param  ?array  $includedBuiltinSkills  Built-in skill names to include in this session.
+     * @param  ?Closure  $gitHubTokenProvider  Callback used to acquire short-lived GitHub credentials for this session.
      */
     public function __construct(
         public ?string $clientName = null,
@@ -219,6 +221,8 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?bool $enableFileChangeTracking = null,
         public ?array $disabledMcpServers = null,
         public ManagedSettings|array|null $managedSettings = null,
+        public ?array $includedBuiltinSkills = null,
+        public ?Closure $gitHubTokenProvider = null,
     ) {}
 
     /**
@@ -363,6 +367,8 @@ readonly class ResumeSessionConfig implements Arrayable
             managedSettings: isset($data['managedSettings'])
                 ? ($data['managedSettings'] instanceof ManagedSettings ? $data['managedSettings'] : ManagedSettings::fromArray($data['managedSettings']))
                 : null,
+            includedBuiltinSkills: $data['includedBuiltinSkills'] ?? null,
+            gitHubTokenProvider: $data['gitHubTokenProvider'] ?? null,
         );
     }
 
@@ -492,6 +498,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'managedSettings' => $this->managedSettings instanceof ManagedSettings
                 ? $this->managedSettings->toArray()
                 : $this->managedSettings,
+            'includedBuiltinSkills' => $this->includedBuiltinSkills,
         ], fn ($value) => $value !== null);
     }
 }

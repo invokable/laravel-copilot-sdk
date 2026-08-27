@@ -57,6 +57,7 @@ trait ManagesSessions
         }
 
         unset($this->sessions[$sessionId]);
+        $this->forgetGitHubTokenProviderForSession($sessionId);
     }
 
     /**

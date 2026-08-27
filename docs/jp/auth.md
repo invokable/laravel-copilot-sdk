@@ -53,6 +53,28 @@ $config = [
 詳細は [github-token.md](./github-token.md) を参照。
 `github_token`と`use_logged_in_user`はstdioモード専用です。TCPモードではCopilot CLI側で認証済みである必要があります。
 
+## セッションごとのトークンプロバイダー
+
+ユーザーごとに短命トークンを取得する場合は、`SessionConfig`の
+`gitHubTokenProvider`にコールバックを指定できます。コールバックには`host`、
+`sessionId`、`reason`（`initial`または`refresh`）が渡され、`token`を含む配列を返します。
+
+```php
+use Revolution\Copilot\Support\PermissionHandler;
+use Revolution\Copilot\Types\SessionConfig;
+
+$session = Copilot::client()->createSession(new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveAll(),
+    gitHubTokenProvider: fn (array $request) => [
+        'kind' => 'token',
+        'accessToken' => $user->github_token,
+        'expiresIn' => 3600,
+    ],
+));
+```
+
+`gitHubToken`と`gitHubTokenProvider`は同時に指定できません。
+
 ## 環境変数
 
 環境変数でトークンを渡す場合は、CLIが自動的に検出します。優先順位は上から順です。

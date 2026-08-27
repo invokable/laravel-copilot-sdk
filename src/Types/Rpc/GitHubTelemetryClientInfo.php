@@ -37,6 +37,8 @@ readonly class GitHubTelemetryClientInfo implements Arrayable
         public ?string $clientName = null,
         public ?bool $isStaff = null,
         public ?string $devDeviceId = null,
+        public ?string $cpuModel = null,
+        public ?int $cpuCount = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -52,6 +54,8 @@ readonly class GitHubTelemetryClientInfo implements Arrayable
             clientName: $data['client_name'] ?? null,
             isStaff: $data['is_staff'] ?? null,
             devDeviceId: $data['dev_device_id'] ?? null,
+            cpuModel: $data['cpu_model'] ?? null,
+            cpuCount: isset($data['cpu_count']) ? (int) $data['cpu_count'] : null,
         );
     }
 
@@ -68,6 +72,8 @@ readonly class GitHubTelemetryClientInfo implements Arrayable
             'client_name' => $this->clientName,
             'is_staff' => $this->isStaff,
             'dev_device_id' => $this->devDeviceId,
+            'cpu_model' => $this->cpuModel,
+            'cpu_count' => $this->cpuCount,
         ], fn ($v) => $v !== null);
     }
 }

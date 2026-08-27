@@ -18,6 +18,9 @@ enum PermissionDecisionSurface: string
     /** The Copilot App client. */
     case COPILOT_APP = 'copilot_app';
 
+    /** An Agent Client Protocol host. */
+    case ACP = 'acp';
+
     /** A generic Copilot SDK client. */
     case SDK = 'sdk';
 }
