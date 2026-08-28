@@ -4,7 +4,7 @@ description: Automatically tracks official github/copilot-sdk changes and create
 
 on:
   schedule: # 日本時間で午前5時頃。曜日の指定は英語と1日ずれるので火・木・土。すぐに同期が必要な時は手動実行。
-    #- cron: weekly on monday around 5:00 utc+9
+    - cron: weekly on monday around 5:00 utc+9
     - cron: weekly on wednesday around 5:00 utc+9
     - cron: weekly on friday around 5:00 utc+9
   workflow_dispatch:
@@ -83,7 +83,7 @@ permissions:
   issues: read
   pull-requests: read
 
-model: gpt-5.6-luna
+model: gpt-5.6-terra?effort=high
 engine:
   id: copilot
   agent: laravel-sdk-sync
