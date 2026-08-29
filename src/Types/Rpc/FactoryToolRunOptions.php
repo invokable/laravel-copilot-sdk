@@ -7,24 +7,20 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 
 /**
- * Options controlling factory invocation.
+ * Options for an internal tool-originated factory invocation.
  *
  * @experimental This type is part of an experimental API and may change or be removed.
+ * @internal
  */
-readonly class RunOptions implements Arrayable
+readonly class FactoryToolRunOptions implements Arrayable
 {
     /**
-     * @param  FactoryRunLimits|array|null  $limits  Per-invocation resource ceiling overrides.
+     * @param  FactoryRunLimits|array|null  $limits  Optional per-invocation resource ceiling overrides.
      * @param  ?string  $resumeFromRunId  Run identifier whose journal and progress should seed this resumed run.
-     * @param  ?bool  $notifyOnComplete  Whether to notify the originating session when the factory completes.
-     * @param  ?bool  $logPhaseNames  Whether to emit factory phase names to the session transcript.
      */
     public function __construct(
         public FactoryRunLimits|array|null $limits = null,
         public ?string $resumeFromRunId = null,
-        public ?bool $autoApproveEdits = null,
-        public ?bool $notifyOnComplete = null,
-        public ?bool $logPhaseNames = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -36,9 +32,6 @@ readonly class RunOptions implements Arrayable
                 ? ($limits instanceof FactoryRunLimits ? $limits : FactoryRunLimits::fromArray($limits))
                 : null,
             resumeFromRunId: $data['resumeFromRunId'] ?? null,
-            autoApproveEdits: $data['autoApproveEdits'] ?? null,
-            notifyOnComplete: $data['notifyOnComplete'] ?? null,
-            logPhaseNames: $data['logPhaseNames'] ?? null,
         );
     }
 
@@ -49,9 +42,6 @@ readonly class RunOptions implements Arrayable
         return array_filter([
             'limits' => $limits,
             'resumeFromRunId' => $this->resumeFromRunId,
-            'autoApproveEdits' => $this->autoApproveEdits,
-            'notifyOnComplete' => $this->notifyOnComplete,
-            'logPhaseNames' => $this->logPhaseNames,
         ], fn ($v) => $v !== null);
     }
 }

@@ -199,4 +199,19 @@ describe('SessionEventType', function () {
         expect(SessionEventType::from('factory.run_started'))->toBe(SessionEventType::FACTORY_RUN_STARTED)
             ->and(SessionEventType::from('factory.run_settled'))->toBe(SessionEventType::FACTORY_RUN_SETTLED);
     });
+
+    it('has HydraFusion event types', function () {
+        expect(SessionEventType::SESSION_FUSION_ROUTE_STARTED->value)->toBe('session.fusion_route_started')
+            ->and(SessionEventType::SESSION_FUSION_ROUTE_FAILED->value)->toBe('session.fusion_route_failed')
+            ->and(SessionEventType::SESSION_FUSION_RESOLVED->value)->toBe('session.fusion_resolved')
+            ->and(SessionEventType::SESSION_FUSION_COMPLETED->value)->toBe('session.fusion_completed')
+            ->and(SessionEventType::ASSISTANT_FUSION_PHASE_STARTED->value)->toBe('assistant.fusion_phase_started')
+            ->and(SessionEventType::ASSISTANT_FUSION_PHASE_COMPLETED->value)->toBe('assistant.fusion_phase_completed')
+            ->and(SessionEventType::ASSISTANT_FUSION_PHASE_FAILED->value)->toBe('assistant.fusion_phase_failed');
+    });
+
+    it('has the subagent configured event type', function () {
+        expect(SessionEventType::SUBAGENT_CONFIGURED->value)->toBe('subagent.configured')
+            ->and(SessionEventType::from('subagent.configured'))->toBe(SessionEventType::SUBAGENT_CONFIGURED);
+    });
 });

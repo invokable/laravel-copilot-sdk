@@ -17,13 +17,19 @@ describe('FactoryResumeRequest', function () {
         $request = FactoryResumeRequest::fromArray([
             'runId' => 'run-1',
             'limits' => ['maxTotalSubagents' => 4],
+            'notifyOnComplete' => false,
+            'logPhaseNames' => true,
         ]);
 
         expect($request->runId)->toBe('run-1')
             ->and($request->limits)->toBeInstanceOf(FactoryRunLimits::class)
+            ->and($request->logPhaseNames)->toBeTrue()
+            ->and($request->notifyOnComplete)->toBeFalse()
             ->and($request->toArray())->toBe([
                 'runId' => 'run-1',
                 'limits' => ['maxTotalSubagents' => 4],
+                'notifyOnComplete' => false,
+                'logPhaseNames' => true,
             ]);
     });
 

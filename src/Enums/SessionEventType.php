@@ -44,6 +44,10 @@ enum SessionEventType: string
     case SESSION_TASK_COMPLETE = 'session.task_complete';
     case SESSION_REMOTE_STEERABLE_CHANGED = 'session.remote_steerable_changed';
     case SESSION_TOOLS_UPDATED = 'session.tools_updated';
+    case SESSION_FUSION_ROUTE_STARTED = 'session.fusion_route_started';
+    case SESSION_FUSION_ROUTE_FAILED = 'session.fusion_route_failed';
+    case SESSION_FUSION_RESOLVED = 'session.fusion_resolved';
+    case SESSION_FUSION_COMPLETED = 'session.fusion_completed';
     case SESSION_CANVAS_OPENED = 'session.canvas.opened';
     case SESSION_CANVAS_REGISTRY_CHANGED = 'session.canvas.registry_changed';
     case SESSION_CANVAS_CLOSED = 'session.canvas.closed';
@@ -65,6 +69,9 @@ enum SessionEventType: string
     case ASSISTANT_TURN_START = 'assistant.turn_start';
     case ASSISTANT_IDLE = 'assistant.idle';
     case ASSISTANT_INTENT = 'assistant.intent';
+    case ASSISTANT_FUSION_PHASE_STARTED = 'assistant.fusion_phase_started';
+    case ASSISTANT_FUSION_PHASE_COMPLETED = 'assistant.fusion_phase_completed';
+    case ASSISTANT_FUSION_PHASE_FAILED = 'assistant.fusion_phase_failed';
     case ASSISTANT_SERVER_TOOL_PROGRESS = 'assistant.server_tool_progress';
     case ASSISTANT_REASONING = 'assistant.reasoning';
     case ASSISTANT_REASONING_DELTA = 'assistant.reasoning_delta';
@@ -156,6 +163,7 @@ enum SessionEventType: string
 
     // Subagent events
     case SUBAGENT_STARTED = 'subagent.started';
+    case SUBAGENT_CONFIGURED = 'subagent.configured';
     case SUBAGENT_COMPLETED = 'subagent.completed';
     case SUBAGENT_FAILED = 'subagent.failed';
     case SUBAGENT_SELECTED = 'subagent.selected';
