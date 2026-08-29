@@ -20,6 +20,8 @@ use Revolution\Copilot\Types\Rpc\FactoryResumeResult;
 use Revolution\Copilot\Types\Rpc\FactoryRunDetail;
 use Revolution\Copilot\Types\Rpc\FactoryRunRequest;
 use Revolution\Copilot\Types\Rpc\FactoryRunResult;
+use Revolution\Copilot\Types\Rpc\FactoryToolResumeRequest;
+use Revolution\Copilot\Types\Rpc\FactoryToolRunRequest;
 
 /**
  * Pending factory RPC operations for a session.
@@ -56,6 +58,36 @@ class PendingFactory
 
         return FactoryResumeResult::fromArray(
             $this->client->request('session.factory.resume', $paramsArray),
+        );
+    }
+
+    /**
+     * Run a registered factory from a tool invocation.
+     *
+     * @internal
+     */
+    public function runFromTool(FactoryToolRunRequest|array $params): FactoryRunResult
+    {
+        $paramsArray = ($params instanceof FactoryToolRunRequest ? $params : FactoryToolRunRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return FactoryRunResult::fromArray(
+            $this->client->request('session.factory.runFromTool', $paramsArray),
+        );
+    }
+
+    /**
+     * Resume a factory run from a tool invocation.
+     *
+     * @internal
+     */
+    public function resumeFromTool(FactoryToolResumeRequest|array $params): FactoryResumeResult
+    {
+        $paramsArray = ($params instanceof FactoryToolResumeRequest ? $params : FactoryToolResumeRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return FactoryResumeResult::fromArray(
+            $this->client->request('session.factory.resumeFromTool', $paramsArray),
         );
     }
 

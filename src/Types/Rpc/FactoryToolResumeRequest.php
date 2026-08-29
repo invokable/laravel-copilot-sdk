@@ -8,23 +8,22 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 
 /**
- * Parameters for resuming a halted factory run.
+ * Internal parameters for resuming a factory run from a tool.
  *
  * @experimental This type is part of an experimental API and may change or be removed.
+ * @internal
  */
-readonly class FactoryResumeRequest implements Arrayable
+readonly class FactoryToolResumeRequest implements Arrayable
 {
     /**
-     * @param  string  $runId  Factory run identifier to resume.
+     * @param  string  $runId  Factory run identifier.
      * @param  FactoryRunLimits|array|null  $limits  Optional per-invocation resource ceiling overrides.
-     * @param  ?bool  $notifyOnComplete  Whether to notify the originating session when the factory completes.
-     * @param  ?bool  $logPhaseNames  Whether to emit factory phase names to the session transcript.
+     * @param  ?string  $toolCallId  Opaque identifier of the originating tool call.
      */
     public function __construct(
         public string $runId,
         public FactoryRunLimits|array|null $limits = null,
-        public ?bool $notifyOnComplete = null,
-        public ?bool $logPhaseNames = null,
+        public ?string $toolCallId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -36,8 +35,7 @@ readonly class FactoryResumeRequest implements Arrayable
             limits: $limits !== null
                 ? ($limits instanceof FactoryRunLimits ? $limits : FactoryRunLimits::fromArray($limits))
                 : null,
-            notifyOnComplete: $data['notifyOnComplete'] ?? null,
-            logPhaseNames: $data['logPhaseNames'] ?? null,
+            toolCallId: $data['toolCallId'] ?? null,
         );
     }
 
@@ -48,8 +46,7 @@ readonly class FactoryResumeRequest implements Arrayable
         return array_filter([
             'runId' => $this->runId,
             'limits' => $limits,
-            'notifyOnComplete' => $this->notifyOnComplete,
-            'logPhaseNames' => $this->logPhaseNames,
+            'toolCallId' => $this->toolCallId,
         ], fn ($v) => $v !== null);
     }
 }

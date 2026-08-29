@@ -10,11 +10,15 @@ describe('RunOptions', function () {
         $options = RunOptions::fromArray([
             'limits' => ['maxTotalSubagents' => 5],
             'resumeFromRunId' => 'run-1',
+            'notifyOnComplete' => false,
+            'logPhaseNames' => true,
         ]);
 
         expect($options->limits)->toBeInstanceOf(FactoryRunLimits::class)
             ->and($options->limits->maxTotalSubagents)->toBe(5)
-            ->and($options->resumeFromRunId)->toBe('run-1');
+            ->and($options->resumeFromRunId)->toBe('run-1')
+            ->and($options->logPhaseNames)->toBeTrue()
+            ->and($options->notifyOnComplete)->toBeFalse();
     });
 
     it('defaults to null values', function () {
@@ -28,11 +32,15 @@ describe('RunOptions', function () {
         $options = new RunOptions(
             limits: new FactoryRunLimits(maxTotalSubagents: 5),
             resumeFromRunId: 'run-1',
+            notifyOnComplete: false,
+            logPhaseNames: true,
         );
 
         expect($options->toArray())->toBe([
             'limits' => ['maxTotalSubagents' => 5],
             'resumeFromRunId' => 'run-1',
+            'notifyOnComplete' => false,
+            'logPhaseNames' => true,
         ]);
     });
 });

@@ -21,6 +21,8 @@ use Revolution\Copilot\Types\Rpc\FactoryResumeResult;
 use Revolution\Copilot\Types\Rpc\FactoryRunDetail;
 use Revolution\Copilot\Types\Rpc\FactoryRunRequest;
 use Revolution\Copilot\Types\Rpc\FactoryRunResult;
+use Revolution\Copilot\Types\Rpc\FactoryToolResumeRequest;
+use Revolution\Copilot\Types\Rpc\FactoryToolRunRequest;
 
 describe('PendingFactory', function () {
     it('calls session.factory.run and returns result', function () {
@@ -136,6 +138,49 @@ describe('PendingFactory', function () {
 
         expect($result)->toBeInstanceOf(FactoryResumeResult::class)
             ->and($result->factoryName)->toBe('my-factory')
+            ->and($result->run->runId)->toBe('run-1');
+    });
+
+    it('calls session.factory.runFromTool and returns result', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.factory.runFromTool',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-xyz'
+                    && $params['name'] === 'my-factory'
+                    && $params['toolCallId'] === 'tool-1'),
+            )
+            ->andReturn(['runId' => 'run-1', 'status' => 'running']);
+
+        $result = (new PendingFactory($client, 'session-xyz'))->runFromTool(new FactoryToolRunRequest(
+            name: 'my-factory',
+            args: ['input' => 'value'],
+            toolCallId: 'tool-1',
+        ));
+
+        expect($result)->toBeInstanceOf(FactoryRunResult::class)
+            ->and($result->runId)->toBe('run-1');
+    });
+
+    it('calls session.factory.resumeFromTool and returns result', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.factory.resumeFromTool',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-xyz'
+                    && $params['runId'] === 'run-1'
+                    && $params['toolCallId'] === 'tool-1'),
+            )
+            ->andReturn(['factoryName' => 'my-factory', 'run' => ['runId' => 'run-1', 'status' => 'running']]);
+
+        $result = (new PendingFactory($client, 'session-xyz'))->resumeFromTool(new FactoryToolResumeRequest(
+            runId: 'run-1',
+            toolCallId: 'tool-1',
+        ));
+
+        expect($result)->toBeInstanceOf(FactoryResumeResult::class)
             ->and($result->run->runId)->toBe('run-1');
     });
 
