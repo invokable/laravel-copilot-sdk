@@ -11,6 +11,7 @@ use Illuminate\Support\Arr;
  * Internal parameters for resuming a factory run from a tool.
  *
  * @experimental This type is part of an experimental API and may change or be removed.
+ *
  * @internal
  */
 readonly class FactoryToolResumeRequest implements Arrayable

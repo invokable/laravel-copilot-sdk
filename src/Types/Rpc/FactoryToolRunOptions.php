@@ -10,6 +10,7 @@ use Illuminate\Contracts\Support\Arrayable;
  * Options for an internal tool-originated factory invocation.
  *
  * @experimental This type is part of an experimental API and may change or be removed.
+ *
  * @internal
  */
 readonly class FactoryToolRunOptions implements Arrayable

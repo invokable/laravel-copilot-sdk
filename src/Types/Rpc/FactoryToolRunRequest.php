@@ -11,6 +11,7 @@ use Illuminate\Support\Arr;
  * Internal parameters for invoking a registered factory from a tool.
  *
  * @experimental This type is part of an experimental API and may change or be removed.
+ *
  * @internal
  */
 readonly class FactoryToolRunRequest implements Arrayable
