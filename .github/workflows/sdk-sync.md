@@ -83,7 +83,7 @@ permissions:
   issues: read
   pull-requests: read
 
-model: gpt-5.6-terra?effort=high
+model: claude-sonnet-5?effort=high
 engine:
   id: copilot
   agent: laravel-sdk-sync
