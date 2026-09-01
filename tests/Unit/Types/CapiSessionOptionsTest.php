@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\AutoTier;
 use Revolution\Copilot\Types\CapiSessionOptions;
 
 describe('CapiSessionOptions', function () {
@@ -10,6 +11,7 @@ describe('CapiSessionOptions', function () {
         $options = new CapiSessionOptions;
 
         expect($options->enableWebSocketResponses)->toBeNull();
+        expect($options->autoTier)->toBeNull();
     });
 
     it('can be created with enableWebSocketResponses true', function () {
@@ -28,6 +30,14 @@ describe('CapiSessionOptions', function () {
         $options = CapiSessionOptions::fromArray(['enableWebSocketResponses' => false]);
 
         expect($options->enableWebSocketResponses)->toBeFalse();
+    });
+
+    it('supports automatic model routing tiers', function () {
+        $options = new CapiSessionOptions(autoTier: AutoTier::INTELLIGENCE);
+
+        expect($options->toArray())->toBe(['autoTier' => 'intelligence']);
+        expect(CapiSessionOptions::fromArray(['autoTier' => 'efficiency'])->autoTier)
+            ->toBe(AutoTier::EFFICIENCY);
     });
 
     it('can be created from empty array', function () {

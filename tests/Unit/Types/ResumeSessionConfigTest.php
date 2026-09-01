@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\LargeToolOutputConfig;
@@ -12,6 +13,13 @@ use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
 
 describe('ResumeSessionConfig', function () {
+    it('serializes the ask user variant', function () {
+        $config = ResumeSessionConfig::fromArray(['askUserVariant' => AskUserVariant::LEGACY]);
+
+        expect($config->askUserVariant)->toBe(AskUserVariant::LEGACY)
+            ->and($config->toArray()['askUserVariant'])->toBe('legacy');
+    });
+
     it('can be created from array with all fields', function () {
         $handler = fn () => true;
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];

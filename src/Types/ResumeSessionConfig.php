@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Types;
 
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
@@ -62,6 +63,7 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                           When provided, enables `exitPlanMode.request` callbacks.
      * @param  ?Closure  $onAutoModeSwitchRequest  Handler for auto-mode-switch requests from the agent.
      *                                             When provided, enables `autoModeSwitch.request` callbacks.
+     * @param  AskUserVariant|string|null  $askUserVariant  Variant of the built-in ask_user tool.
      * @param  ?bool  $enableSessionTelemetry  Enables or disables internal session telemetry.
      *                                         When false, disables session telemetry. When omitted or true,
      *                                         telemetry is enabled for GitHub-authenticated sessions.
@@ -223,6 +225,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ManagedSettings|array|null $managedSettings = null,
         public ?array $includedBuiltinSkills = null,
         public ?Closure $gitHubTokenProvider = null,
+        public AskUserVariant|string|null $askUserVariant = null,
     ) {}
 
     /**
@@ -369,6 +372,9 @@ readonly class ResumeSessionConfig implements Arrayable
                 : null,
             includedBuiltinSkills: $data['includedBuiltinSkills'] ?? null,
             gitHubTokenProvider: $data['gitHubTokenProvider'] ?? null,
+            askUserVariant: isset($data['askUserVariant'])
+                ? (is_string($data['askUserVariant']) ? (AskUserVariant::tryFrom($data['askUserVariant']) ?? $data['askUserVariant']) : $data['askUserVariant'])
+                : null,
         );
     }
 
@@ -499,6 +505,7 @@ readonly class ResumeSessionConfig implements Arrayable
                 ? $this->managedSettings->toArray()
                 : $this->managedSettings,
             'includedBuiltinSkills' => $this->includedBuiltinSkills,
+            'askUserVariant' => $this->askUserVariant instanceof AskUserVariant ? $this->askUserVariant->value : $this->askUserVariant,
         ], fn ($value) => $value !== null);
     }
 }

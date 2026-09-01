@@ -12,6 +12,8 @@ use Revolution\Copilot\Types\Rpc\CommandsInvokeRequest;
 use Revolution\Copilot\Types\Rpc\CommandsListRequest;
 use Revolution\Copilot\Types\Rpc\CommandsRespondToQueuedCommandRequest;
 use Revolution\Copilot\Types\Rpc\CommandsRespondToQueuedCommandResult;
+use Revolution\Copilot\Types\Rpc\EnqueueCommandParams;
+use Revolution\Copilot\Types\Rpc\EnqueueCommandResult;
 
 /**
  * Pending commands RPC operations for a session.
@@ -22,6 +24,21 @@ class PendingCommands
         protected JsonRpcClient $client,
         protected string $sessionId,
     ) {}
+
+    /**
+     * Enqueue a slash command for FIFO processing.
+     *
+     * @experimental
+     */
+    public function enqueue(EnqueueCommandParams|array $params): EnqueueCommandResult
+    {
+        $paramsArray = ($params instanceof EnqueueCommandParams ? $params : EnqueueCommandParams::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return EnqueueCommandResult::fromArray(
+            $this->client->request('session.commands.enqueue', $paramsArray),
+        );
+    }
 
     /**
      * List slash commands available in the session.

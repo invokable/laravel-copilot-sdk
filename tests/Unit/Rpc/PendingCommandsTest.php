@@ -6,8 +6,28 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingCommands;
 use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandRequest;
 use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandResult;
+use Revolution\Copilot\Types\Rpc\EnqueueCommandParams;
+use Revolution\Copilot\Types\Rpc\EnqueueCommandResult;
 
 describe('PendingCommands', function () {
+    it('enqueues a command with display text', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.commands.enqueue',
+                ['command' => '/compact', 'displayText' => 'Compact context', 'sessionId' => 'session-abc'],
+            )
+            ->andReturn(['queued' => true]);
+
+        $result = (new PendingCommands($client, 'session-abc'))->enqueue(
+            new EnqueueCommandParams('/compact', 'Compact context'),
+        );
+
+        expect($result)->toBeInstanceOf(EnqueueCommandResult::class)
+            ->and($result->queued)->toBeTrue();
+    });
+
     it('calls session.commands.handlePendingCommand with typed params', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
