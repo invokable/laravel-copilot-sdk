@@ -27,6 +27,7 @@ use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Transport\TcpTransport;
 use Revolution\Copilot\Types\CommandDefinition;
+use Revolution\Copilot\Types\CapiSessionOptions;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\GitHubMcpToolConfig;
@@ -347,9 +348,13 @@ class Client implements CopilotClient
                 'excludedTools' => $config['excludedTools'] ?? null,
                 'toolFilterPrecedence' => 'excluded',
                 'provider' => $config['provider'] ?? null,
+                'capi' => $this->normalizeCapiSessionOptions($config['capi'] ?? null),
                 'requestPermission' => isset($config['onPermissionRequest']),
                 'requestUserInput' => isset($config['onUserInputRequest']),
                 'requestElicitation' => isset($config['onElicitationRequest']),
+                'askUserVariant' => ($config['askUserVariant'] ?? null) instanceof \BackedEnum
+                    ? $config['askUserVariant']->value
+                    : ($config['askUserVariant'] ?? null),
                 'requestExitPlanMode' => isset($config['onExitPlanModeRequest']),
                 'requestAutoModeSwitch' => isset($config['onAutoModeSwitchRequest']),
                 'hooks' => $hasHooks,
@@ -540,9 +545,13 @@ class Client implements CopilotClient
                 'excludedTools' => $config['excludedTools'] ?? null,
                 'toolFilterPrecedence' => 'excluded',
                 'provider' => $config['provider'] ?? null,
+                'capi' => $this->normalizeCapiSessionOptions($config['capi'] ?? null),
                 'requestPermission' => isset($config['onPermissionRequest']),
                 'requestUserInput' => isset($config['onUserInputRequest']),
                 'requestElicitation' => isset($config['onElicitationRequest']),
+                'askUserVariant' => ($config['askUserVariant'] ?? null) instanceof \BackedEnum
+                    ? $config['askUserVariant']->value
+                    : ($config['askUserVariant'] ?? null),
                 'requestExitPlanMode' => isset($config['onExitPlanModeRequest']),
                 'requestAutoModeSwitch' => isset($config['onAutoModeSwitchRequest']),
                 'hooks' => $hasHooks,
@@ -679,6 +688,18 @@ class Client implements CopilotClient
         }
 
         return $config instanceof GitHubMcpToolConfig ? $config->toArray() : $config;
+    }
+
+    /**
+     * Normalize provider-scoped CAPI options into a plain array for the RPC payload.
+     */
+    private function normalizeCapiSessionOptions(CapiSessionOptions|array|null $config): ?array
+    {
+        if ($config === null) {
+            return null;
+        }
+
+        return $config instanceof CapiSessionOptions ? $config->toArray() : $config;
     }
 
     private function registerGitHubTokenProvider(?callable $provider, ?string $sessionId = null): ?string

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\MemoryConfiguration;
@@ -13,6 +14,13 @@ use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
 
 describe('SessionConfig', function () {
+    it('serializes the ask user variant', function () {
+        $config = SessionConfig::fromArray(['askUserVariant' => 'elicitation']);
+
+        expect($config->askUserVariant)->toBe(AskUserVariant::ELICITATION)
+            ->and($config->toArray()['askUserVariant'])->toBe('elicitation');
+    });
+
     it('can be created from array with all fields', function () {
         $handler = fn () => true;
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];

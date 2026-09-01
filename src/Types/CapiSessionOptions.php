@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\AutoTier;
 
 /**
  * Provider-scoped options for the Copilot API (CAPI).
@@ -25,9 +26,11 @@ readonly class CapiSessionOptions implements Arrayable
      *
      *                                           Setting this to `false` is equivalent to setting the
      *                                           `COPILOT_CLI_DISABLE_WEBSOCKET_RESPONSES` environment variable.
+     * @param  AutoTier|string|null  $autoTier  Routing preference when the automatic model is selected.
      */
     public function __construct(
         public ?bool $enableWebSocketResponses = null,
+        public AutoTier|string|null $autoTier = null,
     ) {}
 
     /**
@@ -37,6 +40,9 @@ readonly class CapiSessionOptions implements Arrayable
     {
         return new self(
             enableWebSocketResponses: $data['enableWebSocketResponses'] ?? null,
+            autoTier: isset($data['autoTier'])
+                ? (is_string($data['autoTier']) ? (AutoTier::tryFrom($data['autoTier']) ?? $data['autoTier']) : $data['autoTier'])
+                : null,
         );
     }
 
@@ -47,6 +53,7 @@ readonly class CapiSessionOptions implements Arrayable
     {
         return array_filter([
             'enableWebSocketResponses' => $this->enableWebSocketResponses,
+            'autoTier' => $this->autoTier instanceof AutoTier ? $this->autoTier->value : $this->autoTier,
         ], fn ($value) => $value !== null);
     }
 }

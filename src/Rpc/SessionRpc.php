@@ -173,6 +173,16 @@ class SessionRpc
     }
 
     /**
+     * Sandbox RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function sandbox(): PendingSandbox
+    {
+        return new PendingSandbox($this->client, $this->sessionId);
+    }
+
+    /**
      * UI RPC operations.
      *
      * Used to respond to UI elicitation requests.

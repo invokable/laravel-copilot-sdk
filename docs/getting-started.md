@@ -156,6 +156,7 @@ Now for the powerful part. Let's give Copilot the ability to call your code by d
 
 ```php
 use Illuminate\JsonSchema\JsonSchema;
+use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionConfig;
@@ -178,6 +179,7 @@ public function handle()
 
     // Create session config with tools
     $config = new SessionConfig(
+        askUserVariant: AskUserVariant::ELICITATION,
         tools: [
             Tool::define(
                 name: 'lookup_fact',
@@ -211,6 +213,10 @@ public function handle()
 ```
 
 Run it and you'll see Copilot call your tool to get the fact, then respond with the results!
+
+For sessions that use the built-in `ask_user` tool, pass
+`askUserVariant: AskUserVariant::ELICITATION` to `SessionConfig` when your
+client supports structured elicitation forms.
 
 ## Step 6: Build an Interactive Assistant
 

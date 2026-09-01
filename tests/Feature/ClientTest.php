@@ -227,7 +227,8 @@ describe('Client', function () {
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
-            ->with('session.create', Mockery::any())
+            ->with('session.create', Mockery::on(fn ($params) => ($params['askUserVariant'] ?? null) === 'elicitation'
+                && ($params['capi'] ?? null) === ['autoTier' => 'balance']))
             ->once()
             ->andReturn(['sessionId' => 'test-session-123']);
 
@@ -245,6 +246,8 @@ describe('Client', function () {
         $client->start();
         $session = $client->createSession([
             'onPermissionRequest' => PermissionHandler::approveAll(),
+            'askUserVariant' => 'elicitation',
+            'capi' => ['autoTier' => 'balance'],
         ]);
 
         expect($session)->toBe($mockSession);
@@ -610,7 +613,9 @@ describe('Client', function () {
                 return is_array($cmds)
                     && count($cmds) === 1
                     && $cmds[0] === ['name' => 'rollback', 'description' => 'Rollback last deployment']
-                    && ! array_key_exists('handler', $cmds[0]);
+                    && ! array_key_exists('handler', $cmds[0])
+                    && ($params['askUserVariant'] ?? null) === 'legacy'
+                    && ($params['capi'] ?? null) === ['autoTier' => 'efficiency'];
             }))
             ->once()
             ->andReturn(['sessionId' => 'test-session-123']);
@@ -630,6 +635,8 @@ describe('Client', function () {
         $session = $client->resumeSession('test-session-123', [
             'commands' => $commands,
             'onPermissionRequest' => PermissionHandler::approveAll(),
+            'askUserVariant' => 'legacy',
+            'capi' => ['autoTier' => 'efficiency'],
         ]);
 
         expect($session)->toBe($mockSession);

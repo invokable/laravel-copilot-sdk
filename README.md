@@ -131,6 +131,34 @@ $session = Copilot::client()->createSession(new SessionConfig(
 The callback receives `host`, `sessionId`, and `reason` (`initial` or `refresh`).
 `gitHubToken` and `gitHubTokenProvider` are mutually exclusive.
 
+### Advanced session options
+
+The built-in `ask_user` tool can use the structured elicitation variant, and
+automatic model selection can be tuned with a CAPI tier:
+
+```php
+use Revolution\Copilot\Enums\AskUserVariant;
+use Revolution\Copilot\Enums\AutoTier;
+use Revolution\Copilot\Types\CapiSessionOptions;
+use Revolution\Copilot\Types\Rpc\EnqueueCommandParams;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    askUserVariant: AskUserVariant::ELICITATION,
+    capi: new CapiSessionOptions(autoTier: AutoTier::BALANCE),
+);
+```
+
+Use `AskUserVariant::ELICITATION` together with an `onElicitationRequest`
+handler; the default variant remains `legacy`.
+
+Session-scoped experimental RPCs are available through `$session->rpc()`:
+
+```php
+$session->rpc()->commands()->enqueue(new EnqueueCommandParams('/compact'));
+$sandbox = $session->rpc()->sandbox()->getEnforcementStatus();
+```
+
 ### `copilot()` helper
 
 Alternatively, you can use the `copilot()` helper function.
