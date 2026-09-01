@@ -284,3 +284,51 @@ $response = Copilot::run('...', config: $config);
 
 カスタムエージェントの使い方は [Custom Agents](./custom-agents.md) を参照。
 クラウド実行は [Cloud Sessions](./cloud-sessions.md)、Plugin Directoryは [Plugin Directories](./plugin-directories.md) を参照。
+
+## セッションごとのGitHubトークンプロバイダー
+
+複数のユーザーにサービスを提供するアプリケーションでは、セッション設定にトークンを保存せず、短期間有効なトークンを返すコールバックを指定できます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Support\PermissionHandler;
+use Revolution\Copilot\Types\SessionConfig;
+
+$session = Copilot::client()->createSession(new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveAll(),
+    gitHubTokenProvider: fn (array $request) => [
+        'kind' => 'token',
+        'accessToken' => auth()->user()->github_token,
+        'expiresIn' => 3600,
+    ],
+));
+```
+
+コールバックには`host`、`sessionId`、`reason`（`initial`または`refresh`）が渡されます。
+`gitHubToken`と`gitHubTokenProvider`は同時に指定できません。
+
+## 高度なセッションオプション
+
+組み込みの`ask_user`ツールでは構造化エリシテーション形式を使用できます。また、CAPI tierを指定してモデルの自動選択を調整できます。
+
+```php
+use Revolution\Copilot\Enums\AskUserVariant;
+use Revolution\Copilot\Enums\AutoTier;
+use Revolution\Copilot\Types\CapiSessionOptions;
+use Revolution\Copilot\Types\Rpc\EnqueueCommandParams;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    askUserVariant: AskUserVariant::ELICITATION,
+    capi: new CapiSessionOptions(autoTier: AutoTier::BALANCE),
+);
+```
+
+`AskUserVariant::ELICITATION`は`onElicitationRequest`ハンドラーと組み合わせて使用します。デフォルトのvariantは引き続き`legacy`です。
+
+セッション単位の実験的なRPCは`$session->rpc()`から利用できます。
+
+```php
+$session->rpc()->commands()->enqueue(new EnqueueCommandParams('/compact'));
+$sandbox = $session->rpc()->sandbox()->getEnforcementStatus();
+```
