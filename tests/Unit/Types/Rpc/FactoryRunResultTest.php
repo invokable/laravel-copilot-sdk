@@ -43,4 +43,19 @@ describe('FactoryRunResult', function () {
             'status' => 'running',
         ]);
     });
+
+    it('handles attempt field', function () {
+        $result = FactoryRunResult::fromArray([
+            'runId' => 'run-1',
+            'status' => 'running',
+            'attempt' => 2,
+        ]);
+
+        expect($result->attempt)->toBe(2)
+            ->and($result->toArray())->toBe([
+                'runId' => 'run-1',
+                'status' => 'running',
+                'attempt' => 2,
+            ]);
+    });
 });

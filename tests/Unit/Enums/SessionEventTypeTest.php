@@ -214,4 +214,9 @@ describe('SessionEventType', function () {
         expect(SessionEventType::SUBAGENT_CONFIGURED->value)->toBe('subagent.configured')
             ->and(SessionEventType::from('subagent.configured'))->toBe(SessionEventType::SUBAGENT_CONFIGURED);
     });
+
+    it('has mode notice delivered event type', function () {
+        expect(SessionEventType::SESSION_MODE_NOTICE_DELIVERED->value)->toBe('session.mode_notice_delivered')
+            ->and(SessionEventType::from('session.mode_notice_delivered'))->toBe(SessionEventType::SESSION_MODE_NOTICE_DELIVERED);
+    });
 });

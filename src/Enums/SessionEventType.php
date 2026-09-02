@@ -22,6 +22,7 @@ enum SessionEventType: string
     case SESSION_WARNING = 'session.warning';
     case SESSION_MODEL_CHANGE = 'session.model_change';
     case SESSION_MODE_CHANGED = 'session.mode_changed';
+    case SESSION_MODE_NOTICE_DELIVERED = 'session.mode_notice_delivered';
     case SESSION_SESSION_LIMITS_CHANGED = 'session.session_limits_changed';
     case SESSION_PLAN_CHANGED = 'session.plan_changed';
     case SESSION_WORKSPACE_FILE_CHANGED = 'session.workspace_file_changed';

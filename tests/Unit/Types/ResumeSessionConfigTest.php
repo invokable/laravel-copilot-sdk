@@ -418,4 +418,23 @@ describe('ResumeSessionConfig', function () {
 
         expect($config->toArray())->not->toHaveKey('commands');
     });
+
+    it('accepts featureFlags parameter', function () {
+        $config = new ResumeSessionConfig(featureFlags: ['enable-foo' => true]);
+
+        expect($config->featureFlags)->toBe(['enable-foo' => true])
+            ->and($config->toArray()['featureFlags'])->toBe(['enable-foo' => true]);
+    });
+
+    it('can be created from array with featureFlags', function () {
+        $config = ResumeSessionConfig::fromArray(['featureFlags' => ['enable-bar' => false]]);
+
+        expect($config->featureFlags)->toBe(['enable-bar' => false]);
+    });
+
+    it('excludes featureFlags from toArray when null', function () {
+        $config = new ResumeSessionConfig;
+
+        expect($config->toArray())->not->toHaveKey('featureFlags');
+    });
 });

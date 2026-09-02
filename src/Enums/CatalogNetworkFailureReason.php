@@ -26,7 +26,16 @@ enum CatalogNetworkFailureReason: string
     /** The connection was refused or reset. */
     case ConnectionRefused = 'connection-refused';
 
-    /** The authority returned a status the runtime treats as a failure. */
+    /** The configured proxy returned 407 and requires authentication. */
+    case ProxyAuthenticationRequired = 'proxy-authentication-required';
+
+    /** The authority rate-limited requests and supplied or implied a bounded cooldown. */
+    case RateLimited = 'rate-limited';
+
+    /** The authority returned a transient 5xx response. */
+    case ServiceUnavailable = 'service-unavailable';
+
+    /** The authority returned another status the runtime treats as a failure. */
     case HttpStatus = 'http-status';
 
     /** The response exceeded the permitted size. */

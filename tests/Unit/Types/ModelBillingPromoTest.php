@@ -21,12 +21,14 @@ describe('ModelBillingPromo', function () {
             discountPercent: 20.5,
             id: 'promo-123',
             message: 'Holiday discount',
+            showBanner: true,
         );
 
         expect($promo->endsAt)->toBe('2026-12-31T23:59:59Z')
             ->and($promo->discountPercent)->toBe(20.5)
             ->and($promo->id)->toBe('promo-123')
-            ->and($promo->message)->toBe('Holiday discount');
+            ->and($promo->message)->toBe('Holiday discount')
+            ->and($promo->showBanner)->toBeTrue();
     });
 
     it('can be created from array', function () {
@@ -35,12 +37,14 @@ describe('ModelBillingPromo', function () {
             'discountPercent' => 10.0,
             'id' => 'summer-promo',
             'message' => 'Summer savings',
+            'showBanner' => false,
         ]);
 
         expect($promo->endsAt)->toBe('2026-06-30T00:00:00Z')
             ->and($promo->discountPercent)->toBe(10.0)
             ->and($promo->id)->toBe('summer-promo')
-            ->and($promo->message)->toBe('Summer savings');
+            ->and($promo->message)->toBe('Summer savings')
+            ->and($promo->showBanner)->toBeFalse();
     });
 
     it('can be created from array with only required fields', function () {
@@ -58,6 +62,7 @@ describe('ModelBillingPromo', function () {
             discountPercent: 25.0,
             id: 'promo-abc',
             message: 'Discount offer',
+            showBanner: true,
         );
 
         expect($promo->toArray())->toBe([
@@ -65,6 +70,7 @@ describe('ModelBillingPromo', function () {
             'discountPercent' => 25.0,
             'id' => 'promo-abc',
             'message' => 'Discount offer',
+            'showBanner' => true,
         ]);
     });
 

@@ -20,6 +20,7 @@ readonly class CatalogNetworkFailureError implements Arrayable
         public CatalogNetworkFailureReason $reason,
         public ?int $statusCode,
         public string $message,
+        public ?int $retryAfterSeconds = null,
     ) {
         $this->kind = 'network-failure';
     }
@@ -30,6 +31,7 @@ readonly class CatalogNetworkFailureError implements Arrayable
             reason: CatalogNetworkFailureReason::from($data['reason']),
             statusCode: isset($data['statusCode']) ? (int) $data['statusCode'] : null,
             message: $data['message'],
+            retryAfterSeconds: isset($data['retryAfterSeconds']) ? (int) $data['retryAfterSeconds'] : null,
         );
     }
 
@@ -42,6 +44,9 @@ readonly class CatalogNetworkFailureError implements Arrayable
         ];
         if ($this->statusCode !== null) {
             $arr['statusCode'] = $this->statusCode;
+        }
+        if ($this->retryAfterSeconds !== null) {
+            $arr['retryAfterSeconds'] = $this->retryAfterSeconds;
         }
 
         return $arr;

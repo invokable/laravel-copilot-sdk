@@ -188,6 +188,7 @@ readonly class SessionConfig implements Arrayable
      *
      *                                                         @experimental
      *
+     * @param  ?array  $featureFlags  Feature-flag values resolved by the host for this session. Re-supply them when resuming after a runtime restart.
      * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
      *                                                                   path as CLI-fetched assignments. Applies to both session creation and resume.
      * @param  Verbosity|string|null  $verbosity  Initial output verbosity level for supported models.
@@ -275,6 +276,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $excludedBuiltinAgents = null,
         public ?array $includedBuiltinAgents = null,
         public SessionLimitsConfig|array|null $sessionLimits = null,
+        public ?array $featureFlags = null,
         public CopilotExpAssignmentResponse|array|null $expAssignments = null,
         public Verbosity|string|null $verbosity = null,
         public ?bool $enableManagedSettings = null,
@@ -457,6 +459,7 @@ readonly class SessionConfig implements Arrayable
             excludedBuiltinAgents: $data['excludedBuiltinAgents'] ?? null,
             includedBuiltinAgents: $data['includedBuiltinAgents'] ?? null,
             sessionLimits: $sessionLimits,
+            featureFlags: $data['featureFlags'] ?? null,
             expAssignments: isset($data['expAssignments'])
                 ? ($data['expAssignments'] instanceof CopilotExpAssignmentResponse ? $data['expAssignments'] : CopilotExpAssignmentResponse::fromArray($data['expAssignments']))
                 : null,
@@ -624,6 +627,7 @@ readonly class SessionConfig implements Arrayable
             'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
             'includedBuiltinAgents' => $this->includedBuiltinAgents,
             'sessionLimits' => $sessionLimits,
+            'featureFlags' => $this->featureFlags,
             'expAssignments' => $expAssignments,
             'verbosity' => $verbosity,
             'enableManagedSettings' => $this->enableManagedSettings,

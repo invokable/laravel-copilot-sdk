@@ -141,6 +141,7 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?bool  $enableSessionStore  When true, enables the cross-session store for search and retrieval.
      * @param  ?bool  $enableSkills  When true, enables skill loading.
      * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of the original prompt.
+     * @param  ?array  $featureFlags  Feature-flag values resolved by the host for this session. Re-supply them when resuming after a runtime restart.
      * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
      *                                                                   path as CLI-fetched assignments. Applies to both session creation and resume. @internal
      * @param  ?bool  $enableManagedSettings  When true, the runtime self-fetches enterprise managed settings.
@@ -216,6 +217,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?bool $enableSessionStore = null,
         public ?bool $enableSkills = null,
         public ?string $displayPrompt = null,
+        public ?array $featureFlags = null,
         public CopilotExpAssignmentResponse|array|null $expAssignments = null,
         public ?bool $enableExperimentalMode = null,
         public ?array $additionalDirectories = null,
@@ -361,6 +363,7 @@ readonly class ResumeSessionConfig implements Arrayable
             enableSessionStore: $data['enableSessionStore'] ?? null,
             enableSkills: $data['enableSkills'] ?? null,
             displayPrompt: $data['displayPrompt'] ?? null,
+            featureFlags: $data['featureFlags'] ?? null,
             expAssignments: isset($data['expAssignments'])
                 ? ($data['expAssignments'] instanceof CopilotExpAssignmentResponse ? $data['expAssignments'] : CopilotExpAssignmentResponse::fromArray($data['expAssignments']))
                 : null,
@@ -497,6 +500,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'enableSessionStore' => $this->enableSessionStore,
             'enableSkills' => $this->enableSkills,
             'displayPrompt' => $this->displayPrompt,
+            'featureFlags' => $this->featureFlags,
             'expAssignments' => $expAssignments,
             'enableManagedSettings' => $this->enableManagedSettings,
             'enableFileChangeTracking' => $this->enableFileChangeTracking,

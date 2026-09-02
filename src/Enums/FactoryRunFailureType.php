@@ -14,4 +14,6 @@ enum FactoryRunFailureType: string
     case FACTORY_LIMIT_REACHED = 'factory_limit_reached';
     case FACTORY_RESUME_DECLINED = 'factory_resume_declined';
     case FACTORY_DURABLE_FAILURE = 'factory_durable_failure';
+    case FACTORY_ACCOUNTING_INCOMPLETE = 'factory_accounting_incomplete';
+    case FACTORY_PROVIDER_DISCONNECTED = 'factory_provider_disconnected';
 }
