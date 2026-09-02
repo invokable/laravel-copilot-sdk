@@ -83,7 +83,8 @@ permissions:
   issues: read
   pull-requests: read
 
-model: claude-sonnet-5?effort=high
+model: claude-sonnet-5
+
 engine:
   id: copilot
   agent: laravel-sdk-sync
