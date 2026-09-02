@@ -14,4 +14,9 @@ describe('FactoryRunFailureType', function () {
         expect(FactoryRunFailureType::from('factory_limit_reached'))->toBe(FactoryRunFailureType::FACTORY_LIMIT_REACHED)
             ->and(FactoryRunFailureType::from('factory_resume_declined'))->toBe(FactoryRunFailureType::FACTORY_RESUME_DECLINED);
     });
+
+    it('has factory_provider_disconnected case', function () {
+        expect(FactoryRunFailureType::FACTORY_PROVIDER_DISCONNECTED->value)->toBe('factory_provider_disconnected')
+            ->and(FactoryRunFailureType::from('factory_provider_disconnected'))->toBe(FactoryRunFailureType::FACTORY_PROVIDER_DISCONNECTED);
+    });
 });

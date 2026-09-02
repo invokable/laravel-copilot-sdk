@@ -18,6 +18,7 @@ readonly class FactoryRunResult implements Arrayable
     /**
      * @param  string  $runId  Factory run identifier.
      * @param  FactoryRunStatus|string  $status  Current or terminal factory run status.
+     * @param  ?int  $attempt  One-based execution attempt represented by this envelope. Absent before the first attempt starts or when returned by an older runtime.
      * @param  ?string  $error  Error message for an errored run.
      * @param  FactoryRunFailure|array|null  $failure  Machine-readable failure details for an errored run.
      * @param  ?string  $reason  Reason for a halted or cancelled run.
@@ -27,6 +28,7 @@ readonly class FactoryRunResult implements Arrayable
     public function __construct(
         public string $runId,
         public FactoryRunStatus|string $status,
+        public ?int $attempt = null,
         public ?string $error = null,
         public FactoryRunFailure|array|null $failure = null,
         public ?string $reason = null,
@@ -41,6 +43,7 @@ readonly class FactoryRunResult implements Arrayable
         return new self(
             runId: Arr::string($data, 'runId'),
             status: $data['status'] instanceof FactoryRunStatus ? $data['status'] : FactoryRunStatus::from($data['status']),
+            attempt: isset($data['attempt']) ? (int) $data['attempt'] : null,
             error: $data['error'] ?? null,
             failure: $failure !== null
                 ? ($failure instanceof FactoryRunFailure ? $failure : FactoryRunFailure::fromArray($failure))
@@ -58,6 +61,7 @@ readonly class FactoryRunResult implements Arrayable
         return array_filter([
             'runId' => $this->runId,
             'status' => $this->status instanceof FactoryRunStatus ? $this->status->value : $this->status,
+            'attempt' => $this->attempt,
             'error' => $this->error,
             'failure' => $failure,
             'reason' => $this->reason,

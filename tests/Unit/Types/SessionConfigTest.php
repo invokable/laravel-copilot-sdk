@@ -533,4 +533,29 @@ describe('SessionConfig', function () {
 
         expect($config->sessionLimits)->toBe($limits);
     });
+
+    it('accepts featureFlags parameter', function () {
+        $config = new SessionConfig(featureFlags: ['enable-foo' => true]);
+
+        expect($config->featureFlags)->toBe(['enable-foo' => true]);
+    });
+
+    it('includes featureFlags in toArray', function () {
+        $config = new SessionConfig(featureFlags: ['enable-foo' => true]);
+
+        expect($config->toArray())->toHaveKey('featureFlags')
+            ->and($config->toArray()['featureFlags'])->toBe(['enable-foo' => true]);
+    });
+
+    it('excludes featureFlags from toArray when null', function () {
+        $config = new SessionConfig;
+
+        expect($config->toArray())->not->toHaveKey('featureFlags');
+    });
+
+    it('can be created from array with featureFlags', function () {
+        $config = SessionConfig::fromArray(['featureFlags' => ['enable-bar' => false]]);
+
+        expect($config->featureFlags)->toBe(['enable-bar' => false]);
+    });
 });

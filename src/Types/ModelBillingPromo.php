@@ -19,12 +19,14 @@ readonly class ModelBillingPromo implements Arrayable
      * @param  ?float  $discountPercent  Percentage discount (0-100) applied while the promotion is active. May be fractional.
      * @param  ?string  $id  Stable identifier for the promotion campaign.
      * @param  ?string  $message  Human-readable promotion message.
+     * @param  ?bool  $showBanner  Whether the service asked hosts to give this promotion a prominent surface, such as a dedicated banner, in addition to listing it with the model.
      */
     public function __construct(
         public string $endsAt,
         public ?float $discountPercent = null,
         public ?string $id = null,
         public ?string $message = null,
+        public ?bool $showBanner = null,
     ) {}
 
     /**
@@ -37,6 +39,7 @@ readonly class ModelBillingPromo implements Arrayable
             discountPercent: isset($data['discountPercent']) ? (float) $data['discountPercent'] : null,
             id: $data['id'] ?? null,
             message: $data['message'] ?? null,
+            showBanner: isset($data['showBanner']) ? (bool) $data['showBanner'] : null,
         );
     }
 
@@ -50,6 +53,7 @@ readonly class ModelBillingPromo implements Arrayable
             'discountPercent' => $this->discountPercent,
             'id' => $this->id,
             'message' => $this->message,
+            'showBanner' => $this->showBanner,
         ], fn ($v) => $v !== null);
     }
 }
