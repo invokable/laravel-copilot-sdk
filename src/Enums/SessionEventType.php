@@ -58,6 +58,10 @@ enum SessionEventType: string
     case SESSION_EXTENSIONS_ATTACHMENTS_PUSHED = 'session.extensions.attachments_pushed';
     case SESSION_TODOS_CHANGED = 'session.todos_changed';
     case SESSION_BINARY_ASSET = 'session.binary_asset';
+    case SESSION_AUTO_TIER_SWITCH_FAILED = 'session.auto_tier_switch_failed';
+    case SESSION_COMPLETION_RECEIPT = 'session.completion_receipt';
+    case SESSION_MCP_SERVER_REMOVED = 'session.mcp_server_removed';
+    case SESSION_MCP_SERVER_NEEDS_RECONNECT = 'session.mcp_server_needs_reconnect';
 
     // Capabilities
     case CAPABILITIES_CHANGED = 'capabilities.changed';
@@ -83,6 +87,7 @@ enum SessionEventType: string
     case ASSISTANT_MESSAGE_DELTA = 'assistant.message_delta';
     case ASSISTANT_TURN_END = 'assistant.turn_end';
     case ASSISTANT_USAGE = 'assistant.usage';
+    case ASSISTANT_FUSION_PHASE_ACTIVITY = 'assistant.fusion_phase_activity';
 
     // Abort
     case ABORT = 'abort';

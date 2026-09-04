@@ -215,10 +215,19 @@ $session->rpc()->model()->switchTo(new ModelSwitchToRequest(
 $session->rpc()->model()->list();
 $session->rpc()->model()->list(new ModelListRequest(skipCache: true)); // キャッシュをスキップ
 
+// Auto routing preference を変更する（selected modelは変えない、experimental）
+$session->rpc()->model()->switchAutoTier(new ModelSwitchAutoTierRequest(autoTier: AutoTier::BALANCE));
+$session->rpc()->model()->switchAutoTier(new ModelSwitchAutoTierRequest(autoTier: null)); // provider-defaultのAuto routingへ戻す
+
 // setModel()ヘルパーでも同様にreasoningEffortやmodelCapabilitiesを指定可能
 $session->setModel('claude-opus-4.7', ReasoningEffort::HIGH);
 $session->setModel('claude-opus-4.7', 'high'); // 文字列でも指定可能
 $session->setModel('gpt-4', modelCapabilities: ['supports' => ['vision' => true]]); // 配列でも指定可能
+// autoTierを指定する場合（modelIdが'auto'の場合のみ有効）
+$session->setModel('auto', autoTier: AutoTier::INTELLIGENCE);
+
+// setAutoTier()ヘルパーでmodelを変更せずにAuto routing preferenceのみ変更（experimental）
+$session->setAutoTier(AutoTier::EFFICIENCY);
 
 // mode
 $session->rpc()->mode()->get();

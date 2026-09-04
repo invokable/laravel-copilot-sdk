@@ -197,3 +197,21 @@ if ($event->is(SessionEventType::SESSION_BINARY_ASSET)) {
 }
 ```
 
+## Auto tier ルーティング関連イベント
+
+Auto tier switching（experimental）に伴い、以下の新しいイベントタイプが追加されました：
+
+- `SESSION_AUTO_TIER_SWITCH_FAILED`: `session.auto_tier_switch_failed` - Auto routing preferenceの切り替えに失敗した時
+- `SESSION_COMPLETION_RECEIPT`: `session.completion_receipt` (experimental) - 完了レシートが発行された時
+- `SESSION_MCP_SERVER_REMOVED`: `session.mcp_server_removed` - MCPサーバーが削除された時
+- `SESSION_MCP_SERVER_NEEDS_RECONNECT`: `session.mcp_server_needs_reconnect` - MCPサーバーの再接続が必要な時
+- `ASSISTANT_FUSION_PHASE_ACTIVITY`: `assistant.fusion_phase_activity` (experimental) - フュージョンフェーズのアクティビティが発生した時
+
+```php
+if ($event->is(SessionEventType::SESSION_AUTO_TIER_SWITCH_FAILED)) {
+    // Auto tier切り替え失敗時の処理
+}
+```
+
+これらのイベントは実験的機能を含むため、将来変更される可能性があります。
+

@@ -59,7 +59,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -90,7 +90,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andThrow(new JsonRpcException(-32601, 'Method not found'));
         $mockRpcClient->shouldReceive('request')
@@ -125,7 +125,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -157,7 +157,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 1]);
 
@@ -190,7 +190,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -223,7 +223,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -277,7 +277,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -333,7 +333,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -382,7 +382,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -424,7 +424,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -485,7 +485,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -538,7 +538,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -603,7 +603,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -656,7 +656,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
@@ -732,7 +732,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -764,7 +764,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -798,7 +798,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')

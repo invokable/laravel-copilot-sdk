@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 use Revolt\EventLoop;
 use Revolution\Copilot\Enums\AgentMode;
+use Revolution\Copilot\Enums\AutoTier;
+use Revolution\Copilot\Enums\ModelSwitchAutoTierStatus;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Exceptions\SessionErrorException;
 use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Session;
+use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\SessionEvent;
 
 beforeEach(function () {
@@ -334,12 +337,12 @@ describe('Session', function () {
             ->and($messages[1]->type())->toBe('assistant.message');
     });
 
-    it('disconnect sends destroy request and clears handlers', function () {
+    it('disconnect sends detach request and clears handlers', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')
-            ->with('session.destroy', ['sessionId' => 'test-session'])
+            ->with('session.detach', ['sessionId' => 'test-session'])
             ->once()
-            ->andReturn([]);
+            ->andReturn(['success' => true]);
 
         $session = new Session('test-session', $mockClient);
 
@@ -368,29 +371,29 @@ describe('Session', function () {
     it('disconnect is idempotent', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')
-            ->with('session.destroy', ['sessionId' => 'test-session'])
+            ->with('session.detach', ['sessionId' => 'test-session'])
             ->once()
-            ->andReturn([]);
+            ->andReturn(['success' => true]);
 
         $session = new Session('test-session', $mockClient);
         $session->disconnect();
         $session->disconnect(); // Second call should be no-op
     });
 
-    it('disconnect clears handlers even when RPC fails', function () {
+    it('disconnect throws and does not clear handlers when the runtime reports failure', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')
-            ->with('session.destroy', ['sessionId' => 'test-session'])
-            ->once()
-            ->andThrow(new RuntimeException('Connection lost'));
+            ->with('session.detach', ['sessionId' => 'test-session'])
+            ->twice()
+            ->andReturn(['success' => false, 'error' => 'Connection lost']);
 
         $session = new Session('test-session', $mockClient);
         $session->registerTools([['name' => 'test', 'handler' => fn () => null]]);
 
         expect(fn () => $session->disconnect())->toThrow(RuntimeException::class);
 
-        // Handlers should still be cleared despite the error
-        expect($session->getToolHandler('test'))->toBeNull();
+        // Handlers remain registered since the detach never succeeded
+        expect($session->getToolHandler('test'))->not->toBeNull();
     });
 
     it('setModel calls session.model.switchTo via rpc', function () {
@@ -405,6 +408,38 @@ describe('Session', function () {
 
         $session = new Session('test-session', $mockClient);
         $session->setModel('claude-sonnet-4');
+    });
+
+    it('setModel passes autoTier through to session.model.switchTo', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.model.switchTo', [
+                'modelId' => 'auto',
+                'sessionId' => 'test-session',
+                'autoTier' => 'balance',
+            ])
+            ->once()
+            ->andReturn(['modelId' => 'auto']);
+
+        $session = new Session('test-session', $mockClient);
+        $session->setModel('auto', autoTier: AutoTier::BALANCE);
+    });
+
+    it('setAutoTier calls session.model.switchAutoTier via rpc', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.model.switchAutoTier', [
+                'autoTier' => 'intelligence',
+                'sessionId' => 'test-session',
+            ])
+            ->once()
+            ->andReturn(['status' => 'pending', 'effectiveAutoTier' => 'intelligence']);
+
+        $session = new Session('test-session', $mockClient);
+        $result = $session->setAutoTier(AutoTier::INTELLIGENCE);
+
+        expect($result)->toBeInstanceOf(ModelSwitchAutoTierResult::class)
+            ->and($result->status)->toBe(ModelSwitchAutoTierStatus::PENDING);
     });
 
     it('handlePermissionRequest uses registered handler', function () {

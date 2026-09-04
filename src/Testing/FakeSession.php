@@ -7,14 +7,17 @@ namespace Revolution\Copilot\Testing;
 use Closure;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\AgentMode;
+use Revolution\Copilot\Enums\AutoTier;
 use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\Enums\LogLevel;
+use Revolution\Copilot\Enums\ModelSwitchAutoTierStatus;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
+use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
@@ -82,9 +85,15 @@ class FakeSession implements CopilotSession
         return null;
     }
 
-    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null): void
+    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null, AutoTier|string|null $autoTier = null): void
     {
         // No-op in fake
+    }
+
+    public function setAutoTier(AutoTier|string|null $autoTier): ModelSwitchAutoTierResult
+    {
+        // No-op in fake
+        return new ModelSwitchAutoTierResult(status: ModelSwitchAutoTierStatus::UNCHANGED);
     }
 
     public function log(string $message, ?LogLevel $level = null, ?bool $ephemeral = null): string
