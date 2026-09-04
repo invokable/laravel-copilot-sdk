@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
+use Revolution\Copilot\Enums\AutoTier;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\Verbosity;
 
@@ -23,6 +24,7 @@ readonly class ModelSwitchToRequest implements Arrayable
      * @param  ModelCapabilitiesOverride|array|null  $modelCapabilities  Override individual model capabilities resolved by the runtime.
      * @param  string|null  $contextTier  Explicit context tier ("default" or "long_context"). Null clears any previous choice.
      * @param  ?bool  $deferIfModelChangeQueued  Defer the switch when a model change is already queued rather than applying it immediately.
+     * @param  AutoTier|string|null  $autoTier  Optional Auto routing preference to stage atomically with selecting `auto`. Rejected when `modelId` is not `auto`.
      */
     public function __construct(
         public string $modelId,
@@ -32,6 +34,7 @@ readonly class ModelSwitchToRequest implements Arrayable
         public ModelCapabilitiesOverride|array|null $modelCapabilities = null,
         public ?string $contextTier = null,
         public ?bool $deferIfModelChangeQueued = null,
+        public AutoTier|string|null $autoTier = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -50,6 +53,7 @@ readonly class ModelSwitchToRequest implements Arrayable
             modelCapabilities: $modelCapabilities,
             contextTier: $data['contextTier'] ?? null,
             deferIfModelChangeQueued: $data['deferIfModelChangeQueued'] ?? null,
+            autoTier: isset($data['autoTier']) ? (AutoTier::tryFrom($data['autoTier']) ?? $data['autoTier']) : null,
         );
     }
 
@@ -75,6 +79,7 @@ readonly class ModelSwitchToRequest implements Arrayable
             'modelCapabilities' => $modelCapabilities,
             'contextTier' => $this->contextTier,
             'deferIfModelChangeQueued' => $this->deferIfModelChangeQueued,
+            'autoTier' => $this->autoTier instanceof AutoTier ? $this->autoTier->value : $this->autoTier,
         ], fn ($v) => $v !== null);
     }
 }

@@ -16,6 +16,7 @@ use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Enums\RuntimeConnectionKind;
+use Revolution\Copilot\Enums\TaskKind;
 use Revolution\Copilot\Events\Client\ClientStarted;
 use Revolution\Copilot\Events\Client\PingPong;
 use Revolution\Copilot\Events\Session\CreateSession;
@@ -928,6 +929,7 @@ class Client implements CopilotClient
             $serverVersion = $this->rpc()->connect(array_filter([
                 'clientInfo' => $clientInfo,
                 'token' => $this->connectionToken,
+                'supportedTaskKinds' => [TaskKind::AGENT->value, TaskKind::CLIENT->value, TaskKind::SHELL->value],
             ], fn ($value) => $value !== null))->protocolVersion;
         } catch (JsonRpcException $e) {
             if ($e->code === -32601 || str_contains($e->getMessage(), 'Unhandled method connect')) {

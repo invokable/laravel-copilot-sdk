@@ -20,6 +20,7 @@ use Revolution\Copilot\Concerns\Session\HasUiApi;
 use Revolution\Copilot\Concerns\Session\HasUserInputHandler;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\AgentMode;
+use Revolution\Copilot\Enums\AutoTier;
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
@@ -37,6 +38,8 @@ use Revolution\Copilot\Types\ElicitationContext;
 use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\Rpc\LogRequest;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
+use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
+use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
@@ -672,37 +675,48 @@ class Session implements CopilotSession
             return;
         }
 
-        $this->disconnected = true;
-
-        try {
-            $this->client->request('session.destroy', [
+        $response = ['success' => false];
+        for ($attempt = 0; $attempt < 2 && ! ($response['success'] ?? false); $attempt++) {
+            $response = $this->client->request('session.detach', [
                 'sessionId' => $this->sessionId,
             ]);
-        } finally {
-            if ($this->onDisconnected !== null) {
-                ($this->onDisconnected)();
-            }
-            $this->onDisconnected = null;
-            $this->eventHandlers = [];
-            $this->typedEventHandlers = [];
-            $this->toolHandlers = [];
-            $this->commandHandlers = [];
-            $this->permissionHandler = null;
-            $this->userInputHandler = null;
-            $this->elicitationHandler = null;
-            $this->exitPlanModeHandler = null;
-            $this->autoModeSwitchHandler = null;
-            $this->hooks = null;
-            $this->capabilities = new SessionCapabilities;
         }
+
+        if (! ($response['success'] ?? false)) {
+            throw new \RuntimeException(sprintf(
+                'Failed to disconnect session %s: %s',
+                $this->sessionId,
+                $response['error'] ?? 'Unknown error',
+            ));
+        }
+
+        $this->disconnected = true;
+
+        if ($this->onDisconnected !== null) {
+            ($this->onDisconnected)();
+        }
+        $this->onDisconnected = null;
+        $this->eventHandlers = [];
+        $this->typedEventHandlers = [];
+        $this->toolHandlers = [];
+        $this->commandHandlers = [];
+        $this->permissionHandler = null;
+        $this->userInputHandler = null;
+        $this->elicitationHandler = null;
+        $this->exitPlanModeHandler = null;
+        $this->autoModeSwitchHandler = null;
+        $this->hooks = null;
+        $this->capabilities = new SessionCapabilities;
     }
 
     /**
      * Switch the model for this session.
      *
+     * @param  AutoTier|string|null  $autoTier  Auto routing preference to apply when $model is "auto". Rejected when $model is not "auto".
+     *
      * @throws JsonRpcException
      */
-    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null): void
+    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null, AutoTier|string|null $autoTier = null): void
     {
         $caps = match (true) {
             $modelCapabilities instanceof ModelCapabilitiesOverride => $modelCapabilities,
@@ -710,7 +724,19 @@ class Session implements CopilotSession
             default => null,
         };
 
-        $this->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: $model, reasoningEffort: $reasoningEffort, modelCapabilities: $caps));
+        $this->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: $model, reasoningEffort: $reasoningEffort, modelCapabilities: $caps, autoTier: $autoTier));
+    }
+
+    /**
+     * Change the Auto routing preference without changing the selected model.
+     *
+     * @experimental Part of an experimental Auto routing surface and may change or be removed in a future release.
+     *
+     * @throws JsonRpcException
+     */
+    public function setAutoTier(AutoTier|string|null $autoTier): ModelSwitchAutoTierResult
+    {
+        return $this->rpc()->model()->switchAutoTier(new ModelSwitchAutoTierRequest(autoTier: $autoTier));
     }
 
     /**

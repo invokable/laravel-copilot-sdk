@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\AutoTier;
+use Revolution\Copilot\Enums\ModelSwitchAutoTierStatus;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingModel;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
+use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
+use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
 
@@ -94,5 +98,42 @@ describe('PendingModel', function () {
 
         expect($result)->toBeInstanceOf(ModelSwitchToResult::class)
             ->and($result->modelId)->toBe('gpt-5');
+    });
+
+    it('calls session.model.switchAutoTier with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.model.switchAutoTier',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-xyz'
+                    && $params['autoTier'] === 'balance'),
+            )
+            ->andReturn(['status' => 'pending', 'effectiveAutoTier' => 'balance']);
+
+        $pending = new PendingModel($client, 'session-xyz');
+        $result = $pending->switchAutoTier(new ModelSwitchAutoTierRequest(autoTier: AutoTier::BALANCE));
+
+        expect($result)->toBeInstanceOf(ModelSwitchAutoTierResult::class)
+            ->and($result->status)->toBe(ModelSwitchAutoTierStatus::PENDING)
+            ->and($result->effectiveAutoTier)->toBe(AutoTier::BALANCE);
+    });
+
+    it('calls session.model.switchAutoTier with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.model.switchAutoTier',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-xyz'
+                    && $params['autoTier'] === null),
+            )
+            ->andReturn(['status' => 'unchanged']);
+
+        $pending = new PendingModel($client, 'session-xyz');
+        $result = $pending->switchAutoTier([]);
+
+        expect($result)->toBeInstanceOf(ModelSwitchAutoTierResult::class)
+            ->and($result->status)->toBe(ModelSwitchAutoTierStatus::UNCHANGED);
     });
 });

@@ -43,7 +43,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -72,7 +72,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', [])
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
 
@@ -99,7 +99,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', ['token' => 'secret'])
+            ->with('connect', ['token' => 'secret', 'supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['ok' => true, 'version' => '', 'protocolVersion' => Protocol::version()]);
 

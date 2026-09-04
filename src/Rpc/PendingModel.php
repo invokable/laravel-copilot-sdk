@@ -7,6 +7,8 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
 use Revolution\Copilot\Types\Rpc\ModelListRequest;
+use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
+use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
 use Revolution\Copilot\Types\Rpc\SessionModelList;
@@ -58,6 +60,21 @@ class PendingModel
 
         return SessionModelList::fromArray(
             $this->client->request('session.model.list', $paramsArray),
+        );
+    }
+
+    /**
+     * Change the Auto routing preference without changing the selected model.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function switchAutoTier(ModelSwitchAutoTierRequest|array $params): ModelSwitchAutoTierResult
+    {
+        $paramsArray = ($params instanceof ModelSwitchAutoTierRequest ? $params : ModelSwitchAutoTierRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ModelSwitchAutoTierResult::fromArray(
+            $this->client->request('session.model.switchAutoTier', $paramsArray),
         );
     }
 }
