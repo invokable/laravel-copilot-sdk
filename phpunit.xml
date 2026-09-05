@@ -4,8 +4,13 @@
          bootstrap="vendor/autoload.php"
          colors="true"
          stopOnFailure="true"
+         defaultTestSuite="Main"
 >
     <testsuites>
+        <testsuite name="Main">
+            <directory>tests/Feature</directory>
+            <directory>tests/Unit</directory>
+        </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
