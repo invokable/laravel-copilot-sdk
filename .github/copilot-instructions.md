@@ -26,7 +26,7 @@ v1.0.0後の公式SDKはペースが落ちて週に一度新バージョンを�
 
 - **Language**: PHP 8.4+
 - **Framework**: Laravel 12.x+
-- **Testing**: Pest PHP 4.x
+- **Testing**: Pest PHP 5.x
 - **Code Quality**: Laravel Pint (PSR-12)
 
 ## Commands
@@ -35,11 +35,11 @@ composer run test        # Run tests with Pest
 composer run lint        # Run Laravel Pint for code style checks
 ```
 
-Agentic Workflows環境でも`setup-php`でPHPはインストールされてるはずだけど今のAWバージョンでは正常に動かなくなっている。動かなくても後で通常のGitHub Actionsでtestとlintが実行される。
+Agentic Workflows環境でも`setup-php`でPHPはインストールされてるはずだけど今のAWバージョンでは正常に動かなくなっているかもしれない。`-d extension=`で強制的にPHP拡張を有効化すれば動くかもしれない。動かなくても後で通常のGitHub Actionsでtestとlintが実行される。
 
 pestやpintを直接実行する
 ```shell
-vendor/bin/pest --coverage --compact --parallel # テストカバレッジの取得。テストをパラレルに実行。
+vendor/bin/pest --compact
 
 vendor/bin/pint --dirty --format agent # 変更されたファイルのみを修正。AIエージェント向けにjsonで結果を出力。
 ```
