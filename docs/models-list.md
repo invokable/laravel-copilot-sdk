@@ -28,6 +28,7 @@ The available models may change depending on Copilot CLI updates and your organi
  │ kimi-k3                 │ Kimi K3                     │ 1048576            │ Yes            │ Yes                       │ Yes                         │
  │ kimi-k2.7-code          │ Kimi K2.7 Code              │ 256000             │ Yes            │ No                        │ Yes                         │
  │ claude-fable-5.1        │ Claude Fable 5.1            │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-6-astra             │ GPT-6 Astra                 │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ grok-4.6                │ Grok 4.6                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  └─────────────────────────┴─────────────────────────────┴────────────────────┴────────────────┴───────────────────────────┴─────────────────────────────┘
 ```
