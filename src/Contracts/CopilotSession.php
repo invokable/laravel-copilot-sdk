@@ -104,13 +104,17 @@ interface CopilotSession
 
     /**
      * Send a message to this session.
+     *
+     * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource.
      */
-    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null): string;
+    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?string $source = null): string;
 
     /**
      * Send a message and wait until the session becomes idle.
+     *
+     * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource.
      */
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null): ?SessionEvent;
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null, ?string $source = null): ?SessionEvent;
 
     /**
      * Subscribe to events from this session.
@@ -134,9 +138,10 @@ interface CopilotSession
     /**
      * Send a message and yield events as a Generator until the session becomes idle.
      *
+     * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource.
      * @return iterable<SessionEvent>
      */
-    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null): iterable;
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null, ?string $source = null): iterable;
 
     /**
      * Yield events as a Generator until the session becomes idle.

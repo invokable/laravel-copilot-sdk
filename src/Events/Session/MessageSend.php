@@ -16,5 +16,6 @@ class MessageSend
         public string $prompt,
         public ?array $attachments = null,
         public ?string $mode = null,
+        public ?string $source = null,
     ) {}
 }
