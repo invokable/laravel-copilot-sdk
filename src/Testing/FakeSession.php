@@ -31,7 +31,7 @@ class FakeSession implements CopilotSession
     /**
      * Recorded prompts.
      *
-     * @var array<array{prompt: string, attachments: ?array, mode: ?string, agentMode?: ?string}>
+     * @var array<array{prompt: string, attachments: ?array, mode: ?string, agentMode?: ?string, source?: ?string}>
      */
     protected array $recorded = [];
 
@@ -101,25 +101,27 @@ class FakeSession implements CopilotSession
         return '';
     }
 
-    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null): string
+    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?string $source = null): string
     {
         $this->recorded[] = [
             'prompt' => $prompt,
             'attachments' => $attachments,
             'mode' => $mode,
             'agentMode' => $agentMode instanceof AgentMode ? $agentMode->value : $agentMode,
+            'source' => $source,
         ];
 
         return 'fake-message-id';
     }
 
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null): ?SessionEvent
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null, ?string $source = null): ?SessionEvent
     {
         $this->recorded[] = [
             'prompt' => $prompt,
             'attachments' => $attachments,
             'mode' => $mode,
             'agentMode' => $agentMode instanceof AgentMode ? $agentMode->value : $agentMode,
+            'source' => $source,
         ];
 
         return $this->sequence->pop();
@@ -135,13 +137,14 @@ class FakeSession implements CopilotSession
         // No-op in fake
     }
 
-    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null): iterable
+    public function sendAndStream(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null, ?string $source = null): iterable
     {
         $this->recorded[] = [
             'prompt' => $prompt,
             'attachments' => $attachments,
             'mode' => $mode,
             'agentMode' => $agentMode instanceof AgentMode ? $agentMode->value : $agentMode,
+            'source' => $source,
         ];
 
         $event = $this->sequence->pop();

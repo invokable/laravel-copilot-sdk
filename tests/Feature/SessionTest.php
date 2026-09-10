@@ -98,6 +98,23 @@ describe('Session', function () {
         expect($messageId)->toBe('msg-790');
     });
 
+    it('send passes source', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', [
+                'sessionId' => 'test-session',
+                'prompt' => 'prompt',
+                'source' => 'agent-reviewer',
+            ])
+            ->once()
+            ->andReturn(['messageId' => 'msg-791']);
+
+        $session = new Session('test-session', $mockClient);
+        $messageId = $session->send('prompt', source: 'agent-reviewer');
+
+        expect($messageId)->toBe('msg-791');
+    });
+
     it('on registers event handler', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $session = new Session('test-session', $mockClient);

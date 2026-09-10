@@ -151,6 +151,7 @@ class Session implements CopilotSession
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
+     * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource. Omitted by default to preserve the runtime's default for user messages.
      *
      * @throws JsonRpcException
      */
@@ -159,7 +160,8 @@ class Session implements CopilotSession
         ?array $attachments = null,
         ?string $mode = null,
         AgentMode|string|null $agentMode = null,
-        ?array $requestHeaders = null
+        ?array $requestHeaders = null,
+        ?string $source = null,
     ): string {
         $agentMode = $agentMode instanceof AgentMode ? $agentMode->value : $agentMode;
 
@@ -167,13 +169,14 @@ class Session implements CopilotSession
             ...TraceContext::get(),
             'sessionId' => $this->sessionId,
             'prompt' => $prompt,
+            'source' => $source,
             'attachments' => $attachments,
             'mode' => $mode,
             'agentMode' => $agentMode,
             'requestHeaders' => $requestHeaders,
         ], fn ($v) => $v !== null));
 
-        MessageSend::dispatch($this->sessionId, $response['messageId'] ?? '', $prompt, $attachments, $mode);
+        MessageSend::dispatch($this->sessionId, $response['messageId'] ?? '', $prompt, $attachments, $mode, $source);
 
         return $response['messageId'] ?? '';
     }
@@ -187,6 +190,7 @@ class Session implements CopilotSession
      * @param  ?float  $timeout  Maximum time to wait for idle state, in seconds
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
+     * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource. Omitted by default to preserve the runtime's default for user messages.
      */
     public function sendAndWait(
         string $prompt,
@@ -194,17 +198,18 @@ class Session implements CopilotSession
         ?string $mode = null,
         AgentMode|string|null $agentMode = null,
         ?array $requestHeaders = null,
-        ?float $timeout = null
+        ?float $timeout = null,
+        ?string $source = null,
     ): ?SessionEvent {
         $timeout = $timeout ?? config('copilot.timeout', 60.0);
 
         $this->prepareWait();
 
         try {
-            $this->send(prompt: $prompt, attachments: $attachments, mode: $mode, agentMode: $agentMode, requestHeaders: $requestHeaders);
+            $this->send(prompt: $prompt, attachments: $attachments, mode: $mode, agentMode: $agentMode, requestHeaders: $requestHeaders, source: $source);
             $this->wait($timeout);
 
-            MessageSendAndWait::dispatch($this->sessionId, $this->waitLastAssistantMessage, $prompt, $attachments, $mode);
+            MessageSendAndWait::dispatch($this->sessionId, $this->waitLastAssistantMessage, $prompt, $attachments, $mode, $source);
 
             return $this->waitLastAssistantMessage;
         } catch (JsonRpcException $e) {
@@ -402,6 +407,7 @@ class Session implements CopilotSession
      * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      * @param  float|null  $timeout  Maximum time to wait for idle state, in seconds
+     * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource. Omitted by default to preserve the runtime's default for user messages.
      * @return iterable<SessionEvent>
      */
     public function sendAndStream(
@@ -410,9 +416,10 @@ class Session implements CopilotSession
         ?string $mode = null,
         AgentMode|string|null $agentMode = null,
         ?array $requestHeaders = null,
-        ?float $timeout = null
+        ?float $timeout = null,
+        ?string $source = null,
     ): iterable {
-        $this->send(prompt: $prompt, attachments: $attachments, mode: $mode, agentMode: $agentMode, requestHeaders: $requestHeaders);
+        $this->send(prompt: $prompt, attachments: $attachments, mode: $mode, agentMode: $agentMode, requestHeaders: $requestHeaders, source: $source);
 
         yield from $this->stream($timeout);
     }
