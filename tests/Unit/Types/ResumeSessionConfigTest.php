@@ -20,6 +20,13 @@ describe('ResumeSessionConfig', function () {
             ->and($config->toArray()['askUserVariant'])->toBe('legacy');
     });
 
+    it('serializes the auth client id metadata url', function () {
+        $config = ResumeSessionConfig::fromArray(['authClientIdMetadataUrl' => 'https://example.com/client-metadata.json']);
+
+        expect($config->authClientIdMetadataUrl)->toBe('https://example.com/client-metadata.json')
+            ->and($config->toArray()['authClientIdMetadataUrl'])->toBe('https://example.com/client-metadata.json');
+    });
+
     it('can be created from array with all fields', function () {
         $handler = fn () => true;
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];

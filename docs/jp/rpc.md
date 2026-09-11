@@ -219,6 +219,10 @@ $session->rpc()->model()->list(new ModelListRequest(skipCache: true)); // キャ
 $session->rpc()->model()->switchAutoTier(new ModelSwitchAutoTierRequest(autoTier: AutoTier::BALANCE));
 $session->rpc()->model()->switchAutoTier(new ModelSwitchAutoTierRequest(autoTier: null)); // provider-defaultのAuto routingへ戻す
 
+// ホスト側でセッションのモデル許可リストを設定・解除する（experimental）
+$session->rpc()->model()->setAllowedModels(new ModelSetAllowedModelsRequest(allowedModels: ['gpt-5']));
+$session->rpc()->model()->setAllowedModels(new ModelSetAllowedModelsRequest(allowedModels: null)); // 制限を解除
+
 // setModel()ヘルパーでも同様にreasoningEffortやmodelCapabilitiesを指定可能
 $session->setModel('claude-opus-4.7', ReasoningEffort::HIGH);
 $session->setModel('claude-opus-4.7', 'high'); // 文字列でも指定可能
@@ -638,12 +642,40 @@ $managedSettings = $client->rpc()->managedSettings()->read();
 // $managedSettings->errorMessage - 検出/検証エラー（存在する場合）
 ```
 
+### sandbox (experimental: サンドボックス制御)
+
+```php
+use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionRequest;
+
+// サンドボックス強制状態を取得
+$status = $session->rpc()->sandbox()->getEnforcementStatus();
+
+// 保留中のサンドボックスバイパス許可リクエストを承認し、セッション全体でサンドボックスを無効化
+$result = $session->rpc()->sandbox()->disableForSession(new SandboxDisableForSessionRequest(requestId: $requestId));
+// $result->success, $result->enabled
+```
+
+### metadata (experimental: クライアント所有メタデータ)
+
+```php
+use Revolution\Copilot\Types\Rpc\MetadataUpdateClientMetadataRequest;
+
+// このローカルセッションに紐づくクライアント所有メタデータを取得
+$metadata = $session->rpc()->metadata()->getClientMetadata();
+
+// メタデータをアトミックに更新（clear → remove → set の順で適用）
+$metadata = $session->rpc()->metadata()->updateClientMetadata(new MetadataUpdateClientMetadataRequest(
+    set: ['my-app/key' => 'value'],
+));
+```
+
 ### factory (experimental: ファクトリーAPI)
 
 ```php
 use Revolution\Copilot\Types\Rpc\FactoryRunRequest;
 use Revolution\Copilot\Types\Rpc\FactoryGetRunRequest;
 use Revolution\Copilot\Types\Rpc\FactoryCancelRequest;
+use Revolution\Copilot\Types\Rpc\FactoryPauseRequest;
 use Revolution\Copilot\Types\Rpc\FactoryListRunsRequest;
 use Revolution\Copilot\Types\Rpc\FactoryLogRequest;
 use Revolution\Copilot\Types\Rpc\FactoryLogLine;
@@ -669,6 +701,11 @@ $page = $session->rpc()->factory()->listRuns(new FactoryListRunsRequest(
 
 // ファクトリー実行のキャンセルを要求
 $result = $session->rpc()->factory()->cancel(new FactoryCancelRequest(runId: $result->runId));
+
+// ファクトリー実行を一時停止（再開可能な状態で停止、experimental）
+$result = $session->rpc()->factory()->pause(new FactoryPauseRequest(runId: $result->runId));
+// $result->status - FactoryRunStatus::PAUSED
+// $result->pauseInfo - FactoryPauseInfo（誰が一時停止を開始したか）
 
 // ファクトリーの進捗ログをまとめて記録
 $session->rpc()->factory()->log(new FactoryLogRequest(

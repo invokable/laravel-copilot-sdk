@@ -9,18 +9,21 @@ describe('FactoryAbortRequest', function () {
         $request = FactoryAbortRequest::fromArray([
             'sessionId' => 'session-1',
             'runId' => 'run-1',
+            'executionToken' => 'token-1',
         ]);
 
         expect($request->sessionId)->toBe('session-1')
-            ->and($request->runId)->toBe('run-1');
+            ->and($request->runId)->toBe('run-1')
+            ->and($request->executionToken)->toBe('token-1');
     });
 
     it('converts to array correctly', function () {
-        $request = new FactoryAbortRequest(sessionId: 'session-1', runId: 'run-1');
+        $request = new FactoryAbortRequest(sessionId: 'session-1', runId: 'run-1', executionToken: 'token-1');
 
         expect($request->toArray())->toBe([
             'sessionId' => 'session-1',
             'runId' => 'run-1',
+            'executionToken' => 'token-1',
         ]);
     });
 });

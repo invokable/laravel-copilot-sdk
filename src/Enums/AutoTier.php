@@ -6,6 +6,8 @@ namespace Revolution\Copilot\Enums;
 
 /**
  * Routing preference for sessions using the automatic model.
+ *
+ * `FAST` is an integrator-only latency preset and is not a first-party GitHub Copilot product preference.
  */
 enum AutoTier: string
 {
@@ -17,4 +19,7 @@ enum AutoTier: string
 
     /** Optimize for intelligence. */
     case INTELLIGENCE = 'intelligence';
+
+    /** Integrator-only preset that optimizes for latency. */
+    case FAST = 'fast';
 }

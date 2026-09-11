@@ -24,6 +24,7 @@ readonly class FactoryRunResult implements Arrayable
      * @param  ?string  $reason  Reason for a halted or cancelled run.
      * @param  mixed  $result  Completed factory result.
      * @param  mixed  $snapshot  Partial journal and progress snapshot for a halted, cancelled, or errored run.
+     * @param  FactoryPauseInfo|array|null  $pauseInfo  Pause initiator metadata, when the run paused.
      */
     public function __construct(
         public string $runId,
@@ -34,11 +35,13 @@ readonly class FactoryRunResult implements Arrayable
         public ?string $reason = null,
         public mixed $result = null,
         public mixed $snapshot = null,
+        public FactoryPauseInfo|array|null $pauseInfo = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         $failure = $data['failure'] ?? null;
+        $pauseInfo = $data['pauseInfo'] ?? null;
 
         return new self(
             runId: Arr::string($data, 'runId'),
@@ -51,12 +54,16 @@ readonly class FactoryRunResult implements Arrayable
             reason: $data['reason'] ?? null,
             result: $data['result'] ?? null,
             snapshot: $data['snapshot'] ?? null,
+            pauseInfo: $pauseInfo !== null
+                ? ($pauseInfo instanceof FactoryPauseInfo ? $pauseInfo : FactoryPauseInfo::fromArray($pauseInfo))
+                : null,
         );
     }
 
     public function toArray(): array
     {
         $failure = $this->failure instanceof FactoryRunFailure ? $this->failure->toArray() : $this->failure;
+        $pauseInfo = $this->pauseInfo instanceof FactoryPauseInfo ? $this->pauseInfo->toArray() : $this->pauseInfo;
 
         return array_filter([
             'runId' => $this->runId,
@@ -67,6 +74,7 @@ readonly class FactoryRunResult implements Arrayable
             'reason' => $this->reason,
             'result' => $this->result,
             'snapshot' => $this->snapshot,
+            'pauseInfo' => $pauseInfo,
         ], fn ($v) => $v !== null);
     }
 }

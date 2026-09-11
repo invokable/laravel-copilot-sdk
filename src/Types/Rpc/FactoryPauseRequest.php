@@ -8,38 +8,30 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 
 /**
- * Parameters for cooperatively aborting a factory body.
+ * Parameters for pausing a running factory.
  *
  * @experimental This type is part of an experimental API and may change or be removed.
  */
-readonly class FactoryAbortRequest implements Arrayable
+readonly class FactoryPauseRequest implements Arrayable
 {
     /**
-     * @param  string  $sessionId  Target session identifier
      * @param  string  $runId  Factory run identifier.
-     * @param  string  $executionToken  Opaque token identifying the execution attempt to abort.
      */
     public function __construct(
-        public string $sessionId,
         public string $runId,
-        public string $executionToken,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            sessionId: Arr::string($data, 'sessionId'),
             runId: Arr::string($data, 'runId'),
-            executionToken: Arr::string($data, 'executionToken'),
         );
     }
 
     public function toArray(): array
     {
         return [
-            'sessionId' => $this->sessionId,
             'runId' => $this->runId,
-            'executionToken' => $this->executionToken,
         ];
     }
 }

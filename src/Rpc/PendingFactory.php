@@ -14,6 +14,7 @@ use Revolution\Copilot\Types\Rpc\FactoryGetRunRequest;
 use Revolution\Copilot\Types\Rpc\FactoryListRunsRequest;
 use Revolution\Copilot\Types\Rpc\FactoryListRunsResult;
 use Revolution\Copilot\Types\Rpc\FactoryLogRequest;
+use Revolution\Copilot\Types\Rpc\FactoryPauseRequest;
 use Revolution\Copilot\Types\Rpc\FactoryProgressPage;
 use Revolution\Copilot\Types\Rpc\FactoryResumeRequest;
 use Revolution\Copilot\Types\Rpc\FactoryResumeResult;
@@ -155,6 +156,19 @@ class PendingFactory
 
         return FactoryRunResult::fromArray(
             $this->client->request('session.factory.cancel', $paramsArray),
+        );
+    }
+
+    /**
+     * Pause a running factory and return its settled run envelope.
+     */
+    public function pause(FactoryPauseRequest|array $params): FactoryRunResult
+    {
+        $paramsArray = ($params instanceof FactoryPauseRequest ? $params : FactoryPauseRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return FactoryRunResult::fromArray(
+            $this->client->request('session.factory.pause', $paramsArray),
         );
     }
 
