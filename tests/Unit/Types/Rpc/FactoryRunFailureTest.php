@@ -34,4 +34,23 @@ describe('FactoryRunFailure', function () {
             'reason' => 'declined',
         ]);
     });
+
+    it('handles suggestedValue field', function () {
+        $failure = FactoryRunFailure::fromArray([
+            'runId' => 'run-1',
+            'type' => 'factory_limit_reached',
+            'kind' => 'timeoutSeconds',
+            'value' => 60.0,
+            'suggestedValue' => 120.0,
+        ]);
+
+        expect($failure->suggestedValue)->toBe(120.0)
+            ->and($failure->toArray())->toBe([
+                'runId' => 'run-1',
+                'type' => 'factory_limit_reached',
+                'kind' => 'timeoutSeconds',
+                'value' => 60.0,
+                'suggestedValue' => 120.0,
+            ]);
+    });
 });

@@ -67,6 +67,14 @@ readonly class ModelCapabilities implements Arrayable
     }
 
     /**
+     * Get max output tokens, if defined.
+     */
+    public function maxOutputTokens(): ?int
+    {
+        return $this->limits['max_output_tokens'] ?? null;
+    }
+
+    /**
      * Convert to array.
      */
     public function toArray(): array

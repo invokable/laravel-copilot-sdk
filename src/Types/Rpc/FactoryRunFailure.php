@@ -22,6 +22,7 @@ readonly class FactoryRunFailure implements Arrayable
      * @param  FactoryRunFailureType|string  $type  Discriminator for the failure.
      * @param  FactoryRunFailureKind|string|null  $kind  Resource ceiling that stopped the run.
      * @param  ?float  $value  Approved effective ceiling that was reached.
+     * @param  ?float  $suggestedValue  Suggested larger ceiling when the runtime can derive one safely.
      * @param  ?string  $reason  Human-readable reason the resume did not proceed.
      * @param  ?string  $code  Error code for a durable-storage failure.
      * @param  FactoryDurableOperation|string|null  $operation  Storage operation that failed for a durable failure.
@@ -31,6 +32,7 @@ readonly class FactoryRunFailure implements Arrayable
         public FactoryRunFailureType|string $type,
         public FactoryRunFailureKind|string|null $kind = null,
         public ?float $value = null,
+        public ?float $suggestedValue = null,
         public ?string $reason = null,
         public ?string $code = null,
         public FactoryDurableOperation|string|null $operation = null,
@@ -45,6 +47,7 @@ readonly class FactoryRunFailure implements Arrayable
                 ? ($data['kind'] instanceof FactoryRunFailureKind ? $data['kind'] : FactoryRunFailureKind::from($data['kind']))
                 : null,
             value: $data['value'] ?? null,
+            suggestedValue: $data['suggestedValue'] ?? null,
             reason: $data['reason'] ?? null,
             code: $data['code'] ?? null,
             operation: isset($data['operation'])
@@ -60,6 +63,7 @@ readonly class FactoryRunFailure implements Arrayable
             'type' => $this->type instanceof FactoryRunFailureType ? $this->type->value : $this->type,
             'kind' => $this->kind instanceof FactoryRunFailureKind ? $this->kind->value : $this->kind,
             'value' => $this->value,
+            'suggestedValue' => $this->suggestedValue,
             'reason' => $this->reason,
             'code' => $this->code,
             'operation' => $this->operation instanceof FactoryDurableOperation ? $this->operation->value : $this->operation,

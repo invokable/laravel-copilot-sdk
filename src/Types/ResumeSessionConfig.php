@@ -150,6 +150,8 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ManagedSettings|array|null  $managedSettings  Host-injected enterprise managed permissions for this session.
      * @param  ?array  $includedBuiltinSkills  Built-in skill names to include in this session.
      * @param  ?Closure  $gitHubTokenProvider  Callback used to acquire short-lived GitHub credentials for this session.
+     * @param  ?string  $authClientIdMetadataUrl  OAuth Client ID Metadata Document URL identifying the host for MCP
+     *                                            authorization. When unset, no host identity is supplied.
      */
     public function __construct(
         public ?string $clientName = null,
@@ -228,6 +230,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $includedBuiltinSkills = null,
         public ?Closure $gitHubTokenProvider = null,
         public AskUserVariant|string|null $askUserVariant = null,
+        public ?string $authClientIdMetadataUrl = null,
     ) {}
 
     /**
@@ -378,6 +381,7 @@ readonly class ResumeSessionConfig implements Arrayable
             askUserVariant: isset($data['askUserVariant'])
                 ? (is_string($data['askUserVariant']) ? (AskUserVariant::tryFrom($data['askUserVariant']) ?? $data['askUserVariant']) : $data['askUserVariant'])
                 : null,
+            authClientIdMetadataUrl: $data['authClientIdMetadataUrl'] ?? null,
         );
     }
 
@@ -510,6 +514,7 @@ readonly class ResumeSessionConfig implements Arrayable
                 : $this->managedSettings,
             'includedBuiltinSkills' => $this->includedBuiltinSkills,
             'askUserVariant' => $this->askUserVariant instanceof AskUserVariant ? $this->askUserVariant->value : $this->askUserVariant,
+            'authClientIdMetadataUrl' => $this->authClientIdMetadataUrl,
         ], fn ($value) => $value !== null);
     }
 }

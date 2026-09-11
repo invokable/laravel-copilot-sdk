@@ -7,6 +7,8 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
 use Revolution\Copilot\Types\Rpc\ModelListRequest;
+use Revolution\Copilot\Types\Rpc\ModelSetAllowedModelsRequest;
+use Revolution\Copilot\Types\Rpc\ModelSetAllowedModelsResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
@@ -75,6 +77,21 @@ class PendingModel
 
         return ModelSwitchAutoTierResult::fromArray(
             $this->client->request('session.model.switchAutoTier', $paramsArray),
+        );
+    }
+
+    /**
+     * Replace or clear the host-supplied model allowlist for this running session.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function setAllowedModels(ModelSetAllowedModelsRequest|array $params): ModelSetAllowedModelsResult
+    {
+        $paramsArray = ($params instanceof ModelSetAllowedModelsRequest ? $params : ModelSetAllowedModelsRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ModelSetAllowedModelsResult::fromArray(
+            $this->client->request('session.model.setAllowedModels', $paramsArray),
         );
     }
 }

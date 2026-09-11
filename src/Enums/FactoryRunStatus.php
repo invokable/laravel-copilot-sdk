@@ -15,6 +15,9 @@ enum FactoryRunStatus: string
     case RUNNING = 'running';
     case COMPLETED = 'completed';
     case HALTED = 'halted';
+
+    /** The current attempt stopped intentionally and the run may be resumed. */
+    case PAUSED = 'paused';
     case CANCELLED = 'cancelled';
     case ERROR = 'error';
 }

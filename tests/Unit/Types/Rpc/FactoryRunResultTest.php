@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\FactoryRunStatus;
+use Revolution\Copilot\Types\Rpc\FactoryPauseInfo;
 use Revolution\Copilot\Types\Rpc\FactoryRunFailure;
 use Revolution\Copilot\Types\Rpc\FactoryRunResult;
 
@@ -57,5 +58,18 @@ describe('FactoryRunResult', function () {
                 'status' => 'running',
                 'attempt' => 2,
             ]);
+    });
+
+    it('handles paused status and pauseInfo', function () {
+        $result = FactoryRunResult::fromArray([
+            'runId' => 'run-1',
+            'status' => 'paused',
+            'pauseInfo' => ['type' => 'checkpoint', 'key' => 'checkpoint-1'],
+        ]);
+
+        expect($result->status)->toBe(FactoryRunStatus::PAUSED)
+            ->and($result->pauseInfo)->toBeInstanceOf(FactoryPauseInfo::class)
+            ->and($result->pauseInfo->type)->toBe('checkpoint')
+            ->and($result->toArray()['pauseInfo'])->toBe(['type' => 'checkpoint', 'key' => 'checkpoint-1']);
     });
 });

@@ -17,6 +17,7 @@ use Revolution\Copilot\Types\Rpc\MetadataRecordContextChangeRequest;
 use Revolution\Copilot\Types\Rpc\MetadataRecordContextChangeResult;
 use Revolution\Copilot\Types\Rpc\MetadataSetWorkingDirectoryRequest;
 use Revolution\Copilot\Types\Rpc\MetadataSetWorkingDirectoryResult;
+use Revolution\Copilot\Types\Rpc\MetadataUpdateClientMetadataRequest;
 use Revolution\Copilot\Types\Rpc\SessionMetadataSnapshot;
 
 /**
@@ -118,5 +119,32 @@ class PendingMetadata
         return MetadataContextHeaviestMessagesResult::fromArray(
             $this->client->request('session.metadata.getContextHeaviestMessages', $paramsArray),
         );
+    }
+
+    /**
+     * Returns the client-owned string metadata persisted with this local session.
+     * The metadata is not included in model context, events, telemetry, snapshots, or remote exports.
+     *
+     * @return array<string, string> Client-owned metadata key/value pairs.
+     */
+    public function getClientMetadata(): array
+    {
+        return $this->client->request('session.metadata.getClientMetadata', [
+            'sessionId' => $this->sessionId,
+        ]);
+    }
+
+    /**
+     * Atomically patches the client-owned string metadata persisted with this local session
+     * and returns the committed bag.
+     *
+     * @return array<string, string> Committed client-owned metadata key/value pairs.
+     */
+    public function updateClientMetadata(MetadataUpdateClientMetadataRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof MetadataUpdateClientMetadataRequest ? $params : MetadataUpdateClientMetadataRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return $this->client->request('session.metadata.updateClientMetadata', $paramsArray);
     }
 }

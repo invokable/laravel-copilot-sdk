@@ -326,6 +326,14 @@ $config = new SessionConfig(
 
 `AskUserVariant::ELICITATION`は`onElicitationRequest`ハンドラーと組み合わせて使用します。デフォルトのvariantは引き続き`legacy`です。
 
+MCP認可のホストIDを識別させたい場合は`authClientIdMetadataUrl`にOAuth Client ID Metadata DocumentのURLを指定します。未設定の場合はホストIDが渡されません。
+
+```php
+$config = new SessionConfig(
+    authClientIdMetadataUrl: 'https://example.com/client-metadata.json',
+);
+```
+
 セッション単位の実験的なRPCは`$session->rpc()`から利用できます。
 
 ```php

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionRequest;
+use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionResult;
 use Revolution\Copilot\Types\Rpc\SandboxEnforcementStatus;
 
 /**
@@ -28,6 +30,20 @@ class PendingSandbox
             $this->client->request('session.sandbox.getEnforcementStatus', [
                 'sessionId' => $this->sessionId,
             ]),
+        );
+    }
+
+    /**
+     * Disable sandboxing for the remainder of the current session and approve the
+     * referenced pending sandbox-bypass permission request.
+     */
+    public function disableForSession(SandboxDisableForSessionRequest|array $params): SandboxDisableForSessionResult
+    {
+        $paramsArray = ($params instanceof SandboxDisableForSessionRequest ? $params : SandboxDisableForSessionRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SandboxDisableForSessionResult::fromArray(
+            $this->client->request('session.sandbox.disableForSession', $paramsArray),
         );
     }
 }

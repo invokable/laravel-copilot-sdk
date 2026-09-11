@@ -96,4 +96,22 @@ describe('ModelCapabilities', function () {
 
         expect($capabilities->supportsReasoningEffort())->toBeFalse();
     });
+
+    it('can get max output tokens', function () {
+        $capabilities = ModelCapabilities::fromArray([
+            'supports' => ['vision' => false],
+            'limits' => ['max_context_window_tokens' => 128000, 'max_output_tokens' => 16000],
+        ]);
+
+        expect($capabilities->maxOutputTokens())->toBe(16000);
+    });
+
+    it('returns null when max output tokens is missing', function () {
+        $capabilities = ModelCapabilities::fromArray([
+            'supports' => ['vision' => false],
+            'limits' => ['max_context_window_tokens' => 128000],
+        ]);
+
+        expect($capabilities->maxOutputTokens())->toBeNull();
+    });
 });

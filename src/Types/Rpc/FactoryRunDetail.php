@@ -35,6 +35,7 @@ readonly class FactoryRunDetail implements Arrayable
      * @param  int  $observedAt  Epoch milliseconds this snapshot was observed.
      * @param  ?int  $activeSegmentStartedAt  Epoch milliseconds the current active segment started, or null.
      * @param  FactoryRunTerminal|array|null  $terminal  Terminal outcome details, or null when not terminal.
+     * @param  bool  $canResume  Whether the durable run state currently passes runtime resume eligibility checks.
      * @param  array<FactoryPhaseObservation>  $phases  Observed declared phases.
      * @param  array<FactoryAgentSummary>  $agents  Observed subagents.
      * @param  FactoryProgressPage|array  $progress  Latest progress page.
@@ -59,6 +60,7 @@ readonly class FactoryRunDetail implements Arrayable
         public int $observedAt,
         public ?int $activeSegmentStartedAt,
         public FactoryRunTerminal|array|null $terminal,
+        public bool $canResume,
         public array $phases,
         public array $agents,
         public FactoryProgressPage|array $progress,
@@ -86,6 +88,7 @@ readonly class FactoryRunDetail implements Arrayable
             observedAt: Arr::integer($data, 'observedAt', 0),
             activeSegmentStartedAt: $data['activeSegmentStartedAt'] ?? null,
             terminal: isset($data['terminal']) ? FactoryRunTerminal::fromArray($data['terminal']) : null,
+            canResume: Arr::boolean($data, 'canResume', false),
             phases: array_map(
                 fn ($phase) => $phase instanceof FactoryPhaseObservation ? $phase : FactoryPhaseObservation::fromArray($phase),
                 $data['phases'] ?? [],
@@ -120,6 +123,7 @@ readonly class FactoryRunDetail implements Arrayable
             'observedAt' => $this->observedAt,
             'activeSegmentStartedAt' => $this->activeSegmentStartedAt,
             'terminal' => $this->terminal instanceof FactoryRunTerminal ? $this->terminal->toArray() : $this->terminal,
+            'canResume' => $this->canResume,
             'phases' => array_map(fn (FactoryPhaseObservation $phase) => $phase->toArray(), $this->phases),
             'agents' => array_map(fn (FactoryAgentSummary $agent) => $agent->toArray(), $this->agents),
             'progress' => $this->progress instanceof FactoryProgressPage ? $this->progress->toArray() : $this->progress,

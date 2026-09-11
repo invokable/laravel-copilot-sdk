@@ -59,6 +59,7 @@ enum SessionEventType: string
     case SESSION_TODOS_CHANGED = 'session.todos_changed';
     case SESSION_BINARY_ASSET = 'session.binary_asset';
     case SESSION_AUTO_TIER_SWITCH_FAILED = 'session.auto_tier_switch_failed';
+    case SESSION_AUTO_TIER_RECOMMENDATION = 'session.auto_tier_recommendation';
     case SESSION_COMPLETION_RECEIPT = 'session.completion_receipt';
     case SESSION_MCP_SERVER_REMOVED = 'session.mcp_server_removed';
     case SESSION_MCP_SERVER_NEEDS_RECONNECT = 'session.mcp_server_needs_reconnect';
