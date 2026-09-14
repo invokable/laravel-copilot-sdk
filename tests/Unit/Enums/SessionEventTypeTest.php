@@ -219,4 +219,18 @@ describe('SessionEventType', function () {
         expect(SessionEventType::SESSION_MODE_NOTICE_DELIVERED->value)->toBe('session.mode_notice_delivered')
             ->and(SessionEventType::from('session.mode_notice_delivered'))->toBe(SessionEventType::SESSION_MODE_NOTICE_DELIVERED);
     });
+
+    it('has message-backed permission authorization event types', function () {
+        expect(SessionEventType::PERMISSION_CARRIED_FORWARD->value)->toBe('permission.carriedForward')
+            ->and(SessionEventType::PERMISSION_MESSAGE_AUTHORIZATION->value)->toBe('permission.messageAuthorization')
+            ->and(SessionEventType::PERMISSION_MESSAGE_AUTHORIZATION_READ->value)->toBe('permission.messageAuthorizationRead')
+            ->and(SessionEventType::PERMISSION_MESSAGE_AUTHORIZATION_DEGRADED->value)->toBe('permission.messageAuthorizationDegraded');
+    });
+
+    it('can create message-backed permission authorization types from string', function () {
+        expect(SessionEventType::from('permission.carriedForward'))->toBe(SessionEventType::PERMISSION_CARRIED_FORWARD)
+            ->and(SessionEventType::from('permission.messageAuthorization'))->toBe(SessionEventType::PERMISSION_MESSAGE_AUTHORIZATION)
+            ->and(SessionEventType::from('permission.messageAuthorizationRead'))->toBe(SessionEventType::PERMISSION_MESSAGE_AUTHORIZATION_READ)
+            ->and(SessionEventType::from('permission.messageAuthorizationDegraded'))->toBe(SessionEventType::PERMISSION_MESSAGE_AUTHORIZATION_DEGRADED);
+    });
 });

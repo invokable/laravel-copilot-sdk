@@ -28,6 +28,24 @@ describe('SessionConfig', function () {
             ->and($config->toArray()['authClientIdMetadataUrl'])->toBe('https://example.com/client-metadata.json');
     });
 
+    it('serializes managed MCP servers and refresh custom instructions', function () {
+        $config = SessionConfig::fromArray([
+            'managedMcpServers' => [
+                'catalog-server' => ['displayName' => 'Catalog Server', 'url' => 'https://example.com/mcp'],
+            ],
+            'refreshCustomInstructions' => true,
+        ]);
+
+        expect($config->managedMcpServers)->toBe([
+            'catalog-server' => ['displayName' => 'Catalog Server', 'url' => 'https://example.com/mcp'],
+        ])
+            ->and($config->refreshCustomInstructions)->toBeTrue()
+            ->and($config->toArray()['managedMcpServers'])->toBe([
+                'catalog-server' => ['displayName' => 'Catalog Server', 'url' => 'https://example.com/mcp'],
+            ])
+            ->and($config->toArray()['refreshCustomInstructions'])->toBeTrue();
+    });
+
     it('can be created from array with all fields', function () {
         $handler = fn () => true;
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];

@@ -14,6 +14,7 @@ use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
+use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
@@ -106,15 +107,17 @@ interface CopilotSession
      * Send a message to this session.
      *
      * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource.
+     * @param  ResponseFormat|array|null  $responseFormat  Provider-native structured output format for this turn.
      */
-    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?string $source = null): string;
+    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?string $source = null, ResponseFormat|array|null $responseFormat = null): string;
 
     /**
      * Send a message and wait until the session becomes idle.
      *
      * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource.
+     * @param  ResponseFormat|array|null  $responseFormat  Provider-native structured output format for this turn.
      */
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null, ?string $source = null): ?SessionEvent;
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null, ?string $source = null, ResponseFormat|array|null $responseFormat = null): ?SessionEvent;
 
     /**
      * Subscribe to events from this session.

@@ -20,4 +20,7 @@ enum PermissionDecisionSource: string
 
     /** The host denied the request because no interactive user response was available. */
     case UNATTENDED_FALLBACK = 'unattended_fallback';
+
+    /** A live authorization record from an earlier human decision in this session contained the proposal, so it ran without another prompt. This is not a new human decision and never mints authority of its own. */
+    case AUTHORIZATION_CARRY_FORWARD = 'authorization_carry_forward';
 }

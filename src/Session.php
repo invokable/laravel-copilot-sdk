@@ -41,6 +41,7 @@ use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
+use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
 use Throwable;
@@ -152,6 +153,7 @@ class Session implements CopilotSession
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
      * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource. Omitted by default to preserve the runtime's default for user messages.
+     * @param  ResponseFormat|array|null  $responseFormat  Provider-native structured output format for this turn.
      *
      * @throws JsonRpcException
      */
@@ -162,8 +164,10 @@ class Session implements CopilotSession
         AgentMode|string|null $agentMode = null,
         ?array $requestHeaders = null,
         ?string $source = null,
+        ResponseFormat|array|null $responseFormat = null,
     ): string {
         $agentMode = $agentMode instanceof AgentMode ? $agentMode->value : $agentMode;
+        $responseFormat = $responseFormat instanceof ResponseFormat ? $responseFormat->toArray() : $responseFormat;
 
         $response = $this->client->request('session.send', array_filter([
             ...TraceContext::get(),
@@ -174,6 +178,7 @@ class Session implements CopilotSession
             'mode' => $mode,
             'agentMode' => $agentMode,
             'requestHeaders' => $requestHeaders,
+            'responseFormat' => $responseFormat,
         ], fn ($v) => $v !== null));
 
         MessageSend::dispatch($this->sessionId, $response['messageId'] ?? '', $prompt, $attachments, $mode, $source);
@@ -191,6 +196,7 @@ class Session implements CopilotSession
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
      * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource. Omitted by default to preserve the runtime's default for user messages.
+     * @param  ResponseFormat|array|null  $responseFormat  Provider-native structured output format for this turn.
      */
     public function sendAndWait(
         string $prompt,
@@ -200,13 +206,14 @@ class Session implements CopilotSession
         ?array $requestHeaders = null,
         ?float $timeout = null,
         ?string $source = null,
+        ResponseFormat|array|null $responseFormat = null,
     ): ?SessionEvent {
         $timeout = $timeout ?? config('copilot.timeout', 60.0);
 
         $this->prepareWait();
 
         try {
-            $this->send(prompt: $prompt, attachments: $attachments, mode: $mode, agentMode: $agentMode, requestHeaders: $requestHeaders, source: $source);
+            $this->send(prompt: $prompt, attachments: $attachments, mode: $mode, agentMode: $agentMode, requestHeaders: $requestHeaders, source: $source, responseFormat: $responseFormat);
             $this->wait($timeout);
 
             MessageSendAndWait::dispatch($this->sessionId, $this->waitLastAssistantMessage, $prompt, $attachments, $mode, $source);

@@ -9,13 +9,15 @@ describe('PermissionDecisionSource', function () {
         expect(PermissionDecisionSource::ASSISTED_APPROVAL->value)->toBe('assisted_approval')
             ->and(PermissionDecisionSource::HUMAN_RESPONSE->value)->toBe('human_response')
             ->and(PermissionDecisionSource::HOST_POLICY->value)->toBe('host_policy')
-            ->and(PermissionDecisionSource::UNATTENDED_FALLBACK->value)->toBe('unattended_fallback');
+            ->and(PermissionDecisionSource::UNATTENDED_FALLBACK->value)->toBe('unattended_fallback')
+            ->and(PermissionDecisionSource::AUTHORIZATION_CARRY_FORWARD->value)->toBe('authorization_carry_forward');
     });
 
     it('can be created from string', function () {
         expect(PermissionDecisionSource::from('assisted_approval'))->toBe(PermissionDecisionSource::ASSISTED_APPROVAL)
             ->and(PermissionDecisionSource::from('human_response'))->toBe(PermissionDecisionSource::HUMAN_RESPONSE)
             ->and(PermissionDecisionSource::from('host_policy'))->toBe(PermissionDecisionSource::HOST_POLICY)
-            ->and(PermissionDecisionSource::from('unattended_fallback'))->toBe(PermissionDecisionSource::UNATTENDED_FALLBACK);
+            ->and(PermissionDecisionSource::from('unattended_fallback'))->toBe(PermissionDecisionSource::UNATTENDED_FALLBACK)
+            ->and(PermissionDecisionSource::from('authorization_carry_forward'))->toBe(PermissionDecisionSource::AUTHORIZATION_CARRY_FORWARD);
     });
 });

@@ -21,6 +21,7 @@ readonly class SendMessagesRequest implements Arrayable
      * @param  bool|null  $prepend  If true, adds the messages to the front of the queue
      * @param  string|null  $agentMode  The UI mode the agent was in when these messages were sent
      * @param  array|null  $requestHeaders  Custom HTTP headers to include in outbound model requests
+     * @param  ResponseFormat|array|null  $responseFormat  Provider-native structured output format.
      * @param  string|null  $traceparent  W3C Trace Context traceparent header
      * @param  string|null  $tracestate  W3C Trace Context tracestate header
      * @param  bool|null  $wait  If true, await completion of the agentic loop before returning
@@ -31,6 +32,7 @@ readonly class SendMessagesRequest implements Arrayable
         public ?bool $prepend = null,
         public ?string $agentMode = null,
         public ?array $requestHeaders = null,
+        public ResponseFormat|array|null $responseFormat = null,
         public ?string $traceparent = null,
         public ?string $tracestate = null,
         public ?bool $wait = null,
@@ -38,6 +40,8 @@ readonly class SendMessagesRequest implements Arrayable
 
     public static function fromArray(array $data): self
     {
+        $responseFormat = $data['responseFormat'] ?? null;
+
         return new self(
             messages: array_map(
                 fn (array $m) => SendMessageItem::fromArray($m),
@@ -47,6 +51,9 @@ readonly class SendMessagesRequest implements Arrayable
             prepend: $data['prepend'] ?? null,
             agentMode: $data['agentMode'] ?? null,
             requestHeaders: $data['requestHeaders'] ?? null,
+            responseFormat: $responseFormat !== null
+                ? ($responseFormat instanceof ResponseFormat ? $responseFormat : ResponseFormat::fromArray($responseFormat))
+                : null,
             traceparent: $data['traceparent'] ?? null,
             tracestate: $data['tracestate'] ?? null,
             wait: $data['wait'] ?? null,
@@ -55,12 +62,17 @@ readonly class SendMessagesRequest implements Arrayable
 
     public function toArray(): array
     {
+        $responseFormat = $this->responseFormat instanceof ResponseFormat
+            ? $this->responseFormat->toArray()
+            : $this->responseFormat;
+
         return array_filter([
             'messages' => array_map(fn (SendMessageItem $m) => $m->toArray(), $this->messages),
             'mode' => $this->mode,
             'prepend' => $this->prepend,
             'agentMode' => $this->agentMode,
             'requestHeaders' => $this->requestHeaders,
+            'responseFormat' => $responseFormat,
             'traceparent' => $this->traceparent,
             'tracestate' => $this->tracestate,
             'wait' => $this->wait,

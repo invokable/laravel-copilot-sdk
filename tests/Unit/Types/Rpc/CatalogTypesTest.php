@@ -12,6 +12,7 @@ use Revolution\Copilot\Types\Rpc\CatalogMcpServerCandidate;
 use Revolution\Copilot\Types\Rpc\CatalogNegotiatedContract;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSearchSucceeded;
+use Revolution\Copilot\Types\Rpc\CatalogTrustSnapshotCurrent;
 use Revolution\Copilot\Types\Rpc\CatalogUnsupportedKindError;
 
 describe('CatalogClientContract', function () {
@@ -51,6 +52,10 @@ describe('CatalogNegotiatedContract', function () {
         $arr = $nc->toArray();
 
         expect($arr['grantedCapabilities'][0])->toBe('mcp-server-card');
+    });
+
+    it('has the trust-snapshot capability', function () {
+        expect(CatalogCapability::TrustSnapshot->value)->toBe('trust-snapshot');
     });
 });
 
@@ -144,6 +149,46 @@ describe('CatalogAiSkillCandidate', function () {
 
         expect($candidate->displayName)->toBe('My AI Skill')
             ->and($candidate->toArray()['installability'])->toBe('not-installable-kind');
+    });
+
+    it('can be created with a trust snapshot', function () {
+        $candidate = CatalogAiSkillCandidate::fromArray([
+            'kind' => 'ai-skill',
+            'handle' => 'hdl3',
+            'handleExpiresAt' => '2025-01-01T01:00:00Z',
+            'displayName' => 'Trusted Skill',
+            'source' => ['kind' => 'url', 'url' => 'https://example.com/skill.json'],
+            'provenance' => [
+                'authority' => 'https://api.example.com',
+                'observedAt' => '2025-01-01T00:00:00Z',
+            ],
+            'trust' => [
+                'status' => 'current',
+                'tier' => 'T1',
+                'eligibility' => 'default',
+                'provenance' => ['source' => 'agent-finder', 'observedAt' => '2024-01-01T00:00:00Z'],
+            ],
+        ]);
+
+        expect($candidate->trust)->toBeInstanceOf(CatalogTrustSnapshotCurrent::class)
+            ->and($candidate->toArray()['trust']['status'])->toBe('current');
+    });
+
+    it('omits trust when null', function () {
+        $candidate = CatalogAiSkillCandidate::fromArray([
+            'kind' => 'ai-skill',
+            'handle' => 'hdl4',
+            'handleExpiresAt' => '2025-01-01T01:00:00Z',
+            'displayName' => 'No Trust Skill',
+            'source' => ['kind' => 'url', 'url' => 'https://example.com/skill.json'],
+            'provenance' => [
+                'authority' => 'https://api.example.com',
+                'observedAt' => '2025-01-01T00:00:00Z',
+            ],
+        ]);
+
+        expect($candidate->trust)->toBeNull()
+            ->and($candidate->toArray())->not->toHaveKey('trust');
     });
 });
 
