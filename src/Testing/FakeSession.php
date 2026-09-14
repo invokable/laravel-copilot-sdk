@@ -18,6 +18,7 @@ use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
+use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
@@ -101,7 +102,7 @@ class FakeSession implements CopilotSession
         return '';
     }
 
-    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?string $source = null): string
+    public function send(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?string $source = null, ResponseFormat|array|null $responseFormat = null): string
     {
         $this->recorded[] = [
             'prompt' => $prompt,
@@ -114,7 +115,7 @@ class FakeSession implements CopilotSession
         return 'fake-message-id';
     }
 
-    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null, ?string $source = null): ?SessionEvent
+    public function sendAndWait(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?float $timeout = null, ?string $source = null, ResponseFormat|array|null $responseFormat = null): ?SessionEvent
     {
         $this->recorded[] = [
             'prompt' => $prompt,

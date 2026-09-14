@@ -130,6 +130,10 @@ enum SessionEventType: string
     // Permission events
     case PERMISSION_REQUESTED = 'permission.requested';
     case PERMISSION_COMPLETED = 'permission.completed';
+    case PERMISSION_CARRIED_FORWARD = 'permission.carriedForward';
+    case PERMISSION_MESSAGE_AUTHORIZATION = 'permission.messageAuthorization';
+    case PERMISSION_MESSAGE_AUTHORIZATION_READ = 'permission.messageAuthorizationRead';
+    case PERMISSION_MESSAGE_AUTHORIZATION_DEGRADED = 'permission.messageAuthorizationDegraded';
 
     // User input events
     case USER_INPUT_REQUESTED = 'user_input.requested';

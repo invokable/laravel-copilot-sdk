@@ -173,6 +173,30 @@ describe('McpServerInfo', function () {
         $info = new McpServerInfo(name: 'a', status: McpServerStatus::PENDING);
         expect($info)->toBeInstanceOf(Arrayable::class);
     });
+
+    it('can be created from array with displayName', function () {
+        $info = McpServerInfo::fromArray([
+            'name' => 'managed-server',
+            'status' => 'connected',
+            'displayName' => 'Managed Server',
+        ]);
+
+        expect($info->displayName)->toBe('Managed Server');
+    });
+
+    it('can convert to array with displayName', function () {
+        $info = new McpServerInfo(
+            name: 'managed-server',
+            status: McpServerStatus::CONNECTED,
+            displayName: 'Managed Server',
+        );
+
+        expect($info->toArray())->toBe([
+            'name' => 'managed-server',
+            'status' => 'connected',
+            'displayName' => 'Managed Server',
+        ]);
+    });
 });
 
 describe('PluginInfo', function () {

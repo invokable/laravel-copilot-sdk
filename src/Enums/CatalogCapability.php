@@ -25,4 +25,7 @@ enum CatalogCapability: string
 
     /** Understands plans that enumerate every eligible transport rather than a single preferred one. */
     case MultipleTransportChoice = 'multiple-transport-choice';
+
+    /** Understands versioned candidate trust snapshots. Protocol-3 callers must require this capability before the runtime adds the optional snapshot field. */
+    case TrustSnapshot = 'trust-snapshot';
 }

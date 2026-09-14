@@ -31,6 +31,7 @@ use Revolution\Copilot\Types\Rpc\SubagentSettings;
 use Revolution\Copilot\Types\Rpc\SubagentSettingsEntry;
 use Revolution\Copilot\Types\Rpc\ToolsUpdateSubagentSettingsResult;
 use Revolution\Copilot\Types\Rpc\UpdateSubagentSettingsRequest;
+use Revolution\Copilot\Types\SystemMessageConfig;
 
 describe('MemoryConfiguration', function () {
     it('can be created with all fields', function () {
@@ -119,6 +120,31 @@ describe('ProviderModelConfig', function () {
         expect($model->toArray())->toHaveKey('id', 'm1')
             ->and($model->toArray())->toHaveKey('provider', 'p1')
             ->and($model->toArray())->toHaveKey('modelId', 'gpt-5');
+    });
+
+    it('can be created with systemMessage override', function () {
+        $model = ProviderModelConfig::fromArray([
+            'id' => 'm1',
+            'provider' => 'p1',
+            'systemMessage' => ['mode' => 'append', 'content' => 'extra context'],
+        ]);
+
+        expect($model->systemMessage)->toBeInstanceOf(SystemMessageConfig::class)
+            ->and($model->systemMessage->mode)->toBe('append')
+            ->and($model->systemMessage->content)->toBe('extra context');
+    });
+
+    it('converts systemMessage to array', function () {
+        $model = new ProviderModelConfig(
+            id: 'm1',
+            provider: 'p1',
+            systemMessage: new SystemMessageConfig(mode: 'replace', content: 'full override'),
+        );
+
+        expect($model->toArray()['systemMessage'])->toBe([
+            'mode' => 'replace',
+            'content' => 'full override',
+        ]);
     });
 });
 

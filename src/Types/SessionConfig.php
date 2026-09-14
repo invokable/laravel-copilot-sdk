@@ -204,6 +204,8 @@ readonly class SessionConfig implements Arrayable
      * @param  ?Closure  $gitHubTokenProvider  Callback used to acquire short-lived GitHub credentials for this session.
      * @param  ?string  $authClientIdMetadataUrl  OAuth Client ID Metadata Document URL identifying the host for MCP
      *                                            authorization. When unset, no host identity is supplied.
+     * @param  ?array  $managedMcpServers  Non-secret host-managed HTTP MCP servers keyed by stable managed identity.
+     * @param  ?bool  $refreshCustomInstructions  Whether to invalidate cached custom-instruction discovery before constructing the session.
      */
     public function __construct(
         public ?string $sessionId = null,
@@ -292,6 +294,8 @@ readonly class SessionConfig implements Arrayable
         public ?Closure $gitHubTokenProvider = null,
         public AskUserVariant|string|null $askUserVariant = null,
         public ?string $authClientIdMetadataUrl = null,
+        public ?array $managedMcpServers = null,
+        public ?bool $refreshCustomInstructions = null,
     ) {}
 
     /**
@@ -482,6 +486,8 @@ readonly class SessionConfig implements Arrayable
                 ? (is_string($data['askUserVariant']) ? (AskUserVariant::tryFrom($data['askUserVariant']) ?? $data['askUserVariant']) : $data['askUserVariant'])
                 : null,
             authClientIdMetadataUrl: $data['authClientIdMetadataUrl'] ?? null,
+            managedMcpServers: $data['managedMcpServers'] ?? null,
+            refreshCustomInstructions: $data['refreshCustomInstructions'] ?? null,
         );
     }
 
@@ -646,6 +652,8 @@ readonly class SessionConfig implements Arrayable
             'includedBuiltinSkills' => $this->includedBuiltinSkills,
             'askUserVariant' => $this->askUserVariant instanceof AskUserVariant ? $this->askUserVariant->value : $this->askUserVariant,
             'authClientIdMetadataUrl' => $this->authClientIdMetadataUrl,
+            'managedMcpServers' => $this->managedMcpServers,
+            'refreshCustomInstructions' => $this->refreshCustomInstructions,
         ], fn ($value) => $value !== null);
     }
 }

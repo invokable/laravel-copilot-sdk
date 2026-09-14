@@ -35,6 +35,7 @@ readonly class ProviderModelConfig implements Arrayable
      * @param  ?int  $maxContextWindowTokens  Maximum context window tokens for the model.
      * @param  ?int  $maxOutputTokens  Maximum output tokens for the model.
      * @param  ModelCapabilitiesOverride|array|null  $capabilities  Optional capability overrides.
+     * @param  SystemMessageConfig|array|null  $systemMessage  Optional system message configuration override for this model.
      */
     public function __construct(
         public string $id,
@@ -46,6 +47,7 @@ readonly class ProviderModelConfig implements Arrayable
         public ?int $maxContextWindowTokens = null,
         public ?int $maxOutputTokens = null,
         public ModelCapabilitiesOverride|array|null $capabilities = null,
+        public SystemMessageConfig|array|null $systemMessage = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -55,6 +57,13 @@ readonly class ProviderModelConfig implements Arrayable
             $capabilities = $data['capabilities'] instanceof ModelCapabilitiesOverride
                 ? $data['capabilities']
                 : ModelCapabilitiesOverride::fromArray($data['capabilities']);
+        }
+
+        $systemMessage = null;
+        if (isset($data['systemMessage'])) {
+            $systemMessage = $data['systemMessage'] instanceof SystemMessageConfig
+                ? $data['systemMessage']
+                : SystemMessageConfig::fromArray($data['systemMessage']);
         }
 
         return new self(
@@ -67,6 +76,7 @@ readonly class ProviderModelConfig implements Arrayable
             maxContextWindowTokens: isset($data['maxContextWindowTokens']) ? (int) $data['maxContextWindowTokens'] : null,
             maxOutputTokens: isset($data['maxOutputTokens']) ? (int) $data['maxOutputTokens'] : null,
             capabilities: $capabilities,
+            systemMessage: $systemMessage,
         );
     }
 
@@ -75,6 +85,10 @@ readonly class ProviderModelConfig implements Arrayable
         $capabilities = $this->capabilities instanceof ModelCapabilitiesOverride
             ? $this->capabilities->toArray()
             : $this->capabilities;
+
+        $systemMessage = $this->systemMessage instanceof SystemMessageConfig
+            ? $this->systemMessage->toArray()
+            : $this->systemMessage;
 
         return array_filter([
             'id' => $this->id,
@@ -86,6 +100,7 @@ readonly class ProviderModelConfig implements Arrayable
             'maxContextWindowTokens' => $this->maxContextWindowTokens,
             'maxOutputTokens' => $this->maxOutputTokens,
             'capabilities' => $capabilities,
+            'systemMessage' => $systemMessage,
         ], fn ($v) => $v !== null);
     }
 }

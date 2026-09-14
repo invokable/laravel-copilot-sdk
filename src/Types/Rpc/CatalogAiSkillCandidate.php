@@ -27,6 +27,7 @@ readonly class CatalogAiSkillCandidate implements Arrayable
         public ?string $publisher,
         public CatalogCandidateSourceUrl|CatalogCandidateSourceEmbedded $source,
         public CatalogAiSkillCandidateProvenance $provenance,
+        public CatalogTrustSnapshotCurrent|CatalogTrustSnapshotAbsent|CatalogTrustSnapshotStale|CatalogTrustSnapshotDowngraded|CatalogTrustSnapshotRevoked|CatalogTrustSnapshotUnsupported|CatalogTrustSnapshotMalformed|null $trust = null,
     ) {
         $this->kind = 'ai-skill';
         $this->mediaType = 'application/ai-skill';
@@ -48,6 +49,7 @@ readonly class CatalogAiSkillCandidate implements Arrayable
             publisher: $data['publisher'] ?? null,
             source: $source,
             provenance: CatalogAiSkillCandidateProvenance::fromArray($data['provenance']),
+            trust: isset($data['trust']) ? CatalogTrustSnapshot::fromArray($data['trust']) : null,
         );
     }
 
@@ -68,6 +70,9 @@ readonly class CatalogAiSkillCandidate implements Arrayable
         }
         if ($this->publisher !== null) {
             $arr['publisher'] = $this->publisher;
+        }
+        if ($this->trust !== null) {
+            $arr['trust'] = $this->trust->toArray();
         }
 
         return $arr;

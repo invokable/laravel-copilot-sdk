@@ -90,6 +90,17 @@ describe('ModeSetRequest', function () {
         $params = new ModeSetRequest(mode: 'autopilot');
         expect($params->toArray())->toBe(['mode' => 'autopilot']);
     });
+
+    it('can be created with expectedMode', function () {
+        $params = new ModeSetRequest(mode: 'plan', expectedMode: 'interactive');
+        expect($params->toArray())->toBe(['mode' => 'plan', 'expectedMode' => 'interactive']);
+    });
+
+    it('can be created from array', function () {
+        $params = ModeSetRequest::fromArray(['mode' => 'plan', 'expectedMode' => 'interactive']);
+        expect($params->mode)->toBe('plan')
+            ->and($params->expectedMode)->toBe('interactive');
+    });
 });
 
 describe('PlanReadResult', function () {
@@ -150,6 +161,34 @@ describe('FleetStartRequest', function () {
     it('filters null prompt', function () {
         $params = new FleetStartRequest;
         expect($params->toArray())->toBe([]);
+    });
+
+    it('can be created with attachments, billable, and wait', function () {
+        $params = new FleetStartRequest(
+            prompt: 'build it',
+            attachments: [['type' => 'file', 'path' => '/tmp/a.txt']],
+            billable: false,
+            wait: true,
+        );
+
+        expect($params->toArray())->toBe([
+            'prompt' => 'build it',
+            'attachments' => [['type' => 'file', 'path' => '/tmp/a.txt']],
+            'billable' => false,
+            'wait' => true,
+        ]);
+    });
+
+    it('can be created from array', function () {
+        $params = FleetStartRequest::fromArray([
+            'prompt' => 'build it',
+            'wait' => true,
+        ]);
+
+        expect($params->prompt)->toBe('build it')
+            ->and($params->wait)->toBeTrue()
+            ->and($params->attachments)->toBeNull()
+            ->and($params->billable)->toBeNull();
     });
 });
 

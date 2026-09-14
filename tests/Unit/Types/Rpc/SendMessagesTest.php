@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Types\Rpc\JsonSchemaResponseFormat;
+use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\SendMessageItem;
 use Revolution\Copilot\Types\Rpc\SendMessagesRequest;
 use Revolution\Copilot\Types\Rpc\SendMessagesResult;
@@ -70,6 +72,31 @@ describe('SendMessagesRequest', function () {
 
         expect($request->toArray())->toBe([
             'messages' => [['prompt' => 'Hi']],
+        ]);
+    });
+
+    it('can be created with a responseFormat', function () {
+        $request = SendMessagesRequest::fromArray([
+            'messages' => [['prompt' => 'Hi']],
+            'responseFormat' => [
+                'jsonSchema' => ['name' => 'my_schema', 'schema' => ['type' => 'object']],
+            ],
+        ]);
+
+        expect($request->responseFormat)->toBeInstanceOf(ResponseFormat::class);
+    });
+
+    it('converts responseFormat to array', function () {
+        $request = new SendMessagesRequest(
+            messages: [new SendMessageItem(prompt: 'Hi')],
+            responseFormat: new ResponseFormat(
+                jsonSchema: new JsonSchemaResponseFormat(name: 'n', schema: []),
+            ),
+        );
+
+        expect($request->toArray()['responseFormat'])->toBe([
+            'jsonSchema' => ['name' => 'n', 'schema' => []],
+            'type' => 'json_schema',
         ]);
     });
 });
