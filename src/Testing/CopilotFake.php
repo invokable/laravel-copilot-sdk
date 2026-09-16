@@ -10,6 +10,7 @@ use Revolution\Copilot\Contracts\Factory;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use RuntimeException;
@@ -93,7 +94,8 @@ class CopilotFake implements Factory
     /**
      * Run a single prompt and return the response.
      */
-    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, SessionConfig|array $config = []): ?SessionEvent
+    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?string $source = null,
+        ResponseFormat|array|null $responseFormat = null, SessionConfig|array $config = []): ?SessionEvent
     {
         return $this->start(
             fn (CopilotSession $session) => $session->sendAndWait(
@@ -102,6 +104,8 @@ class CopilotFake implements Factory
                 mode: $mode,
                 agentMode: $agentMode,
                 requestHeaders: $requestHeaders,
+                source: $source,
+                responseFormat: $responseFormat,
             ),
             config: $config,
         );

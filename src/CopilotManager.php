@@ -63,10 +63,10 @@ class CopilotManager implements Factory
         ?array $requestHeaders = null,
         ?string $source = null,
         ResponseFormat|array|null $responseFormat = null,
-        SessionConfig|array $config = []
+        SessionConfig|array $config = [],
     ): ?SessionEvent {
         if ($this->isFake()) {
-            return $this->fake->run($prompt, $attachments, $mode, $agentMode, $requestHeaders, $config);
+            return $this->fake->run($prompt, $attachments, $mode, $agentMode, $requestHeaders, $source, $responseFormat, $config);
         }
 
         return $this->start(
@@ -77,6 +77,8 @@ class CopilotManager implements Factory
                 agentMode: $agentMode,
                 requestHeaders: $requestHeaders,
                 timeout: $this->config['timeout'] ?? null,
+                source: $source,
+                responseFormat: $responseFormat,
             ),
             config: $config,
         );

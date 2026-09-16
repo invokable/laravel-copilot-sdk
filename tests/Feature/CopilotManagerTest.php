@@ -242,7 +242,7 @@ describe('CopilotManager', function () {
 
         $mockSession = Mockery::mock(CopilotSession::class);
         $mockSession->shouldReceive('sendAndWait')
-            ->with('test prompt', null, null, null, null, 60.0)
+            ->with('test prompt', null, null, null, null, 60.0, null, null)
             ->once()
             ->andReturn($mockEvent);
         $mockSession->shouldReceive('disconnect')->once();
@@ -266,7 +266,7 @@ describe('CopilotManager', function () {
     it('run uses configured timeout', function () {
         $mockSession = Mockery::mock(CopilotSession::class);
         $mockSession->shouldReceive('sendAndWait')
-            ->with('prompt', null, null, null, null, 120.0) // Custom timeout
+            ->with('prompt', null, null, null, null, 120.0, null, null) // Custom timeout
             ->once()
             ->andReturn(null);
         $mockSession->shouldReceive('disconnect')->once();
@@ -289,7 +289,7 @@ describe('CopilotManager', function () {
 
         $mockSession = Mockery::mock(CopilotSession::class);
         $mockSession->shouldReceive('sendAndWait')
-            ->with('prompt', null, null, null, $requestHeaders, 120.0)
+            ->with('prompt', null, null, null, $requestHeaders, 120.0, null, null)
             ->once()
             ->andReturn(null);
         $mockSession->shouldReceive('disconnect')->once();
@@ -310,7 +310,7 @@ describe('CopilotManager', function () {
     it('run passes agent mode to sendAndWait', function () {
         $mockSession = Mockery::mock(CopilotSession::class);
         $mockSession->shouldReceive('sendAndWait')
-            ->with('prompt', null, null, AgentMode::PLAN, null, 120.0)
+            ->with('prompt', null, null, AgentMode::PLAN, null, 120.0, null, null)
             ->once()
             ->andReturn(null);
         $mockSession->shouldReceive('disconnect')->once();
@@ -331,7 +331,7 @@ describe('CopilotManager', function () {
     it('run accepts agent mode string', function () {
         $mockSession = Mockery::mock(CopilotSession::class);
         $mockSession->shouldReceive('sendAndWait')
-            ->with('prompt', null, null, 'shell', null, 120.0)
+            ->with('prompt', null, null, 'shell', null, 120.0, null, null)
             ->once()
             ->andReturn(null);
         $mockSession->shouldReceive('disconnect')->once();
