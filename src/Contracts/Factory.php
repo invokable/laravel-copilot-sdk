@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Contracts;
 
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -18,8 +19,10 @@ interface Factory
      * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments. type: "file" | "directory"
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
+     * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource. Omitted by default to preserve the runtime's default for user messages.
+     * @param  ResponseFormat|array|null  $responseFormat  Provider-native structured output format for this turn.
      */
-    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, SessionConfig|array $config = []): ?SessionEvent;
+    public function run(string $prompt, ?array $attachments = null, ?string $mode = null, AgentMode|string|null $agentMode = null, ?array $requestHeaders = null, ?string $source = null, ResponseFormat|array|null $responseFormat = null, SessionConfig|array $config = []): ?SessionEvent;
 
     /**
      * Start a session and execute a callback.

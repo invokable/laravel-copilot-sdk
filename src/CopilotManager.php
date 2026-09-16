@@ -14,6 +14,7 @@ use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Testing\WithFake;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -51,6 +52,8 @@ class CopilotManager implements Factory
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
      * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
+     * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource. Omitted by default to preserve the runtime's default for user messages.
+     * @param  ResponseFormat|array|null  $responseFormat  Provider-native structured output format for this turn.
      */
     public function run(
         string $prompt,
@@ -58,6 +61,8 @@ class CopilotManager implements Factory
         ?string $mode = null,
         AgentMode|string|null $agentMode = null,
         ?array $requestHeaders = null,
+        ?string $source = null,
+        ResponseFormat|array|null $responseFormat = null,
         SessionConfig|array $config = []
     ): ?SessionEvent {
         if ($this->isFake()) {
