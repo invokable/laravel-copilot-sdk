@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingWorkspaces;
+use Revolution\Copilot\Types\Rpc\WorkspacesCreateDirectoryRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesCreateFileRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesGetWorkspaceResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesListFilesResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesReadFileRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesReadFileResult;
+use Revolution\Copilot\Types\Rpc\WorkspacesRemovePathRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesRenamePathRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesStatFileRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesStatFileResult;
 
 describe('PendingWorkspaces', function () {
     it('calls session.workspaces.getWorkspace and returns result', function () {
@@ -144,6 +149,163 @@ describe('PendingWorkspaces', function () {
 
         $pending = new PendingWorkspaces($client, 'test-session');
         $result = $pending->createFile(['path' => 'output.json', 'content' => '{"key":"value"}']);
+
+        expect($result)->toBe([]);
+    });
+
+    it('calls session.workspaces.statFile with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.workspaces.statFile',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'test-session'
+                    && $params['path'] === 'README.md'),
+            )
+            ->andReturn([
+                'isFile' => true,
+                'isDirectory' => false,
+                'size' => 1024,
+                'mtimeMs' => 1700000000000,
+                'birthtimeMs' => 1690000000000,
+            ]);
+
+        $pending = new PendingWorkspaces($client, 'test-session');
+        $result = $pending->statFile(new WorkspacesStatFileRequest(path: 'README.md'));
+
+        expect($result)->toBeInstanceOf(WorkspacesStatFileResult::class)
+            ->and($result->isFile)->toBeTrue()
+            ->and($result->isDirectory)->toBeFalse()
+            ->and($result->size)->toBe(1024.0);
+    });
+
+    it('calls session.workspaces.statFile with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.workspaces.statFile',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'test-session'
+                    && $params['path'] === 'src'),
+            )
+            ->andReturn([
+                'isFile' => false,
+                'isDirectory' => true,
+                'size' => 0,
+                'mtimeMs' => 0,
+                'birthtimeMs' => 0,
+            ]);
+
+        $pending = new PendingWorkspaces($client, 'test-session');
+        $result = $pending->statFile(['path' => 'src']);
+
+        expect($result)->toBeInstanceOf(WorkspacesStatFileResult::class)
+            ->and($result->isDirectory)->toBeTrue();
+    });
+
+    it('calls session.workspaces.createDirectory with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.workspaces.createDirectory',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'test-session'
+                    && $params['path'] === 'new/dir'
+                    && $params['recursive'] === true),
+            )
+            ->andReturn([]);
+
+        $pending = new PendingWorkspaces($client, 'test-session');
+        $result = $pending->createDirectory(new WorkspacesCreateDirectoryRequest(path: 'new/dir', recursive: true));
+
+        expect($result)->toBe([]);
+    });
+
+    it('calls session.workspaces.createDirectory with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.workspaces.createDirectory',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'test-session'
+                    && $params['path'] === 'another/dir'),
+            )
+            ->andReturn([]);
+
+        $pending = new PendingWorkspaces($client, 'test-session');
+        $result = $pending->createDirectory(['path' => 'another/dir']);
+
+        expect($result)->toBe([]);
+    });
+
+    it('calls session.workspaces.removePath with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.workspaces.removePath',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'test-session'
+                    && $params['path'] === 'old/dir'
+                    && $params['recursive'] === true
+                    && $params['force'] === true),
+            )
+            ->andReturn([]);
+
+        $pending = new PendingWorkspaces($client, 'test-session');
+        $result = $pending->removePath(new WorkspacesRemovePathRequest(path: 'old/dir', recursive: true, force: true));
+
+        expect($result)->toBe([]);
+    });
+
+    it('calls session.workspaces.removePath with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.workspaces.removePath',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'test-session'
+                    && $params['path'] === 'file.txt'),
+            )
+            ->andReturn([]);
+
+        $pending = new PendingWorkspaces($client, 'test-session');
+        $result = $pending->removePath(['path' => 'file.txt']);
+
+        expect($result)->toBe([]);
+    });
+
+    it('calls session.workspaces.renamePath with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.workspaces.renamePath',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'test-session'
+                    && $params['source'] === 'old.txt'
+                    && $params['destination'] === 'new.txt'),
+            )
+            ->andReturn([]);
+
+        $pending = new PendingWorkspaces($client, 'test-session');
+        $result = $pending->renamePath(new WorkspacesRenamePathRequest(source: 'old.txt', destination: 'new.txt'));
+
+        expect($result)->toBe([]);
+    });
+
+    it('calls session.workspaces.renamePath with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.workspaces.renamePath',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'test-session'
+                    && $params['source'] === 'a.txt'
+                    && $params['destination'] === 'b.txt'),
+            )
+            ->andReturn([]);
+
+        $pending = new PendingWorkspaces($client, 'test-session');
+        $result = $pending->renamePath(['source' => 'a.txt', 'destination' => 'b.txt']);
 
         expect($result)->toBe([]);
     });

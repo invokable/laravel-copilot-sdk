@@ -33,6 +33,7 @@ describe('PermissionModeSource', function () {
             ->and(PermissionModeSource::SLASH_COMMAND->value)->toBe('slash_command')
             ->and(PermissionModeSource::AUTOPILOT_CONFIRMATION->value)->toBe('autopilot_confirmation')
             ->and(PermissionModeSource::USER_SETTING->value)->toBe('user_setting')
+            ->and(PermissionModeSource::ORGANIZATION_TARGETING->value)->toBe('organization_targeting')
             ->and(PermissionModeSource::RPC->value)->toBe('rpc');
     });
 });
