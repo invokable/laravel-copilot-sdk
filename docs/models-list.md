@@ -3,32 +3,31 @@
 The available models may change depending on Copilot CLI updates and your organization's policies.
 
 ```plaintext
- ┌─────────────────────────┬─────────────────────────────┬────────────────────┬────────────────┬───────────────────────────┬─────────────────────────────┐
- │ ID                      │ Display Name                │ Max Context Tokens │ Vision Support │ Supports Reasoning Effort │ Supports Structured Outputs │
- ├─────────────────────────┼─────────────────────────────┼────────────────────┼────────────────┼───────────────────────────┼─────────────────────────────┤
- │ auto                    │ Auto                        │ 0                  │ No             │ No                        │ No                          │
- │ claude-sonnet-5         │ Claude Sonnet 5             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ claude-fable-5          │ Claude Fable 5              │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ claude-opus-5           │ Claude Opus 5               │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ claude-opus-4.8         │ Claude Opus 4.8             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ claude-opus-4.8-fast    │ Claude Opus 4.8 (fast mode) │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ claude-opus-4.7         │ Claude Opus 4.7             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ claude-haiku-4.5        │ Claude Haiku 4.5            │ 144000             │ Yes            │ No                        │ No                          │
- │ gpt-5.6-sol             │ GPT-5.6 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5.6-terra           │ GPT-5.6 Terra               │ 1050000            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5.6-luna            │ GPT-5.6 Luna                │ 1050000            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5.5                 │ GPT-5.5                     │ 1050000            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5.4                 │ GPT-5.4                     │ 1050000            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5.4-mini            │ GPT-5.4 mini                │ 400000             │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5.3-codex           │ GPT-5.3-Codex               │ 400000             │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5-mini              │ GPT-5 mini                  │ 264000             │ Yes            │ Yes                       │ Yes                         │
- │ mai-code-1.1-flash      │ MAI-Code-1.1-Flash          │ 256000             │ Yes            │ Yes                       │ Yes                         │
- │ mai-code-1-flash-picker │ MAI-Code-1-Flash            │ 256000             │ No             │ Yes                       │ Yes                         │
- │ grok-4.5                │ Grok 4.5                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
- │ kimi-k3                 │ Kimi K3                     │ 1048576            │ Yes            │ Yes                       │ Yes                         │
- │ kimi-k2.7-code          │ Kimi K2.7 Code              │ 256000             │ Yes            │ No                        │ Yes                         │
- │ claude-fable-5.1        │ Claude Fable 5.1            │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-6-astra             │ GPT-6 Astra                 │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ grok-4.6                │ Grok 4.6                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
- └─────────────────────────┴─────────────────────────────┴────────────────────┴────────────────┴───────────────────────────┴─────────────────────────────┘
+ ┌──────────────────────┬─────────────────────────────┬────────────────────┬────────────────┬───────────────────────────┬─────────────────────────────┐
+ │ ID                   │ Display Name                │ Max Context Tokens │ Vision Support │ Supports Reasoning Effort │ Supports Structured Outputs │
+ ├──────────────────────┼─────────────────────────────┼────────────────────┼────────────────┼───────────────────────────┼─────────────────────────────┤
+ │ auto                 │ Auto                        │ 0                  │ No             │ No                        │ No                          │
+ │ claude-sonnet-5      │ Claude Sonnet 5             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ claude-fable-5.1     │ Claude Fable 5.1            │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ claude-fable-5       │ Claude Fable 5              │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ claude-opus-5        │ Claude Opus 5               │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ claude-opus-4.8      │ Claude Opus 4.8             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ claude-opus-4.8-fast │ Claude Opus 4.8 (fast mode) │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ claude-opus-4.7      │ Claude Opus 4.7             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ claude-haiku-4.5     │ Claude Haiku 4.5            │ 144000             │ Yes            │ No                        │ No                          │
+ │ gpt-6-astra          │ GPT-6 Astra                 │ 1178000            │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-5.6-sol          │ GPT-5.6 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-5.6-terra        │ GPT-5.6 Terra               │ 1050000            │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-5.6-luna         │ GPT-5.6 Luna                │ 1050000            │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-5.5              │ GPT-5.5                     │ 1050000            │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-5.4              │ GPT-5.4                     │ 1050000            │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-5.4-mini         │ GPT-5.4 mini                │ 400000             │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-5.3-codex        │ GPT-5.3-Codex               │ 400000             │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-5-mini           │ GPT-5 mini                  │ 264000             │ Yes            │ Yes                       │ Yes                         │
+ │ mai-code-1.1-flash   │ MAI-Code-1.1-Flash          │ 256000             │ Yes            │ Yes                       │ Yes                         │
+ │ grok-4.5             │ Grok 4.5                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
+ │ kimi-k3              │ Kimi K3                     │ 1048576            │ Yes            │ Yes                       │ Yes                         │
+ │ kimi-k2.7-code       │ Kimi K2.7 Code              │ 256000             │ Yes            │ No                        │ Yes                         │
+ │ grok-4.6             │ Grok 4.6                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
+ └──────────────────────┴─────────────────────────────┴────────────────────┴────────────────┴───────────────────────────┴─────────────────────────────┘
 ```
