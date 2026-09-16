@@ -213,7 +213,15 @@ class Session implements CopilotSession
         $this->prepareWait();
 
         try {
-            $this->send(prompt: $prompt, attachments: $attachments, mode: $mode, agentMode: $agentMode, requestHeaders: $requestHeaders, source: $source, responseFormat: $responseFormat);
+            $this->send(
+                prompt: $prompt,
+                attachments: $attachments,
+                mode: $mode,
+                agentMode: $agentMode,
+                requestHeaders: $requestHeaders,
+                source: $source,
+                responseFormat: $responseFormat,
+            );
             $this->wait($timeout);
 
             MessageSendAndWait::dispatch($this->sessionId, $this->waitLastAssistantMessage, $prompt, $attachments, $mode, $source);
