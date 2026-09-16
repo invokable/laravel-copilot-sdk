@@ -259,6 +259,10 @@ $session->rpc()->workspaces()->getWorkspace();
 $session->rpc()->workspaces()->listFiles();
 $session->rpc()->workspaces()->readFile(new WorkspacesReadFileRequest(path: 'file.txt'));
 $session->rpc()->workspaces()->createFile(new WorkspacesCreateFileRequest(path: 'file.txt', content: '...'));
+$session->rpc()->workspaces()->statFile(new WorkspacesStatFileRequest(path: 'file.txt'));
+$session->rpc()->workspaces()->createDirectory(new WorkspacesCreateDirectoryRequest(path: 'new/dir', recursive: true));
+$session->rpc()->workspaces()->removePath(new WorkspacesRemovePathRequest(path: 'old/dir', recursive: true, force: true));
+$session->rpc()->workspaces()->renamePath(new WorkspacesRenamePathRequest(source: 'old.txt', destination: 'new.txt'));
 
 // instructions (セッションのインストラクションソースを取得)
 $result = $session->rpc()->instructions()->getSources();

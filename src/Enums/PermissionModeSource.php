@@ -23,6 +23,9 @@ enum PermissionModeSource: string
     /** The mode was set at startup by the `defaultPermissionMode` user setting. */
     case USER_SETTING = 'user_setting';
 
+    /** The mode was set at startup by authenticated organization targeting. */
+    case ORGANIZATION_TARGETING = 'organization_targeting';
+
     /** The mode was set through an RPC caller. */
     case RPC = 'rpc';
 }

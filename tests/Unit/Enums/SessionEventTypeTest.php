@@ -233,4 +233,14 @@ describe('SessionEventType', function () {
             ->and(SessionEventType::from('permission.messageAuthorizationRead'))->toBe(SessionEventType::PERMISSION_MESSAGE_AUTHORIZATION_READ)
             ->and(SessionEventType::from('permission.messageAuthorizationDegraded'))->toBe(SessionEventType::PERMISSION_MESSAGE_AUTHORIZATION_DEGRADED);
     });
+
+    it('has contextual permission event types', function () {
+        expect(SessionEventType::PERMISSION_ASSENT_DETECTED->value)->toBe('permission.assentDetected')
+            ->and(SessionEventType::PERMISSION_CONTEXTUAL_AUTHORIZATION->value)->toBe('permission.contextualAuthorization');
+    });
+
+    it('can create contextual permission event types from string', function () {
+        expect(SessionEventType::from('permission.assentDetected'))->toBe(SessionEventType::PERMISSION_ASSENT_DETECTED)
+            ->and(SessionEventType::from('permission.contextualAuthorization'))->toBe(SessionEventType::PERMISSION_CONTEXTUAL_AUTHORIZATION);
+    });
 });

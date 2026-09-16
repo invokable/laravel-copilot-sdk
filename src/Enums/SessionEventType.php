@@ -134,6 +134,8 @@ enum SessionEventType: string
     case PERMISSION_MESSAGE_AUTHORIZATION = 'permission.messageAuthorization';
     case PERMISSION_MESSAGE_AUTHORIZATION_READ = 'permission.messageAuthorizationRead';
     case PERMISSION_MESSAGE_AUTHORIZATION_DEGRADED = 'permission.messageAuthorizationDegraded';
+    case PERMISSION_ASSENT_DETECTED = 'permission.assentDetected';
+    case PERMISSION_CONTEXTUAL_AUTHORIZATION = 'permission.contextualAuthorization';
 
     // User input events
     case USER_INPUT_REQUESTED = 'user_input.requested';

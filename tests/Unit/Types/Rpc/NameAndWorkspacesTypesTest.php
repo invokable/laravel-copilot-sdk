@@ -5,11 +5,16 @@ declare(strict_types=1);
 use Revolution\Copilot\Types\Rpc\NameGetResult;
 use Revolution\Copilot\Types\Rpc\NameSetRequest;
 use Revolution\Copilot\Types\Rpc\Workspace;
+use Revolution\Copilot\Types\Rpc\WorkspacesCreateDirectoryRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesCreateFileRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesGetWorkspaceResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesListFilesResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesReadFileRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesReadFileResult;
+use Revolution\Copilot\Types\Rpc\WorkspacesRemovePathRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesRenamePathRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesStatFileRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesStatFileResult;
 
 describe('NameGetResult', function () {
     it('can be created with a name', function () {
@@ -207,5 +212,105 @@ describe('WorkspacesCreateFileRequest', function () {
         expect($req->path)->toBe('test.txt')
             ->and($req->content)->toBe('hello')
             ->and($req->toArray())->toBe(['path' => 'test.txt', 'content' => 'hello']);
+    });
+});
+
+describe('WorkspacesCreateDirectoryRequest', function () {
+    it('can be created with defaults', function () {
+        $req = new WorkspacesCreateDirectoryRequest(path: 'new/dir');
+
+        expect($req->path)->toBe('new/dir')
+            ->and($req->recursive)->toBeNull()
+            ->and($req->toArray())->toBe(['path' => 'new/dir']);
+    });
+
+    it('can be created with recursive flag', function () {
+        $req = WorkspacesCreateDirectoryRequest::fromArray(['path' => 'a/b/c', 'recursive' => true]);
+
+        expect($req->recursive)->toBeTrue()
+            ->and($req->toArray())->toBe(['path' => 'a/b/c', 'recursive' => true]);
+    });
+});
+
+describe('WorkspacesRemovePathRequest', function () {
+    it('can be created with defaults', function () {
+        $req = new WorkspacesRemovePathRequest(path: 'file.txt');
+
+        expect($req->path)->toBe('file.txt')
+            ->and($req->recursive)->toBeNull()
+            ->and($req->force)->toBeNull()
+            ->and($req->toArray())->toBe(['path' => 'file.txt']);
+    });
+
+    it('can be created with recursive and force flags', function () {
+        $req = WorkspacesRemovePathRequest::fromArray(['path' => 'dir', 'recursive' => true, 'force' => true]);
+
+        expect($req->recursive)->toBeTrue()
+            ->and($req->force)->toBeTrue()
+            ->and($req->toArray())->toBe(['path' => 'dir', 'recursive' => true, 'force' => true]);
+    });
+});
+
+describe('WorkspacesRenamePathRequest', function () {
+    it('can be created', function () {
+        $req = new WorkspacesRenamePathRequest(source: 'old.txt', destination: 'new.txt');
+
+        expect($req->source)->toBe('old.txt')
+            ->and($req->destination)->toBe('new.txt')
+            ->and($req->toArray())->toBe(['source' => 'old.txt', 'destination' => 'new.txt']);
+    });
+
+    it('can be created from array', function () {
+        $req = WorkspacesRenamePathRequest::fromArray(['source' => 'a', 'destination' => 'b']);
+
+        expect($req->source)->toBe('a')
+            ->and($req->destination)->toBe('b');
+    });
+});
+
+describe('WorkspacesStatFileRequest', function () {
+    it('can be created', function () {
+        $req = new WorkspacesStatFileRequest(path: 'file.txt');
+
+        expect($req->path)->toBe('file.txt')
+            ->and($req->toArray())->toBe(['path' => 'file.txt']);
+    });
+});
+
+describe('WorkspacesStatFileResult', function () {
+    it('can be created from array', function () {
+        $result = WorkspacesStatFileResult::fromArray([
+            'isFile' => true,
+            'isDirectory' => false,
+            'size' => 2048,
+            'mtimeMs' => 1700000000000,
+            'birthtimeMs' => 1690000000000,
+        ]);
+
+        expect($result->isFile)->toBeTrue()
+            ->and($result->isDirectory)->toBeFalse()
+            ->and($result->size)->toBe(2048.0)
+            ->and($result->mtimeMs)->toBe(1700000000000.0)
+            ->and($result->birthtimeMs)->toBe(1690000000000.0);
+    });
+
+    it('defaults numeric and boolean fields when missing', function () {
+        $result = WorkspacesStatFileResult::fromArray([]);
+
+        expect($result->isFile)->toBeFalse()
+            ->and($result->isDirectory)->toBeFalse()
+            ->and($result->size)->toBe(0.0);
+    });
+
+    it('converts to array', function () {
+        $result = new WorkspacesStatFileResult(isFile: true, isDirectory: false, size: 10.0, mtimeMs: 1.0, birthtimeMs: 2.0);
+
+        expect($result->toArray())->toBe([
+            'isFile' => true,
+            'isDirectory' => false,
+            'size' => 10.0,
+            'mtimeMs' => 1.0,
+            'birthtimeMs' => 2.0,
+        ]);
     });
 });

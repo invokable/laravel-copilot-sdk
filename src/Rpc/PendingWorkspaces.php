@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\WorkspacesCreateDirectoryRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesCreateFileRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesGetWorkspaceResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesListFilesResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesReadFileRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesReadFileResult;
+use Revolution\Copilot\Types\Rpc\WorkspacesRemovePathRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesRenamePathRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesStatFileRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesStatFileResult;
 
 /**
  * Pending workspaces RPC operations for a session.
@@ -67,5 +72,51 @@ class PendingWorkspaces
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.workspaces.createFile', $paramsArray);
+    }
+
+    /**
+     * Returns metadata for a file or directory in the session workspace files directory.
+     */
+    public function statFile(WorkspacesStatFileRequest|array $params): WorkspacesStatFileResult
+    {
+        $paramsArray = ($params instanceof WorkspacesStatFileRequest ? $params : WorkspacesStatFileRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return WorkspacesStatFileResult::fromArray(
+            $this->client->request('session.workspaces.statFile', $paramsArray),
+        );
+    }
+
+    /**
+     * Create a directory in the session workspace files directory.
+     */
+    public function createDirectory(WorkspacesCreateDirectoryRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof WorkspacesCreateDirectoryRequest ? $params : WorkspacesCreateDirectoryRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return $this->client->request('session.workspaces.createDirectory', $paramsArray);
+    }
+
+    /**
+     * Remove a file or directory from the session workspace files directory.
+     */
+    public function removePath(WorkspacesRemovePathRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof WorkspacesRemovePathRequest ? $params : WorkspacesRemovePathRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return $this->client->request('session.workspaces.removePath', $paramsArray);
+    }
+
+    /**
+     * Rename a file or directory within the session workspace files directory.
+     */
+    public function renamePath(WorkspacesRenamePathRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof WorkspacesRenamePathRequest ? $params : WorkspacesRenamePathRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return $this->client->request('session.workspaces.renamePath', $paramsArray);
     }
 }
