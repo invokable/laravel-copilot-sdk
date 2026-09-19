@@ -85,6 +85,8 @@ permissions:
 
 model: claude-sonnet-5
 
+timeout-minutes: 30
+
 engine:
   id: copilot
   agent: laravel-sdk-sync
