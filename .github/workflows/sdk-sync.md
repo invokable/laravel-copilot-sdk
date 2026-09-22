@@ -83,7 +83,7 @@ permissions:
   issues: read
   pull-requests: read
 
-model: claude-sonnet-5
+model: gpt-6-sol
 
 timeout-minutes: 30
 
