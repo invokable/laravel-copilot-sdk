@@ -403,7 +403,7 @@ Artisan::command('copilot:streaming {--resume=}', function () {
 Artisan::command('copilot:ai-sdk', function () {
     $response = agent(
         instructions: 'You are an expert at software development.',
-    )->prompt('Tell me about Laravel');
+    )->prompt('Tell me about Laravel', provider: 'copilot', model: 'gpt-6-luna');
 
     $this->info($response->text);
 });

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Ai;
 
-use Closure;
 use Exception;
 use Generator;
 use Illuminate\JsonSchema\Types\Type;
@@ -16,7 +15,7 @@ use Laravel\Ai\Gateway\StepResponse;
 use Laravel\Ai\Gateway\TextGenerationOptions;
 use Laravel\Ai\Responses\Data\FinishReason;
 use Laravel\Ai\Responses\Data\Meta;
-use Laravel\Ai\Responses\Data\Usage;
+use Laravel\Ai\Responses\Data\TextUsage;
 use Laravel\Ai\Streaming\Events\StreamEvent;
 use Laravel\Ai\Streaming\Events\TextDelta;
 use Revolution\Copilot\Contracts\CopilotSession;
@@ -30,10 +29,6 @@ use Revolution\Copilot\Types\SystemMessageConfig;
  */
 class CopilotGateway implements StepTextGateway
 {
-    protected ?Closure $invokingToolCallback = null;
-
-    protected ?Closure $toolInvokedCallback = null;
-
     /**
      * Generate text representing the next message in a conversation.
      *
@@ -66,9 +61,9 @@ class CopilotGateway implements StepTextGateway
             text: $response->content(),
             toolCalls: [],
             finishReason: FinishReason::Stop,
-            usage: new Usage(
-                promptTokens: 0,
-                completionTokens: $response->integer('outputTokens'),
+            usage: new TextUsage(
+                inputTokens: 0,
+                outputTokens: $response->integer('outputTokens'),
             ),
             meta: new Meta(
                 provider: $provider->name(),
@@ -132,16 +127,5 @@ class CopilotGateway implements StepTextGateway
         }, function ($event) use ($invocationId) {
             $event?->withInvocationId($invocationId);
         });
-    }
-
-    /**
-     * Specify callbacks that should be invoked when tools are invoking / invoked.
-     */
-    public function onToolInvocation(Closure $invoking, Closure $invoked): self
-    {
-        $this->invokingToolCallback = $invoking;
-        $this->toolInvokedCallback = $invoked;
-
-        return $this;
     }
 }
