@@ -8,6 +8,10 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ProviderConfig;
+use Revolution\Copilot\Types\Rpc\ManagedMcpServerConfig;
+use Revolution\Copilot\Types\Rpc\SandboxConfig;
+use Revolution\Copilot\Types\Rpc\SandboxConfigUserPolicy;
+use Revolution\Copilot\Types\Rpc\SandboxConfigUserPolicyNetwork;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionHooks;
@@ -34,16 +38,50 @@ describe('SessionConfig', function () {
                 'catalog-server' => ['displayName' => 'Catalog Server', 'url' => 'https://example.com/mcp'],
             ],
             'refreshCustomInstructions' => true,
+            'diagnostics' => ['sources' => ['mcp' => ['level' => 'debug']]],
         ]);
 
         expect($config->managedMcpServers)->toBe([
             'catalog-server' => ['displayName' => 'Catalog Server', 'url' => 'https://example.com/mcp'],
         ])
             ->and($config->refreshCustomInstructions)->toBeTrue()
+            ->and($config->diagnostics)->toBe(['sources' => ['mcp' => ['level' => 'debug']]])
             ->and($config->toArray()['managedMcpServers'])->toBe([
                 'catalog-server' => ['displayName' => 'Catalog Server', 'url' => 'https://example.com/mcp'],
             ])
             ->and($config->toArray()['refreshCustomInstructions'])->toBeTrue();
+        expect($config->toArray()['diagnostics'])->toBe(['sources' => ['mcp' => ['level' => 'debug']]]);
+    });
+
+    it('serializes typed managed MCP server and sandbox policy configuration', function () {
+        $config = SessionConfig::fromArray([
+            'managedMcpServers' => [
+                'docs' => new ManagedMcpServerConfig(
+                    displayName: 'Docs',
+                    url: 'https://example.test/mcp',
+                    tools: ['search'],
+                ),
+            ],
+            'sandbox' => new SandboxConfig(
+                enabled: true,
+                userPolicy: new SandboxConfigUserPolicy(
+                    network: new SandboxConfigUserPolicyNetwork(
+                        allowedHosts: ['docs.example.test'],
+                        blockedHosts: ['unsafe.example.test'],
+                    ),
+                ),
+            ),
+        ]);
+
+        expect($config->toArray()['managedMcpServers']['docs'])->toBe([
+            'displayName' => 'Docs',
+            'url' => 'https://example.test/mcp',
+            'tools' => ['search'],
+        ])
+            ->and($config->toArray()['sandbox']['userPolicy']['network']['allowedHosts'])
+            ->toBe(['docs.example.test'])
+            ->and($config->toArray()['sandbox']['userPolicy']['network']['blockedHosts'])
+            ->toBe(['unsafe.example.test']);
     });
 
     it('can be created from array with all fields', function () {

@@ -10,6 +10,7 @@ use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
+use Revolution\Copilot\Types\Rpc\SandboxConfig;
 
 /**
  * Configuration for resuming a session.
@@ -152,6 +153,8 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?Closure  $gitHubTokenProvider  Callback used to acquire short-lived GitHub credentials for this session.
      * @param  ?string  $authClientIdMetadataUrl  OAuth Client ID Metadata Document URL identifying the host for MCP
      *                                            authorization. When unset, no host identity is supplied.
+     * @param  ?array  $diagnostics  Per-source diagnostic capture levels. Debug and trace diagnostics can include sensitive MCP payloads.
+     * @param  SandboxConfig|array|null  $sandbox  Sandbox policy for this session.
      */
     public function __construct(
         public ?string $clientName = null,
@@ -231,6 +234,8 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?Closure $gitHubTokenProvider = null,
         public AskUserVariant|string|null $askUserVariant = null,
         public ?string $authClientIdMetadataUrl = null,
+        public ?array $diagnostics = null,
+        public SandboxConfig|array|null $sandbox = null,
     ) {}
 
     /**
@@ -382,6 +387,10 @@ readonly class ResumeSessionConfig implements Arrayable
                 ? (is_string($data['askUserVariant']) ? (AskUserVariant::tryFrom($data['askUserVariant']) ?? $data['askUserVariant']) : $data['askUserVariant'])
                 : null,
             authClientIdMetadataUrl: $data['authClientIdMetadataUrl'] ?? null,
+            diagnostics: $data['diagnostics'] ?? null,
+            sandbox: isset($data['sandbox'])
+                ? ($data['sandbox'] instanceof SandboxConfig ? $data['sandbox'] : SandboxConfig::fromArray($data['sandbox']))
+                : null,
         );
     }
 
@@ -515,6 +524,8 @@ readonly class ResumeSessionConfig implements Arrayable
             'includedBuiltinSkills' => $this->includedBuiltinSkills,
             'askUserVariant' => $this->askUserVariant instanceof AskUserVariant ? $this->askUserVariant->value : $this->askUserVariant,
             'authClientIdMetadataUrl' => $this->authClientIdMetadataUrl,
+            'diagnostics' => $this->diagnostics,
+            'sandbox' => $this->sandbox instanceof SandboxConfig ? $this->sandbox->toArray() : $this->sandbox,
         ], fn ($value) => $value !== null);
     }
 }

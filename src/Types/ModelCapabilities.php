@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
+use Revolution\Copilot\Enums\AdaptiveThinkingSupport;
 
 /**
  * Model capabilities and limits.
@@ -56,6 +57,16 @@ readonly class ModelCapabilities implements Arrayable
     public function supportsStructuredOutputs(): bool
     {
         return $this->supports['structured_outputs'] ?? false;
+    }
+
+    /**
+     * Get the model's adaptive-thinking capability, when reported.
+     */
+    public function adaptiveThinkingSupport(): ?AdaptiveThinkingSupport
+    {
+        $support = $this->supports['adaptive_thinking'] ?? null;
+
+        return is_string($support) ? AdaptiveThinkingSupport::tryFrom($support) : null;
     }
 
     /**

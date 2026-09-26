@@ -10,7 +10,9 @@ use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Enums\Verbosity;
+use Revolution\Copilot\Types\Rpc\ManagedMcpServerConfig;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
+use Revolution\Copilot\Types\Rpc\SandboxConfig;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 
 /**
@@ -204,8 +206,10 @@ readonly class SessionConfig implements Arrayable
      * @param  ?Closure  $gitHubTokenProvider  Callback used to acquire short-lived GitHub credentials for this session.
      * @param  ?string  $authClientIdMetadataUrl  OAuth Client ID Metadata Document URL identifying the host for MCP
      *                                            authorization. When unset, no host identity is supplied.
-     * @param  ?array  $managedMcpServers  Non-secret host-managed HTTP MCP servers keyed by stable managed identity.
+     * @param  array<string, ManagedMcpServerConfig|array>|null  $managedMcpServers  Non-secret host-managed HTTP MCP servers keyed by stable managed identity.
      * @param  ?bool  $refreshCustomInstructions  Whether to invalidate cached custom-instruction discovery before constructing the session.
+     * @param  ?array  $diagnostics  Per-source diagnostic capture levels. Debug and trace diagnostics can include sensitive MCP payloads.
+     * @param  SandboxConfig|array|null  $sandbox  Sandbox policy for this session.
      */
     public function __construct(
         public ?string $sessionId = null,
@@ -296,6 +300,8 @@ readonly class SessionConfig implements Arrayable
         public ?string $authClientIdMetadataUrl = null,
         public ?array $managedMcpServers = null,
         public ?bool $refreshCustomInstructions = null,
+        public ?array $diagnostics = null,
+        public SandboxConfig|array|null $sandbox = null,
     ) {}
 
     /**
@@ -488,6 +494,10 @@ readonly class SessionConfig implements Arrayable
             authClientIdMetadataUrl: $data['authClientIdMetadataUrl'] ?? null,
             managedMcpServers: $data['managedMcpServers'] ?? null,
             refreshCustomInstructions: $data['refreshCustomInstructions'] ?? null,
+            diagnostics: $data['diagnostics'] ?? null,
+            sandbox: isset($data['sandbox'])
+                ? ($data['sandbox'] instanceof SandboxConfig ? $data['sandbox'] : SandboxConfig::fromArray($data['sandbox']))
+                : null,
         );
     }
 
@@ -652,8 +662,17 @@ readonly class SessionConfig implements Arrayable
             'includedBuiltinSkills' => $this->includedBuiltinSkills,
             'askUserVariant' => $this->askUserVariant instanceof AskUserVariant ? $this->askUserVariant->value : $this->askUserVariant,
             'authClientIdMetadataUrl' => $this->authClientIdMetadataUrl,
-            'managedMcpServers' => $this->managedMcpServers,
+            'managedMcpServers' => $this->managedMcpServers === null
+                ? null
+                : array_map(
+                    fn (ManagedMcpServerConfig|array $server) => $server instanceof ManagedMcpServerConfig
+                        ? $server->toArray()
+                        : $server,
+                    $this->managedMcpServers,
+                ),
             'refreshCustomInstructions' => $this->refreshCustomInstructions,
+            'diagnostics' => $this->diagnostics,
+            'sandbox' => $this->sandbox instanceof SandboxConfig ? $this->sandbox->toArray() : $this->sandbox,
         ], fn ($value) => $value !== null);
     }
 }

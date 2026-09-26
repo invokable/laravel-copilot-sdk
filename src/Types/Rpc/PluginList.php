@@ -14,7 +14,7 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class PluginList implements Arrayable
 {
     /**
-     * @param  array<PluginInfo>  $plugins  Installed plugins
+     * @param  array<InstalledPluginInfo>  $plugins  Installed plugins
      */
     public function __construct(
         public array $plugins,
@@ -24,7 +24,7 @@ readonly class PluginList implements Arrayable
     {
         return new self(
             plugins: array_map(
-                fn (array $plugin) => PluginInfo::fromArray($plugin),
+                fn (array $plugin) => InstalledPluginInfo::fromArray($plugin),
                 $data['plugins'] ?? [],
             ),
         );

@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\SendMessagesRequest;
 use Revolution\Copilot\Types\Rpc\SendMessagesResult;
+use Revolution\Copilot\Types\Rpc\ShutdownRequest;
 
 /**
  * Typed session-scoped RPC methods.
@@ -67,6 +68,16 @@ class SessionRpc
     }
 
     /**
+     * Language-server protocol operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function lsp(): PendingLsp
+    {
+        return new PendingLsp($this->client, $this->sessionId);
+    }
+
+    /**
      * Fleet RPC operations.
      */
     public function fleet(): PendingFleet
@@ -110,6 +121,56 @@ class SessionRpc
     public function factory(): PendingFactory
     {
         return new PendingFactory($this->client, $this->sessionId);
+    }
+
+    /**
+     * Workflow RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function workflow(): PendingWorkflow
+    {
+        return new PendingWorkflow($this->client, $this->sessionId);
+    }
+
+    /**
+     * Diagnostics RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function diagnostics(): PendingDiagnostics
+    {
+        return new PendingDiagnostics($this->client, $this->sessionId);
+    }
+
+    /**
+     * Connector RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function connectors(): PendingConnectors
+    {
+        return new PendingConnectors($this->client, $this->sessionId);
+    }
+
+    /**
+     * Session-managed settings RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function managedSettings(): PendingManagedSettings
+    {
+        return new PendingManagedSettings($this->client, $this->sessionId);
+    }
+
+    /**
+     * Session customization reload operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function customizations(): PendingCustomizations
+    {
+        return new PendingCustomizations($this->client, $this->sessionId);
     }
 
     /**
@@ -354,6 +415,21 @@ class SessionRpc
         $this->client->request('session.suspend', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Shut down this session and dispatch its deferred session-end hooks.
+     *
+     * @experimental
+     */
+    public function shutdown(ShutdownRequest|array $params = []): void
+    {
+        $paramsArray = $params instanceof ShutdownRequest
+            ? $params->toArray()
+            : ShutdownRequest::fromArray($params)->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.shutdown', $paramsArray);
     }
 
     /**

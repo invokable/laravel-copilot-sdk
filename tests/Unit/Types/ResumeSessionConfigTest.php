@@ -9,6 +9,7 @@ use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\LargeToolOutputConfig;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\SandboxConfig;
 use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
 
@@ -25,6 +26,26 @@ describe('ResumeSessionConfig', function () {
 
         expect($config->authClientIdMetadataUrl)->toBe('https://example.com/client-metadata.json')
             ->and($config->toArray()['authClientIdMetadataUrl'])->toBe('https://example.com/client-metadata.json');
+    });
+
+    it('serializes diagnostics configuration', function () {
+        $diagnostics = ['sources' => ['mcp' => ['level' => 'trace']]];
+        $config = ResumeSessionConfig::fromArray(['diagnostics' => $diagnostics]);
+
+        expect($config->diagnostics)->toBe($diagnostics)
+            ->and($config->toArray()['diagnostics'])->toBe($diagnostics);
+    });
+
+    it('serializes sandbox configuration when resuming', function () {
+        $config = ResumeSessionConfig::fromArray([
+            'sandbox' => ['enabled' => true, 'sandboxMcpServers' => false],
+        ]);
+
+        expect($config->sandbox)->toBeInstanceOf(SandboxConfig::class)
+            ->and($config->toArray()['sandbox'])->toBe([
+                'enabled' => true,
+                'sandboxMcpServers' => false,
+            ]);
     });
 
     it('can be created from array with all fields', function () {

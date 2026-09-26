@@ -235,7 +235,8 @@ $session->setAutoTier(AutoTier::EFFICIENCY);
 
 // mode
 $session->rpc()->mode()->get();
-$session->rpc()->mode()->set(new ModeSetRequest(mode: 'plan'));
+$modeResult = $session->rpc()->mode()->set(new ModeSetRequest(mode: 'plan'));
+// $modeResult->modeApplied、$modeResult->modelChanged、$modeResult->confirmation など
 
 // name
 $session->rpc()->name()->get();
@@ -267,6 +268,14 @@ $session->rpc()->workspaces()->renamePath(new WorkspacesRenamePathRequest(source
 // instructions (セッションのインストラクションソースを取得)
 $result = $session->rpc()->instructions()->getSources();
 // $result->sources - InstructionsSources の配列
+$session->rpc()->instructions()->reload();
+
+// LSP設定を明示的に再読み込み（experimental）
+$session->rpc()->lsp()->initialize([
+    'workingDirectory' => base_path(),
+    'gitRoot' => base_path(),
+    'force' => true,
+]);
 
 // instructions discover (インストラクションファイルを検出)
 use Revolution\Copilot\Types\Rpc\InstructionsDiscoverRequest;
@@ -732,6 +741,31 @@ $session->rpc()->factory()->journal()->put(new FactoryJournalPutRequest(
     resultJson: ['step' => 1],
 ));
 ```
+
+## 新しいCLI RPC API
+
+Copilot CLI 1.0.89 系で追加されたワークフロー、コネクター、診断などの実験的RPC APIも、`SessionRpc`から利用できます。これらの可変プロトコルpayloadはJSON互換の配列で渡し、レスポンスも配列として返します。各呼び出しには現在の`sessionId`が自動で追加されます。
+
+```php
+// CLI側に登録されたワークフローを実行し、実行状況を確認
+$run = $session->rpc()->workflow()->run([
+    'name' => 'weekly-summary',
+    'args' => ['team' => 'platform'],
+]);
+$current = $session->rpc()->workflow()->getRun(['runId' => $run['runId']]);
+
+// 診断情報とコネクター一覧
+$diagnostics = $session->rpc()->diagnostics()->read(['sources' => ['mcp']]);
+$connectors = $session->rpc()->connectors()->list();
+
+// プラグインマーケットプレイス
+$marketplaces = $session->rpc()->plugins()->marketplaces()->list();
+
+// アクティブセッションを終了し、sessionEnd hookをバックグラウンドで処理する
+$session->rpc()->shutdown(['detachSessionEndHooks' => true]);
+```
+
+`workflow()`はCLIが提供する低レベルRPCを呼び出します。Node.js SDKのようにPHPクロージャーをワークフローとして登録・実行する高レベルAPIは、この同期では追加していません。これらの新しいRPCグループはCLIのバージョンに依存し、実験的であるため、対応するCLIでのみ利用してください。
 
 ## SessionFS コールバック型
 

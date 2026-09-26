@@ -208,7 +208,10 @@ describe('SessionEventType', function () {
             ->and(SessionEventType::SESSION_PLAN_CHANGED->value)->toBe('session.plan_changed')
             ->and(SessionEventType::SESSION_WORKSPACE_FILE_CHANGED->value)->toBe('session.workspace_file_changed')
             ->and(SessionEventType::SESSION_TASK_COMPLETE->value)->toBe('session.task_complete')
-            ->and(SessionEventType::ASSISTANT_STREAMING_DELTA->value)->toBe('assistant.streaming_delta');
+            ->and(SessionEventType::ASSISTANT_STREAMING_DELTA->value)->toBe('assistant.streaming_delta')
+            ->and(SessionEventType::SESSION_INDEXED_SEARCH->value)->toBe('session.indexed_search')
+            ->and(SessionEventType::SESSION_MODEL_DESELECTED->value)->toBe('session.model_deselected')
+            ->and(SessionEventType::SESSION_PERMISSION_RECOVERY->value)->toBe('session.permission_recovery');
     });
 
     it('has system.notification case', function () {

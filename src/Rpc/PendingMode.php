@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\ModeSetRequest;
+use Revolution\Copilot\Types\Rpc\ModeSetResult;
 
 /**
  * Pending mode RPC operations for a session.
@@ -34,11 +35,13 @@ class PendingMode
      *
      * @param  ModeSetRequest|array{mode: string}  $params
      */
-    public function set(ModeSetRequest|array $params): void
+    public function set(ModeSetRequest|array $params): ModeSetResult
     {
         $paramsArray = ($params instanceof ModeSetRequest ? $params : ModeSetRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        $this->client->request('session.mode.set', $paramsArray);
+        return ModeSetResult::fromArray(
+            $this->client->request('session.mode.set', $paramsArray),
+        );
     }
 }
