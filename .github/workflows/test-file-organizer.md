@@ -4,7 +4,7 @@ description: Review and improve test file names and organization across the test
 intent: Make the test suite easier to navigate by aligning test file names and descriptions with the behavior they cover.
 
 on:
-  schedule: weekly on saturday around 6:00 utc+9 # 日本時間で日曜午前6時頃。
+  schedule: weekly on saturday around 10:00 utc+9 # 日本時間で日曜午前10時頃。
   workflow_dispatch:
   skip-if-match: 'is:pr is:open "gh-aw-workflow-id: test-file-organizer" in:body'
 
