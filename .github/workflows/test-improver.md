@@ -18,9 +18,9 @@ steps:
 
 permissions:
   contents: read
-  models: read
   pull-requests: read
   issues: read
+  copilot-requests: none
 
 model: gpt-6-luna
 engine:

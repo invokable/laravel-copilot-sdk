@@ -79,9 +79,9 @@ steps:
 
 permissions:
   contents: read
-  models: read
   issues: read
   pull-requests: read
+  copilot-requests: none
 
 model: gpt-6-sol
 
