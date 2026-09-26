@@ -58,4 +58,16 @@ class PendingProvider
             $this->client->request('session.provider.add', $paramsArray),
         );
     }
+
+    /**
+     * Synchronize provider and model state for this session.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function sync(array $params = []): array
+    {
+        $params['sessionId'] = $this->sessionId;
+
+        return $this->client->request('session.provider.sync', $params);
+    }
 }

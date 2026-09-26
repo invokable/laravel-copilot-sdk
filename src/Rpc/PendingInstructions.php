@@ -43,4 +43,16 @@ class PendingInstructions
             $this->client->request('instructions.discover', $paramsArray),
         );
     }
+
+    /**
+     * Reload instruction sources for this session.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function reload(): void
+    {
+        $this->client->request('session.instructions.reload', [
+            'sessionId' => $this->sessionId,
+        ]);
+    }
 }

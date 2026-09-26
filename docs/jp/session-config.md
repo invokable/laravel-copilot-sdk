@@ -340,3 +340,50 @@ $config = new SessionConfig(
 $session->rpc()->commands()->enqueue(new EnqueueCommandParams('/compact'));
 $sandbox = $session->rpc()->sandbox()->getEnforcementStatus();
 ```
+
+## MCP診断とサンドボックスのsession設定
+
+MCP診断を有効にするには`diagnostics`を指定します。`debug`や`trace`の記録にはツール引数、MCP payload、パス、サーバーstderrが含まれる場合があるため、ログを外部送信する前に内容を確認してください。省略時は診断記録を有効にしません。
+
+```php
+$config = new SessionConfig(
+    diagnostics: ['sources' => ['mcp' => ['level' => 'debug']]],
+    sandbox: [
+        'enabled' => true,
+        'userPolicy' => [
+            'filesystem' => ['readwritePaths' => [storage_path('app/workspace')]],
+            'network' => [
+                'allowedHosts' => ['api.example.com'],
+                'blockedHosts' => ['untrusted.example.com'],
+            ],
+        ],
+    ],
+);
+```
+
+`sandbox`は`SandboxConfig`、`SandboxConfigUserPolicyFilesystem`、`SandboxConfigUserPolicyNetwork`で型指定もできます。ネットワークの許可/拒否ルールはCLIのサンドボックス機能とバージョンに依存します。`managedMcpServers`では安定したキーごとに`ManagedMcpServerConfig`を渡せます。
+
+```php
+use Revolution\Copilot\Types\Rpc\ManagedMcpServerConfig;
+use Revolution\Copilot\Types\Rpc\SandboxConfig;
+use Revolution\Copilot\Types\Rpc\SandboxConfigUserPolicy;
+use Revolution\Copilot\Types\Rpc\SandboxConfigUserPolicyNetwork;
+
+$config = new SessionConfig(
+    managedMcpServers: [
+        'docs' => new ManagedMcpServerConfig(
+            displayName: 'Documentation',
+            url: 'https://api.example.com/mcp',
+            tools: ['search'],
+        ),
+    ],
+    sandbox: new SandboxConfig(
+        enabled: true,
+        userPolicy: new SandboxConfigUserPolicy(
+            network: new SandboxConfigUserPolicyNetwork(
+                allowedHosts: ['api.example.com'],
+            ),
+        ),
+    ),
+);
+```

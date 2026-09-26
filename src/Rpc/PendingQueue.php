@@ -91,4 +91,28 @@ class PendingQueue
             $this->client->request('session.queue.finishDeferredIdleDrain', $paramsArray),
         );
     }
+
+    /**
+     * Append a steering message to the session queue.
+     *
+     * @experimental This method is experimental and may change or be removed.
+     */
+    public function appendSteering(array $params): array
+    {
+        $params['sessionId'] = $this->sessionId;
+
+        return $this->client->request('session.queue.appendSteering', $params);
+    }
+
+    /**
+     * Withdraw a queued message, optionally interrupting its active turn.
+     *
+     * @experimental This method is experimental and may change or be removed.
+     */
+    public function withdrawMessage(array $params): array
+    {
+        $params['sessionId'] = $this->sessionId;
+
+        return $this->client->request('session.queue.withdrawMessage', $params);
+    }
 }
