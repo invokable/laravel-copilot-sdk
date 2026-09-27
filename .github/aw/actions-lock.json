@@ -5,15 +5,15 @@
       "version": "v9.0.0",
       "sha": "3a2844b7e9c422d3c10d287c895573f7108da1b3"
     },
-    "github/gh-aw-actions/setup-cli@v0.89.22": {
+    "github/gh-aw-actions/setup-cli@v0.89.17": {
       "repo": "github/gh-aw-actions/setup-cli",
-      "version": "v0.89.22",
-      "sha": "2fbab69bfca02bebd76cd0fc43f2d12acfed994f"
+      "version": "v0.89.17",
+      "sha": "f3b81cdb3070066a47faa9bdf440f4f1dc78b1f0"
     },
-    "github/gh-aw-actions/setup@v0.89.22": {
+    "github/gh-aw-actions/setup@v0.89.17": {
       "repo": "github/gh-aw-actions/setup",
-      "version": "v0.89.22",
-      "sha": "2fbab69bfca02bebd76cd0fc43f2d12acfed994f"
+      "version": "v0.89.17",
+      "sha": "f3b81cdb3070066a47faa9bdf440f4f1dc78b1f0"
     },
     "shivammathur/setup-php@2.37.2": {
       "repo": "shivammathur/setup-php",
