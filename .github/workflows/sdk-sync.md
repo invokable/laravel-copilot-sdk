@@ -83,7 +83,7 @@ permissions:
   pull-requests: read
   copilot-requests: none
 
-model: gpt-6-sol
+model: gpt-6-luna
 
 timeout-minutes: 30
 
