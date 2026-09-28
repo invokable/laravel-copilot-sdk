@@ -27,7 +27,7 @@ describe('Verbosity', function () {
     });
 });
 
-describe('New SessionEventType cases (SDK sync)', function () {
+describe('SessionEventType new cases', function () {
     it('has assistant.tool_call_delta case', function () {
         expect(SessionEventType::ASSISTANT_TOOL_CALL_DELTA->value)->toBe('assistant.tool_call_delta');
     });

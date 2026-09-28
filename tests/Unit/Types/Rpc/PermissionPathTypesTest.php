@@ -14,7 +14,7 @@ use Revolution\Copilot\Types\Rpc\PermissionsConfigureParams;
 use Revolution\Copilot\Types\Rpc\PermissionsModifyRulesParams;
 use Revolution\Copilot\Types\Rpc\PermissionUrlsSetUnrestrictedModeParams;
 
-describe('permission remaining types (part 2)', function () {
+describe('permission path types', function () {
     it('maps permissions configure params', function () {
         $params = PermissionsConfigureParams::fromArray([
             'approveAllReadPermissionRequests' => true,

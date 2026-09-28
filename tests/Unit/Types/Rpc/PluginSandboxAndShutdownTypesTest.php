@@ -15,7 +15,7 @@ use Revolution\Copilot\Types\Rpc\SandboxConfigUserPolicyNetwork;
 use Revolution\Copilot\Types\Rpc\ShutdownRequest;
 use Revolution\Copilot\Types\Rpc\SlashCommandTextResult;
 
-describe('deferred upstream SDK types', function () {
+describe('plugin, sandbox, and shutdown types', function () {
     it('retains installed plugin source metadata', function () {
         $plugin = InstalledPluginInfo::fromArray([
             'name' => 'trusted-plugin',
