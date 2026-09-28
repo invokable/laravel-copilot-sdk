@@ -17,7 +17,7 @@ use Revolution\Copilot\Rpc\PendingWorkflow;
 use Revolution\Copilot\Rpc\PendingWorkflowJournal;
 use Revolution\Copilot\Rpc\SessionRpc;
 
-describe('new upstream session RPC groups', function () {
+describe('additional session RPC groups', function () {
     it('runs a workflow with its owning session id', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

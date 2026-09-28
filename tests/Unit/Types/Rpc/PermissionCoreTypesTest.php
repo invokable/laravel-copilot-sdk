@@ -19,7 +19,7 @@ use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredResult;
 use Revolution\Copilot\Types\Rpc\PermissionsUrlsSetUnrestrictedModeResult;
 
-describe('permission core enums (part 1)', function () {
+describe('permission core enums', function () {
     it('exposes permission decision kinds', function () {
         expect(PermissionDecisionKind::APPROVE_ONCE->value)->toBe('approve-once')
             ->and(PermissionDecisionKind::DENIED_BY_PERMISSION_REQUEST_HOOK->value)->toBe('denied-by-permission-request-hook');
@@ -36,7 +36,7 @@ describe('permission core enums (part 1)', function () {
     });
 });
 
-describe('pending permission request core types (part 1)', function () {
+describe('pending permission request core types', function () {
     it('maps pending permission request list from and to array', function () {
         $list = PendingPermissionRequestList::fromArray([
             'items' => [
@@ -66,7 +66,7 @@ describe('pending permission request core types (part 1)', function () {
     });
 });
 
-describe('permission common request/result types (part 1)', function () {
+describe('permission common request/result types', function () {
     it('maps empty request payloads', function () {
         expect(PermissionsPendingRequestsRequest::fromArray([])->toArray())->toBe([])
             ->and(PermissionsPathsListRequest::fromArray([])->toArray())->toBe([]);

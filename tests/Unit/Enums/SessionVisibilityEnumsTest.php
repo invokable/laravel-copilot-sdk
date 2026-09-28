@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Enums\SessionVisibilityStatus;
 
-describe('New SessionEventType cases', function () {
+describe('SessionEventType new cases', function () {
     it('has session.session_limits_changed case', function () {
         expect(SessionEventType::SESSION_SESSION_LIMITS_CHANGED->value)->toBe('session.session_limits_changed');
     });
