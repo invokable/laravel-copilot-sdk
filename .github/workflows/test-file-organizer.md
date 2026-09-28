@@ -39,6 +39,7 @@ safe-outputs:
   create-pull-request:
     reviewers: [kawax]
     draft: true
+    fallback-as-issue: true
     if-no-changes: ignore
     signed-commits: false
     allowed-files:
