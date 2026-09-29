@@ -23,11 +23,11 @@ permissions:
   pull-requests: read
   copilot-requests: none
 
-model: gpt-6-luna
+model: claude-sonnet-5.5
 engine:
   id: copilot
   copilot-sdk: true
-  model: gpt-6-luna
+  model: claude-sonnet-5.5
 
 checkout:
   - path: .
