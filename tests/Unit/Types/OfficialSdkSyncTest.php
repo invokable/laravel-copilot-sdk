@@ -6,6 +6,7 @@ use Revolution\Copilot\Enums\DiscoveredExtensionMode;
 use Revolution\Copilot\Enums\EntraTokenInteraction;
 use Revolution\Copilot\Enums\EventsReadDirection;
 use Revolution\Copilot\Enums\InstallationDecision;
+use Revolution\Copilot\Enums\ModelChangeSource;
 use Revolution\Copilot\Enums\PermissionResponseCapability;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SandboxConfigSource;
@@ -14,8 +15,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingAgent;
 use Revolution\Copilot\Rpc\PendingHistory;
 use Revolution\Copilot\Rpc\PendingMcp;
-use Revolution\Copilot\Rpc\PendingServerExtensions;
 use Revolution\Copilot\Rpc\PendingServerAccounts;
+use Revolution\Copilot\Rpc\PendingServerExtensions;
 use Revolution\Copilot\Rpc\PendingSessionAccounts;
 use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookInput;
 use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookOutput;
@@ -24,10 +25,10 @@ use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\AgentSetPromptRequest;
 use Revolution\Copilot\Types\Rpc\AuthReadValue;
 use Revolution\Copilot\Types\Rpc\ConnectClientInfo;
-use Revolution\Copilot\Types\Rpc\EventLogReadRequest;
 use Revolution\Copilot\Types\Rpc\EntraTokenAcquireRequest;
-use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
+use Revolution\Copilot\Types\Rpc\EventLogReadRequest;
 use Revolution\Copilot\Types\Rpc\HistoryClearContextResult;
+use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthAuthenticationStateChangedRequest;
 use Revolution\Copilot\Types\Rpc\ModelMessage;
 use Revolution\Copilot\Types\Rpc\QueuePendingItemsResult;
@@ -101,7 +102,7 @@ test('installation confirmation reviews preserve the official challenge contract
 
 test('latest sandbox and model change discriminators are available', function () {
     expect(SandboxConfigSource::SESSION_FLAG->value)->toBe('session_flag')
-        ->and(\Revolution\Copilot\Enums\ModelChangeSource::AUTO_TIER_RECOMMENDATION->value)
+        ->and(ModelChangeSource::AUTO_TIER_RECOMMENDATION->value)
         ->toBe('auto_tier_recommendation');
 });
 

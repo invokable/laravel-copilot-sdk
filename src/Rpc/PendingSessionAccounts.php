@@ -30,6 +30,7 @@ class PendingSessionAccounts
             $query['brokerAvailable'] = $brokerAvailable;
         }
         $result = $this->client->request('session.accounts.enumerate', ['sessionId' => $this->sessionId, 'query' => $query]);
+
         return array_map(fn (array $item) => $kind === 'providers' ? ProviderDescriptor::fromArray($item) : AccountStatus::fromArray($item), $result['items'] ?? []);
     }
 
@@ -43,18 +44,21 @@ class PendingSessionAccounts
     public function set(AuthWrite|array $command): AuthWriteResult
     {
         $command = $command instanceof AuthWrite ? $command->toArray() : $command;
+
         return AuthWriteResult::fromArray($this->client->request('session.accounts.set', ['sessionId' => $this->sessionId, 'command' => $command]));
     }
 
     public function begin(AuthLoginBeginRequest|LoginProviderKind|string $request): AuthLoginBegun
     {
         $request = $request instanceof AuthLoginBeginRequest ? $request : new AuthLoginBeginRequest($request);
+
         return AuthLoginBegun::fromArray($this->client->request('session.accounts.login.begin', ['sessionId' => $this->sessionId, ...$request->toArray()]));
     }
 
     public function advance(AuthLoginAdvanceRequest|array $request): AuthLoginStep
     {
         $request = $request instanceof AuthLoginAdvanceRequest ? $request : new AuthLoginAdvanceRequest($request['flowId'] ?? '', $request['input'] ?? null);
+
         return AuthLoginStep::fromArray($this->client->request('session.accounts.login.advance', ['sessionId' => $this->sessionId, ...$request->toArray()]));
     }
 
