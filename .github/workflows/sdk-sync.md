@@ -216,7 +216,7 @@ Add Pest tests for all new/changed classes:
 
 Run:
 ```bash
-vendor/bin/pest --compact
+vendor/bin/pest
 vendor/bin/pint
 ```
 

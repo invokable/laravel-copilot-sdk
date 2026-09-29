@@ -190,7 +190,7 @@ describe('SomeType', function () {
 
 1. Run the full test suite to ensure nothing is broken:
    ```bash
-   vendor/bin/pest --compact
+   vendor/bin/pest
    ```
 2. If any tests fail, fix them before proceeding.
 3. Run the code style fixer on changed files:
