@@ -37,7 +37,7 @@ describe('ModelChangeSource', function () {
     });
 });
 
-describe('SessionEventType new cases', function () {
+describe('SessionEventType auto tier failure, completion receipt and MCP server events', function () {
     it('has auto tier and completion receipt events', function () {
         expect(SessionEventType::SESSION_AUTO_TIER_SWITCH_FAILED->value)->toBe('session.auto_tier_switch_failed')
             ->and(SessionEventType::SESSION_COMPLETION_RECEIPT->value)->toBe('session.completion_receipt')

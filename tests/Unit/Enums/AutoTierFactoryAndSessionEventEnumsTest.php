@@ -27,7 +27,7 @@ describe('FactoryRunStatus', function () {
     });
 });
 
-describe('SessionEventType new cases', function () {
+describe('SessionEventType auto tier recommendation', function () {
     it('has the auto tier recommendation event', function () {
         expect(SessionEventType::SESSION_AUTO_TIER_RECOMMENDATION->value)->toBe('session.auto_tier_recommendation');
     });
