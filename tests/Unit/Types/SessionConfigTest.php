@@ -622,3 +622,11 @@ describe('SessionConfig', function () {
         expect($config->featureFlags)->toBe(['enable-bar' => false]);
     });
 });
+
+it('roundtrips allowedModels', function () {
+    $config = SessionConfig::fromArray(['allowedModels' => ['gpt-5']]);
+
+    expect($config->allowedModels)->toBe(['gpt-5'])
+        ->and($config->toArray()['allowedModels'])->toBe(['gpt-5'])
+        ->and((new SessionConfig)->toArray())->not->toHaveKey('allowedModels');
+});

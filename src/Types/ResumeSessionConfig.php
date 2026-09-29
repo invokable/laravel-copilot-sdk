@@ -18,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\SandboxConfig;
 readonly class ResumeSessionConfig implements Arrayable
 {
     /**
+     * @param  ?string[]  $allowedModels  Exact model IDs allowed by the host. Omission preserves runtime policy.
      * @param  ?string  $clientName  Client name to identify the application using the SDK.
      *                               Included in the User-Agent header for API requests.
      * @param  ?string  $model  Model to use for this session
@@ -236,6 +237,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?string $authClientIdMetadataUrl = null,
         public ?array $diagnostics = null,
         public SandboxConfig|array|null $sandbox = null,
+        public ?array $allowedModels = null,
     ) {}
 
     /**
@@ -391,6 +393,7 @@ readonly class ResumeSessionConfig implements Arrayable
             sandbox: isset($data['sandbox'])
                 ? ($data['sandbox'] instanceof SandboxConfig ? $data['sandbox'] : SandboxConfig::fromArray($data['sandbox']))
                 : null,
+            allowedModels: $data['allowedModels'] ?? null,
         );
     }
 
@@ -526,6 +529,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'authClientIdMetadataUrl' => $this->authClientIdMetadataUrl,
             'diagnostics' => $this->diagnostics,
             'sandbox' => $this->sandbox instanceof SandboxConfig ? $this->sandbox->toArray() : $this->sandbox,
+            'allowedModels' => $this->allowedModels,
         ], fn ($value) => $value !== null);
     }
 }
