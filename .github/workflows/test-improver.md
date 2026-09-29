@@ -84,7 +84,7 @@ Only execute this step if Step 1 found no work to do.
 
 1. Run the coverage command:
    ```bash
-   vendor/bin/pest --no-progress --coverage
+   vendor/bin/pest --compact --coverage
    ```
 2. Parse the output to identify files with the lowest coverage percentages.
 3. Read the previously improved files list from cache-memory (key: `test-improver-state`) and skip those.
