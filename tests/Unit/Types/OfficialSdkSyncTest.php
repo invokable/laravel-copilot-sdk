@@ -3,22 +3,30 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\DiscoveredExtensionMode;
+use Revolution\Copilot\Enums\EntraTokenInteraction;
 use Revolution\Copilot\Enums\EventsReadDirection;
+use Revolution\Copilot\Enums\InstallationDecision;
 use Revolution\Copilot\Enums\PermissionResponseCapability;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Enums\SandboxConfigSource;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingAgent;
 use Revolution\Copilot\Rpc\PendingHistory;
 use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Rpc\PendingServerExtensions;
+use Revolution\Copilot\Rpc\PendingServerAccounts;
+use Revolution\Copilot\Rpc\PendingSessionAccounts;
 use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookInput;
 use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookOutput;
 use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\AgentSetPromptRequest;
+use Revolution\Copilot\Types\Rpc\AuthReadValue;
 use Revolution\Copilot\Types\Rpc\ConnectClientInfo;
 use Revolution\Copilot\Types\Rpc\EventLogReadRequest;
+use Revolution\Copilot\Types\Rpc\EntraTokenAcquireRequest;
+use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
 use Revolution\Copilot\Types\Rpc\HistoryClearContextResult;
 use Revolution\Copilot\Types\Rpc\McpOauthAuthenticationStateChangedRequest;
 use Revolution\Copilot\Types\Rpc\ModelMessage;
@@ -63,6 +71,38 @@ test('session configs serialize the latest official options', function () {
         ->and($withAuth->gitHubTokenProvider)->toBe($provider)
         ->and($withAuth->toArray())->toHaveKey('includedBuiltinSkills', ['review'])
         ->and($withAuth->toArray())->not->toHaveKey('gitHubTokenProvider');
+});
+
+test('installation confirmation reviews preserve the official challenge contract', function () {
+    $request = InstallationConfirmationRequest::fromArray([
+        'policySessionId' => 'session-1',
+        'confirmationId' => 'challenge-1',
+        'operationId' => 'operation-1',
+        'expiresAt' => '2026-09-29T00:00:00Z',
+        'reviewFingerprint' => 'fingerprint-1',
+        'review' => ['kind' => 'skill'],
+    ]);
+
+    expect($request->toArray())->toMatchArray([
+        'policySessionId' => 'session-1',
+        'confirmationId' => 'challenge-1',
+        'operationId' => 'operation-1',
+        'expiresAt' => '2026-09-29T00:00:00Z',
+        'reviewFingerprint' => 'fingerprint-1',
+        'review' => ['kind' => 'skill'],
+    ]);
+
+    expect($request->decision(InstallationDecision::CONFIRM)->toArray())->toBe([
+        'confirmationId' => 'challenge-1',
+        'reviewFingerprint' => 'fingerprint-1',
+        'decision' => 'confirm',
+    ]);
+});
+
+test('latest sandbox and model change discriminators are available', function () {
+    expect(SandboxConfigSource::SESSION_FLAG->value)->toBe('session_flag')
+        ->and(\Revolution\Copilot\Enums\ModelChangeSource::AUTO_TIER_RECOMMENDATION->value)
+        ->toBe('auto_tier_recommendation');
 });
 
 test('latest authentication, telemetry, queue, and model metadata round trip', function () {
@@ -184,6 +224,62 @@ test('new history, agent, and MCP RPC methods use official method names', functi
 
     $agent->setPrompt(new AgentSetPromptRequest('reviewer', 'Review carefully'));
     $mcp->authenticationStateChanged(new McpOauthAuthenticationStateChangedRequest('github', true));
+});
+
+test('session accounts RPC maps the 1.0.90 account and login methods', function () {
+    $client = Mockery::mock(JsonRpcClient::class);
+    $client->shouldReceive('request')->once()->with('session.accounts.enumerate', [
+        'sessionId' => 'session-1', 'query' => ['kind' => 'accounts'],
+    ])->andReturn(['kind' => 'accounts', 'items' => [[
+        'host' => 'github.com', 'login' => 'octocat', 'kind' => 'githubDotCom', 'active' => true, 'selectionId' => 'a1',
+    ]]]);
+    $client->shouldReceive('request')->once()->with('session.accounts.login.advance', [
+        'sessionId' => 'session-1', 'flowId' => 'flow-1', 'input' => 'github.com',
+    ])->andReturn(['kind' => 'completed', 'result' => ['status' => 'completed']]);
+
+    $accounts = new PendingSessionAccounts($client, 'session-1');
+    expect($accounts->enumerate()[0]->login)->toBe('octocat')
+        ->and($accounts->advance(['flowId' => 'flow-1', 'input' => 'github.com'])->kind->value)->toBe('completed');
+
+    $client->shouldReceive('request')->once()->with('session.accounts.get', [
+        'sessionId' => 'session-1', 'query' => ['kind' => 'lastErrors'],
+    ])->andReturn(['kind' => 'lastErrors', 'errors' => [['message' => 'Expired', 'githubMessage' => 'Token expired']]]);
+
+    $read = $accounts->get('lastErrors');
+    expect($read)->toBeInstanceOf(AuthReadValue::class)
+        ->and($read->errors[0]->githubMessage)->toBe('Token expired');
+});
+
+test('session events preserve new workflow correlation fields', function () {
+    $event = SessionEvent::fromArray([
+        'id' => 'event-1', 'timestamp' => '2026-09-29T00:00:00Z', 'type' => 'workflow.run_updated',
+        'data' => ['workflowRunId' => 'run-1', 'parentToolCallId' => 'tool-1', 'activeWorkflowSummary' => 'Running'],
+    ]);
+
+    expect($event->workflowRunId())->toBe('run-1')
+        ->and($event->parentToolCallId())->toBe('tool-1')
+        ->and($event->toArray()['data'])->toHaveKey('activeWorkflowSummary', 'Running');
+});
+
+test('server account broker RPC maps the official Entra token request', function () {
+    $client = Mockery::mock(JsonRpcClient::class);
+    $client->shouldReceive('request')->once()->with('accounts.acquireEntraToken', [
+        'clientId' => 'client-1',
+        'tenantId' => 'organizations',
+        'redirectUri' => 'app://callback',
+        'scopes' => ['scope.read'],
+        'interaction' => 'silent',
+    ])->andReturn(['status' => 'interaction-required']);
+
+    $result = (new PendingServerAccounts($client))->acquireEntraToken(new EntraTokenAcquireRequest(
+        clientId: 'client-1',
+        tenantId: 'organizations',
+        redirectUri: 'app://callback',
+        scopes: ['scope.read'],
+        interaction: EntraTokenInteraction::SILENT,
+    ));
+
+    expect($result->status)->toBe('interaction-required');
 });
 
 test('server extension RPCs discover and persist enablement', function () {

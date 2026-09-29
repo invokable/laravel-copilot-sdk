@@ -234,6 +234,8 @@ class CopilotManager implements Factory
                     'session_idle_timeout_seconds' => $this->config['session_idle_timeout_seconds'] ?? 0,
                     'baseDirectory' => $this->config['baseDirectory'] ?? $this->config['base_directory'] ?? $this->config['copilot_home'] ?? null,
                     'remote' => $this->config['remote'] ?? false,
+                    'installation_confirmation_handler' => $this->config['installation_confirmation_handler']
+                        ?? $this->config['installationConfirmationHandler'] ?? null,
                 ];
             }
 
@@ -264,7 +266,7 @@ class CopilotManager implements Factory
     /**
      * Configure the client to use stdio transport with given options.
      *
-     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool}  $config  Configuration options for stdio transport.
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable}  $config  Configuration options for stdio transport.
      */
     public function useStdio(?array $config = null): static
     {
@@ -286,6 +288,8 @@ class CopilotManager implements Factory
             'base_directory',
             'baseDirectory',
             'remote',
+            'installation_confirmation_handler',
+            'installationConfirmationHandler',
         ]));
 
         return $this;

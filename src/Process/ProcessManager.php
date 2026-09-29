@@ -72,10 +72,14 @@ class ProcessManager
      */
     public function stop(): void
     {
-        // Close streams
+        // EOF lets the runtime flush host telemetry and exit naturally.
         if (is_resource($this->stdin)) {
             fclose($this->stdin);
             $this->stdin = null;
+        }
+
+        if ($this->process !== null) {
+            $this->process->waitForExit(5);
         }
 
         if (is_resource($this->stdout)) {
@@ -177,6 +181,10 @@ class ProcessManager
 
         $env = array_merge(getenv(), $this->env ?? []);
         unset($env['NODE_DEBUG']);
+
+        // Keep runtime process diagnostics available when using the SDK-owned
+        // stdio process, matching the official SDK's shutdown diagnostics.
+        $env['COPILOT_RUNTIME_PROCESS_FILE_LOGGING'] = '1';
 
         // Apply OpenTelemetry environment variables if telemetry is configured
         if ($this->telemetry !== null) {
