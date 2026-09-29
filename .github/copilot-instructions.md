@@ -31,7 +31,7 @@ v1.0.0後の公式SDKはペースが落ちて週に一度新バージョンを�
 
 ## Commands
 ```shell
-composer run test        # Run tests with Pest
+vendor/bin/pest --compact        # Run tests with Pest
 composer run lint        # Run Laravel Pint for code style checks
 ```
 

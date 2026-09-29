@@ -216,8 +216,8 @@ Add Pest tests for all new/changed classes:
 
 Run:
 ```bash
-composer run test --compact
-composer run lint
+vendor/bin/pest --compact
+vendor/bin/pint
 ```
 
 Fix any failures.

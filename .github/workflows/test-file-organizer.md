@@ -43,8 +43,6 @@ safe-outputs:
     fallback-as-issue: true
     if-no-changes: ignore
     signed-commits: false
-    allowed-files:
-      - "tests/**/*.php"
 
 network:
   allowed:
@@ -71,8 +69,8 @@ Review the complete `tests/` tree and make a focused pass to ensure test filenam
 
 ## Validate and submit
 
-1. Run `composer run test` before making changes. If a PHP extension is missing, run the command with `-d extension=` added. If the baseline suite fails, do not reorganize files; call `noop` with a short reason.
-2. Make only the naming and organization changes described above, then run `composer run test` again. Confirm the suite passes and that the number of tests is unchanged.
+1. Run `pest --compact` before making changes. If a PHP extension is missing, run the command with `-d extension=` added. If the baseline suite fails, do not reorganize files; call `noop` with a short reason.
+2. Make only the naming and organization changes described above, then run `pest --compact` again. Confirm the suite passes and that the number of tests is unchanged.
 3. Review the final diff to verify that it changes only test file paths and unclear `describe()` labels, with no additions, deletions, or edits to test behavior.
 4. If the suite fails after a move or split, correct only a path-dependent issue caused by that move and rerun the suite. If preserving the passing suite would require changing test behavior or unrelated files, do not submit the changes; call `noop` with a short reason.
 5. If no clearly beneficial naming or organization changes are needed, call `noop` with a short reason.
