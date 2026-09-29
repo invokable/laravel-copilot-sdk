@@ -23,9 +23,12 @@ permissions:
   pull-requests: read
   copilot-requests: none
 
-model: gpt-5.6-luna
+model: gpt-6-luna
 engine:
   id: copilot
+  copilot-sdk: true
+  model: gpt-6-luna
+
 checkout:
   - path: .
     submodules: recursive
