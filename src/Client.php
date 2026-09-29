@@ -359,6 +359,7 @@ class Client implements CopilotClient
             $response = $this->rpcClient->request('session.create', array_filter([
                 ...TraceContext::get(),
                 'sessionId' => $config['sessionId'] ?? null,
+                'allowedModels' => $config['allowedModels'] ?? null,
                 'clientName' => $config['clientName'] ?? null,
                 'model' => $config['model'] ?? null,
                 'reasoningEffort' => $config['reasoningEffort'] ?? null,
@@ -557,6 +558,7 @@ class Client implements CopilotClient
             $response = $this->rpcClient->request('session.resume', array_filter([
                 ...TraceContext::get(),
                 'sessionId' => $sessionId,
+                'allowedModels' => $config['allowedModels'] ?? null,
                 'clientName' => $config['clientName'] ?? null,
                 'model' => $config['model'] ?? null,
                 'reasoningEffort' => $config['reasoningEffort'] ?? null,

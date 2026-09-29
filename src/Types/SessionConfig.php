@@ -22,6 +22,7 @@ readonly class SessionConfig implements Arrayable
 {
     /**
      * @param  ?string  $sessionId  Optional custom session ID. If not provided, server will generate one.
+     * @param  ?string[]  $allowedModels  Exact model IDs allowed by the host. Omission preserves runtime policy.
      * @param  ?string  $clientName  Client name to identify the application using the SDK.
      *                               Included in the User-Agent header for API requests.
      * @param  ?string  $model  Model to use for this session
@@ -302,6 +303,7 @@ readonly class SessionConfig implements Arrayable
         public ?bool $refreshCustomInstructions = null,
         public ?array $diagnostics = null,
         public SandboxConfig|array|null $sandbox = null,
+        public ?array $allowedModels = null,
     ) {}
 
     /**
@@ -498,6 +500,7 @@ readonly class SessionConfig implements Arrayable
             sandbox: isset($data['sandbox'])
                 ? ($data['sandbox'] instanceof SandboxConfig ? $data['sandbox'] : SandboxConfig::fromArray($data['sandbox']))
                 : null,
+            allowedModels: $data['allowedModels'] ?? null,
         );
     }
 
@@ -673,6 +676,7 @@ readonly class SessionConfig implements Arrayable
             'refreshCustomInstructions' => $this->refreshCustomInstructions,
             'diagnostics' => $this->diagnostics,
             'sandbox' => $this->sandbox instanceof SandboxConfig ? $this->sandbox->toArray() : $this->sandbox,
+            'allowedModels' => $this->allowedModels,
         ], fn ($value) => $value !== null);
     }
 }
