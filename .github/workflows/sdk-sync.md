@@ -83,7 +83,7 @@ permissions:
   pull-requests: read
   copilot-requests: none
 
-model: gpt-5.6-luna
+model: claude-sonnet-5.5
 
 timeout-minutes: 30
 
