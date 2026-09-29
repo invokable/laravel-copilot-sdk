@@ -17,7 +17,7 @@ describe('AutoModeResolvedReasoningBucket', function () {
     });
 });
 
-describe('SessionEventType new cases', function () {
+describe('SessionEventType auto mode and MCP list changed events', function () {
     it('has auto_mode_resolved event', function () {
         expect(SessionEventType::AUTO_MODE_RESOLVED->value)->toBe('session.auto_mode_resolved');
     });
