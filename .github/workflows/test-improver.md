@@ -22,7 +22,7 @@ permissions:
   issues: read
   copilot-requests: none
 
-model: gpt-6-luna
+model: gpt-5.6-luna
 engine:
   id: copilot
 checkout:
