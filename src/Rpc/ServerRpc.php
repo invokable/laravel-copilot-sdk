@@ -70,6 +70,14 @@ class ServerRpc
     }
 
     /**
+     * Experimental account broker operations.
+     */
+    public function accounts(): PendingServerAccounts
+    {
+        return new PendingServerAccounts($this->client);
+    }
+
+    /**
      * MCP configuration RPC operations.
      */
     public function mcp(): PendingServerMcpConfig

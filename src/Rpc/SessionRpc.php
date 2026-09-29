@@ -133,6 +133,12 @@ class SessionRpc
         return new PendingWorkflow($this->client, $this->sessionId);
     }
 
+    /** Experimental session account and login operations. */
+    public function accounts(): PendingSessionAccounts
+    {
+        return new PendingSessionAccounts($this->client, $this->sessionId);
+    }
+
     /**
      * Diagnostics RPC operations.
      *

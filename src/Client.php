@@ -33,6 +33,7 @@ use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\GitHubMcpToolConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
 use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -211,6 +212,14 @@ class Client implements CopilotClient
                 fn (array $params) => $this->acquireGitHubToken($params),
             );
 
+            if (is_callable($this->options['installation_confirmation_handler']
+                ?? $this->options['installationConfirmationHandler'] ?? null)) {
+                $this->rpcClient->setRequestHandler(
+                    'installations.confirm',
+                    fn (array $params) => $this->handleInstallationConfirmation($params),
+                );
+            }
+
             $this->state = ConnectionState::CONNECTED;
 
             // Verify protocol version
@@ -223,6 +232,21 @@ class Client implements CopilotClient
             $this->state = ConnectionState::ERROR;
             throw $e;
         }
+    }
+
+    /**
+     * Resolve an installation review through the host's explicit confirmation
+     * callback. The challenge and fingerprint are always echoed unchanged.
+     */
+    protected function handleInstallationConfirmation(array $params): array
+    {
+        $request = InstallationConfirmationRequest::fromArray($params);
+        $handler = $this->options['installation_confirmation_handler']
+            ?? $this->options['installationConfirmationHandler'];
+        $decision = $handler($request);
+        $decision = $decision instanceof \BackedEnum ? $decision->value : $decision;
+
+        return $request->decision($decision)->toArray();
     }
 
     /**

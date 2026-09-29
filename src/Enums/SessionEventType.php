@@ -130,6 +130,11 @@ enum SessionEventType: string
     case FACTORY_RUN_STARTED = 'factory.run_started';
     case FACTORY_RUN_SETTLED = 'factory.run_settled';
 
+    // Dynamic workflow events (official SDK 1.0.90+)
+    case WORKFLOW_RUN_UPDATED = 'workflow.run_updated';
+    case WORKFLOW_RUN_STARTED = 'workflow.run_started';
+    case WORKFLOW_RUN_SETTLED = 'workflow.run_settled';
+
     // Permission events
     case PERMISSION_REQUESTED = 'permission.requested';
     case PERMISSION_COMPLETED = 'permission.completed';

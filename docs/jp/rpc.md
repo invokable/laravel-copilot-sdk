@@ -823,3 +823,12 @@ $session->rpc()->mode()->set(['mode' => 'plan']);
 ## Testing
 
 `Copilot::fake()`でのモックは使えないので`Copilot::expects('client')`や`Copilot::expects('start')`でモックしてください。
+## Session accounts (CLI 1.0.90+)
+
+The session RPC exposes the experimental `session.accounts.*` family through
+`$session->rpc()->accounts()`: enumerate accounts/providers, read account data,
+switch or log out accounts, and run the begin/advance/cancel interactive login
+flow. The Laravel SDK preserves the wire discriminators and returns typed
+`AccountStatus`, `ProviderDescriptor`, and `AuthLoginStep` values where useful.
+The server-scoped OneAuth bridge is available as
+`$client->rpc()->accounts()->acquireEntraToken(...)`.
