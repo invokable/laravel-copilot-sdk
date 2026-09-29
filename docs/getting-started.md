@@ -46,6 +46,12 @@ Add to your `.env` if needed:
 COPILOT_CLI_PATH=copilot
 ```
 
+For experimental installation reviews, pass an
+`installation_confirmation_handler` when constructing the client. Return an
+`InstallationDecision` explicitly; the PHP callback is synchronous and does
+not receive the Node SDK's cancellation token. The client sends EOF before
+forcing an SDK-owned stdio process to terminate.
+
 ## Step 2: Send Your First Message
 
 The simplest way to use the SDK is with `Copilot::run()` - about 3 lines of code.

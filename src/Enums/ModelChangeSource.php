@@ -38,4 +38,7 @@ enum ModelChangeSource: string
 
     /** The runtime selected the model automatically, such as rate-limit recovery or refusal fallback. */
     case AUTOMATIC = 'automatic';
+
+    /** The user accepted a CAPI-issued Auto tier recommendation. */
+    case AUTO_TIER_RECOMMENDATION = 'auto_tier_recommendation';
 }

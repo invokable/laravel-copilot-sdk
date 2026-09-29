@@ -190,6 +190,22 @@ readonly class SessionEvent implements Arrayable, Jsonable
         return $this->data('deltaContent', $default);
     }
 
+    /** IDs and workflow metadata introduced by recent CLI event payloads. */
+    public function parentToolCallId(?string $default = null): ?string
+    {
+        return $this->data('parentToolCallId', $default);
+    }
+
+    public function workflowRunId(?string $default = null): ?string
+    {
+        return $this->data('workflowRunId', $default);
+    }
+
+    public function activeWorkflowSummary(?string $default = null): ?string
+    {
+        return $this->data('activeWorkflowSummary', $default);
+    }
+
     /**
      * Get the error message from error data.
      */

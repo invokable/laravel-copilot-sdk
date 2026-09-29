@@ -40,6 +40,17 @@ class ProcessWrapper
         return $status['running'] ?? false;
     }
 
+    /** Wait for a naturally exiting process without sending a signal. */
+    public function waitForExit(float $timeout = 5): bool
+    {
+        $deadline = microtime(true) + $timeout;
+        while ($this->isRunning() && microtime(true) < $deadline) {
+            usleep(100000);
+        }
+
+        return ! $this->isRunning();
+    }
+
     /**
      * Stop the process.
      */
