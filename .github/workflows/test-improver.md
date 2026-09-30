@@ -59,13 +59,6 @@ network:
 You are responsible for incrementally improving test coverage in this Laravel Copilot SDK package.
 This workflow runs weekly. Make small, focused changes — typically one source file's tests per run.
 
-## Pre-check: Avoid Duplicate PRs
-
-Before starting any work:
-
-1. Search for open PRs in this repository with the label `test-improver`.
-2. If an open test-improver PR already exists, stop and report "An open test-improver PR already exists. Skipping this run."
-
 ## Step 1: Check for sdk-sync Test Gaps (Priority 1)
 
 Check if recently merged `sdk-sync` PRs introduced source files without corresponding tests.
