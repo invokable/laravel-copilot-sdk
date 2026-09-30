@@ -35,7 +35,7 @@ vendor/bin/pest --compact        # Run tests with Pest
 composer run lint        # Run Laravel Pint for code style checks
 ```
 
-Agentic Workflows環境でも`setup-php`でPHPはインストールされてるはずだけど今のAWバージョンでは正常に動かなくなっているかもしれない。`-d extension=`で強制的にPHP拡張を有効化すれば動くかもしれない。動かなくても後で通常のGitHub Actionsでtestとlintが実行される。
+Agentic Workflows環境でも`setup-php`でPHPはインストールされてるはずだけど今のAWバージョンでは正常に動かなくなっているかもしれない。`-d extension=`で強制的にPHP拡張を有効化すれば動くかもしれない。メモリが足りない時は`-d memory_limit=512M`を追加。動かなくても後で通常のGitHub Actionsでtestとlintが実行される。
 
 pestやpintを直接実行する
 ```shell
