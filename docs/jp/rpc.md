@@ -163,6 +163,12 @@ $result = Copilot::client()->rpc()->instructions()->getDiscoveryPaths(
 $result = Copilot::client()->rpc()->extensions()->discover();
 Copilot::client()->rpc()->extensions()->enable(['ids' => ['user:demo']]);
 Copilot::client()->rpc()->extensions()->disable(['ids' => ['plugin:demo']]);
+
+// environments (experimental: GitHub Mission Control 環境の検索・取得・削除)
+$result = Copilot::client()->rpc()->environments()->list(['kind' => 'user-local']);
+// $result->environments は GitHubEnvironment の配列
+$env = Copilot::client()->rpc()->environments()->get(['environmentId' => 'env-id']);
+Copilot::client()->rpc()->environments()->delete(['environmentId' => 'env-id']);
 ```
 
 ## SessionRpc
@@ -539,6 +545,10 @@ $endpoint = $session->rpc()->provider()->getEndpoint();
 $endpoint = $session->rpc()->provider()->getEndpoint(
     new ProviderGetEndpointRequest(model: 'gpt-5')
 );
+
+// provider: ホスト管理モデルをBYOKレジストリから取り下げる (experimental)
+$result = $session->rpc()->provider()->withdraw(['models' => ['provider/model']]);
+// $result->withdrawn, $result->providersRemoved, $result->modelDeselected
 
 // queue: キューに積まれたユーザー向け項目の確認・管理
 $pending = $session->rpc()->queue()->pendingItems();

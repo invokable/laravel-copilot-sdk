@@ -9,6 +9,8 @@ use Revolution\Copilot\Types\Rpc\ProviderAddRequest;
 use Revolution\Copilot\Types\Rpc\ProviderAddResult;
 use Revolution\Copilot\Types\Rpc\ProviderEndpoint;
 use Revolution\Copilot\Types\Rpc\ProviderGetEndpointRequest;
+use Revolution\Copilot\Types\Rpc\ProviderWithdrawRequest;
+use Revolution\Copilot\Types\Rpc\ProviderWithdrawResult;
 
 /**
  * Pending session-scoped provider RPC operations.
@@ -69,5 +71,22 @@ class PendingProvider
         $params['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.provider.sync', $params);
+    }
+
+    /**
+     * Withdraw named host-managed models from the session's BYOK registry, leaving other entries untouched.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function withdraw(ProviderWithdrawRequest|array $params): ProviderWithdrawResult
+    {
+        $paramsArray = ($params instanceof ProviderWithdrawRequest
+            ? $params
+            : ProviderWithdrawRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ProviderWithdrawResult::fromArray(
+            $this->client->request('session.provider.withdraw', $paramsArray),
+        );
     }
 }
