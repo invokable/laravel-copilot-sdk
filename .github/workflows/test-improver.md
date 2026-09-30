@@ -173,13 +173,16 @@ describe('SomeType', function () {
 
 1. Run the full test suite to ensure nothing is broken:
    ```bash
-   vendor/bin/pest
+   vendor/bin/pest --compact --coverage
    ```
 2. If any tests fail, fix them before proceeding.
 3. Run the code style fixer on changed files:
    ```bash
    vendor/bin/pint --dirty
    ```
+
+If a PHP extension is missing, run the command with `-d extension=` added.
+If you don't have enough memory, run it with `-d memory_limit=512M`.
 
 ## Step 5: Create Pull Request
 
