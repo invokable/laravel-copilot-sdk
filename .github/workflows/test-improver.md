@@ -16,6 +16,10 @@ steps:
             coverage: xdebug
     -   name: Install Composer dependencies
         run: composer install -q --no-interaction --prefer-dist --optimize-autoloader
+    -   name: Run coverage
+        run: |
+            mkdir -p /tmp/gh-aw
+            vendor/bin/pest --compact --coverage --colors=never > /tmp/gh-aw/coverage.txt 2>&1 || true
 
 permissions:
   contents: read
@@ -34,7 +38,6 @@ tools:
   github:
     mode: gh-proxy
     toolsets: [default]
-  cache-memory: true
 
 safe-outputs:
   create-pull-request:
@@ -59,30 +62,13 @@ network:
 You are responsible for incrementally improving test coverage in this Laravel Copilot SDK package.
 This workflow runs weekly. Make small, focused changes — typically one source file's tests per run.
 
-## Step 1: Check for sdk-sync Test Gaps (Priority 1)
+## Step 1: Coverage-Based Selection
 
-Check if recently merged `sdk-sync` PRs introduced source files without corresponding tests.
+Coverage has already been measured by a prior step (`vendor/bin/pest --compact --coverage`). Do not re-run it.
 
-1. Read the last processed PR number from cache-memory (key: `test-improver-state`).
-2. Search for merged PRs with the label `sdk-sync`, sorted by most recently merged.
-3. For each new PR (merged after the last processed one):
-   - Review the PR diff to identify newly added files under `src/`.
-   - For each new `src/` file, check if a corresponding test file exists under `tests/`.
-   - Mapping convention: `src/Types/Foo.php` → `tests/Unit/Types/FooTest.php`, `src/Rpc/PendingFoo.php` → `tests/Unit/Rpc/PendingFooTest.php`, etc.
-4. If test gaps are found, add tests for **all** newly added files from those PRs (this is the exception to the one-file-at-a-time rule).
-5. If no sdk-sync PRs have new untested files, or if the testing has already been improved in this workflow, proceed to Step 2.
-
-## Step 2: Coverage-Based Improvement (Priority 2)
-
-Only execute this step if Step 1 found no work to do.
-
-1. Run the coverage command:
-   ```bash
-   vendor/bin/pest --compact --coverage
-   ```
-2. Parse the output to identify files with the lowest coverage percentages.
-3. Read the previously improved files list from cache-memory (key: `test-improver-state`) and skip those.
-4. Select **one** source file to improve, preferring the lowest coverage that is not in the skip list.
+1. Read `/tmp/gh-aw/coverage.txt`.
+2. Identify files with the lowest coverage percentages.
+3. Select **one** source file to improve, preferring the lowest coverage that is not in the skip list below.
 
 ### Files to Always Skip
 
@@ -98,7 +84,7 @@ These files are difficult to test in isolation due to external process or runtim
 
 If the selected file appears too difficult to test meaningfully (e.g., requires complex I/O mocking that would result in brittle tests), skip it and choose the next lowest-coverage file.
 
-## Step 3: Study Existing Test Patterns
+## Step 2: Study Existing Test Patterns
 
 Before writing tests, study existing tests to match the project's conventions:
 
@@ -121,9 +107,9 @@ Before writing tests, study existing tests to match the project's conventions:
 - Process classes (`src/Process/**`) → `tests/Unit/Process/**Test.php`
 - Events (`src/Events/**`) → `tests/Unit/Events/**Test.php`
 
-## Step 4: Write Tests
+## Step 3: Write Tests
 
-Write tests following the patterns observed in Step 3.
+Write tests following the patterns observed in Step 2.
 
 ### Guidelines
 
@@ -180,7 +166,7 @@ describe('SomeType', function () {
 });
 ```
 
-## Step 5: Validate
+## Step 4: Validate
 
 1. Run the full test suite to ensure nothing is broken:
    ```bash
@@ -192,29 +178,13 @@ describe('SomeType', function () {
    vendor/bin/pint --dirty
    ```
 
-## Step 6: Save State to Cache Memory
-
-Write the updated state to cache-memory with key `test-improver-state`:
-
-```json
-{
-  "last_sdk_sync_pr": <number or null>,
-  "last_run_at": "<ISO 8601 timestamp>",
-  "improved_files": ["<list of src/ files that have been improved>"],
-  "summary": "<brief description of what was done>"
-}
-```
-
-Merge the new `improved_files` entries with the existing list from cache-memory — do not overwrite previous entries.
-
-## Step 7: Create Pull Request
+## Step 5: Create Pull Request
 
 Create a draft PR with:
 - **Title**: Concise description (e.g., "Add tests for SessionListFilter type class")
 - **Body**: Include:
   - What tests were added and why
   - Coverage change summary (before/after for the targeted file, if available)
-  - Whether this was triggered by Priority 1 (sdk-sync gap) or Priority 2 (coverage improvement)
 
 ## Important Notes
 
