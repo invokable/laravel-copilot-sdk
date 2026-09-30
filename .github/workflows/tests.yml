@@ -30,6 +30,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: mbstring, xml, phar, dom, tokenizer
           coverage: xdebug
+          ini-values: memory_limit=512M
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress --no-scripts
