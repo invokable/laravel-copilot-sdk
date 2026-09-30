@@ -15,6 +15,7 @@ steps:
       php-version: 8.5
       extensions: mbstring, xml, phar, dom, tokenizer, iconv
       coverage: xdebug
+      ini-values: memory_limit=512M
   - name: Install Composer dependencies
     run: composer install -q --no-interaction --prefer-dist --optimize-autoloader
 
