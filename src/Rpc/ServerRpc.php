@@ -70,6 +70,14 @@ class ServerRpc
     }
 
     /**
+     * Experimental GitHub Mission Control environment operations.
+     */
+    public function environments(): PendingServerEnvironments
+    {
+        return new PendingServerEnvironments($this->client);
+    }
+
+    /**
      * Experimental account broker operations.
      */
     public function accounts(): PendingServerAccounts
