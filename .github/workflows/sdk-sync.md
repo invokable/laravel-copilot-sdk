@@ -221,6 +221,9 @@ vendor/bin/pest
 vendor/bin/pint
 ```
 
+If a PHP extension is missing, run the command with `-d extension=` added.
+If you don't have enough memory, run it with `-d memory_limit=512M`.
+
 Fix any failures.
 
 ## Step 8: Update Docs (Selective)
