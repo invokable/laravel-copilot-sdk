@@ -21,6 +21,8 @@ steps:
         run: |
             mkdir -p /tmp/gh-aw
             vendor/bin/pest --compact --coverage --colors=never > /tmp/gh-aw/coverage.txt 2>&1 || true
+            cat /tmp/gh-aw/coverage.txt
+            exit 1
 
 permissions:
   contents: read
