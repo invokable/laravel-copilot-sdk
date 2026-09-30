@@ -55,7 +55,7 @@ describe('ProviderEndpointTransport', function () {
     });
 });
 
-describe('SessionEventType new canvas and schedule events', function () {
+describe('SessionEventType canvas and schedule events', function () {
     it('has session.schedule_rearmed event type', function () {
         expect(SessionEventType::SESSION_SCHEDULE_REARMED->value)->toBe('session.schedule_rearmed');
     });
@@ -73,7 +73,7 @@ describe('SessionEventType new canvas and schedule events', function () {
     });
 });
 
-describe('McpOauthLoginRequest with new fields', function () {
+describe('McpOauthLoginRequest OAuth client fields', function () {
     it('can be created with new OAuth client fields', function () {
         $request = new McpOauthLoginRequest(
             serverName: 'my-mcp-server',
