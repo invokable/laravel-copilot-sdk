@@ -41,6 +41,8 @@ tools:
   github:
     mode: gh-proxy
     toolsets: [default]
+  bash: [":*"]
+  edit: true
 
 safe-outputs:
   create-pull-request:

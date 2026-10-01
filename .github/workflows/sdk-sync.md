@@ -100,6 +100,8 @@ tools:
   github:
     mode: gh-proxy
     toolsets: [repos]
+  bash: [":*"]
+  edit: true
   cache-memory: true
 
 safe-outputs:
