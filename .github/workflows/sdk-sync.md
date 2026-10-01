@@ -84,7 +84,7 @@ permissions:
   pull-requests: read
   copilot-requests: none
 
-model: claude-sonnet-5.5
+model: gpt-6.1-sol
 
 timeout-minutes: 30
 
