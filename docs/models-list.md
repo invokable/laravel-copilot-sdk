@@ -16,6 +16,7 @@ The available models may change depending on Copilot CLI updates and your organi
  │ claude-opus-4.8-fast │ Claude Opus 4.8 (fast mode) │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-opus-4.7      │ Claude Opus 4.7             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-haiku-4.5     │ Claude Haiku 4.5            │ 144000             │ Yes            │ No                        │ No                          │
+ │ gpt-6.1-sol          │ GPT-6.1 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-sol            │ GPT-6 Sol                   │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-luna           │ GPT-6 Luna                  │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-astra          │ GPT-6 Astra                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
