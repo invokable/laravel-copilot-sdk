@@ -14,7 +14,6 @@ The available models may change depending on Copilot CLI updates and your organi
  │ claude-opus-5        │ Claude Opus 5               │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-opus-4.8      │ Claude Opus 4.8             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-opus-4.8-fast │ Claude Opus 4.8 (fast mode) │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ claude-opus-4.7      │ Claude Opus 4.7             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-haiku-4.5     │ Claude Haiku 4.5            │ 144000             │ Yes            │ No                        │ No                          │
  │ gpt-6.1-sol          │ GPT-6.1 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-sol            │ GPT-6 Sol                   │ 1000000            │ Yes            │ Yes                       │ Yes                         │
@@ -31,7 +30,6 @@ The available models may change depending on Copilot CLI updates and your organi
  │ mai-code-1.1-flash   │ MAI-Code-1.1-Flash          │ 256000             │ Yes            │ Yes                       │ Yes                         │
  │ grok-4.5             │ Grok 4.5                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ kimi-k3              │ Kimi K3                     │ 1048576            │ Yes            │ Yes                       │ Yes                         │
- │ kimi-k2.7-code       │ Kimi K2.7 Code              │ 256000             │ Yes            │ No                        │ Yes                         │
  │ claude-sonnet-5.5    │ Claude Sonnet 5.5           │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ grok-4.6             │ Grok 4.6                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ grok-4.7             │ Grok 4.7                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
