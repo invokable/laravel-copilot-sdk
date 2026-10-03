@@ -248,6 +248,12 @@ Body:
 - Deferred implementation issues created/linked during this run (if any)
 - Link: `https://github.com/github/copilot-sdk/compare/<old>..<new>`
 
+## Safe Output Requirement
+
+Every successful run must produce an appropriate safe output. Create a PR for completed changes, create an issue for deferred work, or call `noop` with a short reason when there is nothing new to sync (for example, no actionable upstream changes or an existing PR already covers them). Do not simply stop after concluding there is no work.
+
+If required data or tools are unavailable and prevent meaningful analysis, call `report_incomplete` instead of `noop`.
+
 ## Key Optimization Rules
 
 1. **Use pre-computed diffs only** — Do not fetch git diffs yourself
