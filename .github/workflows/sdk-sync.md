@@ -84,7 +84,7 @@ permissions:
   pull-requests: read
   copilot-requests: none
 
-model: gpt-6-luna?effort=high
+model: gpt-6-luna
 max-ai-credits: 500
 
 timeout-minutes: 30
