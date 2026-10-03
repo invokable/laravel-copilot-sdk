@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\ConnectorSessionAccount;
 
 /**
  * Connector account and runtime RPC operations.
@@ -26,6 +27,16 @@ class PendingConnectors
     public function getStatus(): array
     {
         return $this->request('session.connectors.getStatus');
+    }
+
+    /** Get the current opaque session account selection, when supported by the runtime. */
+    public function getAccount(): ?ConnectorSessionAccount
+    {
+        $result = $this->client->request('session.connectors.getAccount', [
+            'sessionId' => $this->sessionId,
+        ]);
+
+        return is_array($result) ? ConnectorSessionAccount::fromArray($result) : null;
     }
 
     public function list(array $params = []): array

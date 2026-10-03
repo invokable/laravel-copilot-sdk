@@ -44,6 +44,7 @@ readonly class NamedProviderConfig implements Arrayable
         public ?bool $hasBearerTokenProvider = null,
         public ?array $azure = null,
         public ?array $headers = null,
+        public ?string $modelProvider = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -59,6 +60,7 @@ readonly class NamedProviderConfig implements Arrayable
             hasBearerTokenProvider: $data['hasBearerTokenProvider'] ?? null,
             azure: $data['azure'] ?? null,
             headers: $data['headers'] ?? null,
+            modelProvider: $data['modelProvider'] ?? null,
         );
     }
 
@@ -75,6 +77,7 @@ readonly class NamedProviderConfig implements Arrayable
             'hasBearerTokenProvider' => $this->hasBearerTokenProvider,
             'azure' => $this->azure,
             'headers' => $this->headers,
+            'modelProvider' => $this->modelProvider,
         ], fn ($v) => $v !== null);
     }
 }

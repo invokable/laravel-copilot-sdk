@@ -22,6 +22,25 @@ it('reads managed settings without a session', function () {
         ->and($result->errorMessage)->toBeNull();
 });
 
+it('exposes managed-settings preview operations', function () {
+    $client = Mockery::mock(JsonRpcClient::class);
+    $client->shouldReceive('request')->once()->with('managedSettings.resolve', ['selectionId' => 'selection-1'])
+        ->andReturn(['resolved' => ['permissions' => ['deny' => ['Shell(rm *)']]]]);
+    $client->shouldReceive('request')->once()->with('managedSettings.schema', [])
+        ->andReturn(['schema' => ['type' => 'object'], 'runtimeVersion' => '1.0.92']);
+    $client->shouldReceive('request')->once()->with('managedSettings.validate', ['content' => ['permissions' => []]])
+        ->andReturn(['valid' => true]);
+    $client->shouldReceive('request')->once()->with('managedSettings.compose', ['layers' => [['source' => 'device', 'settings' => []]]])
+        ->andReturn(['resolved' => ['permissions' => []]]);
+
+    $pending = new PendingServerManagedSettings($client);
+
+    expect($pending->resolve(['selectionId' => 'selection-1'])->resolved)->toBe(['permissions' => ['deny' => ['Shell(rm *)']]])
+        ->and($pending->schema()->runtimeVersion)->toBe('1.0.92')
+        ->and($pending->validate(['content' => ['permissions' => []]])->valid)->toBeTrue()
+        ->and($pending->compose(['layers' => [['source' => 'device', 'settings' => []]]])->resolved)->toBe(['permissions' => []]);
+});
+
 it('round trips a managed settings read error', function () {
     $result = ManagedSettingsReadResult::fromArray([
         'errorMessage' => 'settings file is invalid',

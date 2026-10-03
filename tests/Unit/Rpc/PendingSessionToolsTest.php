@@ -6,6 +6,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingTools;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
+use Revolution\Copilot\Types\Rpc\ToolsSetRequest;
 
 describe('PendingSessionTools', function () {
     it('calls session.tools.handlePendingToolCall with correct params', function () {
@@ -70,5 +71,20 @@ describe('PendingSessionTools', function () {
 
         expect($result)->toBeInstanceOf(HandlePendingToolCallResult::class)
             ->and($result->success)->toBeFalse();
+    });
+
+    it('replaces external tools with a session-scoped RPC', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.tools.set', [
+                'tools' => [['name' => 'search', 'description' => 'Search', 'parameters' => []]],
+                'sessionId' => 'test-session-id',
+            ])
+            ->andReturn([]);
+
+        expect((new PendingTools($client, 'test-session-id'))->set(new ToolsSetRequest([
+            ['name' => 'search', 'description' => 'Search', 'parameters' => []],
+        ])))->toBe([]);
     });
 });

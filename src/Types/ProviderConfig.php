@@ -51,6 +51,7 @@ readonly class ProviderConfig implements Arrayable
         public ?string $wireModel = null,
         public ?int $maxPromptTokens = null,
         public ?int $maxOutputTokens = null,
+        public ?string $modelProvider = null,
     ) {}
 
     /**
@@ -72,6 +73,7 @@ readonly class ProviderConfig implements Arrayable
             wireModel: $data['wireModel'] ?? null,
             maxPromptTokens: $data['maxPromptTokens'] ?? $data['maxInputTokens'] ?? null,
             maxOutputTokens: $data['maxOutputTokens'] ?? null,
+            modelProvider: $data['modelProvider'] ?? null,
         );
     }
 
@@ -94,6 +96,7 @@ readonly class ProviderConfig implements Arrayable
             'wireModel' => $this->wireModel,
             'maxPromptTokens' => $this->maxPromptTokens,
             'maxOutputTokens' => $this->maxOutputTokens,
+            'modelProvider' => $this->modelProvider,
         ], fn ($value) => $value !== null);
     }
 }

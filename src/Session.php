@@ -44,6 +44,8 @@ use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\Tool;
+use Revolution\Copilot\Types\TranscriptRecovery;
 use Throwable;
 
 /**
@@ -94,6 +96,8 @@ class Session implements CopilotSession
 
     protected ?Closure $onDisconnected = null;
 
+    protected ?TranscriptRecovery $transcriptRecovery = null;
+
     /**
      * Wait state: last assistant message.
      */
@@ -134,6 +138,48 @@ class Session implements CopilotSession
     public function workspacePath(): ?string
     {
         return $this->workspacePath;
+    }
+
+    /** Recovery details reported while resuming this session, or null when none occurred. */
+    public function transcriptRecovery(): ?TranscriptRecovery
+    {
+        return $this->transcriptRecovery;
+    }
+
+    /** @internal */
+    public function setTranscriptRecovery(?TranscriptRecovery $recovery): void
+    {
+        $this->transcriptRecovery = $recovery;
+    }
+
+    /**
+     * Replace the complete set of tools supplied by this connection.
+     * Existing handlers remain active if the runtime rejects the replacement.
+     *
+     * @param  array<Tool|array{name: string, handler?: Closure, description?: ?string, parameters?: ?array}>  $tools
+     *
+     * @throws JsonRpcException
+     */
+    public function setTools(array $tools): void
+    {
+        $normalized = array_map(
+            static fn (Tool|array $tool): array => $tool instanceof Tool ? $tool->toArray() : $tool,
+            $tools,
+        );
+
+        $definitions = array_map(static fn (array $tool): array => array_filter([
+            'name' => $tool['name'],
+            'description' => $tool['description'] ?? '',
+            'parameters' => $tool['parameters'] ?? [],
+            'overridesBuiltInTool' => $tool['overridesBuiltInTool'] ?? null,
+            'skipPermission' => $tool['skipPermission'] ?? null,
+            'defer' => $tool['defer'] ?? null,
+            'metadata' => $tool['metadata'] ?? null,
+            'isTerminal' => $tool['isTerminal'] ?? null,
+        ], static fn ($value) => $value !== null), $normalized);
+
+        $this->rpc()->tools()->set(['tools' => $definitions]);
+        $this->registerTools($normalized);
     }
 
     /**

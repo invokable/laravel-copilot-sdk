@@ -329,6 +329,19 @@ use Revolution\Copilot\Types\Rpc\McpListToolsRequest;
 $result = $session->rpc()->mcp()->listTools(new McpListToolsRequest(serverName: 'my-server'));
 // $result->tools - McpTools の配列（name, description）
 
+// MCPプロンプトの一覧と取得（experimental）
+use Revolution\Copilot\Types\Rpc\McpPromptsGetRequest;
+use Revolution\Copilot\Types\Rpc\McpPromptsListRequest;
+
+$prompts = $session->rpc()->mcp()->listPrompts(new McpPromptsListRequest(serverName: 'my-server'));
+$rendered = $session->rpc()->mcp()->getPrompt(new McpPromptsGetRequest(
+    serverName: 'my-server',
+    promptName: 'summarize',
+    arguments: ['document' => 'README.md'],
+));
+// $prompts->prompts - MCPプロンプト定義
+// $rendered->messages - レンダリング済みプロンプト（モデルには送信されない）
+
 // MCPサーバーを停止
 use Revolution\Copilot\Types\Rpc\McpStopServerRequest;
 
@@ -352,8 +365,20 @@ use Revolution\Copilot\Types\Rpc\McpResourcesListTemplatesRequest;
 
 $result = $session->rpc()->mcp()->resources()->listTemplates(new McpResourcesListTemplatesRequest(serverName: 'my-server'));
 // MCP OAuthログイン（認証が必要なMCPサーバー向け）
+use Revolution\Copilot\Types\Rpc\McpOauthCompleteRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
+
 $result = $session->rpc()->mcp()->login(new McpOauthLoginRequest(serverName: 'my-server'));
 // $result->authorizationUrl - OAuthフローのURL（認証が必要な場合）
+// ホスト管理のOAuthリダイレクトフローでは redirectUri を指定し、callback後に complete() を呼び出す
+$result = $session->rpc()->mcp()->login(new McpOauthLoginRequest(
+    serverName: 'my-server',
+    redirectUri: 'http://localhost:3000/oauth/callback',
+));
+$session->rpc()->mcp()->complete(new McpOauthCompleteRequest(
+    authorizationId: $result->authorizationId,
+    callbackUrl: $callbackUrl,
+));
 
 // plugins (experimental: プラグインの一覧)
 $session->rpc()->plugins()->list();
@@ -388,6 +413,10 @@ $session->rpc()->tools()->handlePendingToolCall(new HandlePendingToolCallRequest
 ));
 // セッションの現在のツールメタデータを取得（experimental）
 $session->rpc()->tools()->getCurrentMetadata();
+// この接続が提供する外部ツールを完全に置換（experimental）
+$session->rpc()->tools()->set(['tools' => [
+    ['name' => 'search', 'description' => 'Search documents', 'parameters' => ['type' => 'object']],
+]]);
 // サブエージェントの設定を更新（experimental）
 use Revolution\Copilot\Types\Rpc\SubagentSettings;
 use Revolution\Copilot\Types\Rpc\SubagentSettingsEntry;
@@ -663,6 +692,14 @@ $connected = $session->rpc()->remote()->connectRemoteSession(new ConnectRemoteSe
 $managedSettings = $client->rpc()->managedSettings()->read();
 // $managedSettings->settingsJson - 検証済みのデバイス管理設定
 // $managedSettings->errorMessage - 検出/検証エラー（存在する場合）
+
+// ポリシーの解決、スキーマ取得、検証、合成プレビュー（experimental）
+$effective = $client->rpc()->managedSettings()->resolve(['selectionId' => 'selection-id']);
+$schema = $client->rpc()->managedSettings()->schema();
+$validation = $client->rpc()->managedSettings()->validate(['content' => ['permissions' => []]]);
+$preview = $client->rpc()->managedSettings()->compose(['layers' => [
+    ['source' => 'device', 'settings' => ['permissions' => []]],
+]]);
 ```
 
 ### sandbox (experimental: サンドボックス制御)
@@ -767,6 +804,7 @@ $current = $session->rpc()->workflow()->getRun(['runId' => $run['runId']]);
 // 診断情報とコネクター一覧
 $diagnostics = $session->rpc()->diagnostics()->read(['sources' => ['mcp']]);
 $connectors = $session->rpc()->connectors()->list();
+$account = $session->rpc()->connectors()->getAccount(); // 選択中アカウントがあればConnectorSessionAccount
 
 // プラグインマーケットプレイス
 $marketplaces = $session->rpc()->plugins()->marketplaces()->list();

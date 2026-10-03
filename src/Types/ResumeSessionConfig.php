@@ -117,6 +117,7 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                When provided on resume, the runtime can rehydrate canvas state so consumers
      *                                do not need to re-open canvases that were active before the previous shutdown.
      *                                Experimental: this is part of an experimental API and may change or be removed.
+     * @param  ?bool  $allowTranscriptRecovery  Allow repair of a damaged session transcript during resume. Defaults to true; false rejects recovery.
      * @param  ?string  $gitHubToken  GitHub token for per-session authentication.
      *                                When provided, the runtime resolves this token into a full GitHub identity
      *                                (login, Copilot plan, endpoints) and stores it on the session.
@@ -192,6 +193,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?bool $suppressResumeEvent = null,
         public ?bool $continuePendingWork = null,
         public ?array $openCanvases = null,
+        public ?bool $allowTranscriptRecovery = null,
         public ?string $gitHubToken = null,
         public RemoteSessionMode|string|null $remoteSession = null,
         public ExtensionInfo|array|null $extensionInfo = null,
@@ -348,6 +350,7 @@ readonly class ResumeSessionConfig implements Arrayable
             suppressResumeEvent: $data['suppressResumeEvent'] ?? $data['disableResume'] ?? null,
             continuePendingWork: $data['continuePendingWork'] ?? null,
             openCanvases: $data['openCanvases'] ?? null,
+            allowTranscriptRecovery: $data['allowTranscriptRecovery'] ?? null,
             gitHubToken: $data['gitHubToken'] ?? null,
             remoteSession: $data['remoteSession'] ?? null,
             extensionInfo: $extensionInfo,
@@ -493,6 +496,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'disableResume' => $this->suppressResumeEvent,
             'continuePendingWork' => $this->continuePendingWork,
             'openCanvases' => $this->openCanvases,
+            'allowTranscriptRecovery' => $this->allowTranscriptRecovery,
             'gitHubToken' => $this->gitHubToken,
             'remoteSession' => $remoteSession,
             'extensionInfo' => $extensionInfo,

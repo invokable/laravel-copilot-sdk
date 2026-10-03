@@ -21,6 +21,42 @@ beforeEach(function () {
 });
 
 describe('Session', function () {
+    it('updates local tool handlers only after the runtime accepts replacement tools', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $originalHandler = fn () => 'original';
+        $replacementHandler = fn () => 'replacement';
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.tools.set', [
+                'tools' => [[
+                    'name' => 'search',
+                    'description' => 'Search',
+                    'parameters' => [],
+                    'defer' => 'auto',
+                ]],
+                'sessionId' => 'session-1',
+            ])
+            ->andReturn([]);
+
+        $session = new Session('session-1', $client);
+        $session->registerTools([['name' => 'search', 'handler' => $originalHandler]]);
+        $session->setTools([['name' => 'search', 'description' => 'Search', 'defer' => 'auto', 'handler' => $replacementHandler]]);
+
+        expect($session->getToolHandler('search'))->toBe($replacementHandler);
+    });
+
+    it('keeps current tool handlers when the runtime rejects a replacement', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()->andThrow(new RuntimeException('rejected'));
+        $originalHandler = fn () => 'original';
+        $session = new Session('session-1', $client);
+        $session->registerTools([['name' => 'search', 'handler' => $originalHandler]]);
+
+        expect(fn () => $session->setTools([['name' => 'search', 'handler' => fn () => 'replacement']]))
+            ->toThrow(RuntimeException::class, 'rejected');
+        expect($session->getToolHandler('search'))->toBe($originalHandler);
+    });
+
     it('can be instantiated with sessionId and client', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
 

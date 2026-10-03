@@ -23,9 +23,16 @@ $session_id = select(
 // 選択されたIDでセッションを再開
 $session = Copilot::client()->resumeSession($session_id);
 
+// 破損したトランスクリプトが修復された場合、復旧情報を確認可能
+if ($session->transcriptRecovery() !== null) {
+    dump($session->transcriptRecovery()->toArray());
+}
+
 // これまでのイベントを取得
 $events = $session->getEvents();
 ```
+
+修復を許可しない場合は `ResumeSessionConfig(allowTranscriptRecovery: false)` を渡せます。デフォルトではランタイムがトランスクリプト復旧を許可します。
 
 ## 固定のセッションIDを使う場合
 

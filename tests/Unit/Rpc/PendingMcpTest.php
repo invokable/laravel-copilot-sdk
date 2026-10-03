@@ -6,10 +6,13 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Types\Rpc\McpDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpEnableRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthCompleteRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondResult;
+use Revolution\Copilot\Types\Rpc\McpPromptsGetRequest;
+use Revolution\Copilot\Types\Rpc\McpPromptsListRequest;
 use Revolution\Copilot\Types\Rpc\McpServerList;
 use Revolution\Copilot\Types\Rpc\MoveMcpLoadingToBackgroundResult;
 
@@ -193,6 +196,49 @@ describe('PendingMcp', function () {
 
         expect($result)->toBeInstanceOf(McpOauthRespondResult::class)
             ->and($result->success)->toBeTrue();
+    });
+
+    it('completes host-managed MCP OAuth redirects', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.mcp.oauth.complete', [
+                'authorizationId' => 'auth-1',
+                'callbackUrl' => 'http://localhost/callback?code=abc',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn([]);
+
+        (new PendingMcp($client, 'session-abc'))->complete(new McpOauthCompleteRequest(
+            authorizationId: 'auth-1',
+            callbackUrl: 'http://localhost/callback?code=abc',
+        ));
+    });
+
+    it('lists MCP prompts and retrieves rendered prompt messages', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('session.mcp.prompts.list', ['serverName' => 'docs', 'sessionId' => 'session-abc'])
+            ->andReturn(['prompts' => [['name' => 'summarize', 'description' => 'Summarize a document']]]);
+        $client->shouldReceive('request')->once()
+            ->with('session.mcp.prompts.get', [
+                'serverName' => 'docs',
+                'promptName' => 'summarize',
+                'arguments' => ['document' => 'readme.md'],
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(['messages' => [['role' => 'user', 'content' => ['type' => 'text', 'text' => 'Summarize this']]]]);
+
+        $pending = new PendingMcp($client, 'session-abc');
+        $prompts = $pending->prompts()->list(new McpPromptsListRequest(serverName: 'docs'));
+        $rendered = $pending->prompts()->get(new McpPromptsGetRequest(
+            serverName: 'docs',
+            promptName: 'summarize',
+            arguments: ['document' => 'readme.md'],
+        ));
+
+        expect($prompts->prompts[0]->name)->toBe('summarize')
+            ->and($rendered->messages[0]->content['text'])->toBe('Summarize this');
     });
 
 });

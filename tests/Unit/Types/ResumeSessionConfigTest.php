@@ -14,6 +14,13 @@ use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
 
 describe('ResumeSessionConfig', function () {
+    it('round trips transcript recovery configuration including false', function () {
+        $config = ResumeSessionConfig::fromArray(['allowTranscriptRecovery' => false]);
+
+        expect($config->allowTranscriptRecovery)->toBeFalse()
+            ->and($config->toArray())->toHaveKey('allowTranscriptRecovery', false);
+    });
+
     it('serializes the ask user variant', function () {
         $config = ResumeSessionConfig::fromArray(['askUserVariant' => AskUserVariant::LEGACY]);
 
