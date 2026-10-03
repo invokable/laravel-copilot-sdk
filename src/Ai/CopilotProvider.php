@@ -39,7 +39,7 @@ class CopilotProvider extends Provider implements TextProvider
      */
     public function defaultTextModel(): string
     {
-        return $this->config['models']['text']['default'] ?? 'gpt-6-sol';
+        return $this->config['models']['text']['default'] ?? 'gpt-6.1-sol';
     }
 
     /**
