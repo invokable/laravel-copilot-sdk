@@ -126,6 +126,26 @@ Protocol v3（現在のデフォルト）では、ツール呼び出しはJSON-R
 
 **`SessionConfig` の使い方は変わりません。** `tools` に定義を渡すだけで、プロトコルの違いはSDKが吸収します。
 
+## セッション中のツール置換 (experimental)
+
+`setTools()` を使うと、この接続が提供する外部ツール一式をセッション中に置き換えられます。既存のローカルハンドラーは、CLIがRPCを受理した後にだけ更新されます。呼び出しに失敗した場合は以前のハンドラーが維持されます。
+
+```php
+$session->setTools([
+    Tool::define(
+        name: 'lookup_fact',
+        description: 'Returns a fact.',
+        parameters: $parameters,
+        handler: fn (array $params) => $facts[$params['topic']] ?? 'Not found',
+    ),
+]);
+
+// この接続のツールをすべて解除
+$session->setTools([]);
+```
+
+これは外部ツールのみを置き換え、ビルトイン/MCP/プラグインツールや他の接続が提供するツールには影響しません。進行中のモデル要求は旧ツールを使っている場合があるため、実行中ターンが解除対象ツールを呼ぶ可能性がある場合はアイドル時に更新してください。
+
 ## MCP CallToolResult の変換
 
 MCPサーバーのツール結果（`CallToolResult`）をCopilot SDKの`ToolResultObject`に変換するには`McpCallToolResult::convert()`を使います。

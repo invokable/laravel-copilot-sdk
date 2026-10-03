@@ -37,6 +37,7 @@ use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
 use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\TranscriptRecovery;
 use RuntimeException;
 use Throwable;
 
@@ -603,6 +604,7 @@ class Client implements CopilotClient
                 'disableResume' => $config['suppressResumeEvent'] ?? $config['disableResume'] ?? null,
                 'continuePendingWork' => $config['continuePendingWork'] ?? null,
                 'openCanvases' => $config['openCanvases'] ?? null,
+                'allowTranscriptRecovery' => $config['allowTranscriptRecovery'] ?? null,
                 'enableSessionTelemetry' => $config['enableSessionTelemetry'] ?? null,
                 'enableGitHubTelemetryForwarding' => $config['enableGitHubTelemetryForwarding'] ?? null,
                 'gitHubToken' => $config['gitHubToken'] ?? null,
@@ -652,6 +654,9 @@ class Client implements CopilotClient
             'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
                 || array_key_exists('managedSettings', $config),
         ]);
+        if (isset($response['transcriptRecovery']) && is_array($response['transcriptRecovery'])) {
+            $session->setTranscriptRecovery(TranscriptRecovery::fromArray($response['transcriptRecovery']));
+        }
         if ($tokenProviderRegistrationId !== null) {
             $session->setOnDisconnected(function () use ($tokenProviderRegistrationId): void {
                 unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);

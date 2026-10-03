@@ -12,12 +12,17 @@ use Revolution\Copilot\Types\Rpc\McpIsServerRunningResult;
 use Revolution\Copilot\Types\Rpc\McpListToolsRequest;
 use Revolution\Copilot\Types\Rpc\McpListToolsResult;
 use Revolution\Copilot\Types\Rpc\McpOauthAuthenticationStateChangedRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthCompleteRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthHandlePendingResult;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondResult;
+use Revolution\Copilot\Types\Rpc\McpPromptsGetRequest;
+use Revolution\Copilot\Types\Rpc\McpPromptsGetResult;
+use Revolution\Copilot\Types\Rpc\McpPromptsListRequest;
+use Revolution\Copilot\Types\Rpc\McpPromptsListResult;
 use Revolution\Copilot\Types\Rpc\McpServerList;
 use Revolution\Copilot\Types\Rpc\McpStopServerRequest;
 use Revolution\Copilot\Types\Rpc\MoveMcpLoadingToBackgroundResult;
@@ -156,6 +161,15 @@ class PendingMcp
         );
     }
 
+    /** Complete an MCP OAuth login through a host-managed redirect callback. */
+    public function complete(McpOauthCompleteRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof McpOauthCompleteRequest ? $params : McpOauthCompleteRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.mcp.oauth.complete', $paramsArray);
+    }
+
     /**
      * List tools exposed by a connected MCP server.
      *
@@ -199,6 +213,18 @@ class PendingMcp
         );
     }
 
+    /** List prompts advertised by an MCP server. */
+    public function listPrompts(McpPromptsListRequest|array $params): McpPromptsListResult
+    {
+        return $this->prompts()->list($params);
+    }
+
+    /** Fetch a rendered prompt from an MCP server without sending it to the model. */
+    public function getPrompt(McpPromptsGetRequest|array $params): McpPromptsGetResult
+    {
+        return $this->prompts()->get($params);
+    }
+
     /**
      * MCP resources RPC operations.
      *
@@ -207,5 +233,11 @@ class PendingMcp
     public function resources(): PendingMcpResources
     {
         return new PendingMcpResources($this->client, $this->sessionId);
+    }
+
+    /** Prompt RPC operations. */
+    public function prompts(): PendingMcpPrompts
+    {
+        return new PendingMcpPrompts($this->client, $this->sessionId);
     }
 }

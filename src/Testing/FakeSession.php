@@ -22,6 +22,7 @@ use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\TranscriptRecovery;
 use Revolution\Copilot\Types\UiInputOptions;
 
 /**
@@ -64,6 +65,16 @@ class FakeSession implements CopilotSession
     public function capabilities(): SessionCapabilities
     {
         return new SessionCapabilities;
+    }
+
+    public function transcriptRecovery(): ?TranscriptRecovery
+    {
+        return null;
+    }
+
+    public function setTools(array $tools): void
+    {
+        // No-op in fake
     }
 
     public function elicitation(string $message, array $requestedSchema): UIElicitationResponse

@@ -8,6 +8,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
 use Revolution\Copilot\Types\Rpc\ToolsGetCurrentMetadataResult;
+use Revolution\Copilot\Types\Rpc\ToolsSetRequest;
 use Revolution\Copilot\Types\Rpc\ToolsUpdateSubagentSettingsResult;
 use Revolution\Copilot\Types\Rpc\UpdateSubagentSettingsRequest;
 
@@ -49,6 +50,15 @@ class PendingTools
                 'sessionId' => $this->sessionId,
             ]),
         );
+    }
+
+    /** Replace all external tools supplied by this connection for the session. */
+    public function set(ToolsSetRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof ToolsSetRequest ? $params : ToolsSetRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return $this->client->request('session.tools.set', $paramsArray);
     }
 
     /**

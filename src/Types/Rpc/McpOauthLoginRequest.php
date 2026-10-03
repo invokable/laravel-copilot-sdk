@@ -22,6 +22,7 @@ readonly class McpOauthLoginRequest implements Arrayable
      * @param  ?string  $clientSecret  Optional OAuth client secret override. Treated as an ephemeral host-owned secret; not persisted.
      * @param  ?bool  $publicClient  Optional override indicating whether the static OAuth client is public.
      * @param  McpOauthLoginGrantType|string|null  $grantType  Optional OAuth grant type override for this login.
+     * @param  ?string  $redirectUri  Optional externally visible HTTPS callback URI managed by the host.
      */
     public function __construct(
         public string $serverName,
@@ -32,6 +33,7 @@ readonly class McpOauthLoginRequest implements Arrayable
         public ?string $clientSecret = null,
         public ?bool $publicClient = null,
         public McpOauthLoginGrantType|string|null $grantType = null,
+        public ?string $redirectUri = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -49,6 +51,7 @@ readonly class McpOauthLoginRequest implements Arrayable
             clientSecret: $data['clientSecret'] ?? null,
             publicClient: $data['publicClient'] ?? null,
             grantType: $grantType,
+            redirectUri: $data['redirectUri'] ?? null,
         );
     }
 
@@ -63,6 +66,7 @@ readonly class McpOauthLoginRequest implements Arrayable
             'clientSecret' => $this->clientSecret,
             'publicClient' => $this->publicClient,
             'grantType' => $this->grantType instanceof McpOauthLoginGrantType ? $this->grantType->value : $this->grantType,
+            'redirectUri' => $this->redirectUri,
         ], fn ($v) => $v !== null);
     }
 }

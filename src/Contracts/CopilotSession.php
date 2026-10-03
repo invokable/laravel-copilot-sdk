@@ -18,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\TranscriptRecovery;
 use Revolution\Copilot\Types\UiInputOptions;
 
 /**
@@ -39,6 +40,12 @@ interface CopilotSession
      * Get the host capabilities for this session.
      */
     public function capabilities(): SessionCapabilities;
+
+    /** Recovery details reported while resuming this session, or null when none occurred. */
+    public function transcriptRecovery(): ?TranscriptRecovery;
+
+    /** Replace the complete set of tools supplied by this connection. */
+    public function setTools(array $tools): void;
 
     /**
      * Send a raw elicitation request to the CLI host.
