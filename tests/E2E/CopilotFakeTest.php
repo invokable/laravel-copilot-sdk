@@ -138,7 +138,7 @@ describe('Copilot::start()', function () {
     });
 });
 
-describe('Assertions', function () {
+describe('Copilot fake prompt assertions', function () {
     it('can assert prompt was sent', function () {
         Copilot::fake('response');
 
