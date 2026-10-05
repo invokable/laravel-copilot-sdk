@@ -41,7 +41,8 @@ tools:
   github:
     mode: gh-proxy
     toolsets: [default]
-  bash: [":*"]
+  cli-proxy: true
+  bash: ["*"]
   edit: true
 
 safe-outputs:

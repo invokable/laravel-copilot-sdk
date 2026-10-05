@@ -101,7 +101,8 @@ tools:
   github:
     mode: gh-proxy
     toolsets: [repos]
-  bash: [":*"]
+  cli-proxy: true
+  bash: ["*"]
   edit: true
   cache-memory: true
 
