@@ -174,9 +174,9 @@ describe('SomeType', function () {
 
 ## Step 4: Validate
 
-1. Run the full test suite to ensure nothing is broken:
+1. Run the modified tests to ensure nothing is broken:
    ```bash
-   vendor/bin/pest --compact --coverage
+   vendor/bin/pest --dirty
    ```
 2. If any tests fail, fix them before proceeding.
 3. Run the code style fixer on changed files:
