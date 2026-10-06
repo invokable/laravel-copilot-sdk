@@ -9,6 +9,8 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
+use Revolution\Copilot\Contracts\SkillProvider;
+use Revolution\Copilot\Contracts\SessionFsProvider;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
 
@@ -240,6 +242,8 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $diagnostics = null,
         public SandboxConfig|array|null $sandbox = null,
         public ?array $allowedModels = null,
+        public SkillProvider|array|null $skillProvider = null,
+        public SessionFsProvider|array|null $sessionFsProvider = null,
     ) {}
 
     /**
@@ -397,6 +401,8 @@ readonly class ResumeSessionConfig implements Arrayable
                 ? ($data['sandbox'] instanceof SandboxConfig ? $data['sandbox'] : SandboxConfig::fromArray($data['sandbox']))
                 : null,
             allowedModels: $data['allowedModels'] ?? null,
+            skillProvider: $data['skillProvider'] ?? null,
+            sessionFsProvider: $data['sessionFsProvider'] ?? null,
         );
     }
 

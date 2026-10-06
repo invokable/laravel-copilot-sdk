@@ -19,6 +19,9 @@ use Revolution\Copilot\Concerns\Session\HasToolHandlers;
 use Revolution\Copilot\Concerns\Session\HasUiApi;
 use Revolution\Copilot\Concerns\Session\HasUserInputHandler;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Contracts\SkillProvider;
+use Revolution\Copilot\Contracts\SessionFsBinaryProvider;
+use Revolution\Copilot\Contracts\SessionFsProvider;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\AutoTier;
 use Revolution\Copilot\Enums\LogLevel;
@@ -33,9 +36,24 @@ use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\TraceContext;
+use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Types\AutoModeSwitchRequest;
 use Revolution\Copilot\Types\ElicitationContext;
 use Revolution\Copilot\Types\ExitPlanModeRequest;
+use Revolution\Copilot\Types\SkillProviderCallOptions;
+use Revolution\Copilot\Types\Rpc\SkillProviderListRequest;
+use Revolution\Copilot\Types\Rpc\SkillProviderListResult;
+use Revolution\Copilot\Types\Rpc\SkillProviderReadRequest;
+use Revolution\Copilot\Types\Rpc\SkillProviderReadResult;
+use Revolution\Copilot\Types\Rpc\SessionFsError;
+use Revolution\Copilot\Types\Rpc\SessionFsReadFileBytesRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsReadFileBytesResult;
+use Revolution\Copilot\Types\Rpc\SessionFsReadFileRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsReadFileResult;
+use Revolution\Copilot\Types\Rpc\SessionFsWriteFileBytesRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsWriteFileBytesResult;
+use Revolution\Copilot\Types\Rpc\SessionFsWriteFileRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsWriteFileResult;
 use Revolution\Copilot\Types\Rpc\LogRequest;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
@@ -98,6 +116,10 @@ class Session implements CopilotSession
 
     protected ?TranscriptRecovery $transcriptRecovery = null;
 
+    protected SkillProvider|array|null $skillProvider = null;
+
+    protected SessionFsProvider|array|null $sessionFsProvider = null;
+
     /**
      * Wait state: last assistant message.
      */
@@ -111,7 +133,7 @@ class Session implements CopilotSession
     public function __construct(
         public readonly string $sessionId,
         protected JsonRpcClient $client,
-        public readonly ?string $workspacePath = null,
+        public ?string $workspacePath = null,
         protected bool $managedSettingsEnabled = false,
     ) {
         //
@@ -138,6 +160,12 @@ class Session implements CopilotSession
     public function workspacePath(): ?string
     {
         return $this->workspacePath;
+    }
+
+    /** @internal */
+    public function setWorkspacePath(?string $workspacePath): void
+    {
+        $this->workspacePath = $workspacePath;
     }
 
     /** Recovery details reported while resuming this session, or null when none occurred. */
@@ -180,6 +208,215 @@ class Session implements CopilotSession
 
         $this->rpc()->tools()->set(['tools' => $definitions]);
         $this->registerTools($normalized);
+    }
+
+    /**
+     * Register the provider used for session-scoped skill callbacks.
+     *
+     * @param  SkillProvider|array{listSkills: callable, readSkill: callable}|null  $provider
+     *
+     * @internal
+     */
+    public function registerSkillProvider(SkillProvider|array|null $provider): void
+    {
+        $this->skillProvider = $provider;
+    }
+
+    /**
+     * Register the backing store used for session filesystem callbacks.
+     *
+     * @param  SessionFsProvider|array{readFile: callable, writeFile: callable, readFileBytes?: callable, writeFileBytes?: callable}|null  $provider
+     *
+     * @internal
+     */
+    public function registerSessionFsProvider(SessionFsProvider|array|null $provider): void
+    {
+        $this->sessionFsProvider = $provider;
+    }
+
+    public function handleSessionFsReadFile(SessionFsReadFileRequest $request): array
+    {
+        $provider = $this->requireSessionFsProvider();
+
+        try {
+            $content = $provider instanceof SessionFsProvider
+                ? $provider->readFile($request->path)
+                : ($provider['readFile'])($request->path);
+
+            return (new SessionFsReadFileResult($content))->toArray();
+        } catch (Throwable $e) {
+            return (new SessionFsReadFileResult('', $this->sessionFsError($e)))->toArray();
+        }
+    }
+
+    public function handleSessionFsWriteFile(SessionFsWriteFileRequest $request): array
+    {
+        $provider = $this->requireSessionFsProvider();
+
+        try {
+            if ($provider instanceof SessionFsProvider) {
+                $provider->writeFile($request->path, $request->content, $request->mode);
+            } else {
+                ($provider['writeFile'])($request->path, $request->content, $request->mode);
+            }
+
+            return [];
+        } catch (Throwable $e) {
+            return (new SessionFsWriteFileResult($this->sessionFsError($e)))->toArray();
+        }
+    }
+
+    public function handleSessionFsReadFileBytes(SessionFsReadFileBytesRequest $request): array
+    {
+        $provider = $this->requireSessionFsProvider();
+        if (! $this->supportsSessionFsBinary($provider)) {
+            return (new SessionFsReadFileBytesResult('', new SessionFsError('UNKNOWN', 'Binary reads are not supported')))->toArray();
+        }
+
+        try {
+            $bytes = $provider instanceof SessionFsBinaryProvider
+                ? $provider->readFileBytes($request->path)
+                : ($provider['readFileBytes'])($request->path);
+
+            if (! is_string($bytes) || strlen($bytes) > 50_330_112) {
+                throw new \UnexpectedValueException('sessionFs.readFileBytes content exceeds the binary read limit');
+            }
+
+            return (new SessionFsReadFileBytesResult(base64_encode($bytes)))->toArray();
+        } catch (Throwable $e) {
+            return (new SessionFsReadFileBytesResult('', $this->sessionFsError($e)))->toArray();
+        }
+    }
+
+    public function handleSessionFsWriteFileBytes(SessionFsWriteFileBytesRequest $request): array
+    {
+        $provider = $this->requireSessionFsProvider();
+        if (! $this->supportsSessionFsBinary($provider)) {
+            return (new SessionFsWriteFileBytesResult(new SessionFsError('UNKNOWN', 'Binary writes are not supported')))->toArray();
+        }
+
+        if (strlen($request->content) > 67_106_816) {
+            return (new SessionFsWriteFileBytesResult(new SessionFsError('UNKNOWN', 'sessionFs.writeFileBytes content exceeds the binary write limit')))->toArray();
+        }
+
+        $bytes = base64_decode($request->content, true);
+        if ($bytes === false || base64_encode($bytes) !== $request->content || strlen($bytes) > 50_330_112) {
+            return (new SessionFsWriteFileBytesResult(new SessionFsError('UNKNOWN', 'invalid sessionFs.writeFileBytes base64 content')))->toArray();
+        }
+
+        try {
+            if ($provider instanceof SessionFsBinaryProvider) {
+                $provider->writeFileBytes($request->path, $bytes, $request->mode);
+            } else {
+                ($provider['writeFileBytes'])($request->path, $bytes, $request->mode);
+            }
+
+            return [];
+        } catch (Throwable $e) {
+            return (new SessionFsWriteFileBytesResult($this->sessionFsError($e)))->toArray();
+        }
+    }
+
+    private function requireSessionFsProvider(): SessionFsProvider|array
+    {
+        if ($this->sessionFsProvider === null) {
+            throw new JsonRpcException(-32603, 'No SessionFs provider configured for session');
+        }
+
+        return $this->sessionFsProvider;
+    }
+
+    private function supportsSessionFsBinary(SessionFsProvider|array $provider): bool
+    {
+        return $provider instanceof SessionFsBinaryProvider
+            || (is_callable($provider['readFileBytes'] ?? null) && is_callable($provider['writeFileBytes'] ?? null));
+    }
+
+    private function sessionFsError(Throwable $exception): SessionFsError
+    {
+        $properties = get_object_vars($exception);
+        $errorCode = $properties['code'] ?? $exception->getCode();
+        $isNotFound = $errorCode === 'ENOENT' || $errorCode === 2;
+        $writeChanged = $properties['writeChanged'] ?? null;
+
+        return new SessionFsError(
+            code: $isNotFound ? 'ENOENT' : 'UNKNOWN',
+            message: $exception->getMessage(),
+            writeChanged: $writeChanged === true ? true : null,
+        );
+    }
+
+    /**
+     * Handle the runtime's session-scoped skill catalog request.
+     */
+    public function handleSkillProviderList(
+        SkillProviderListRequest $request,
+        CancellationToken $token,
+    ): SkillProviderListResult {
+        $provider = $this->requireSkillProvider();
+        $options = new SkillProviderCallOptions($token);
+
+        try {
+            $skills = $provider instanceof SkillProvider
+                ? $provider->listSkills($options)
+                : ($provider['listSkills'])($options);
+        } catch (Throwable) {
+            throw new JsonRpcException(-32603, 'Skill provider list failed');
+        }
+
+        if ($token->isCancellationRequested()) {
+            throw new JsonRpcException(-32800, 'Skill provider list cancelled');
+        }
+
+        $normalized = [];
+        foreach ($skills ?? [] as $skill) {
+            if ($skill instanceof \Illuminate\Contracts\Support\Arrayable) {
+                $skill = $skill->toArray();
+            }
+            if (is_array($skill)) {
+                $normalized[] = $skill;
+            }
+        }
+
+        return new SkillProviderListResult($normalized);
+    }
+
+    /**
+     * Handle the runtime's lazy session-scoped skill content request.
+     */
+    public function handleSkillProviderRead(
+        SkillProviderReadRequest $request,
+        CancellationToken $token,
+    ): SkillProviderReadResult {
+        $provider = $this->requireSkillProvider();
+        $options = new SkillProviderCallOptions($token);
+
+        try {
+            $markdown = $provider instanceof SkillProvider
+                ? $provider->readSkill($request->name, $options)
+                : ($provider['readSkill'])($request->name, $options);
+        } catch (Throwable) {
+            throw new JsonRpcException(-32603, 'Skill provider read failed');
+        }
+
+        if ($token->isCancellationRequested()) {
+            throw new JsonRpcException(-32800, 'Skill provider read cancelled');
+        }
+
+        if ($markdown !== null && ! is_string($markdown)) {
+            throw new JsonRpcException(-32603, 'Skill provider read failed');
+        }
+
+        return new SkillProviderReadResult($markdown);
+    }
+
+    private function requireSkillProvider(): SkillProvider|array
+    {
+        if ($this->skillProvider === null) {
+            throw new JsonRpcException(-32603, 'No skill provider configured for session');
+        }
+
+        return $this->skillProvider;
     }
 
     /**
@@ -774,6 +1011,8 @@ class Session implements CopilotSession
         $this->exitPlanModeHandler = null;
         $this->autoModeSwitchHandler = null;
         $this->hooks = null;
+        $this->skillProvider = null;
+        $this->sessionFsProvider = null;
         $this->capabilities = new SessionCapabilities;
     }
 

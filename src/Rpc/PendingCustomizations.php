@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\CustomizationsReloadResult;
 
 /**
  * Session customization reload operations.
@@ -18,10 +19,12 @@ class PendingCustomizations
         protected string $sessionId,
     ) {}
 
-    public function reload(): void
+    public function reload(): CustomizationsReloadResult
     {
-        $this->client->request('session.customizations.reload', [
-            'sessionId' => $this->sessionId,
-        ]);
+        return CustomizationsReloadResult::fromArray(
+            $this->client->request('session.customizations.reload', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
     }
 }

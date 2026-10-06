@@ -40,9 +40,10 @@ describe('SessionFsSetProviderCapabilities', function () {
     });
 
     it('can be created from array', function () {
-        $caps = SessionFsSetProviderCapabilities::fromArray(['sqlite' => true]);
+        $caps = SessionFsSetProviderCapabilities::fromArray(['binary' => true, 'sqlite' => true]);
 
-        expect($caps->sqlite)->toBeTrue();
+        expect($caps->sqlite)->toBeTrue()
+            ->and($caps->binary)->toBeTrue();
     });
 
     it('omits null fields in toArray', function () {
@@ -55,6 +56,12 @@ describe('SessionFsSetProviderCapabilities', function () {
         $caps = new SessionFsSetProviderCapabilities(sqlite: true);
 
         expect($caps->toArray())->toBe(['sqlite' => true]);
+    });
+
+    it('includes binary capability when set', function () {
+        $caps = new SessionFsSetProviderCapabilities(sqlite: true, binary: true);
+
+        expect($caps->toArray())->toBe(['sqlite' => true, 'binary' => true]);
     });
 });
 

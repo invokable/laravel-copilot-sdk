@@ -130,6 +130,48 @@ class ServerRpc
     }
 
     /**
+     * Connector catalog discovery operations.
+     */
+    public function connectors(): PendingServerConnectors
+    {
+        return new PendingServerConnectors($this->client);
+    }
+
+    /**
+     * Sandbox credential-proxy certificate authority operations.
+     *
+     * @experimental
+     */
+    public function sandboxProxyCa(): PendingServerSandboxProxyCa
+    {
+        return new PendingServerSandboxProxyCa($this->client);
+    }
+
+    /**
+     * Git working-directory and remote repository discovery operations.
+     */
+    public function git(): PendingServerGit
+    {
+        return new PendingServerGit($this->client);
+    }
+
+    /**
+     * GitHub repository identity lookups.
+     */
+    public function gitHubRepository(): PendingServerGitHubRepository
+    {
+        return new PendingServerGitHubRepository($this->client);
+    }
+
+    /**
+     * Cancellable GitHub organization-owner discovery operations.
+     */
+    public function gitHubOwners(): PendingServerGitHubOwners
+    {
+        return new PendingServerGitHubOwners($this->client);
+    }
+
+    /**
      * Server-level extension RPC operations.
      *
      * @experimental This API group is part of an experimental API and may change or be removed.

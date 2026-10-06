@@ -56,6 +56,26 @@ class PendingMcp
     }
 
     /**
+     * List configured MCP servers with their runtime connection state.
+     */
+    public function listConfigured(): array
+    {
+        return $this->client->request('session.mcp.listConfigured', [
+            'sessionId' => $this->sessionId,
+        ]);
+    }
+
+    /**
+     * Publish or clear the IDE context associated with this session.
+     */
+    public function setConnectedIdeInfo(array $params): array
+    {
+        $params['sessionId'] = $this->sessionId;
+
+        return $this->client->request('session.mcp.setConnectedIdeInfo', $params);
+    }
+
+    /**
      * Enable an MCP server.
      */
     public function enable(McpEnableRequest|array $params): array

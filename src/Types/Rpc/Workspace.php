@@ -9,6 +9,9 @@ use Illuminate\Support\Arr;
 
 /**
  * Workspace metadata.
+ *
+ * @deprecated Legacy summary and PR-dismissal values remain readable for compatibility but are not sent
+ *             in the current workspace wire schema.
  */
 readonly class Workspace implements Arrayable
 {
@@ -29,6 +32,9 @@ readonly class Workspace implements Arrayable
         public ?string $mcLastEventId = null,
         public ?bool $prCreateSyncDismissed = null,
         public ?bool $chronicleSyncDismissed = null,
+        public ?string $clientName = null,
+        public ?bool $remoteSteerable = null,
+        public ?bool $userNamed = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -50,6 +56,9 @@ readonly class Workspace implements Arrayable
             mcLastEventId: $data['mc_last_event_id'] ?? null,
             prCreateSyncDismissed: $data['pr_create_sync_dismissed'] ?? null,
             chronicleSyncDismissed: $data['chronicle_sync_dismissed'] ?? null,
+            clientName: $data['client_name'] ?? null,
+            remoteSteerable: $data['remote_steerable'] ?? null,
+            userNamed: $data['user_named'] ?? null,
         );
     }
 
@@ -62,7 +71,6 @@ readonly class Workspace implements Arrayable
             'repository' => $this->repository,
             'host_type' => $this->hostType,
             'branch' => $this->branch,
-            'summary' => $this->summary,
             'name' => $this->name,
             'summary_count' => $this->summaryCount,
             'created_at' => $this->createdAt,
@@ -70,8 +78,10 @@ readonly class Workspace implements Arrayable
             'mc_task_id' => $this->mcTaskId,
             'mc_session_id' => $this->mcSessionId,
             'mc_last_event_id' => $this->mcLastEventId,
-            'pr_create_sync_dismissed' => $this->prCreateSyncDismissed,
             'chronicle_sync_dismissed' => $this->chronicleSyncDismissed,
+            'client_name' => $this->clientName,
+            'remote_steerable' => $this->remoteSteerable,
+            'user_named' => $this->userNamed,
         ];
     }
 }

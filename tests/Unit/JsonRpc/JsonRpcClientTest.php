@@ -10,6 +10,7 @@ use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\JsonRpc\JsonRpcMessage;
+use Revolution\Copilot\Support\CancellationToken;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
@@ -193,6 +194,37 @@ describe('JsonRpcClient', function () {
         expect($sentResponses)->toHaveCount(1)
             ->and($sentResponses[0])->toContain('"id":"server-req-1"')
             ->and($sentResponses[0])->toContain('"result"');
+    });
+
+    it('returns JSON-RPC cancellation when an inbound request token is cancelled', function () {
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
+        $transport->shouldReceive('start')->once();
+
+        $sentResponses = [];
+        $transport->shouldReceive('send')->andReturnUsing(function ($message) use (&$sentResponses) {
+            $sentResponses[] = $message;
+        });
+
+        $client = new JsonRpcClient($transport);
+        $client->setRequestHandler('skillProvider.list', function (array $params, CancellationToken $token) use ($simulateReceive) {
+            $suspension = EventLoop::getSuspension();
+            $token->onCancellationRequested(fn () => $suspension->resume());
+            EventLoop::delay(0.01, fn () => $simulateReceive(
+                JsonRpcMessage::notification('$/cancelRequest', ['id' => 'skill-request'])->toJson(),
+            ));
+            $suspension->suspend();
+
+            return ['skills' => []];
+        });
+        $client->start();
+
+        $simulateReceive(JsonRpcMessage::request('skill-request', 'skillProvider.list')->toJson());
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
+
+        expect($sentResponses)->toHaveCount(1)
+            ->and($sentResponses[0])->toContain('"code":-32800')
+            ->and($sentResponses[0])->toContain('Request cancelled');
     });
 
     it('removeRequestHandler removes handler', function () {

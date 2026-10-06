@@ -348,6 +348,64 @@ It powers a significant portion of the web!
 
 ---
 
+## Session-scoped skill and filesystem providers
+
+For skills loaded from an application-owned source, configure callbacks on
+`SessionConfig`. The callbacks belong to that session and are not serialized to
+the Copilot runtime. Cloud sessions do not support custom skill providers.
+
+```php
+use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\SkillProviderCallOptions;
+use Revolution\Copilot\Support\PermissionHandler;
+
+$config = new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveAll(),
+    skillProvider: [
+        'listSkills' => fn (SkillProviderCallOptions $options) => [
+            ['name' => 'deployment', 'description' => 'Safe application deployments'],
+        ],
+        'readSkill' => fn (string $name, SkillProviderCallOptions $options) =>
+            $name === 'deployment' ? '# Deployment checklist' : null,
+    ],
+);
+```
+
+`SkillProviderCallOptions::$signal` exposes the callback's cancellation token.
+Providers can implement `Revolution\Copilot\Contracts\SkillProvider` instead of
+using the callback array. Re-supply the callbacks in `ResumeSessionConfig` when
+resuming; provider objects and closures are not persisted. Cancellation is
+cooperative: callbacks should observe the signal and cancel pending work
+themselves; the SDK cannot preempt synchronous blocking PHP code.
+
+Session filesystem callbacks use the same session-scoped configuration. Text
+callbacks are `readFile(path)` and `writeFile(path, content, mode)`. To support
+binary files, provide both `readFileBytes(path)` and
+`writeFileBytes(path, bytes, mode)`; those callbacks receive and return the
+original bytes while the SDK handles base64 encoding on the JSON-RPC wire.
+Alternatively, implement `SessionFsBinaryProvider`. Keep filesystem access
+scoped to the paths your application intends to expose.
+
+```php
+use Illuminate\Support\Facades\Storage;
+use Revolution\Copilot\Support\PermissionHandler;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveAll(),
+    sessionFsProvider: [
+        'readFile' => fn (string $path) => Storage::disk('local')->get($path),
+        'writeFile' => fn (string $path, string $content, ?int $mode = null) =>
+            Storage::disk('local')->put($path, $content),
+        'readFileBytes' => fn (string $path) => Storage::disk('local')->get($path),
+        'writeFileBytes' => fn (string $path, string $bytes, ?int $mode = null) =>
+            Storage::disk('local')->put($path, $bytes),
+    ],
+);
+```
+
+---
+
 ## How Tools Work
 
 When you define a tool, you're telling Copilot:

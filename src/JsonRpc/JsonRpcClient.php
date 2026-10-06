@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\JsonRpc;
 
 use Closure;
+use Fiber;
 use Illuminate\Support\Str;
 use Revolt\EventLoop;
 use Revolt\EventLoop\Suspension;
@@ -15,6 +16,7 @@ use Revolution\Copilot\Events\JsonRpc\ResponseReceived;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Support\CancellationToken;
 
 /**
  * JSON-RPC 2.0 client.
@@ -40,9 +42,23 @@ class JsonRpcClient
     /**
      * Request handlers for incoming requests from server.
      *
-     * @var array<string, Closure(array): mixed>
+     * @var array<string, Closure(array, CancellationToken): mixed>
      */
     protected array $requestHandlers = [];
+
+    /**
+     * Cancellation tokens for active inbound requests, keyed by JSON-RPC ID.
+     *
+     * @var array<string, CancellationToken>
+     */
+    protected array $inboundRequestTokens = [];
+
+    /**
+     * Fibers used to keep cooperative inbound callbacks suspended off the event loop.
+     *
+     * @var array<string, Fiber>
+     */
+    protected array $inboundRequestFibers = [];
 
     /**
      * Whether the client is running.
@@ -74,6 +90,13 @@ class JsonRpcClient
         $this->running = false;
         $this->transport->stop();
         $this->pendingRequests = [];
+
+        foreach ($this->inboundRequestTokens as $token) {
+            $token->cancel();
+        }
+
+        $this->inboundRequestTokens = [];
+        $this->inboundRequestFibers = [];
     }
 
     /**
@@ -125,7 +148,7 @@ class JsonRpcClient
     /**
      * Set handler for incoming requests from server.
      *
-     * @param  Closure(array $params): mixed  $handler
+     * @param  Closure(array $params, CancellationToken $token): mixed  $handler
      */
     public function setRequestHandler(string $method, Closure $handler): void
     {
@@ -282,6 +305,18 @@ class JsonRpcClient
      */
     protected function handleNotification(JsonRpcMessage $message): void
     {
+        if ($message->method === '$/cancelRequest') {
+            $id = $message->params['id'] ?? null;
+            if (is_string($id) || is_int($id)) {
+                $tokenKey = $this->requestTokenKey($id);
+                if (isset($this->inboundRequestTokens[$tokenKey])) {
+                    $this->inboundRequestTokens[$tokenKey]->cancel();
+                }
+            }
+
+            return;
+        }
+
         if ($this->notificationHandler !== null) {
             ($this->notificationHandler)($message->method, $message->params);
         }
@@ -304,13 +339,40 @@ class JsonRpcClient
             return;
         }
 
-        try {
-            $result = $handler($message->params);
-            $this->sendResponse($message->id, $result ?? []);
-        } catch (JsonRpcException $e) {
-            $this->sendErrorResponse($message->id, $e->code, $e->getMessage(), $e->data);
-        } catch (\Throwable $e) {
-            $this->sendErrorResponse($message->id, -32603, $e->getMessage());
-        }
+        $token = new CancellationToken;
+        $tokenKey = $this->requestTokenKey($message->id);
+        $this->inboundRequestTokens[$tokenKey] = $token;
+
+        $fiber = new Fiber(function () use ($handler, $message, $token, $tokenKey): void {
+            try {
+                $result = $handler($message->params, $token);
+
+                if ($token->isCancellationRequested()) {
+                    throw new JsonRpcException(-32800, 'Request cancelled');
+                }
+
+                if ($this->running) {
+                    $this->sendResponse($message->id, $result ?? []);
+                }
+            } catch (JsonRpcException $e) {
+                if ($this->running) {
+                    $this->sendErrorResponse($message->id, $e->code, $e->getMessage(), $e->data);
+                }
+            } catch (\Throwable $e) {
+                if ($this->running) {
+                    $this->sendErrorResponse($message->id, -32603, $e->getMessage());
+                }
+            } finally {
+                unset($this->inboundRequestTokens[$tokenKey], $this->inboundRequestFibers[$tokenKey]);
+            }
+        });
+
+        $this->inboundRequestFibers[$tokenKey] = $fiber;
+        $fiber->start();
+    }
+
+    private function requestTokenKey(string|int $id): string
+    {
+        return get_debug_type($id).':'.$id;
     }
 }

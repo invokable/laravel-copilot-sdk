@@ -213,6 +213,28 @@ class Client implements CopilotClient
                 fn (array $params) => $this->acquireGitHubToken($params),
             );
 
+            $this->rpcClient->setRequestHandler(
+                'skillProvider.list',
+                fn (array $params, \Revolution\Copilot\Support\CancellationToken $token) => $this->handleSkillProviderList($params, $token),
+            );
+
+            $this->rpcClient->setRequestHandler(
+                'skillProvider.read',
+                fn (array $params, \Revolution\Copilot\Support\CancellationToken $token) => $this->handleSkillProviderRead($params, $token),
+            );
+
+            foreach ([
+                'sessionFs.readFile' => 'handleSessionFsReadFile',
+                'sessionFs.readFileBytes' => 'handleSessionFsReadFileBytes',
+                'sessionFs.writeFile' => 'handleSessionFsWriteFile',
+                'sessionFs.writeFileBytes' => 'handleSessionFsWriteFileBytes',
+            ] as $method => $handler) {
+                $this->rpcClient->setRequestHandler(
+                    $method,
+                    fn (array $params) => $this->{$handler}($params),
+                );
+            }
+
             if (is_callable($this->options['installation_confirmation_handler']
                 ?? $this->options['installationConfirmationHandler'] ?? null)) {
                 $this->rpcClient->setRequestHandler(
@@ -320,7 +342,12 @@ class Client implements CopilotClient
 
         $config = $this->normalizeSessionConfigAliases(is_array($config)
             ? $config
-            : [...$config->toArray(), 'gitHubTokenProvider' => $config->gitHubTokenProvider]);
+            : [
+                ...$config->toArray(),
+                'gitHubTokenProvider' => $config->gitHubTokenProvider,
+                'skillProvider' => $config->skillProvider,
+                'sessionFsProvider' => $config->sessionFsProvider,
+            ]);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
             throw new \InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
@@ -331,6 +358,16 @@ class Client implements CopilotClient
                 'An onPermissionRequest handler is required when creating a session. '
                 .'For example, to allow all permissions, use new SessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
             );
+        }
+
+        $skillProvider = $config['skillProvider'] ?? null;
+        $this->validateSkillProvider($skillProvider);
+        $sessionFsProvider = $config['sessionFsProvider'] ?? null;
+        $this->validateSessionFsProvider($sessionFsProvider);
+
+        $isCloudSession = ($config['cloud'] ?? null) !== null;
+        if ($isCloudSession && $skillProvider !== null) {
+            throw new \InvalidArgumentException('Skill providers are not supported for cloud sessions.');
         }
 
         $tokenProviderRegistrationId = $this->registerGitHubTokenProvider(
@@ -356,10 +393,29 @@ class Client implements CopilotClient
             is_array($hooks) ? $hooks : $hooks->toArray(),
         ));
 
+        // Local sessions use a client-generated ID so incoming session callbacks
+        // can be routed while the runtime is still processing session.create.
+        $preRegisteredSessionId = ! $isCloudSession && ($skillProvider !== null || $sessionFsProvider !== null)
+            ? ($config['sessionId'] ?? (string) Str::uuid())
+            : null;
+        $session = null;
+        if ($preRegisteredSessionId !== null) {
+            $session = app(Session::class, [
+                'sessionId' => $preRegisteredSessionId,
+                'client' => $this->rpcClient,
+                'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
+                    || array_key_exists('managedSettings', $config),
+            ]);
+            $session->registerSkillProvider($skillProvider);
+            $session->registerSessionFsProvider($sessionFsProvider);
+            $this->registerSessionHandlers($session, $tools, $commands, $config, $hooks);
+            $this->sessions[$preRegisteredSessionId] = $session;
+        }
+
         try {
             $response = $this->rpcClient->request('session.create', array_filter([
                 ...TraceContext::get(),
-                'sessionId' => $config['sessionId'] ?? null,
+                'sessionId' => $preRegisteredSessionId ?? ($config['sessionId'] ?? null),
                 'allowedModels' => $config['allowedModels'] ?? null,
                 'clientName' => $config['clientName'] ?? null,
                 'model' => $config['model'] ?? null,
@@ -436,66 +492,72 @@ class Client implements CopilotClient
                 'enableFileChangeTracking' => $config['enableFileChangeTracking'] ?? null,
                 'disabledMcpServers' => $config['disabledMcpServers'] ?? null,
                 'includedBuiltinSkills' => $config['includedBuiltinSkills'] ?? null,
+                'hasSkillProvider' => $skillProvider !== null ? true : null,
+                'hasSessionFsProvider' => $sessionFsProvider !== null ? true : null,
             ], fn ($v) => $v !== null));
         } catch (Throwable $e) {
-            unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            if ($tokenProviderRegistrationId !== null) {
+                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            }
+            if ($preRegisteredSessionId !== null) {
+                unset($this->sessions[$preRegisteredSessionId]);
+            }
             throw $e;
         }
 
-        $sessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to create session');
+        $sessionId = $response['sessionId'] ?? null;
+        if (! is_string($sessionId) || $sessionId === '') {
+            if ($preRegisteredSessionId !== null) {
+                unset($this->sessions[$preRegisteredSessionId]);
+            }
+            if ($tokenProviderRegistrationId !== null) {
+                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            }
+
+            throw new RuntimeException('Failed to create session');
+        }
+        if ($preRegisteredSessionId !== null && $sessionId !== $preRegisteredSessionId) {
+            unset($this->sessions[$preRegisteredSessionId]);
+            if ($tokenProviderRegistrationId !== null) {
+                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            }
+
+            throw new RuntimeException('Runtime returned a different session ID than requested');
+        }
         if ($tokenProviderRegistrationId !== null) {
             $this->gitHubTokenProviders[$tokenProviderRegistrationId]['sessionId'] = $sessionId;
         }
         $workspacePath = $response['workspacePath'] ?? null;
         $capabilities = $response['capabilities'] ?? null;
 
-        $session = app(Session::class, [
+        $session ??= app(Session::class, [
             'sessionId' => $sessionId,
             'client' => $this->rpcClient,
             'workspacePath' => $workspacePath,
             'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
                 || array_key_exists('managedSettings', $config),
         ]);
+        if ($preRegisteredSessionId === null) {
+            $this->registerSessionHandlers($session, $tools, $commands, $config, $hooks);
+        }
+        $session->setWorkspacePath($workspacePath);
         if ($tokenProviderRegistrationId !== null) {
             $session->setOnDisconnected(function () use ($tokenProviderRegistrationId): void {
                 unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
             });
         }
-        $session->registerTools($tools);
-        $session->registerCommands($commands);
         $session->setCapabilities($capabilities);
-        $session->registerPermissionHandler($config['onPermissionRequest']);
-
-        if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
-            $session->registerUserInputHandler($config['onUserInputRequest']);
-        }
-
-        if (isset($config['onElicitationRequest']) && is_callable($config['onElicitationRequest'])) {
-            $session->registerElicitationHandler($config['onElicitationRequest']);
-        }
-
-        if (isset($config['onExitPlanModeRequest']) && is_callable($config['onExitPlanModeRequest'])) {
-            $session->registerExitPlanModeHandler($config['onExitPlanModeRequest']);
-        }
-
-        if (isset($config['onAutoModeSwitchRequest']) && is_callable($config['onAutoModeSwitchRequest'])) {
-            $session->registerAutoModeSwitchHandler($config['onAutoModeSwitchRequest']);
-        }
-
-        if ($hooks !== null) {
-            $session->registerHooks($hooks);
-        }
-
-        if (isset($config['onEvent']) && is_callable($config['onEvent'])) {
-            $session->on($config['onEvent']);
-        }
-
+        $session->registerSkillProvider($skillProvider);
+        $session->registerSessionFsProvider($sessionFsProvider);
         $this->sessions[$sessionId] = $session;
 
         try {
             $this->applyPostCreateOptionsPatch($sessionId, $session, $config);
         } catch (Throwable $e) {
-            unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            unset($this->sessions[$sessionId]);
+            if ($tokenProviderRegistrationId !== null) {
+                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            }
             throw $e;
         }
 
@@ -517,7 +579,12 @@ class Client implements CopilotClient
 
         $config = $this->normalizeSessionConfigAliases(is_array($config)
             ? $config
-            : [...$config->toArray(), 'gitHubTokenProvider' => $config->gitHubTokenProvider]);
+            : [
+                ...$config->toArray(),
+                'gitHubTokenProvider' => $config->gitHubTokenProvider,
+                'skillProvider' => $config->skillProvider,
+                'sessionFsProvider' => $config->sessionFsProvider,
+            ]);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
             throw new \InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
@@ -529,6 +596,11 @@ class Client implements CopilotClient
                 .'For example, to allow all permissions, use new ResumeSessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
             );
         }
+
+        $skillProvider = $config['skillProvider'] ?? null;
+        $this->validateSkillProvider($skillProvider);
+        $sessionFsProvider = $config['sessionFsProvider'] ?? null;
+        $this->validateSessionFsProvider($sessionFsProvider);
 
         $tokenProviderRegistrationId = $this->registerGitHubTokenProvider(
             $config['gitHubTokenProvider'] ?? null,
@@ -554,6 +626,19 @@ class Client implements CopilotClient
         $hasHooks = $hooks !== null && ! empty(array_filter(
             is_array($hooks) ? $hooks : $hooks->toArray(),
         ));
+
+        // Register callback handlers before resume: the runtime can issue
+        // session-scoped requests while replaying persisted workspace state.
+        $session = app(Session::class, [
+            'sessionId' => $sessionId,
+            'client' => $this->rpcClient,
+            'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
+                || array_key_exists('managedSettings', $config),
+        ]);
+        $session->registerSkillProvider($skillProvider);
+        $session->registerSessionFsProvider($sessionFsProvider);
+        $this->registerSessionHandlers($session, $tools, $commands, $config, $hooks);
+        $this->sessions[$sessionId] = $session;
 
         try {
             $response = $this->rpcClient->request('session.resume', array_filter([
@@ -637,23 +722,38 @@ class Client implements CopilotClient
                 'enableFileChangeTracking' => $config['enableFileChangeTracking'] ?? null,
                 'disabledMcpServers' => $config['disabledMcpServers'] ?? null,
                 'includedBuiltinSkills' => $config['includedBuiltinSkills'] ?? null,
+                'hasSkillProvider' => $skillProvider !== null ? true : null,
+                'hasSessionFsProvider' => $sessionFsProvider !== null ? true : null,
             ], fn ($v) => $v !== null));
         } catch (Throwable $e) {
-            unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            if ($tokenProviderRegistrationId !== null) {
+                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            }
+            unset($this->sessions[$sessionId]);
             throw $e;
         }
 
-        $resumedSessionId = $response['sessionId'] ?? throw new RuntimeException('Failed to resume session');
+        $resumedSessionId = $response['sessionId'] ?? null;
+        if (! is_string($resumedSessionId) || $resumedSessionId === '') {
+            if ($tokenProviderRegistrationId !== null) {
+                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            }
+            unset($this->sessions[$sessionId]);
+
+            throw new RuntimeException('Failed to resume session');
+        }
+        if ($resumedSessionId !== $sessionId) {
+            if ($tokenProviderRegistrationId !== null) {
+                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            }
+            unset($this->sessions[$sessionId]);
+
+            throw new RuntimeException('Runtime returned a different session ID than requested');
+        }
         $workspacePath = $response['workspacePath'] ?? null;
         $capabilities = $response['capabilities'] ?? null;
 
-        $session = app(Session::class, [
-            'sessionId' => $resumedSessionId,
-            'client' => $this->rpcClient,
-            'workspacePath' => $workspacePath,
-            'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
-                || array_key_exists('managedSettings', $config),
-        ]);
+        $session->setWorkspacePath($workspacePath);
         if (isset($response['transcriptRecovery']) && is_array($response['transcriptRecovery'])) {
             $session->setTranscriptRecovery(TranscriptRecovery::fromArray($response['transcriptRecovery']));
         }
@@ -662,48 +762,23 @@ class Client implements CopilotClient
                 unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
             });
         }
-        $session->registerTools($tools);
-        $session->registerCommands($commands);
         $session->setCapabilities($capabilities);
-        $session->registerPermissionHandler($config['onPermissionRequest']);
-
-        if (isset($config['onUserInputRequest']) && is_callable($config['onUserInputRequest'])) {
-            $session->registerUserInputHandler($config['onUserInputRequest']);
-        }
-
-        if (isset($config['onElicitationRequest']) && is_callable($config['onElicitationRequest'])) {
-            $session->registerElicitationHandler($config['onElicitationRequest']);
-        }
-
-        if (isset($config['onExitPlanModeRequest']) && is_callable($config['onExitPlanModeRequest'])) {
-            $session->registerExitPlanModeHandler($config['onExitPlanModeRequest']);
-        }
-
-        if (isset($config['onAutoModeSwitchRequest']) && is_callable($config['onAutoModeSwitchRequest'])) {
-            $session->registerAutoModeSwitchHandler($config['onAutoModeSwitchRequest']);
-        }
-
-        if ($hooks !== null) {
-            $session->registerHooks($hooks);
-        }
-
-        if (isset($config['onEvent']) && is_callable($config['onEvent'])) {
-            $session->on($config['onEvent']);
-        }
-
         $this->sessions[$resumedSessionId] = $session;
 
-        if (! empty($config['mcpServers'])) {
-            $this->rpcClient->request('session.mcp.reloadWithConfig', [
-                'sessionId' => $resumedSessionId,
-                'config' => ['mcpServers' => $config['mcpServers']],
-            ]);
-        }
-
         try {
+            if (! empty($config['mcpServers'])) {
+                $this->rpcClient->request('session.mcp.reloadWithConfig', [
+                    'sessionId' => $resumedSessionId,
+                    'config' => ['mcpServers' => $config['mcpServers']],
+                ]);
+            }
+
             $this->applyPostCreateOptionsPatch($resumedSessionId, $session, $config);
         } catch (Throwable $e) {
-            unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            unset($this->sessions[$resumedSessionId]);
+            if ($tokenProviderRegistrationId !== null) {
+                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+            }
             throw $e;
         }
 
@@ -749,6 +824,129 @@ class Client implements CopilotClient
         ];
 
         return $registrationId;
+    }
+
+    private function validateSkillProvider(mixed $provider): void
+    {
+        if (
+            $provider !== null
+            && ! $provider instanceof \Revolution\Copilot\Contracts\SkillProvider
+            && (! is_array($provider)
+                || ! is_callable($provider['listSkills'] ?? null)
+                || ! is_callable($provider['readSkill'] ?? null))
+        ) {
+            throw new \InvalidArgumentException(
+                'skillProvider must implement SkillProvider or provide callable listSkills and readSkill entries.',
+            );
+        }
+    }
+
+    private function validateSessionFsProvider(mixed $provider): void
+    {
+        if (
+            $provider !== null
+            && ! $provider instanceof \Revolution\Copilot\Contracts\SessionFsProvider
+            && (! is_array($provider)
+                || ! is_callable($provider['readFile'] ?? null)
+                || ! is_callable($provider['writeFile'] ?? null))
+        ) {
+            throw new \InvalidArgumentException(
+                'sessionFsProvider must implement SessionFsProvider or provide callable readFile and writeFile entries.',
+            );
+        }
+    }
+
+    /**
+     * Register session handlers before the RPC whenever the session ID is known.
+     */
+    private function registerSessionHandlers(Session $session, array $tools, array $commands, array $config, mixed $hooks): void
+    {
+        $session->registerTools($tools);
+        $session->registerCommands($commands);
+        $session->registerPermissionHandler($config['onPermissionRequest']);
+
+        foreach ([
+            'onUserInputRequest' => 'registerUserInputHandler',
+            'onElicitationRequest' => 'registerElicitationHandler',
+            'onExitPlanModeRequest' => 'registerExitPlanModeHandler',
+            'onAutoModeSwitchRequest' => 'registerAutoModeSwitchHandler',
+        ] as $option => $method) {
+            if (isset($config[$option]) && is_callable($config[$option])) {
+                $session->{$method}($config[$option]);
+            }
+        }
+
+        if ($hooks !== null) {
+            $session->registerHooks($hooks);
+        }
+
+        if (isset($config['onEvent']) && is_callable($config['onEvent'])) {
+            $session->on($config['onEvent']);
+        }
+    }
+
+    private function handleSkillProviderList(array $params, \Revolution\Copilot\Support\CancellationToken $token): array
+    {
+        $request = \Revolution\Copilot\Types\Rpc\SkillProviderListRequest::fromArray($params);
+        $session = $this->sessions[$request->sessionId] ?? null;
+
+        if (! $session instanceof Session) {
+            throw new \RuntimeException("Session not found: {$request->sessionId}");
+        }
+
+        return $session->handleSkillProviderList($request, $token)->toArray();
+    }
+
+    private function handleSkillProviderRead(array $params, \Revolution\Copilot\Support\CancellationToken $token): array
+    {
+        $request = \Revolution\Copilot\Types\Rpc\SkillProviderReadRequest::fromArray($params);
+        $session = $this->sessions[$request->sessionId] ?? null;
+
+        if (! $session instanceof Session) {
+            throw new \RuntimeException("Session not found: {$request->sessionId}");
+        }
+
+        return $session->handleSkillProviderRead($request, $token)->toArray();
+    }
+
+    private function sessionForFsRequest(array $params): Session
+    {
+        $sessionId = $params['sessionId'] ?? null;
+        $session = is_string($sessionId) ? ($this->sessions[$sessionId] ?? null) : null;
+
+        if (! $session instanceof Session) {
+            throw new RuntimeException('Session not found for SessionFs request');
+        }
+
+        return $session;
+    }
+
+    private function handleSessionFsReadFile(array $params): array
+    {
+        return $this->sessionForFsRequest($params)->handleSessionFsReadFile(
+            \Revolution\Copilot\Types\Rpc\SessionFsReadFileRequest::fromArray($params),
+        );
+    }
+
+    private function handleSessionFsReadFileBytes(array $params): array
+    {
+        return $this->sessionForFsRequest($params)->handleSessionFsReadFileBytes(
+            \Revolution\Copilot\Types\Rpc\SessionFsReadFileBytesRequest::fromArray($params),
+        );
+    }
+
+    private function handleSessionFsWriteFile(array $params): array
+    {
+        return $this->sessionForFsRequest($params)->handleSessionFsWriteFile(
+            \Revolution\Copilot\Types\Rpc\SessionFsWriteFileRequest::fromArray($params),
+        );
+    }
+
+    private function handleSessionFsWriteFileBytes(array $params): array
+    {
+        return $this->sessionForFsRequest($params)->handleSessionFsWriteFileBytes(
+            \Revolution\Copilot\Types\Rpc\SessionFsWriteFileBytesRequest::fromArray($params),
+        );
     }
 
     private function acquireGitHubToken(array $params): array
