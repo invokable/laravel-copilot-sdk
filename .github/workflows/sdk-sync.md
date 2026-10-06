@@ -221,8 +221,8 @@ Add Pest tests for all new/changed classes:
 
 Run:
 ```bash
-vendor/bin/pest
-vendor/bin/pint
+vendor/bin/pest --dirty
+vendor/bin/pint --dirty
 ```
 
 If a PHP extension is missing, run the command with `-d extension=` added.
