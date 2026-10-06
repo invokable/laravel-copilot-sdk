@@ -133,6 +133,8 @@ Copilot::start(function (CopilotSession $session) {
 | `onErrorOccurred` | セッション内エラー発生時 | リトライ、通知、エラー分類処理 |
 | `onSessionEnd` | セッション終了時 | クリーンアップ、メトリクス記録、終了サマリ |
 | `onAgentStop` | トップレベルエージェントが自然に停止した時 | `decision: 'block'` で継続実行させ、`reason` をフォローアップメッセージとして投入 |
+| `onSubagentStart` | サブエージェントの最初のターン開始前 | `additionalContext` を子エージェントの初期プロンプトに追加 |
+| `onSubagentStop` | サブエージェントのターン完了後 | 継続指示を返すか、親に報告する応答を置換 |
 
 `null` を返すとデフォルト動作が継続されます。
 
@@ -177,7 +179,7 @@ Copilot::start(function (CopilotSession $session) {
 
 | プロパティ | 型 | 説明 |
 |---|---|---|
-| `sessionId` | `string` | フックを発火させたセッションのランタイムID（サブエージェントの場合は呼び出し元セッションIDと異なる場合がある） |
+| `sessionId` | `string` | 関連するランタイムセッションID。子ツールのフックでは子セッション、サブエージェントの開始/停止フックでは親セッションID |
 | `timestamp` | `int` | フック発火時刻（Unix ms） |
 | `cwd` | `string` | 現在の作業ディレクトリ |
 
@@ -302,6 +304,54 @@ Copilot::start(function (CopilotSession $session) {
 |---|---|---|
 | `decision` | `?string` | `"block"` を返すとエージェントの停止をキャンセルして継続 |
 | `reason` | `?string` | 継続時にフォローアップメッセージとして投入される理由 |
+
+### `SubagentStartHookInput`
+
+`onSubagentStart` には `SubagentStartHookInput` が渡されます。`transcriptPath` と `agentName` は必須で、`agentDisplayName` と `agentDescription` は任意です。
+
+### `SubagentStartHookOutput`
+
+| プロパティ | 型 | 説明 |
+|---|---|---|
+| `additionalContext` | `?string` | サブエージェントの初期プロンプトに追加するコンテキスト |
+
+### `SubagentStopHookInput`
+
+`onSubagentStop` には `SubagentStopHookInput` が渡されます。`agentType`、`stopReason`（`end_turn`）、`response` に加えて開始フックの情報を含みます。
+
+### `SubagentStopHookOutput`
+
+| プロパティ | 型 | 説明 |
+|---|---|---|
+| `decision` | `?string` | `block` で子エージェントを継続。`allow` または省略で応答を受け入れる |
+| `reason` | `?string` | `block` を返す場合の継続理由 |
+| `modifiedResponse` | `?string` | 親へ報告する応答の置換内容。`block` と併用した場合は有効な block が優先 |
+
+```php
+use Revolution\Copilot\Types\Hooks\SubagentStartHookInput;
+use Revolution\Copilot\Types\Hooks\SubagentStartHookOutput;
+use Revolution\Copilot\Types\Hooks\SubagentStopHookInput;
+use Revolution\Copilot\Types\Hooks\SubagentStopHookOutput;
+use Revolution\Copilot\Types\SessionHooks;
+
+$hooks = new SessionHooks(
+    onSubagentStart: function (SubagentStartHookInput $input): ?SubagentStartHookOutput {
+        return new SubagentStartHookOutput(
+            additionalContext: "Review {$input->agentName} using the repository conventions.",
+        );
+    },
+    onSubagentStop: function (SubagentStopHookInput $input): ?SubagentStopHookOutput {
+        if (str_contains($input->response, 'TODO')) {
+            return new SubagentStopHookOutput(
+                decision: 'block',
+                reason: 'Resolve the remaining TODO before finishing.',
+            );
+        }
+
+        return null;
+    },
+);
+```
 
 ### `PreMcpToolCallHookInput`
 

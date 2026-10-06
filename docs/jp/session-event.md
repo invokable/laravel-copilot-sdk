@@ -215,3 +215,14 @@ if ($event->is(SessionEventType::SESSION_AUTO_TIER_SWITCH_FAILED)) {
 
 これらのイベントは実験的機能を含むため、将来変更される可能性があります。
 
+## Copilot CLI 1.0.93 追加イベント
+
+### `tool.shell_output`
+
+シェル実行中に出力チャンクごとに届く一時イベントです。`data.text` を追記し、`data.stream` (`stdout` / `stderr` / `terminal`) で出力元を判定できます。`data.sequence` はツール呼び出し内での配信順です。このイベントは永続化・再生されません。
+
+従来の `tool.execution_partial_result` は統合済みの置換スナップショットであり、追記型のシェル出力には `tool.shell_output` を使います。
+
+### `human_response.recorded`
+
+ランタイムが管理する質問やプランレビューへの応答を記録する永続イベントです。`data.requestId` で元の要求に関連付けられ、`data.response` に回答内容が入ります。`data.actor` は応答の出所を示します。

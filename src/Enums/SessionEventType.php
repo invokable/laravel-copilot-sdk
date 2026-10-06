@@ -100,6 +100,7 @@ enum SessionEventType: string
     case TOOL_USER_REQUESTED = 'tool.user_requested';
     case TOOL_EXECUTION_START = 'tool.execution_start';
     case TOOL_EXECUTION_PARTIAL_RESULT = 'tool.execution_partial_result';
+    case TOOL_SHELL_OUTPUT = 'tool.shell_output';
     case TOOL_EXECUTION_PROGRESS = 'tool.execution_progress';
     case TOOL_EXECUTION_COMPLETE = 'tool.execution_complete';
     case TOOL_SEARCH_ACTIVATED = 'tool_search.activated';
@@ -152,6 +153,7 @@ enum SessionEventType: string
     // Elicitation events
     case ELICITATION_REQUESTED = 'elicitation.requested';
     case ELICITATION_COMPLETED = 'elicitation.completed';
+    case HUMAN_RESPONSE_RECORDED = 'human_response.recorded';
 
     // Sampling events (MCP server sampling requests)
     case SAMPLING_REQUESTED = 'sampling.requested';

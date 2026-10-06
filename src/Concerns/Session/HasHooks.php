@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Concerns\Session;
 
+use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Types\Hooks\SubagentStartHookInput;
+use Revolution\Copilot\Types\Hooks\SubagentStopHookInput;
 use Revolution\Copilot\Types\SessionHooks;
 use Throwable;
 
@@ -53,6 +56,8 @@ trait HasHooks
             'sessionEnd' => $this->hooks->onSessionEnd,
             'errorOccurred' => $this->hooks->onErrorOccurred,
             'agentStop' => $this->hooks->onAgentStop,
+            'subagentStart' => $this->hooks->onSubagentStart,
+            'subagentStop' => $this->hooks->onSubagentStop,
         ];
 
         $handler = $handlerMap[$hookType] ?? null;
@@ -62,7 +67,14 @@ trait HasHooks
         }
 
         try {
-            return $handler($input, ['sessionId' => $this->sessionId]);
+            $input = match ($hookType) {
+                'subagentStart' => is_array($input) ? SubagentStartHookInput::fromArray($input) : $input,
+                'subagentStop' => is_array($input) ? SubagentStopHookInput::fromArray($input) : $input,
+                default => $input,
+            };
+            $output = $handler($input, ['sessionId' => $this->sessionId]);
+
+            return $output instanceof Arrayable ? $output->toArray() : $output;
         } catch (Throwable) {
             return null;
         }
