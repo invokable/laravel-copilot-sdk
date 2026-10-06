@@ -14,7 +14,7 @@ readonly class SessionFsError implements Arrayable
 {
     public function __construct(
         public SessionFSErrorCode|string $code,
-        public string $message,
+        public ?string $message = null,
         public ?bool $writeChanged = null,
     ) {}
 
@@ -25,7 +25,7 @@ readonly class SessionFsError implements Arrayable
 
         return new self(
             code: $code,
-            message: $data['message'] ?? '',
+            message: $data['message'] ?? null,
             writeChanged: isset($data['writeChanged']) ? (bool) $data['writeChanged'] : null,
         );
     }

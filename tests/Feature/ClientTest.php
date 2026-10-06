@@ -233,6 +233,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once();
@@ -293,6 +296,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with($commands);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -349,6 +355,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with($commands);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -394,6 +403,9 @@ describe('Client', function () {
             ]);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once()->with($capabilitiesPayload);
@@ -449,6 +461,9 @@ describe('Client', function () {
             ->andReturn(['success' => true]);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -497,6 +512,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -551,6 +569,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -621,6 +642,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with($commands);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -672,6 +696,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -817,6 +844,9 @@ describe('Client', function () {
             ->andReturn(['success' => true]);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once();
