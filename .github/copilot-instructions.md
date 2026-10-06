@@ -39,9 +39,9 @@ Agentic Workflows環境でも`setup-php`でPHPはインストールされてる�
 
 pestやpintを直接実行する
 ```shell
-vendor/bin/pest --compact
-
-vendor/bin/pint --dirty --format agent # 変更されたファイルのみを修正。AIエージェント向けにjsonで結果を出力。
+# 変更されたファイルのみ
+vendor/bin/pest --dirty
+vendor/bin/pint --dirty
 ```
 
 実際にCopilot CLIを起動する動作確認コマンド。
