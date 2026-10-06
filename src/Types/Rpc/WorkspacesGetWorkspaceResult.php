@@ -16,12 +16,14 @@ readonly class WorkspacesGetWorkspaceResult implements Arrayable
      */
     public function __construct(
         public ?Workspace $workspace = null,
+        public ?string $path = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
             workspace: isset($data['workspace']) ? Workspace::fromArray($data['workspace']) : null,
+            path: $data['path'] ?? null,
         );
     }
 
@@ -29,6 +31,7 @@ readonly class WorkspacesGetWorkspaceResult implements Arrayable
     {
         return [
             'workspace' => $this->workspace?->toArray(),
+            'path' => $this->path,
         ];
     }
 }

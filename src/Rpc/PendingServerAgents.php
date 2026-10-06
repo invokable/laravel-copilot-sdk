@@ -6,7 +6,16 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\AgentDiscoveryPathList;
+use Revolution\Copilot\Types\Rpc\AgentsCustomAgentInitialModelDecisionRequest;
+use Revolution\Copilot\Types\Rpc\AgentsCustomAgentInitialModelDecisionResult;
 use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
+use Revolution\Copilot\Types\Rpc\AgentsGetAvailableBuiltinsRequest;
+use Revolution\Copilot\Types\Rpc\AgentsGetAvailableBuiltinsResult;
+use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinDefinitionRequest;
+use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinDefinitionResult;
+use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinListingDefinitionRequest;
+use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinListingDefinitionResult;
+use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinsResult;
 use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\ServerAgentList;
 
@@ -51,6 +60,72 @@ class PendingServerAgents
 
         return AgentDiscoveryPathList::fromArray(
             $this->client->request('agents.getDiscoveryPaths', $paramsArray),
+        );
+    }
+
+    /**
+     * Returns the names and toggleability of agents shipped by the runtime.
+     */
+    public function getBuiltins(): AgentsGetBuiltinsResult
+    {
+        return AgentsGetBuiltinsResult::fromArray(
+            $this->client->request('agents.getBuiltins', []),
+        );
+    }
+
+    /**
+     * Returns built-in agents available in the supplied feature-flag and runtime context.
+     */
+    public function getAvailableBuiltins(AgentsGetAvailableBuiltinsRequest|array $params = []): AgentsGetAvailableBuiltinsResult
+    {
+        $paramsArray = ($params instanceof AgentsGetAvailableBuiltinsRequest
+            ? $params
+            : AgentsGetAvailableBuiltinsRequest::fromArray($params))->toArray();
+
+        return AgentsGetAvailableBuiltinsResult::fromArray(
+            $this->client->request('agents.getAvailableBuiltins', $paramsArray),
+        );
+    }
+
+    /**
+     * Returns the YAML definition for a shipped built-in agent.
+     */
+    public function getBuiltinDefinition(AgentsGetBuiltinDefinitionRequest|array $params): AgentsGetBuiltinDefinitionResult
+    {
+        $paramsArray = ($params instanceof AgentsGetBuiltinDefinitionRequest
+            ? $params
+            : AgentsGetBuiltinDefinitionRequest::fromArray($params))->toArray();
+
+        return AgentsGetBuiltinDefinitionResult::fromArray(
+            $this->client->request('agents.getBuiltinDefinition', $paramsArray),
+        );
+    }
+
+    /**
+     * Returns the listing definition used to present a shipped built-in agent.
+     */
+    public function getBuiltinListingDefinition(AgentsGetBuiltinListingDefinitionRequest|array $params): AgentsGetBuiltinListingDefinitionResult
+    {
+        $paramsArray = ($params instanceof AgentsGetBuiltinListingDefinitionRequest
+            ? $params
+            : AgentsGetBuiltinListingDefinitionRequest::fromArray($params))->toArray();
+
+        return AgentsGetBuiltinListingDefinitionResult::fromArray(
+            $this->client->request('agents.getBuiltinListingDefinition', $paramsArray),
+        );
+    }
+
+    /**
+     * Applies the runtime's model-selection policy to a custom agent's model preferences.
+     */
+    public function customAgentInitialModelDecision(AgentsCustomAgentInitialModelDecisionRequest|array $params): AgentsCustomAgentInitialModelDecisionResult
+    {
+        $paramsArray = ($params instanceof AgentsCustomAgentInitialModelDecisionRequest
+            ? $params
+            : AgentsCustomAgentInitialModelDecisionRequest::fromArray($params))->toArray();
+
+        return AgentsCustomAgentInitialModelDecisionResult::fromArray(
+            $this->client->request('agents.customAgentInitialModelDecision', $paramsArray),
         );
     }
 }

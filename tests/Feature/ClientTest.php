@@ -57,7 +57,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -88,7 +88,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -123,7 +123,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -155,7 +155,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -188,7 +188,7 @@ describe('Client', function () {
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('stop')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -221,7 +221,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -233,6 +233,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once();
@@ -275,7 +278,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -293,6 +296,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with($commands);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -331,7 +337,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -349,6 +355,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with($commands);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -380,7 +389,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -394,6 +403,9 @@ describe('Client', function () {
             ]);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once()->with($capabilitiesPayload);
@@ -422,7 +434,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -449,6 +461,9 @@ describe('Client', function () {
             ->andReturn(['success' => true]);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -483,7 +498,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -497,6 +512,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -536,7 +554,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -551,6 +569,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -601,7 +622,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -621,6 +642,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with($commands);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -654,7 +678,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -672,6 +696,9 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'test-session-123']);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once()->with(null);
@@ -730,7 +757,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -762,7 +789,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -796,7 +823,7 @@ describe('Client', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(5);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(11);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -817,6 +844,9 @@ describe('Client', function () {
             ->andReturn(['success' => true]);
 
         $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
         $mockSession->shouldReceive('registerTools')->once()->with([]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once();

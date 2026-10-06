@@ -35,7 +35,29 @@ trait HasToolHandlers
 
         foreach ($tools as $tool) {
             if (isset($tool['name'], $tool['handler'])) {
-                $this->toolHandlers[$tool['name']] = $tool['handler'];
+                $handler = $tool['handler'];
+                $schema = $tool['parameters'] ?? null;
+
+                if (
+                    $tool['name'] === 'apply_patch'
+                    && ($tool['overridesBuiltInTool'] ?? false)
+                    && is_array($schema)
+                    && ($schema['type'] ?? null) === 'string'
+                ) {
+                    $handler = static function (mixed $arguments, array $invocation) use ($handler): mixed {
+                        if (is_string($arguments)) {
+                            return $handler($arguments, $invocation);
+                        }
+
+                        if (is_array($arguments) && is_string($arguments['input'] ?? null)) {
+                            return $handler($arguments['input'], $invocation);
+                        }
+
+                        throw new \InvalidArgumentException('apply_patch string override requires a string input');
+                    };
+                }
+
+                $this->toolHandlers[$tool['name']] = $handler;
             }
         }
     }

@@ -71,7 +71,7 @@ describe('Workspace', function () {
             'repository' => 'user/repo',
             'host_type' => 'github',
             'branch' => 'main',
-            'summary' => 'A project',
+            'summary' => 'Legacy summary',
             'name' => 'my-workspace',
             'summary_count' => 5,
             'created_at' => '2025-01-01T00:00:00Z',
@@ -81,6 +81,9 @@ describe('Workspace', function () {
             'mc_last_event_id' => 'evt-1',
             'pr_create_sync_dismissed' => true,
             'chronicle_sync_dismissed' => false,
+            'client_name' => 'vscode',
+            'remote_steerable' => true,
+            'user_named' => false,
         ]);
 
         expect($ws->id)->toBe('ws-123')
@@ -89,7 +92,7 @@ describe('Workspace', function () {
             ->and($ws->repository)->toBe('user/repo')
             ->and($ws->hostType)->toBe('github')
             ->and($ws->branch)->toBe('main')
-            ->and($ws->summary)->toBe('A project')
+            ->and($ws->summary)->toBe('Legacy summary')
             ->and($ws->name)->toBe('my-workspace')
             ->and($ws->summaryCount)->toBe(5)
             ->and($ws->createdAt)->toBe('2025-01-01T00:00:00Z')
@@ -98,7 +101,10 @@ describe('Workspace', function () {
             ->and($ws->mcSessionId)->toBe('sess-1')
             ->and($ws->mcLastEventId)->toBe('evt-1')
             ->and($ws->prCreateSyncDismissed)->toBeTrue()
-            ->and($ws->chronicleSyncDismissed)->toBeFalse();
+            ->and($ws->chronicleSyncDismissed)->toBeFalse()
+            ->and($ws->clientName)->toBe('vscode')
+            ->and($ws->remoteSteerable)->toBeTrue()
+            ->and($ws->userNamed)->toBeFalse();
     });
 
     it('handles minimal data', function () {
@@ -108,7 +114,6 @@ describe('Workspace', function () {
             ->and($ws->cwd)->toBeNull()
             ->and($ws->branch)->toBeNull()
             ->and($ws->hostType)->toBeNull()
-            ->and($ws->prCreateSyncDismissed)->toBeNull()
             ->and($ws->chronicleSyncDismissed)->toBeNull();
     });
 
@@ -117,6 +122,9 @@ describe('Workspace', function () {
             'id' => 'ws-1',
             'git_root' => '/root',
             'host_type' => 'ado',
+            'client_name' => 'cli',
+            'remote_steerable' => true,
+            'user_named' => false,
         ]);
 
         $arr = $ws->toArray();
@@ -124,6 +132,11 @@ describe('Workspace', function () {
         expect($arr)->toHaveKey('id', 'ws-1')
             ->and($arr)->toHaveKey('git_root', '/root')
             ->and($arr)->toHaveKey('host_type', 'ado')
+            ->and($arr)->toHaveKey('client_name', 'cli')
+            ->and($arr)->toHaveKey('remote_steerable', true)
+            ->and($arr)->toHaveKey('user_named', false)
+            ->and($arr)->not->toHaveKey('summary')
+            ->and($arr)->not->toHaveKey('pr_create_sync_dismissed')
             ->and($arr)->not->toHaveKey('session_sync_level');
     });
 });
@@ -154,9 +167,12 @@ describe('WorkspacesGetWorkspaceResult', function () {
     it('converts to array', function () {
         $result = WorkspacesGetWorkspaceResult::fromArray([
             'workspace' => ['id' => 'ws-1'],
+            'path' => '/tmp/workspace',
         ]);
 
-        expect($result->toArray()['workspace'])->toHaveKey('id', 'ws-1');
+        expect($result->toArray()['workspace'])->toHaveKey('id', 'ws-1')
+            ->and($result->path)->toBe('/tmp/workspace')
+            ->and($result->toArray())->toHaveKey('path', '/tmp/workspace');
     });
 });
 

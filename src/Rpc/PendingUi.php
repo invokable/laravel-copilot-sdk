@@ -61,4 +61,35 @@ class PendingUi
             $this->client->request('session.ui.handlePendingSessionLimitsExhausted', $paramsArray),
         );
     }
+
+    /**
+     * Resolve a host-side ask-user interaction.
+     */
+    public function handleHumanAskUser(array $params): array
+    {
+        return $this->request('session.ui.handleHumanAskUser', $params);
+    }
+
+    /**
+     * Resolve a pending human-input interaction.
+     */
+    public function handleHumanUserInput(array $params): array
+    {
+        return $this->request('session.ui.handleHumanUserInput', $params);
+    }
+
+    /**
+     * Resolve a pending exit-plan-mode interaction.
+     */
+    public function handleHumanExitPlanMode(array $params): array
+    {
+        return $this->request('session.ui.handleHumanExitPlanMode', $params);
+    }
+
+    private function request(string $method, array $params): array
+    {
+        $params['sessionId'] = $this->sessionId;
+
+        return $this->client->request($method, $params);
+    }
 }

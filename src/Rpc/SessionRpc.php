@@ -342,6 +342,16 @@ class SessionRpc
     }
 
     /**
+     * Provider-adapter discovery and model configuration operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function providers(): PendingProviders
+    {
+        return new PendingProviders($this->client, $this->sessionId);
+    }
+
+    /**
      * Tasks RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.
