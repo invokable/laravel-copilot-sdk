@@ -7,7 +7,6 @@ use Revolution\Copilot\Rpc\PendingAgent;
 use Revolution\Copilot\Rpc\PendingCommands;
 use Revolution\Copilot\Rpc\PendingEventLog;
 use Revolution\Copilot\Rpc\PendingExtensions;
-use Revolution\Copilot\Rpc\PendingFactory;
 use Revolution\Copilot\Rpc\PendingFleet;
 use Revolution\Copilot\Rpc\PendingHistory;
 use Revolution\Copilot\Rpc\PendingInstructions;

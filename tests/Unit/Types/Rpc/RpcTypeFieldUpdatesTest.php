@@ -2,12 +2,8 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Enums\FactoryDurableOperation;
-use Revolution\Copilot\Enums\FactoryRunFailureType;
 use Revolution\Copilot\Types\Rpc\AgentInfo;
 use Revolution\Copilot\Types\Rpc\EventLogReadRequest;
-use Revolution\Copilot\Types\Rpc\FactoryExecuteResult;
-use Revolution\Copilot\Types\Rpc\FactoryRunFailure;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
