@@ -6,9 +6,9 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\AgentDiscoveryPathList;
-use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\AgentsCustomAgentInitialModelDecisionRequest;
 use Revolution\Copilot\Types\Rpc\AgentsCustomAgentInitialModelDecisionResult;
+use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetAvailableBuiltinsRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetAvailableBuiltinsResult;
 use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinDefinitionRequest;

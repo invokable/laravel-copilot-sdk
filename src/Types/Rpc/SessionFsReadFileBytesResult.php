@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
-use Revolution\Copilot\Types\Rpc\SessionFsError;
 
 /**
  * Result of reading exact file bytes; content is base64 encoded on the wire.

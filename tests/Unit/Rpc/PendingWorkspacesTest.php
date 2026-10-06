@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingWorkspaces;
-use Revolution\Copilot\Types\Rpc\WorkspacesCreateDirectoryRequest;
-use Revolution\Copilot\Types\Rpc\WorkspacesCreateFileRequest;
 use Revolution\Copilot\Types\Rpc\WorkspaceDiffResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesAddSummaryResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesAutopilotObjectiveExistsResult;
+use Revolution\Copilot\Types\Rpc\WorkspacesCreateDirectoryRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesCreateFileRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesDeleteAutopilotObjectiveResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesGetWorkspaceResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesListCheckpointsResult;

@@ -16,14 +16,14 @@ use Revolution\Copilot\Rpc\PendingServerSandboxProxyCa;
 use Revolution\Copilot\Rpc\PendingSessions;
 use Revolution\Copilot\Rpc\PendingUi;
 use Revolution\Copilot\Rpc\ServerRpc;
+use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\Rpc\AgentsCustomAgentInitialModelDecisionRequest;
+use Revolution\Copilot\Types\Rpc\AgentsGetAvailableBuiltinsRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinDefinitionRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinListingDefinitionRequest;
-use Revolution\Copilot\Types\Rpc\AgentsGetAvailableBuiltinsRequest;
 use Revolution\Copilot\Types\Rpc\CustomizationsReloadResult;
 use Revolution\Copilot\Types\Rpc\ModelProviderDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\ModelProviderInstanceReference;
-use Revolution\Copilot\Transport\StdioTransport;
 
 describe('upstream generated RPC additions', function () {
     it('returns built-in agent metadata and applies custom-agent model decisions', function () {

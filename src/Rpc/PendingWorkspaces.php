@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\WorkspacesCreateDirectoryRequest;
-use Revolution\Copilot\Types\Rpc\WorkspacesCreateFileRequest;
+use Revolution\Copilot\Types\Rpc\WorkspaceDiffResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesAddSummaryRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesAddSummaryResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesAutopilotObjectiveExistsResult;
+use Revolution\Copilot\Types\Rpc\WorkspacesCreateDirectoryRequest;
+use Revolution\Copilot\Types\Rpc\WorkspacesCreateFileRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesDeleteAutopilotObjectiveResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesDiffRequest;
-use Revolution\Copilot\Types\Rpc\WorkspaceDiffResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesEnsureRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesGetWorkspaceResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesListCheckpointsResult;

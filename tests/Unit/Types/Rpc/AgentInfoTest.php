@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Types\Rpc\AgentInfo;
 use Revolution\Copilot\Enums\AgentInfoSource;
 use Revolution\Copilot\Enums\AgentModelPolicy;
+use Revolution\Copilot\Types\Rpc\AgentInfo;
 
 describe('AgentInfo', function () {
     it('can be created with all fields', function () {

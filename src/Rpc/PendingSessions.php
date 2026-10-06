@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\SessionsForkRequest;
-use Revolution\Copilot\Types\Rpc\SessionsForkResult;
 use Revolution\Copilot\Types\Rpc\SessionsCreateWorkspaceRequest;
 use Revolution\Copilot\Types\Rpc\SessionsCreateWorkspaceResult;
+use Revolution\Copilot\Types\Rpc\SessionsForkRequest;
+use Revolution\Copilot\Types\Rpc\SessionsForkResult;
 use Revolution\Copilot\Types\Rpc\SessionsGetClientMetadataRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadWorkspaceRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadWorkspaceResult;

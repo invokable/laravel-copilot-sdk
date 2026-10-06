@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Types\Rpc\SessionWorkingDirectoryContextWithClient;
 use Revolution\Copilot\Types\Rpc\SessionsCreateWorkspaceRequest;
+use Revolution\Copilot\Types\Rpc\SessionWorkingDirectoryContextWithClient;
 use Revolution\Copilot\Types\Rpc\WorkspaceDiffResult;
 use Revolution\Copilot\Types\Rpc\WorkspacesAddSummaryRequest;
 use Revolution\Copilot\Types\Rpc\WorkspacesCheckpoints;

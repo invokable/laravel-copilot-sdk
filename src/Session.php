@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot;
 
 use Closure;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
@@ -19,9 +20,9 @@ use Revolution\Copilot\Concerns\Session\HasToolHandlers;
 use Revolution\Copilot\Concerns\Session\HasUiApi;
 use Revolution\Copilot\Concerns\Session\HasUserInputHandler;
 use Revolution\Copilot\Contracts\CopilotSession;
-use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Contracts\SessionFsBinaryProvider;
 use Revolution\Copilot\Contracts\SessionFsProvider;
+use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\AutoTier;
 use Revolution\Copilot\Enums\LogLevel;
@@ -35,16 +36,17 @@ use Revolution\Copilot\Exceptions\SessionErrorException;
 use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
-use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Support\CancellationToken;
+use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Types\AutoModeSwitchRequest;
 use Revolution\Copilot\Types\ElicitationContext;
 use Revolution\Copilot\Types\ExitPlanModeRequest;
-use Revolution\Copilot\Types\SkillProviderCallOptions;
-use Revolution\Copilot\Types\Rpc\SkillProviderListRequest;
-use Revolution\Copilot\Types\Rpc\SkillProviderListResult;
-use Revolution\Copilot\Types\Rpc\SkillProviderReadRequest;
-use Revolution\Copilot\Types\Rpc\SkillProviderReadResult;
+use Revolution\Copilot\Types\Rpc\LogRequest;
+use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
+use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
+use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
+use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
+use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\SessionFsError;
 use Revolution\Copilot\Types\Rpc\SessionFsReadFileBytesRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsReadFileBytesResult;
@@ -54,14 +56,13 @@ use Revolution\Copilot\Types\Rpc\SessionFsWriteFileBytesRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsWriteFileBytesResult;
 use Revolution\Copilot\Types\Rpc\SessionFsWriteFileRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsWriteFileResult;
-use Revolution\Copilot\Types\Rpc\LogRequest;
-use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
-use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
-use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
-use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
-use Revolution\Copilot\Types\Rpc\ResponseFormat;
+use Revolution\Copilot\Types\Rpc\SkillProviderListRequest;
+use Revolution\Copilot\Types\Rpc\SkillProviderListResult;
+use Revolution\Copilot\Types\Rpc\SkillProviderReadRequest;
+use Revolution\Copilot\Types\Rpc\SkillProviderReadResult;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\SkillProviderCallOptions;
 use Revolution\Copilot\Types\Tool;
 use Revolution\Copilot\Types\TranscriptRecovery;
 use Throwable;
@@ -370,7 +371,7 @@ class Session implements CopilotSession
 
         $normalized = [];
         foreach ($skills ?? [] as $skill) {
-            if ($skill instanceof \Illuminate\Contracts\Support\Arrayable) {
+            if ($skill instanceof Arrayable) {
                 $skill = $skill->toArray();
             }
             if (is_array($skill)) {

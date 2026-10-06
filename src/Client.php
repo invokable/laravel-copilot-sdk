@@ -13,6 +13,8 @@ use Revolution\Copilot\Concerns\Client\ManagesModels;
 use Revolution\Copilot\Concerns\Client\ManagesSessions;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Contracts\SessionFsProvider;
+use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Enums\RuntimeConnectionKind;
@@ -25,6 +27,7 @@ use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Rpc\ServerRpc;
+use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Transport\TcpTransport;
 use Revolution\Copilot\Types\CapiSessionOptions;
@@ -34,6 +37,12 @@ use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\GitHubMcpToolConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsReadFileBytesRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsReadFileRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsWriteFileBytesRequest;
+use Revolution\Copilot\Types\Rpc\SessionFsWriteFileRequest;
+use Revolution\Copilot\Types\Rpc\SkillProviderListRequest;
+use Revolution\Copilot\Types\Rpc\SkillProviderReadRequest;
 use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -215,12 +224,12 @@ class Client implements CopilotClient
 
             $this->rpcClient->setRequestHandler(
                 'skillProvider.list',
-                fn (array $params, \Revolution\Copilot\Support\CancellationToken $token) => $this->handleSkillProviderList($params, $token),
+                fn (array $params, CancellationToken $token) => $this->handleSkillProviderList($params, $token),
             );
 
             $this->rpcClient->setRequestHandler(
                 'skillProvider.read',
-                fn (array $params, \Revolution\Copilot\Support\CancellationToken $token) => $this->handleSkillProviderRead($params, $token),
+                fn (array $params, CancellationToken $token) => $this->handleSkillProviderRead($params, $token),
             );
 
             foreach ([
@@ -830,7 +839,7 @@ class Client implements CopilotClient
     {
         if (
             $provider !== null
-            && ! $provider instanceof \Revolution\Copilot\Contracts\SkillProvider
+            && ! $provider instanceof SkillProvider
             && (! is_array($provider)
                 || ! is_callable($provider['listSkills'] ?? null)
                 || ! is_callable($provider['readSkill'] ?? null))
@@ -845,7 +854,7 @@ class Client implements CopilotClient
     {
         if (
             $provider !== null
-            && ! $provider instanceof \Revolution\Copilot\Contracts\SessionFsProvider
+            && ! $provider instanceof SessionFsProvider
             && (! is_array($provider)
                 || ! is_callable($provider['readFile'] ?? null)
                 || ! is_callable($provider['writeFile'] ?? null))
@@ -885,25 +894,25 @@ class Client implements CopilotClient
         }
     }
 
-    private function handleSkillProviderList(array $params, \Revolution\Copilot\Support\CancellationToken $token): array
+    private function handleSkillProviderList(array $params, CancellationToken $token): array
     {
-        $request = \Revolution\Copilot\Types\Rpc\SkillProviderListRequest::fromArray($params);
+        $request = SkillProviderListRequest::fromArray($params);
         $session = $this->sessions[$request->sessionId] ?? null;
 
         if (! $session instanceof Session) {
-            throw new \RuntimeException("Session not found: {$request->sessionId}");
+            throw new RuntimeException("Session not found: {$request->sessionId}");
         }
 
         return $session->handleSkillProviderList($request, $token)->toArray();
     }
 
-    private function handleSkillProviderRead(array $params, \Revolution\Copilot\Support\CancellationToken $token): array
+    private function handleSkillProviderRead(array $params, CancellationToken $token): array
     {
-        $request = \Revolution\Copilot\Types\Rpc\SkillProviderReadRequest::fromArray($params);
+        $request = SkillProviderReadRequest::fromArray($params);
         $session = $this->sessions[$request->sessionId] ?? null;
 
         if (! $session instanceof Session) {
-            throw new \RuntimeException("Session not found: {$request->sessionId}");
+            throw new RuntimeException("Session not found: {$request->sessionId}");
         }
 
         return $session->handleSkillProviderRead($request, $token)->toArray();
@@ -924,28 +933,28 @@ class Client implements CopilotClient
     private function handleSessionFsReadFile(array $params): array
     {
         return $this->sessionForFsRequest($params)->handleSessionFsReadFile(
-            \Revolution\Copilot\Types\Rpc\SessionFsReadFileRequest::fromArray($params),
+            SessionFsReadFileRequest::fromArray($params),
         );
     }
 
     private function handleSessionFsReadFileBytes(array $params): array
     {
         return $this->sessionForFsRequest($params)->handleSessionFsReadFileBytes(
-            \Revolution\Copilot\Types\Rpc\SessionFsReadFileBytesRequest::fromArray($params),
+            SessionFsReadFileBytesRequest::fromArray($params),
         );
     }
 
     private function handleSessionFsWriteFile(array $params): array
     {
         return $this->sessionForFsRequest($params)->handleSessionFsWriteFile(
-            \Revolution\Copilot\Types\Rpc\SessionFsWriteFileRequest::fromArray($params),
+            SessionFsWriteFileRequest::fromArray($params),
         );
     }
 
     private function handleSessionFsWriteFileBytes(array $params): array
     {
         return $this->sessionForFsRequest($params)->handleSessionFsWriteFileBytes(
-            \Revolution\Copilot\Types\Rpc\SessionFsWriteFileBytesRequest::fromArray($params),
+            SessionFsWriteFileBytesRequest::fromArray($params),
         );
     }
 
