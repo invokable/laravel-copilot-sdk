@@ -12,6 +12,10 @@ use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Session;
+use Revolution\Copilot\Types\Hooks\SubagentStartHookInput;
+use Revolution\Copilot\Types\Hooks\SubagentStartHookOutput;
+use Revolution\Copilot\Types\Hooks\SubagentStopHookInput;
+use Revolution\Copilot\Types\Hooks\SubagentStopHookOutput;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -350,6 +354,64 @@ describe('Session', function () {
             ->and($receivedInput)->toBe(['toolName' => 'bash', 'error' => 'failed'])
             ->and($receivedContext)->toBe(['sessionId' => 'test-session'])
             ->and($result)->toBe(['additionalContext' => 'Prefer a safer command']);
+    });
+
+    it('invokes the sub-agent start hook with typed input and serializes its output', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('parent-session', $mockClient);
+        $receivedInput = null;
+        $receivedContext = null;
+
+        $session->registerHooks([
+            'onSubagentStart' => function (SubagentStartHookInput $input, array $context) use (&$receivedInput, &$receivedContext): SubagentStartHookOutput {
+                $receivedInput = $input;
+                $receivedContext = $context;
+
+                return new SubagentStartHookOutput(additionalContext: 'Follow repository conventions.');
+            },
+        ]);
+
+        $result = $session->handleHooksInvoke('subagentStart', [
+            'sessionId' => 'parent-session',
+            'timestamp' => 1706600000,
+            'cwd' => '/workspace',
+            'transcriptPath' => '/tmp/agent.jsonl',
+            'agentName' => 'reviewer',
+        ]);
+
+        expect($receivedInput)->toBeInstanceOf(SubagentStartHookInput::class)
+            ->and($receivedInput->agentName)->toBe('reviewer')
+            ->and($receivedContext)->toBe(['sessionId' => 'parent-session'])
+            ->and($result)->toBe(['additionalContext' => 'Follow repository conventions.']);
+    });
+
+    it('invokes the sub-agent stop hook with typed input and serializes a response rewrite', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('parent-session', $mockClient);
+        $receivedInput = null;
+
+        $session->registerHooks([
+            'onSubagentStop' => function (SubagentStopHookInput $input) use (&$receivedInput): SubagentStopHookOutput {
+                $receivedInput = $input;
+
+                return new SubagentStopHookOutput(modifiedResponse: 'Reviewed and ready.');
+            },
+        ]);
+
+        $result = $session->handleHooksInvoke('subagentStop', [
+            'sessionId' => 'parent-session',
+            'timestamp' => 1706600000,
+            'cwd' => '/workspace',
+            'transcriptPath' => '/tmp/agent.jsonl',
+            'agentName' => 'reviewer',
+            'agentType' => 'general-purpose',
+            'stopReason' => 'end_turn',
+            'response' => 'Review complete',
+        ]);
+
+        expect($receivedInput)->toBeInstanceOf(SubagentStopHookInput::class)
+            ->and($receivedInput->response)->toBe('Review complete')
+            ->and($result)->toBe(['modifiedResponse' => 'Reviewed and ready.']);
     });
 
     it('registerTools stores tool handlers', function () {

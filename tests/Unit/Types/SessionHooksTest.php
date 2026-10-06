@@ -16,6 +16,8 @@ describe('SessionHooks', function () {
         $errorOccurred = fn () => null;
         $preMcpToolCall = fn () => null;
         $agentStop = fn () => null;
+        $subagentStart = fn () => null;
+        $subagentStop = fn () => null;
 
         $hooks = new SessionHooks(
             onPreToolUse: $preToolUse,
@@ -27,6 +29,8 @@ describe('SessionHooks', function () {
             onErrorOccurred: $errorOccurred,
             onPreMcpToolCall: $preMcpToolCall,
             onAgentStop: $agentStop,
+            onSubagentStart: $subagentStart,
+            onSubagentStop: $subagentStop,
         );
 
         expect($hooks->onPreToolUse)->toBe($preToolUse)
@@ -37,7 +41,9 @@ describe('SessionHooks', function () {
             ->and($hooks->onSessionEnd)->toBe($sessionEnd)
             ->and($hooks->onErrorOccurred)->toBe($errorOccurred)
             ->and($hooks->onPreMcpToolCall)->toBe($preMcpToolCall)
-            ->and($hooks->onAgentStop)->toBe($agentStop);
+            ->and($hooks->onAgentStop)->toBe($agentStop)
+            ->and($hooks->onSubagentStart)->toBe($subagentStart)
+            ->and($hooks->onSubagentStop)->toBe($subagentStop);
     });
 
     it('can be created with no hooks', function () {
@@ -51,7 +57,9 @@ describe('SessionHooks', function () {
             ->and($hooks->onSessionEnd)->toBeNull()
             ->and($hooks->onErrorOccurred)->toBeNull()
             ->and($hooks->onPreMcpToolCall)->toBeNull()
-            ->and($hooks->onAgentStop)->toBeNull();
+            ->and($hooks->onAgentStop)->toBeNull()
+            ->and($hooks->onSubagentStart)->toBeNull()
+            ->and($hooks->onSubagentStop)->toBeNull();
     });
 
     it('can be created with partial hooks', function () {
@@ -73,17 +81,23 @@ describe('SessionHooks', function () {
         $preToolUse = fn () => null;
         $postToolUseFailure = fn () => null;
         $errorOccurred = fn () => null;
+        $subagentStart = fn () => null;
+        $subagentStop = fn () => null;
 
         $hooks = SessionHooks::fromArray([
             'onPreToolUse' => $preToolUse,
             'onPostToolUseFailure' => $postToolUseFailure,
             'onErrorOccurred' => $errorOccurred,
+            'onSubagentStart' => $subagentStart,
+            'onSubagentStop' => $subagentStop,
         ]);
 
         expect($hooks->onPreToolUse)->toBe($preToolUse)
             ->and($hooks->onPostToolUse)->toBeNull()
             ->and($hooks->onPostToolUseFailure)->toBe($postToolUseFailure)
-            ->and($hooks->onErrorOccurred)->toBe($errorOccurred);
+            ->and($hooks->onErrorOccurred)->toBe($errorOccurred)
+            ->and($hooks->onSubagentStart)->toBe($subagentStart)
+            ->and($hooks->onSubagentStop)->toBe($subagentStop);
     });
 
     it('can be created from empty array', function () {
@@ -97,7 +111,9 @@ describe('SessionHooks', function () {
             ->and($hooks->onSessionEnd)->toBeNull()
             ->and($hooks->onErrorOccurred)->toBeNull()
             ->and($hooks->onPreMcpToolCall)->toBeNull()
-            ->and($hooks->onAgentStop)->toBeNull();
+            ->and($hooks->onAgentStop)->toBeNull()
+            ->and($hooks->onSubagentStart)->toBeNull()
+            ->and($hooks->onSubagentStop)->toBeNull();
     });
 
     it('can convert to array with all hooks', function () {
@@ -109,6 +125,8 @@ describe('SessionHooks', function () {
             onPreToolUse: $preToolUse,
             onPostToolUse: $postToolUse,
             onPostToolUseFailure: $postToolUseFailure,
+            onSubagentStart: fn () => 'start',
+            onSubagentStop: fn () => 'stop',
         );
 
         $array = $hooks->toArray();
@@ -118,7 +136,9 @@ describe('SessionHooks', function () {
             ->and($array)->toHaveKey('onPostToolUseFailure')
             ->and($array['onPreToolUse'])->toBe($preToolUse)
             ->and($array['onPostToolUse'])->toBe($postToolUse)
-            ->and($array['onPostToolUseFailure'])->toBe($postToolUseFailure);
+            ->and($array['onPostToolUseFailure'])->toBe($postToolUseFailure)
+            ->and($array['onSubagentStart'])->toBeCallable()
+            ->and($array['onSubagentStop'])->toBeCallable();
     });
 
     it('filters null values in toArray', function () {

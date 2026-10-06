@@ -13,8 +13,8 @@ use Illuminate\Support\Arr;
 readonly class BaseHookInput implements Arrayable
 {
     /**
-     * @param  string  $sessionId  The runtime session ID of the session that triggered the hook.
-     *                             For sub-agent hooks this differs from the invocation session ID.
+     * @param  string  $sessionId  Runtime session ID associated with the hook. Child tool hooks use the child session ID;
+     *                             sub-agent lifecycle hooks use the parent session ID, matching invocation session ID.
      * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
      * @param  string  $cwd  Current working directory
      */

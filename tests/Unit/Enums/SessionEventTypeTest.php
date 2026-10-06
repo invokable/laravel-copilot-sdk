@@ -178,6 +178,13 @@ describe('SessionEventType', function () {
         expect(SessionEventType::TOOL_SEARCH_ACTIVATED->value)->toBe('tool_search.activated');
     });
 
+    it('has live shell output and recorded human response event types', function () {
+        expect(SessionEventType::TOOL_SHELL_OUTPUT->value)->toBe('tool.shell_output')
+            ->and(SessionEventType::HUMAN_RESPONSE_RECORDED->value)->toBe('human_response.recorded')
+            ->and(SessionEventType::from('tool.shell_output'))->toBe(SessionEventType::TOOL_SHELL_OUTPUT)
+            ->and(SessionEventType::from('human_response.recorded'))->toBe(SessionEventType::HUMAN_RESPONSE_RECORDED);
+    });
+
     it('can create tool search activated from string', function () {
         expect(SessionEventType::from('tool_search.activated'))->toBe(SessionEventType::TOOL_SEARCH_ACTIVATED);
     });
