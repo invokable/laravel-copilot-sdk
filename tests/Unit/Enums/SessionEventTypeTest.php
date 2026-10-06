@@ -29,11 +29,6 @@ describe('SessionEventType', function () {
         expect(SessionEventType::SESSION_CUSTOM_AGENTS_UPDATED->value)->toBe('session.custom_agents_updated');
     });
 
-    it('has the factory run updated event type', function () {
-        expect(SessionEventType::FACTORY_RUN_UPDATED->value)->toBe('factory.run_updated')
-            ->and(SessionEventType::from('factory.run_updated'))->toBe(SessionEventType::FACTORY_RUN_UPDATED);
-    });
-
     it('can create custom agents updated from string', function () {
         expect(SessionEventType::from('session.custom_agents_updated'))->toBe(SessionEventType::SESSION_CUSTOM_AGENTS_UPDATED);
     });
@@ -195,16 +190,6 @@ describe('SessionEventType', function () {
 
     it('can create ui ephemeral query from string', function () {
         expect(SessionEventType::from('ui.ephemeral_query'))->toBe(SessionEventType::UI_EPHEMERAL_QUERY);
-    });
-
-    it('has factory run started and settled event types', function () {
-        expect(SessionEventType::FACTORY_RUN_STARTED->value)->toBe('factory.run_started')
-            ->and(SessionEventType::FACTORY_RUN_SETTLED->value)->toBe('factory.run_settled');
-    });
-
-    it('can create factory run started and settled from string', function () {
-        expect(SessionEventType::from('factory.run_started'))->toBe(SessionEventType::FACTORY_RUN_STARTED)
-            ->and(SessionEventType::from('factory.run_settled'))->toBe(SessionEventType::FACTORY_RUN_SETTLED);
     });
 
     it('has HydraFusion event types', function () {

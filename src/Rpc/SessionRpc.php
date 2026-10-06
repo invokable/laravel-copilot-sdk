@@ -114,16 +114,6 @@ class SessionRpc
     }
 
     /**
-     * Factory RPC operations.
-     *
-     * @experimental This API group is experimental and may change or be removed.
-     */
-    public function factory(): PendingFactory
-    {
-        return new PendingFactory($this->client, $this->sessionId);
-    }
-
-    /**
      * Workflow RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.
