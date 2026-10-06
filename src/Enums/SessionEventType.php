@@ -126,11 +126,6 @@ enum SessionEventType: string
     case EXIT_PLAN_MODE_REQUESTED = 'exit_plan_mode.requested';
     case EXIT_PLAN_MODE_COMPLETED = 'exit_plan_mode.completed';
 
-    // Factory events
-    case FACTORY_RUN_UPDATED = 'factory.run_updated';
-    case FACTORY_RUN_STARTED = 'factory.run_started';
-    case FACTORY_RUN_SETTLED = 'factory.run_settled';
-
     // Dynamic workflow events (official SDK 1.0.90+)
     case WORKFLOW_RUN_UPDATED = 'workflow.run_updated';
     case WORKFLOW_RUN_STARTED = 'workflow.run_started';

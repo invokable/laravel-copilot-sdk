@@ -729,66 +729,6 @@ $metadata = $session->rpc()->metadata()->updateClientMetadata(new MetadataUpdate
 ));
 ```
 
-### factory (experimental: ファクトリーAPI)
-
-```php
-use Revolution\Copilot\Types\Rpc\FactoryRunRequest;
-use Revolution\Copilot\Types\Rpc\FactoryGetRunRequest;
-use Revolution\Copilot\Types\Rpc\FactoryCancelRequest;
-use Revolution\Copilot\Types\Rpc\FactoryPauseRequest;
-use Revolution\Copilot\Types\Rpc\FactoryListRunsRequest;
-use Revolution\Copilot\Types\Rpc\FactoryLogRequest;
-use Revolution\Copilot\Types\Rpc\FactoryLogLine;
-use Revolution\Copilot\Types\Rpc\FactoryAgentRequest;
-use Revolution\Copilot\Types\Rpc\FactoryJournalGetRequest;
-use Revolution\Copilot\Types\Rpc\FactoryJournalPutRequest;
-
-// 登録済みファクトリーをトップレベルで実行
-$result = $session->rpc()->factory()->run(new FactoryRunRequest(
-    args: ['path' => '.'],
-    name: 'my-factory',
-));
-// $result->runId, $result->status, $result->result など
-
-// 実行中/完了したファクトリー実行のエンベロープを取得
-$result = $session->rpc()->factory()->getRun(new FactoryGetRunRequest(runId: $result->runId));
-
-// ファクトリー実行をページングして一覧取得
-$page = $session->rpc()->factory()->listRuns(new FactoryListRunsRequest(
-    afterSeq: 0,
-    limit: 50,
-));
-
-// ファクトリー実行のキャンセルを要求
-$result = $session->rpc()->factory()->cancel(new FactoryCancelRequest(runId: $result->runId));
-
-// ファクトリー実行を一時停止（再開可能な状態で停止、experimental）
-$result = $session->rpc()->factory()->pause(new FactoryPauseRequest(runId: $result->runId));
-// $result->status - FactoryRunStatus::PAUSED
-// $result->pauseInfo - FactoryPauseInfo（誰が一時停止を開始したか）
-
-// ファクトリーの進捗ログをまとめて記録
-$session->rpc()->factory()->log(new FactoryLogRequest(
-    runId: $result->runId,
-    lines: [new FactoryLogLine(kind: 'info', seq: 1, text: '処理中...')],
-));
-
-// ファクトリースコープのサブエージェントを1件実行
-$agentResult = $session->rpc()->factory()->agent(new FactoryAgentRequest(
-    factoryRunId: $result->runId,
-    opts: [],
-    prompt: 'ファイルを検索',
-));
-
-// ファクトリージャーナルの取得/書き込み
-$journal = $session->rpc()->factory()->journal()->get(new FactoryJournalGetRequest(runId: $result->runId, key: 'progress'));
-$session->rpc()->factory()->journal()->put(new FactoryJournalPutRequest(
-    runId: $result->runId,
-    key: 'progress',
-    resultJson: ['step' => 1],
-));
-```
-
 ## 新しいCLI RPC API
 
 Copilot CLI 1.0.89 系で追加されたワークフロー、コネクター、診断などの実験的RPC APIも、`SessionRpc`から利用できます。これらの可変プロトコルpayloadはJSON互換の配列で渡し、レスポンスも配列として返します。各呼び出しには現在の`sessionId`が自動で追加されます。

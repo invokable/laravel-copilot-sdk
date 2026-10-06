@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Enums\FactoryPhaseStatus;
 use Revolution\Copilot\Enums\HistoryFileRestoreSkipReason;
 use Revolution\Copilot\Enums\HistoryRewindChangeType;
 use Revolution\Copilot\Enums\HistoryRewindMode;
@@ -10,15 +9,6 @@ use Revolution\Copilot\Enums\HistoryRewindOutcome;
 use Revolution\Copilot\Enums\HistoryRewindUnavailableReason;
 use Revolution\Copilot\Enums\ScheduleOrigin;
 use Revolution\Copilot\Enums\SendAgentMode;
-
-describe('FactoryPhaseStatus', function () {
-    it('has expected cases', function () {
-        expect(FactoryPhaseStatus::PENDING->value)->toBe('pending')
-            ->and(FactoryPhaseStatus::ACTIVE->value)->toBe('active')
-            ->and(FactoryPhaseStatus::COMPLETED->value)->toBe('completed')
-            ->and(FactoryPhaseStatus::SKIPPED->value)->toBe('skipped');
-    });
-});
 
 describe('HistoryFileRestoreSkipReason', function () {
     it('maps kebab-case values', function () {

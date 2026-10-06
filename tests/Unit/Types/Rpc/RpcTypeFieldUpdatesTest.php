@@ -97,29 +97,3 @@ describe('PermissionsResetSessionApprovalsRequest includeLocation (copilot-sdk #
         expect(PermissionsResetSessionApprovalsRequest::fromArray([])->toArray())->toBe([]);
     });
 });
-
-describe('FactoryRunFailure durable failure (copilot-sdk #2140)', function () {
-    it('resolves the durable operation enum', function () {
-        $failure = FactoryRunFailure::fromArray([
-            'runId' => 'run-1',
-            'type' => 'factory_durable_failure',
-            'code' => 'SQLITE_BUSY',
-            'operation' => 'journalPut',
-        ]);
-
-        expect($failure->type)->toBe(FactoryRunFailureType::FACTORY_DURABLE_FAILURE)
-            ->and($failure->operation)->toBe(FactoryDurableOperation::JOURNAL_PUT)
-            ->and($failure->toArray())->toBe([
-                'runId' => 'run-1',
-                'type' => 'factory_durable_failure',
-                'code' => 'SQLITE_BUSY',
-                'operation' => 'journalPut',
-            ]);
-    });
-});
-
-describe('FactoryExecuteResult optional result (copilot-sdk #2140)', function () {
-    it('omits a null result', function () {
-        expect(FactoryExecuteResult::fromArray([])->toArray())->toBe([]);
-    });
-});

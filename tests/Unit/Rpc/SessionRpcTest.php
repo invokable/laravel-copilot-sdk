@@ -123,12 +123,6 @@ describe('SessionRpc', function () {
         expect($rpc->mcp())->toBeInstanceOf(PendingMcp::class);
     });
 
-    it('returns PendingFactory from factory()', function () {
-        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
-
-        expect($rpc->factory())->toBeInstanceOf(PendingFactory::class);
-    });
-
     it('returns PendingPlugins from plugins()', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
