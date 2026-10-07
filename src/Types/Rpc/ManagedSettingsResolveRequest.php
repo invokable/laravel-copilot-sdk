@@ -13,6 +13,7 @@ readonly class ManagedSettingsResolveRequest implements Arrayable
         public ?string $selectionId = null,
         public ?string $gitHubToken = null,
         public ?string $clientName = null,
+        public ?string $workingDirectory = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -21,6 +22,7 @@ readonly class ManagedSettingsResolveRequest implements Arrayable
             selectionId: $data['selectionId'] ?? null,
             gitHubToken: $data['gitHubToken'] ?? null,
             clientName: $data['clientName'] ?? null,
+            workingDirectory: $data['workingDirectory'] ?? null,
         );
     }
 
@@ -30,6 +32,7 @@ readonly class ManagedSettingsResolveRequest implements Arrayable
             'selectionId' => $this->selectionId,
             'gitHubToken' => $this->gitHubToken,
             'clientName' => $this->clientName,
+            'workingDirectory' => $this->workingDirectory,
         ], fn ($value) => $value !== null);
     }
 }

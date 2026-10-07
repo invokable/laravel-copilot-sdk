@@ -159,6 +159,7 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                            authorization. When unset, no host identity is supplied.
      * @param  ?array  $diagnostics  Per-source diagnostic capture levels. Debug and trace diagnostics can include sensitive MCP payloads.
      * @param  SandboxConfig|array|null  $sandbox  Sandbox policy for this session.
+     * @param  ?bool  $enforceManagedModelDefaults  When true, conflicts with non-overridable managed model controls are rejected.
      */
     public function __construct(
         public ?string $clientName = null,
@@ -244,6 +245,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $allowedModels = null,
         public SkillProvider|array|null $skillProvider = null,
         public SessionFsProvider|array|null $sessionFsProvider = null,
+        public ?bool $enforceManagedModelDefaults = null,
     ) {}
 
     /**
@@ -385,6 +387,7 @@ readonly class ResumeSessionConfig implements Arrayable
                 ? ($data['expAssignments'] instanceof CopilotExpAssignmentResponse ? $data['expAssignments'] : CopilotExpAssignmentResponse::fromArray($data['expAssignments']))
                 : null,
             enableManagedSettings: $data['enableManagedSettings'] ?? null,
+            enforceManagedModelDefaults: $data['enforceManagedModelDefaults'] ?? null,
             enableFileChangeTracking: $data['enableFileChangeTracking'] ?? null,
             disabledMcpServers: $data['disabledMcpServers'] ?? null,
             managedSettings: isset($data['managedSettings'])
@@ -529,6 +532,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'featureFlags' => $this->featureFlags,
             'expAssignments' => $expAssignments,
             'enableManagedSettings' => $this->enableManagedSettings,
+            'enforceManagedModelDefaults' => $this->enforceManagedModelDefaults,
             'enableFileChangeTracking' => $this->enableFileChangeTracking,
             'disabledMcpServers' => $this->disabledMcpServers,
             'managedSettings' => $this->managedSettings instanceof ManagedSettings

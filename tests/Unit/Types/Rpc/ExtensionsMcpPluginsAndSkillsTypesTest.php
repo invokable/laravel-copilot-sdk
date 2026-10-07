@@ -179,22 +179,26 @@ describe('McpServerInfo', function () {
             'name' => 'managed-server',
             'status' => 'connected',
             'displayName' => 'Managed Server',
+            'url' => 'https://mcp.example.com',
         ]);
 
-        expect($info->displayName)->toBe('Managed Server');
+        expect($info->displayName)->toBe('Managed Server')
+            ->and($info->url)->toBe('https://mcp.example.com');
     });
 
-    it('can convert to array with displayName', function () {
+    it('can convert to array with displayName and URL', function () {
         $info = new McpServerInfo(
             name: 'managed-server',
             status: McpServerStatus::CONNECTED,
             displayName: 'Managed Server',
+            url: 'https://mcp.example.com',
         );
 
         expect($info->toArray())->toBe([
             'name' => 'managed-server',
             'status' => 'connected',
             'displayName' => 'Managed Server',
+            'url' => 'https://mcp.example.com',
         ]);
     });
 });

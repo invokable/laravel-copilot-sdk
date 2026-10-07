@@ -203,8 +203,13 @@ $config = new SessionConfig(
     managedSettings: [
         'permissions' => [
             'deny' => ['Shell(rm *)'],
+            'disableAssistedPermissionsMode' => true,
+            'limitTo' => ['Domain(example.com)'],
         ],
     ],
+
+    // Managed Settingsのロックされたmodel / Auto tier / reasoning effort / context tierへの変更を拒否
+    enforceManagedModelDefaults: true,
 
     // カスタムエージェント
     customAgents: [
@@ -277,6 +282,10 @@ $config = new SessionConfig(
 
 $response = Copilot::run('...', config: $config);
 ```
+
+`limitTo`はホスト単位のegress許可リストです。`Domain(hostname)`、`Domain(IP)`、`Domain(*.example.com)`形式を使い、schemeやport、pathは指定できません。`disableAssistedPermissionsMode: true`はAssisted Permissionsの有効化を禁止します。`enforceManagedModelDefaults`を有効にすると、上書き不可のManaged Settingsと競合するモデル設定の変更がエラーになります。
+
+モデルのManaged Settingsでは`model`、`autoTier`、`contextTier`、`effortLevel`を指定できます。ランタイムが値を利用可能な設定へ調整した場合、Managed Settingsのメタデータに元の値`requested`が含まれます。
 
 セッション再開時には`ResumeSessionConfig`クラスを使用します。`SessionConfig`とほとんど同じですが少しだけ違います。ResumeSessionConfigは設定を変えたい項目のみ指定します。他は新規セッション開始時の設定が引き継がれます。
 

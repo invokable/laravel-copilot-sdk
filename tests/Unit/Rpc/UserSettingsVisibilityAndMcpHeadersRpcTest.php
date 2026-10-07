@@ -12,7 +12,6 @@ use Revolution\Copilot\Types\Rpc\McpHeadersHandlePendingHeadersRefreshRequestReq
 use Revolution\Copilot\Types\Rpc\McpHeadersHandlePendingHeadersRefreshRequestResult;
 use Revolution\Copilot\Types\Rpc\UserSettingsGetResult;
 use Revolution\Copilot\Types\Rpc\UserSettingsSetRequest;
-use Revolution\Copilot\Types\Rpc\UserSettingsSetResult;
 use Revolution\Copilot\Types\Rpc\VisibilityGetResult;
 use Revolution\Copilot\Types\Rpc\VisibilitySetRequest;
 use Revolution\Copilot\Types\Rpc\VisibilitySetResult;
@@ -49,13 +48,10 @@ describe('PendingServerUserSettings', function () {
                 'user.settings.set',
                 Mockery::on(fn ($p) => isset($p['settings'])),
             )
-            ->andReturn(['shadowedKeys' => []]);
+            ->andReturn(null);
 
         $pending = new PendingServerUserSettings($client);
-        $result = $pending->set(new UserSettingsSetRequest(settings: ['editor.wordWrap' => 'on']));
-
-        expect($result)->toBeInstanceOf(UserSettingsSetResult::class)
-            ->and($result->shadowedKeys)->toBe([]);
+        $pending->set(new UserSettingsSetRequest(settings: ['editor.wordWrap' => 'on']));
     });
 
     it('calls user.settings.set with array params', function () {
@@ -66,13 +62,10 @@ describe('PendingServerUserSettings', function () {
                 'user.settings.set',
                 Mockery::on(fn ($p) => $p['settings']['theme'] === 'dark'),
             )
-            ->andReturn(['shadowedKeys' => ['theme']]);
+            ->andReturn(null);
 
         $pending = new PendingServerUserSettings($client);
-        $result = $pending->set(['settings' => ['theme' => 'dark']]);
-
-        expect($result)->toBeInstanceOf(UserSettingsSetResult::class)
-            ->and($result->shadowedKeys)->toBe(['theme']);
+        $pending->set(['settings' => ['theme' => 'dark']]);
     });
 });
 

@@ -213,6 +213,7 @@ readonly class SessionConfig implements Arrayable
      * @param  ?bool  $refreshCustomInstructions  Whether to invalidate cached custom-instruction discovery before constructing the session.
      * @param  ?array  $diagnostics  Per-source diagnostic capture levels. Debug and trace diagnostics can include sensitive MCP payloads.
      * @param  SandboxConfig|array|null  $sandbox  Sandbox policy for this session.
+     * @param  ?bool  $enforceManagedModelDefaults  When true, conflicts with non-overridable managed model controls are rejected.
      */
     public function __construct(
         public ?string $sessionId = null,
@@ -308,6 +309,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $allowedModels = null,
         public SkillProvider|array|null $skillProvider = null,
         public SessionFsProvider|array|null $sessionFsProvider = null,
+        public ?bool $enforceManagedModelDefaults = null,
     ) {}
 
     /**
@@ -484,6 +486,7 @@ readonly class SessionConfig implements Arrayable
                 : null,
             verbosity: $data['verbosity'] ?? null,
             enableManagedSettings: $data['enableManagedSettings'] ?? null,
+            enforceManagedModelDefaults: $data['enforceManagedModelDefaults'] ?? null,
             canvasProvider: isset($data['canvasProvider'])
                 ? ($data['canvasProvider'] instanceof CanvasProviderIdentity ? $data['canvasProvider'] : CanvasProviderIdentity::fromArray($data['canvasProvider']))
                 : null,
@@ -660,6 +663,7 @@ readonly class SessionConfig implements Arrayable
             'expAssignments' => $expAssignments,
             'verbosity' => $verbosity,
             'enableManagedSettings' => $this->enableManagedSettings,
+            'enforceManagedModelDefaults' => $this->enforceManagedModelDefaults,
             'canvasProvider' => $this->canvasProvider instanceof CanvasProviderIdentity
                 ? $this->canvasProvider->toArray()
                 : $this->canvasProvider,

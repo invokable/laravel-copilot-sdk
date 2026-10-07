@@ -91,6 +91,21 @@ describe('SessionConfig verbosity and enableManagedSettings', function () {
         expect($arr)->toHaveKey('enableManagedSettings', true);
     });
 
+    it('can enforce managed model defaults during creation and resume', function () {
+        $config = SessionConfig::fromArray(['enforceManagedModelDefaults' => true]);
+        $resumeConfig = ResumeSessionConfig::fromArray(['enforceManagedModelDefaults' => true]);
+
+        expect($config->enforceManagedModelDefaults)->toBeTrue()
+            ->and($config->toArray())->toHaveKey('enforceManagedModelDefaults', true)
+            ->and($resumeConfig->enforceManagedModelDefaults)->toBeTrue()
+            ->and($resumeConfig->toArray())->toHaveKey('enforceManagedModelDefaults', true);
+    });
+
+    it('preserves an explicit false managed-model enforcement setting', function () {
+        expect((new SessionConfig(enforceManagedModelDefaults: false))->toArray())
+            ->toHaveKey('enforceManagedModelDefaults', false);
+    });
+
     it('filters null verbosity and enableManagedSettings', function () {
         $config = new SessionConfig(model: 'gpt-4');
         $arr = $config->toArray();

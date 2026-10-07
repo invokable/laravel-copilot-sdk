@@ -25,6 +25,7 @@ readonly class ModelInfo implements Arrayable
      * @param  ?ModelWarningText  $warningText  Service-published warning text.
      * @param  ?array  $infoMessages  Service-published informational messages.
      * @param  ?array  $warningMessages  Service-published warning messages.
+     * @param  ?string  $vendor  Model vendor as reported by the Copilot API.
      */
     public function __construct(
         public string $id,
@@ -37,6 +38,7 @@ readonly class ModelInfo implements Arrayable
         public ?ModelWarningText $warningText = null,
         public ?array $infoMessages = null,
         public ?array $warningMessages = null,
+        public ?string $vendor = null,
     ) {}
 
     /**
@@ -61,6 +63,7 @@ readonly class ModelInfo implements Arrayable
             warningMessages: isset($data['warningMessages'])
                 ? array_map(fn (array $message) => ModelMessage::fromArray($message), $data['warningMessages'])
                 : null,
+            vendor: $data['vendor'] ?? null,
         );
     }
 
@@ -88,6 +91,7 @@ readonly class ModelInfo implements Arrayable
             'warningMessages' => $this->warningMessages === null
                 ? null
                 : array_map(fn ($message) => $message instanceof ModelMessage ? $message->toArray() : $message, $this->warningMessages),
+            'vendor' => $this->vendor,
         ], fn ($v) => $v !== null);
     }
 }

@@ -22,6 +22,7 @@ readonly class McpServerInfo implements Arrayable
      * @param  ServerSource|string|null  $source  Configuration source: user, workspace, plugin, or builtin
      * @param  ?string  $error  Error message if the server failed to connect
      * @param  ?string  $displayName  Human-readable display name supplied by a managed server catalog.
+     * @param  ?string  $url  Configured URL for HTTP/SSE servers.
      */
     public function __construct(
         public string $name,
@@ -29,6 +30,7 @@ readonly class McpServerInfo implements Arrayable
         public ServerSource|string|null $source = null,
         public ?string $error = null,
         public ?string $displayName = null,
+        public ?string $url = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -41,6 +43,7 @@ readonly class McpServerInfo implements Arrayable
             source: $source !== null ? (ServerSource::tryFrom($source) ?? $source) : null,
             error: $data['error'] ?? null,
             displayName: $data['displayName'] ?? null,
+            url: $data['url'] ?? null,
         );
     }
 
@@ -52,6 +55,7 @@ readonly class McpServerInfo implements Arrayable
             'source' => $this->source instanceof ServerSource ? $this->source->value : $this->source,
             'error' => $this->error,
             'displayName' => $this->displayName,
+            'url' => $this->url,
         ], fn ($v) => $v !== null);
     }
 }

@@ -49,6 +49,24 @@ describe('PendingExtensions', function () {
             ->and($result->extensions)->toBe([]);
     });
 
+    it('reconciles effective extensions and returns the settled list', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.extensions.reconcile', ['sessionId' => 'session-abc'])
+            ->andReturn([
+                'extensions' => [
+                    ['id' => 'project:managed-ext', 'name' => 'managed-ext', 'source' => 'project', 'status' => 'running'],
+                ],
+            ]);
+
+        $pending = new PendingExtensions($client, 'session-abc');
+        $result = $pending->reconcile();
+
+        expect($result)->toBeInstanceOf(ExtensionList::class)
+            ->and($result->extensions[0]->id)->toBe('project:managed-ext');
+    });
+
     it('calls session.extensions.enable with typed params', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
