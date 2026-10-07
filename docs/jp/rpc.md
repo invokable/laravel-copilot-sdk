@@ -60,8 +60,8 @@ Copilot::client()->rpc()->mcp()->disable(new McpConfigDisableRequest(names: ['my
 Copilot::client()->rpc()->mcp()->reload();
 
 // user settings (ユーザー設定)
-// インメモリキャッシュをクリア（次回読み込み時にディスクから再取得）
-Copilot::client()->rpc()->userSettings()->reload();
+// 現行CLIにuser.settings.reload RPCはありません。get()の対象はsettings.jsonです。
+Copilot::client()->rpc()->userSettings()->set(['settings' => ['theme' => 'dark']]); // 戻り値なし
 
 // mcp discover (MCPサーバーの自動検出)
 Copilot::client()->rpc()->mcp()->discover(new McpDiscoverRequest(
@@ -218,7 +218,8 @@ $session->rpc()->model()->switchTo(new ModelSwitchToRequest(
     ),
 ));
 // セッションで利用可能なモデルの一覧取得（experimental）
-$session->rpc()->model()->list();
+$models = $session->rpc()->model()->list();
+$models->auto?->tiers; // アカウントで利用可能なAuto routing preference
 $session->rpc()->model()->list(new ModelListRequest(skipCache: true)); // キャッシュをスキップ
 
 // Auto routing preference を変更する（selected modelは変えない、experimental）
@@ -311,7 +312,8 @@ $session->rpc()->skills()->disable(new SkillsDisableRequest(name: 'skill-name'))
 $session->rpc()->skills()->reload();
 
 // mcp (experimental: MCPサーバーの管理)
-$session->rpc()->mcp()->list();
+$servers = $session->rpc()->mcp()->list();
+// HTTP/SSEサーバーの設定URL: $servers->servers[0]->url
 $session->rpc()->mcp()->enable(new McpEnableRequest(serverName: 'server-name'));
 $session->rpc()->mcp()->disable(new McpDisableRequest(serverName: 'server-name'));
 $session->rpc()->mcp()->reload();
@@ -397,6 +399,7 @@ $session->rpc()->plugins()->reload(new PluginsReloadRequest(
 $session->rpc()->extensions()->list();
 $session->rpc()->extensions()->enable(new ExtensionsEnableRequest(id: 'project:my-ext'));
 $session->rpc()->extensions()->disable(new ExtensionsDisableRequest(id: 'project:my-ext'));
+$session->rpc()->extensions()->reconcile(); // host-only: 実効membershipを再同期し、settled listを返す
 $session->rpc()->extensions()->reload();
 
 // compaction → history に名前変更
@@ -694,7 +697,11 @@ $managedSettings = $client->rpc()->managedSettings()->read();
 // $managedSettings->errorMessage - 検出/検証エラー（存在する場合）
 
 // ポリシーの解決、スキーマ取得、検証、合成プレビュー（experimental）
-$effective = $client->rpc()->managedSettings()->resolve(['selectionId' => 'selection-id']);
+$effective = $client->rpc()->managedSettings()->resolve([
+    'selectionId' => 'selection-id',
+    'workingDirectory' => '/path/to/project', // organization policy helperの実行コンテキスト
+]);
+// $effective->resolvedにはmodel / autoTier / contextTier / effortLevelなどの解決済み設定が含まれる
 $schema = $client->rpc()->managedSettings()->schema();
 $validation = $client->rpc()->managedSettings()->validate(['content' => ['permissions' => []]]);
 $preview = $client->rpc()->managedSettings()->compose(['layers' => [

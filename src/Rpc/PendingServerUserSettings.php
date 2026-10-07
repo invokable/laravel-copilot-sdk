@@ -7,7 +7,6 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\UserSettingsGetResult;
 use Revolution\Copilot\Types\Rpc\UserSettingsSetRequest;
-use Revolution\Copilot\Types\Rpc\UserSettingsSetResult;
 
 /**
  * Pending server-level user settings RPC operations.
@@ -19,14 +18,6 @@ class PendingServerUserSettings
     public function __construct(
         protected JsonRpcClient $client,
     ) {}
-
-    /**
-     * Drops this runtime process's in-memory user settings cache so the next settings read observes disk.
-     */
-    public function reload(): void
-    {
-        $this->client->request('user.settings.reload', []);
-    }
 
     /**
      * Lists every known user setting with its effective value, default, and whether it is at the default.
@@ -45,12 +36,10 @@ class PendingServerUserSettings
      *
      * @experimental This API group is experimental and may change or be removed.
      */
-    public function set(UserSettingsSetRequest|array $params): UserSettingsSetResult
+    public function set(UserSettingsSetRequest|array $params): void
     {
         $paramsArray = ($params instanceof UserSettingsSetRequest ? $params : UserSettingsSetRequest::fromArray($params))->toArray();
 
-        return UserSettingsSetResult::fromArray(
-            $this->client->request('user.settings.set', $paramsArray),
-        );
+        $this->client->request('user.settings.set', $paramsArray);
     }
 }

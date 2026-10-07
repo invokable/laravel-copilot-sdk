@@ -12,6 +12,8 @@ readonly class ManagedSettingsMeta implements Arrayable
     public function __construct(
         public ?ManagedSettingMeta $model = null,
         public ?ManagedSettingMeta $autoTier = null,
+        public ?ManagedSettingMeta $contextTier = null,
+        public ?ManagedSettingMeta $effortLevel = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -19,6 +21,8 @@ readonly class ManagedSettingsMeta implements Arrayable
         return new self(
             model: isset($data['model']) ? ManagedSettingMeta::fromArray($data['model']) : null,
             autoTier: isset($data['autoTier']) ? ManagedSettingMeta::fromArray($data['autoTier']) : null,
+            contextTier: isset($data['contextTier']) ? ManagedSettingMeta::fromArray($data['contextTier']) : null,
+            effortLevel: isset($data['effortLevel']) ? ManagedSettingMeta::fromArray($data['effortLevel']) : null,
         );
     }
 
@@ -27,6 +31,8 @@ readonly class ManagedSettingsMeta implements Arrayable
         return array_filter([
             'model' => $this->model?->toArray(),
             'autoTier' => $this->autoTier?->toArray(),
+            'contextTier' => $this->contextTier?->toArray(),
+            'effortLevel' => $this->effortLevel?->toArray(),
         ], static fn ($value) => $value !== null);
     }
 }

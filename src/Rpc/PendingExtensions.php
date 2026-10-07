@@ -35,6 +35,20 @@ class PendingExtensions
     }
 
     /**
+     * Reconcile the runtime-owned, effective extension membership for this session.
+     *
+     * @experimental This method is experimental and may change or be removed.
+     */
+    public function reconcile(): ExtensionList
+    {
+        return ExtensionList::fromArray(
+            $this->client->request('session.extensions.reconcile', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
      * Enable an extension.
      */
     public function enable(ExtensionsEnableRequest|array $params): array

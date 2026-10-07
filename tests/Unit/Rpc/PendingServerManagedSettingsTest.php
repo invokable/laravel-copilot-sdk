@@ -24,7 +24,10 @@ it('reads managed settings without a session', function () {
 
 it('exposes managed-settings preview operations', function () {
     $client = Mockery::mock(JsonRpcClient::class);
-    $client->shouldReceive('request')->once()->with('managedSettings.resolve', ['selectionId' => 'selection-1'])
+    $client->shouldReceive('request')->once()->with('managedSettings.resolve', [
+        'selectionId' => 'selection-1',
+        'workingDirectory' => '/workspace/project',
+    ])
         ->andReturn(['resolved' => ['permissions' => ['deny' => ['Shell(rm *)']]]]);
     $client->shouldReceive('request')->once()->with('managedSettings.schema', [])
         ->andReturn(['schema' => ['type' => 'object'], 'runtimeVersion' => '1.0.92']);
@@ -35,7 +38,10 @@ it('exposes managed-settings preview operations', function () {
 
     $pending = new PendingServerManagedSettings($client);
 
-    expect($pending->resolve(['selectionId' => 'selection-1'])->resolved)->toBe(['permissions' => ['deny' => ['Shell(rm *)']]])
+    expect($pending->resolve([
+        'selectionId' => 'selection-1',
+        'workingDirectory' => '/workspace/project',
+    ])->resolved)->toBe(['permissions' => ['deny' => ['Shell(rm *)']]])
         ->and($pending->schema()->runtimeVersion)->toBe('1.0.92')
         ->and($pending->validate(['content' => ['permissions' => []]])->valid)->toBeTrue()
         ->and($pending->compose(['layers' => [['source' => 'device', 'settings' => []]]])->resolved)->toBe(['permissions' => []]);

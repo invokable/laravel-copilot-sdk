@@ -25,13 +25,15 @@ describe('ModelInfo', function () {
             'billing' => [
                 'multiplier' => 1.5,
             ],
+            'vendor' => 'Anthropic',
         ]);
 
         expect($modelInfo->id)->toBe('claude-sonnet-4.5')
             ->and($modelInfo->name)->toBe('Claude Sonnet 4.5')
             ->and($modelInfo->capabilities)->toBeInstanceOf(ModelCapabilities::class)
             ->and($modelInfo->policy)->toBeInstanceOf(ModelPolicy::class)
-            ->and($modelInfo->billing)->toBeInstanceOf(ModelBilling::class);
+            ->and($modelInfo->billing)->toBeInstanceOf(ModelBilling::class)
+            ->and($modelInfo->vendor)->toBe('Anthropic');
     });
 
     it('can be created from array with minimal fields', function () {
@@ -61,6 +63,7 @@ describe('ModelInfo', function () {
             ),
             policy: new ModelPolicy(state: 'enabled', terms: 'premium'),
             billing: new ModelBilling(multiplier: 2.0),
+            vendor: 'Azure OpenAI',
         );
 
         expect($modelInfo->toArray())->toBe([
@@ -77,6 +80,7 @@ describe('ModelInfo', function () {
             'billing' => [
                 'multiplier' => 2.0,
             ],
+            'vendor' => 'Azure OpenAI',
         ]);
     });
 

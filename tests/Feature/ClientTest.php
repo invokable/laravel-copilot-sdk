@@ -505,6 +505,7 @@ describe('Client', function () {
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
             ->with('session.create', Mockery::on(fn ($params) => ($params['enableManagedSettings'] ?? null) === true
+                && ($params['enforceManagedModelDefaults'] ?? null) === true
                 && ($params['managedSettings'] ?? null) === ['permissions' => ['deny' => ['Shell(rm *)']]]
                 && ($params['enableFileChangeTracking'] ?? null) === true
                 && ($params['disabledMcpServers'] ?? null) === ['github']))
@@ -534,6 +535,7 @@ describe('Client', function () {
         $client->start();
         $session = $client->createSession([
             'enableManagedSettings' => true,
+            'enforceManagedModelDefaults' => true,
             'managedSettings' => ['permissions' => ['deny' => ['Shell(rm *)']]],
             'enableFileChangeTracking' => true,
             'disabledMcpServers' => ['github'],
@@ -636,7 +638,8 @@ describe('Client', function () {
                     && $cmds[0] === ['name' => 'rollback', 'description' => 'Rollback last deployment']
                     && ! array_key_exists('handler', $cmds[0])
                     && ($params['askUserVariant'] ?? null) === 'legacy'
-                    && ($params['capi'] ?? null) === ['autoTier' => 'efficiency'];
+                    && ($params['capi'] ?? null) === ['autoTier' => 'efficiency']
+                    && ($params['enforceManagedModelDefaults'] ?? null) === true;
             }))
             ->once()
             ->andReturn(['sessionId' => 'test-session-123']);
@@ -661,6 +664,7 @@ describe('Client', function () {
             'onPermissionRequest' => PermissionHandler::approveAll(),
             'askUserVariant' => 'legacy',
             'capi' => ['autoTier' => 'efficiency'],
+            'enforceManagedModelDefaults' => true,
         ]);
 
         expect($session)->toBe($mockSession);

@@ -11,6 +11,8 @@ use Illuminate\Support\Arr;
  * Outcome of writing user settings.
  *
  * @experimental This type is part of an experimental API and may change or be removed.
+ *
+ * @deprecated The current user.settings.set RPC has no result; this legacy type is retained for compatibility.
  */
 readonly class UserSettingsSetResult implements Arrayable
 {

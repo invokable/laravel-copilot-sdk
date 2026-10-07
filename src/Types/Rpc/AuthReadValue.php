@@ -17,6 +17,7 @@ readonly class AuthReadValue implements Arrayable
         public ?AccountStatus $account = null,
         public ?AuthStatusDto $status = null,
         public array $errors = [],
+        public ?array $authInfo = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -33,6 +34,7 @@ readonly class AuthReadValue implements Arrayable
                 static fn (array $error): AuthValidationError => AuthValidationError::fromArray($error),
                 array_values(array_filter($data['errors'] ?? [], 'is_array')),
             ),
+            authInfo: isset($data['authInfo']) && is_array($data['authInfo']) ? $data['authInfo'] : null,
         );
     }
 
@@ -46,6 +48,7 @@ readonly class AuthReadValue implements Arrayable
                 static fn (AuthValidationError $error): array => $error->toArray(),
                 $this->errors,
             ),
+            'authInfo' => $this->authInfo,
         ], static fn ($value): bool => $value !== null);
     }
 }
