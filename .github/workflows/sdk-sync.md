@@ -219,6 +219,8 @@ Add Pest tests for all new/changed classes:
 
 ## Step 7: Validate
 
+Only modified files.
+
 Run:
 ```bash
 vendor/bin/pest --dirty
