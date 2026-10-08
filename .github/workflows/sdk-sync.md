@@ -84,7 +84,7 @@ permissions:
   pull-requests: read
   copilot-requests: none
 
-model: gpt-6-luna
+model: claude-haiku-5.5
 max-ai-credits: 500
 
 timeout-minutes: 30
