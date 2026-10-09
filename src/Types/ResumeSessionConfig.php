@@ -160,6 +160,7 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?array  $diagnostics  Per-source diagnostic capture levels. Debug and trace diagnostics can include sensitive MCP payloads.
      * @param  SandboxConfig|array|null  $sandbox  Sandbox policy for this session.
      * @param  ?bool  $enforceManagedModelDefaults  When true, conflicts with non-overridable managed model controls are rejected.
+     * @param  ImageGenerationConfig|array|null  $imageGeneration  Image generation opt-in. Re-supply after runtime restart.
      */
     public function __construct(
         public ?string $clientName = null,
@@ -246,6 +247,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public SkillProvider|array|null $skillProvider = null,
         public SessionFsProvider|array|null $sessionFsProvider = null,
         public ?bool $enforceManagedModelDefaults = null,
+        public ImageGenerationConfig|array|null $imageGeneration = null,
     ) {}
 
     /**
@@ -388,6 +390,9 @@ readonly class ResumeSessionConfig implements Arrayable
                 : null,
             enableManagedSettings: $data['enableManagedSettings'] ?? null,
             enforceManagedModelDefaults: $data['enforceManagedModelDefaults'] ?? null,
+            imageGeneration: isset($data['imageGeneration'])
+                ? ($data['imageGeneration'] instanceof ImageGenerationConfig ? $data['imageGeneration'] : ImageGenerationConfig::fromArray($data['imageGeneration']))
+                : null,
             enableFileChangeTracking: $data['enableFileChangeTracking'] ?? null,
             disabledMcpServers: $data['disabledMcpServers'] ?? null,
             managedSettings: isset($data['managedSettings'])
@@ -533,6 +538,9 @@ readonly class ResumeSessionConfig implements Arrayable
             'expAssignments' => $expAssignments,
             'enableManagedSettings' => $this->enableManagedSettings,
             'enforceManagedModelDefaults' => $this->enforceManagedModelDefaults,
+            'imageGeneration' => $this->imageGeneration instanceof ImageGenerationConfig
+                ? $this->imageGeneration->toArray()
+                : $this->imageGeneration,
             'enableFileChangeTracking' => $this->enableFileChangeTracking,
             'disabledMcpServers' => $this->disabledMcpServers,
             'managedSettings' => $this->managedSettings instanceof ManagedSettings
