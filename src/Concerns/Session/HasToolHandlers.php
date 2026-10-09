@@ -78,9 +78,9 @@ trait HasToolHandlers
      *
      * @internal
      */
-    protected function executeToolAndRespond(string $requestId, string $toolName, ?string $toolCallId, mixed $arguments, Closure $handler, ?string $traceparent = null, ?string $tracestate = null): void
+    protected function executeToolAndRespond(string $requestId, string $toolName, ?string $toolCallId, mixed $arguments, Closure $handler, ?string $traceparent = null, ?string $tracestate = null, ?string $agentId = null): void
     {
-        $fiber = new \Fiber(function () use ($requestId, $toolName, $toolCallId, $arguments, $handler, $traceparent, $tracestate): void {
+        $fiber = new \Fiber(function () use ($requestId, $toolName, $toolCallId, $arguments, $handler, $traceparent, $tracestate, $agentId): void {
             $scope = TraceContext::restore($traceparent, $tracestate);
 
             try {
@@ -89,8 +89,12 @@ trait HasToolHandlers
                     'toolCallId' => $toolCallId,
                     'toolName' => $toolName,
                     'arguments' => $arguments,
+                    'requestId' => $requestId,
                 ];
 
+                if ($agentId !== null) {
+                    $invocation['agentId'] = $agentId;
+                }
                 if ($traceparent !== null) {
                     $invocation['traceparent'] = $traceparent;
                 }

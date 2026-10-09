@@ -214,6 +214,7 @@ readonly class SessionConfig implements Arrayable
      * @param  ?array  $diagnostics  Per-source diagnostic capture levels. Debug and trace diagnostics can include sensitive MCP payloads.
      * @param  SandboxConfig|array|null  $sandbox  Sandbox policy for this session.
      * @param  ?bool  $enforceManagedModelDefaults  When true, conflicts with non-overridable managed model controls are rejected.
+     * @param  ImageGenerationConfig|array|null  $imageGeneration  Image generation opt-in. Re-supply after runtime restart.
      */
     public function __construct(
         public ?string $sessionId = null,
@@ -310,6 +311,7 @@ readonly class SessionConfig implements Arrayable
         public SkillProvider|array|null $skillProvider = null,
         public SessionFsProvider|array|null $sessionFsProvider = null,
         public ?bool $enforceManagedModelDefaults = null,
+        public ImageGenerationConfig|array|null $imageGeneration = null,
     ) {}
 
     /**
@@ -487,6 +489,9 @@ readonly class SessionConfig implements Arrayable
             verbosity: $data['verbosity'] ?? null,
             enableManagedSettings: $data['enableManagedSettings'] ?? null,
             enforceManagedModelDefaults: $data['enforceManagedModelDefaults'] ?? null,
+            imageGeneration: isset($data['imageGeneration'])
+                ? ($data['imageGeneration'] instanceof ImageGenerationConfig ? $data['imageGeneration'] : ImageGenerationConfig::fromArray($data['imageGeneration']))
+                : null,
             canvasProvider: isset($data['canvasProvider'])
                 ? ($data['canvasProvider'] instanceof CanvasProviderIdentity ? $data['canvasProvider'] : CanvasProviderIdentity::fromArray($data['canvasProvider']))
                 : null,
@@ -664,6 +669,9 @@ readonly class SessionConfig implements Arrayable
             'verbosity' => $verbosity,
             'enableManagedSettings' => $this->enableManagedSettings,
             'enforceManagedModelDefaults' => $this->enforceManagedModelDefaults,
+            'imageGeneration' => $this->imageGeneration instanceof ImageGenerationConfig
+                ? $this->imageGeneration->toArray()
+                : $this->imageGeneration,
             'canvasProvider' => $this->canvasProvider instanceof CanvasProviderIdentity
                 ? $this->canvasProvider->toArray()
                 : $this->canvasProvider,

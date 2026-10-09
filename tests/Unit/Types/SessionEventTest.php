@@ -214,6 +214,11 @@ describe('SessionEventType', function () {
             ->and(SessionEventType::SESSION_PERMISSION_RECOVERY->value)->toBe('session.permission_recovery');
     });
 
+    it('has quota observation and managed plugin progress cases', function () {
+        expect(SessionEventType::SESSION_QUOTA_OBSERVATION->value)->toBe('session.quota_observation')
+            ->and(SessionEventType::SESSION_MANAGED_PLUGIN_PROGRESS->value)->toBe('session.managed_plugin_progress');
+    });
+
     it('has system.notification case', function () {
         expect(SessionEventType::SYSTEM_NOTIFICATION->value)->toBe('system.notification');
     });

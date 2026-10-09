@@ -866,7 +866,7 @@ class Session implements CopilotSession
                 return; // This client doesn't handle this tool; another client will.
             }
 
-            $this->executeToolAndRespond($requestId, $toolName, $toolCallId, $arguments, $handler, $traceparent, $tracestate);
+            $this->executeToolAndRespond($requestId, $toolName, $toolCallId, $arguments, $handler, $traceparent, $tracestate, $event->agentId);
         } elseif ($event->is(SessionEventType::PERMISSION_REQUESTED)) {
             $requestId = $event->data['requestId'] ?? null;
             $permissionRequest = $event->data['permissionRequest'] ?? [];
