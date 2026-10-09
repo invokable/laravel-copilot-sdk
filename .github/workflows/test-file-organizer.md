@@ -10,7 +10,7 @@ on:
 
 steps:
   - name: Set up PHP
-    uses: shivammathur/setup-php@2.37.2
+    uses: shivammathur/setup-php@2.40.0
     with:
       php-version: 8.5
       extensions: mbstring, xml, phar, dom, tokenizer, iconv

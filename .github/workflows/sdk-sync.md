@@ -4,9 +4,9 @@ description: Automatically tracks official github/copilot-sdk changes and create
 
 on:
   schedule: # 日本時間で午前5時頃。曜日の指定は英語と1日ずれるので火・木・土。すぐに同期が必要な時は手動実行。
-    - cron: weekly on monday around 3:00 utc+9
-    - cron: weekly on wednesday around 3:00 utc+9
-    - cron: weekly on friday around 3:00 utc+9
+    - cron: weekly on monday around 4:00 utc+9
+    - cron: weekly on wednesday around 4:00 utc+9
+    - cron: weekly on friday around 4:00 utc+9
   workflow_dispatch:
 
 steps:
@@ -69,7 +69,7 @@ steps:
               --jq '.[] | "#\(.number) \(.title) \(.url)"' > /tmp/gh-aw/open-sdk-sync-issues.txt
     -   name: Set up PHP (if changes detected)
         if: steps.changes.outputs.status == 'changes-detected'
-        uses: shivammathur/setup-php@2.37.2
+        uses: shivammathur/setup-php@2.40.0
         with:
             php-version: 8.5
             extensions: mbstring, xml, phar, dom, tokenizer, iconv
