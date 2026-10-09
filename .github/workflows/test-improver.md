@@ -30,7 +30,7 @@ permissions:
   issues: read
   copilot-requests: none
 
-model: claude-haiku-5.5
+model: gpt-6-luna
 engine:
   id: copilot
 checkout:
