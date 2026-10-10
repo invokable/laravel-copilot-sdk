@@ -3,7 +3,7 @@ name: Test Improver
 description: Weekly workflow to improve test coverage incrementally by adding missing tests.
 
 on:
-  schedule: weekly on saturday around 4:00 utc+9 # 日本時間で日曜午前4時頃。
+  schedule: weekly on saturday around 2:00 utc+9
   workflow_dispatch:
   skip-if-match: 'is:pr is:open "gh-aw-workflow-id: test-improver" in:body'
 
