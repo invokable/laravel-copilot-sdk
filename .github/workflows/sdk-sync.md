@@ -92,7 +92,9 @@ timeout-minutes: 30
 
 engine:
   id: copilot
+  copilot-sdk: true
   agent: laravel-sdk-sync
+
 checkout:
   - path: .
     submodules: recursive
