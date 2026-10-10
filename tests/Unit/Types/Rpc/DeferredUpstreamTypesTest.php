@@ -8,12 +8,13 @@ use Revolution\Copilot\Enums\ManagedPluginProgressPhase;
 use Revolution\Copilot\Enums\ModelCallRequestBodyEncoding;
 use Revolution\Copilot\Enums\ModelCallWebSocketFallbackErrorKind;
 use Revolution\Copilot\Enums\ModelProviderKind;
-use Revolution\Copilot\Enums\ProviderQuotaAccessState;
-use Revolution\Copilot\Enums\ProviderQuotaCapacityState;
 use Revolution\Copilot\Enums\ProviderMonthlyUsageScope;
 use Revolution\Copilot\Enums\ProviderMonthlyUsageState;
+use Revolution\Copilot\Enums\ProviderQuotaAccessState;
+use Revolution\Copilot\Enums\ProviderQuotaCapacityState;
 use Revolution\Copilot\Enums\ProviderQuotaUnit;
 use Revolution\Copilot\Enums\SessionQuotaPlanTier;
+use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\Rpc\AccountStatus;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
 use Revolution\Copilot\Types\Rpc\HostCreateSessionRequest;
@@ -22,21 +23,21 @@ use Revolution\Copilot\Types\Rpc\HostListSessionsRequest;
 use Revolution\Copilot\Types\Rpc\HostListSessionsResult;
 use Revolution\Copilot\Types\Rpc\HostStartRequest;
 use Revolution\Copilot\Types\Rpc\ManagedPermissionsContext;
+use Revolution\Copilot\Types\Rpc\ManagedPluginProgressData;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsPermissionsEvaluateRequest;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsPermissionsEvaluateResult;
-use Revolution\Copilot\Types\Rpc\ManagedPluginProgressData;
 use Revolution\Copilot\Types\Rpc\MetadataContextInfoRequest;
-use Revolution\Copilot\Types\Rpc\ModeSetRequest;
+use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
 use Revolution\Copilot\Types\Rpc\ModelMetric;
 use Revolution\Copilot\Types\Rpc\ModelMetricRequests;
 use Revolution\Copilot\Types\Rpc\ModelMetricUsage;
-use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
 use Revolution\Copilot\Types\Rpc\ModelProviderRef;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
+use Revolution\Copilot\Types\Rpc\ModeSetRequest;
 use Revolution\Copilot\Types\Rpc\ProviderMonthlyUsage;
 use Revolution\Copilot\Types\Rpc\ProviderQuotaBudgetMetadata;
-use Revolution\Copilot\Types\Rpc\ProviderQuotaState;
 use Revolution\Copilot\Types\Rpc\ProviderQuotaObservationData;
+use Revolution\Copilot\Types\Rpc\ProviderQuotaState;
 use Revolution\Copilot\Types\Rpc\QuotaWarningProjection;
 use Revolution\Copilot\Types\Rpc\SessionContextInfo;
 use Revolution\Copilot\Types\Rpc\SessionPluginsRetryManagedResult;
@@ -310,7 +311,7 @@ it('round trips repository model provider overlays and provider-attributed model
         'repoModel' => 'gpt-5',
         'repoModelProviderId' => 'loki',
     ]);
-    $model = \Revolution\Copilot\Types\ModelInfo::fromArray([
+    $model = ModelInfo::fromArray([
         'id' => 'gpt-5',
         'name' => 'GPT-5',
         'capabilities' => ['supports' => [], 'limits' => []],

@@ -10,7 +10,6 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class ManagedPermissionsEvaluateRequest implements Arrayable
 {
     /**
-     * @param  ManagedPermissionsContext|array  $context
      * @param  array<ManagedPermissionOperation|array>  $operations
      */
     public function __construct(
