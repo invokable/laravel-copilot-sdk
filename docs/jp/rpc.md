@@ -59,6 +59,37 @@ Copilot::client()->rpc()->mcp()->disable(new McpConfigDisableRequest(names: ['my
 // インメモリキャッシュをクリア（次回読み込み時にディスクから再取得）
 Copilot::client()->rpc()->mcp()->reload();
 
+// MCPレジストリ検索 (experimental/internal)
+// $authInfo はホスト側で用意したJSON認証情報です。SDKはその内容を解釈しません。
+use Revolution\Copilot\Types\Rpc\McpRegistrySearchRequest;
+use Revolution\Copilot\Types\Rpc\McpRegistryCancelRequest;
+
+$registry = Copilot::client()->rpc()->mcp()->registry();
+$requestId = $registry->allocateRequestId()->requestId;
+$servers = $registry->search(new McpRegistrySearchRequest(
+    requestId: $requestId,
+    authInfo: $authInfo, // ホストから渡す認証情報。SDKでは内容を解釈しません。
+    query: 'database',
+    limit: 20,
+));
+// $servers->servers はレジストリのサーバーデータ（形を解釈せず保持）
+// 未使用の予約IDは解放できます。処理中の検索は別の処理からcancel()を呼び出してキャンセルします。
+$unusedRequestId = $registry->allocateRequestId()->requestId;
+$cancelResult = $registry->cancel(new McpRegistryCancelRequest(requestId: $unusedRequestId));
+// 未使用IDの解放ではcanceledはfalse。実行中の検索を停止した場合のみtrue。
+
+// GitHub MCPツールを除外できるか判定 (experimental/internal)
+use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
+use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsRequest;
+
+$exclude = Copilot::client()->rpc()->mcp()->shouldExcludeGitHubTools(
+    new McpShouldExcludeGitHubToolsRequest(
+        availableTools: ['builtin:bash'],
+        excludedTools: [],
+        toolFilterPrecedence: OptionsUpdateToolFilterPrecedence::Available,
+    ),
+)->excludeGhReplaceableTools;
+
 // user settings (ユーザー設定)
 // 現行CLIにuser.settings.reload RPCはありません。get()の対象はsettings.jsonです。
 Copilot::client()->rpc()->userSettings()->set(['settings' => ['theme' => 'dark']]); // 戻り値なし
@@ -716,6 +747,11 @@ use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionRequest;
 
 // サンドボックス強制状態を取得
 $status = $session->rpc()->sandbox()->getEnforcementStatus();
+
+// サンドボックスの新規shellで利用できる可能性がある認証情報（値は返されない）
+$credentials = $session->rpc()->sandbox()->getCredentialSuggestions();
+// $credentials->suggestions は SandboxCredentialSuggestion の配列
+// sandbox無効時や候補がない場合は空配列。設定やネットワーク権限は変更されない。
 
 // 保留中のサンドボックスバイパス許可リクエストを承認し、セッション全体でサンドボックスを無効化
 $result = $session->rpc()->sandbox()->disableForSession(new SandboxDisableForSessionRequest(requestId: $requestId));
