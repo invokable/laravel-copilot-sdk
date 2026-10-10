@@ -33,6 +33,7 @@ permissions:
 engine:
   id: copilot
   copilot-sdk: true
+  model: auto
 
 checkout:
   - path: .
