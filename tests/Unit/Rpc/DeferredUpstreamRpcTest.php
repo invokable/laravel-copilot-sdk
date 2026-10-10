@@ -10,6 +10,10 @@ use Revolution\Copilot\Rpc\PendingUsage;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\HostListSessionsRequest;
+use Revolution\Copilot\Types\Rpc\HostGitHubEnvironmentOptions;
+use Revolution\Copilot\Types\Rpc\HostPublishSessionRequest;
+use Revolution\Copilot\Types\Rpc\HostStartRequest;
+use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsPermissionsEvaluateRequest;
 use Revolution\Copilot\Types\Rpc\ModelClearStartupSeedRequest;
 use Revolution\Copilot\Types\Rpc\PendingExternalToolRequestList;
@@ -44,6 +48,49 @@ it('exposes host catalog and managed permission RPCs with typed results', functi
     expect($host)->toBeInstanceOf(PendingHost::class)
         ->and($host->listSessions(new HostListSessionsRequest('host-1'))->sessions)->toBeEmpty()
         ->and($permissions->failClosed)->toBeTrue();
+});
+
+it('starts and publishes host sessions with typed host options', function () {
+    $client = Mockery::mock(JsonRpcClient::class);
+    $client->shouldReceive('request')
+        ->once()
+        ->with('host.start', [
+            'hostId' => 'host-1',
+            'computeId' => 'compute-1',
+            'githubEnvironment' => [
+                'name' => 'Example',
+                'computeId' => 'compute-1',
+                'requireConnectionBinding' => false,
+            ],
+        ])
+        ->andReturn(['hostId' => 'host-1', 'environmentId' => 'environment-1']);
+    $client->shouldReceive('request')
+        ->once()
+        ->with('host.publishSession', [
+            'hostId' => 'host-1',
+            'sessionId' => 'session-1',
+            'preferResident' => true,
+        ])
+        ->andReturn(['sessionId' => 'session-1', 'sessionUri' => 'ahp://host/session-1']);
+
+    $host = (new ServerRpc($client))->host();
+    $started = $host->start(new HostStartRequest(
+        hostId: 'host-1',
+        computeId: 'compute-1',
+        githubEnvironment: new HostGitHubEnvironmentOptions(
+            name: 'Example',
+            computeId: 'compute-1',
+            requireConnectionBinding: false,
+        ),
+    ));
+    $published = $host->publishSession(new HostPublishSessionRequest(
+        hostId: 'host-1',
+        sessionId: 'session-1',
+        preferResident: true,
+    ));
+
+    expect($started->environmentId)->toBe('environment-1')
+        ->and($published->sessionUri)->toBe('ahp://host/session-1');
 });
 
 it('exposes managed plugin retry and pending external tool RPCs', function () {
@@ -128,4 +175,25 @@ it('clears a matching startup model seed through the internal typed RPC', functi
     );
 
     expect($result->cleared)->toBeTrue();
+});
+
+it('applies repository model overlays with provider identity', function () {
+    $client = Mockery::mock(JsonRpcClient::class);
+    $client->shouldReceive('request')
+        ->once()
+        ->with('session.model.applyStartupOverlay', [
+            'repoModel' => 'gpt-5',
+            'repoModelProviderId' => 'loki',
+            'sessionId' => 'session-1',
+        ])
+        ->andReturn(['modelId' => 'gpt-5']);
+
+    $result = (new SessionRpc($client, 'session-1'))->model()->applyStartupOverlay(
+        new ModelApplyStartupOverlayRequest(
+            repoModel: 'gpt-5',
+            repoModelProviderId: 'loki',
+        ),
+    );
+
+    expect($result->modelId)->toBe('gpt-5');
 });

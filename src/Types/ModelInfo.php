@@ -8,6 +8,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\Rpc\ModelMessage;
+use Revolution\Copilot\Types\Rpc\ModelProviderRef;
 
 /**
  * Information about an available model.
@@ -26,6 +27,7 @@ readonly class ModelInfo implements Arrayable
      * @param  ?array  $infoMessages  Service-published informational messages.
      * @param  ?array  $warningMessages  Service-published warning messages.
      * @param  ?string  $vendor  Model vendor as reported by the Copilot API.
+     * @param  ?ModelProviderRef  $provider  Provider identity for provider-qualified model listings.
      */
     public function __construct(
         public string $id,
@@ -39,6 +41,7 @@ readonly class ModelInfo implements Arrayable
         public ?array $infoMessages = null,
         public ?array $warningMessages = null,
         public ?string $vendor = null,
+        public ?ModelProviderRef $provider = null,
     ) {}
 
     /**
@@ -64,6 +67,11 @@ readonly class ModelInfo implements Arrayable
                 ? array_map(fn (array $message) => ModelMessage::fromArray($message), $data['warningMessages'])
                 : null,
             vendor: $data['vendor'] ?? null,
+            provider: isset($data['provider'])
+                ? ($data['provider'] instanceof ModelProviderRef
+                    ? $data['provider']
+                    : ModelProviderRef::fromArray($data['provider']))
+                : null,
         );
     }
 
@@ -92,6 +100,7 @@ readonly class ModelInfo implements Arrayable
                 ? null
                 : array_map(fn ($message) => $message instanceof ModelMessage ? $message->toArray() : $message, $this->warningMessages),
             'vendor' => $this->vendor,
+            'provider' => $this->provider?->toArray(),
         ], fn ($v) => $v !== null);
     }
 }

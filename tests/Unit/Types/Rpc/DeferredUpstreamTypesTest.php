@@ -16,8 +16,11 @@ use Revolution\Copilot\Enums\ProviderQuotaUnit;
 use Revolution\Copilot\Enums\SessionQuotaPlanTier;
 use Revolution\Copilot\Types\Rpc\AccountStatus;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
+use Revolution\Copilot\Types\Rpc\HostCreateSessionRequest;
+use Revolution\Copilot\Types\Rpc\HostGitHubEnvironmentOptions;
 use Revolution\Copilot\Types\Rpc\HostListSessionsRequest;
 use Revolution\Copilot\Types\Rpc\HostListSessionsResult;
+use Revolution\Copilot\Types\Rpc\HostStartRequest;
 use Revolution\Copilot\Types\Rpc\ManagedPermissionsContext;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsPermissionsEvaluateRequest;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsPermissionsEvaluateResult;
@@ -27,6 +30,7 @@ use Revolution\Copilot\Types\Rpc\ModeSetRequest;
 use Revolution\Copilot\Types\Rpc\ModelMetric;
 use Revolution\Copilot\Types\Rpc\ModelMetricRequests;
 use Revolution\Copilot\Types\Rpc\ModelMetricUsage;
+use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
 use Revolution\Copilot\Types\Rpc\ModelProviderRef;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ProviderMonthlyUsage;
@@ -60,6 +64,30 @@ it('round trips the advertised host session catalog', function () {
     expect($request->toArray())->toBe(['hostId' => 'host-1'])
         ->and($result->sessions[0]->status)->toBe(0x80000000)
         ->and($result->toArray()['sessions'][0]['activity'])->toBe('Working');
+});
+
+it('round trips host configuration, connection binding, and resident preference', function () {
+    $start = HostStartRequest::fromArray([
+        'hostId' => 'host-1',
+        'computeId' => 'compute-1',
+        'githubEnvironment' => [
+            'name' => 'Example',
+            'computeId' => 'compute-1',
+            'requireConnectionBinding' => false,
+        ],
+    ]);
+    $handoff = HostCreateSessionRequest::fromArray([
+        'handoffId' => 'handoff-1',
+        'resume' => true,
+        'preferResident' => true,
+        'config' => ['sessionId' => 'session-1'],
+    ]);
+
+    expect($start->githubEnvironment)->toBeInstanceOf(HostGitHubEnvironmentOptions::class)
+        ->and($start->toArray()['computeId'])->toBe('compute-1')
+        ->and($start->toArray()['githubEnvironment']['requireConnectionBinding'])->toBeFalse()
+        ->and($handoff->toArray()['preferResident'])->toBeTrue()
+        ->and($handoff->toArray()['config']['sessionId'])->toBe('session-1');
 });
 
 it('round trips managed permissions context and ordered evaluations', function () {
@@ -275,6 +303,23 @@ it('round trips model provider selection, auth source, and AI-credit status', fu
         ->and($contextRequest->toArray()['providerId'])->toBe('loki')
         ->and($contextInfo->toArray()['displayModelName'])->toBe('GPT-5')
         ->and($modeRequest->toArray()['planModelProviderId'])->toBe('loki');
+});
+
+it('round trips repository model provider overlays and provider-attributed model info', function () {
+    $overlay = ModelApplyStartupOverlayRequest::fromArray([
+        'repoModel' => 'gpt-5',
+        'repoModelProviderId' => 'loki',
+    ]);
+    $model = \Revolution\Copilot\Types\ModelInfo::fromArray([
+        'id' => 'gpt-5',
+        'name' => 'GPT-5',
+        'capabilities' => ['supports' => [], 'limits' => []],
+        'provider' => ['id' => 'loki', 'label' => 'Microsoft 365 Copilot', 'kind' => 'loki'],
+    ]);
+
+    expect($overlay->toArray()['repoModelProviderId'])->toBe('loki')
+        ->and($model->provider)->toBeInstanceOf(ModelProviderRef::class)
+        ->and($model->toArray()['provider']['id'])->toBe('loki');
 });
 
 it('serializes new model-call enums and host code-change updates', function () {
