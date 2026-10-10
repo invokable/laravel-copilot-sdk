@@ -19,6 +19,7 @@ readonly class ModeSetRequest implements Arrayable
     public function __construct(
         public string $mode,
         public ?string $expectedMode = null,
+        public ?string $planModelProviderId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -26,6 +27,7 @@ readonly class ModeSetRequest implements Arrayable
         return new self(
             mode: Arr::string($data, 'mode'),
             expectedMode: $data['expectedMode'] ?? null,
+            planModelProviderId: $data['planModelProviderId'] ?? null,
         );
     }
 
@@ -34,6 +36,7 @@ readonly class ModeSetRequest implements Arrayable
         return array_filter([
             'mode' => $this->mode,
             'expectedMode' => $this->expectedMode,
+            'planModelProviderId' => $this->planModelProviderId,
         ], fn ($v) => $v !== null);
     }
 }

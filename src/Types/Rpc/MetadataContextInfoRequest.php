@@ -18,6 +18,7 @@ readonly class MetadataContextInfoRequest implements Arrayable
         public int $promptTokenLimit,
         public int $outputTokenLimit,
         public ?string $selectedModel = null,
+        public ?string $providerId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -26,6 +27,7 @@ readonly class MetadataContextInfoRequest implements Arrayable
             promptTokenLimit: Arr::integer($data, 'promptTokenLimit', 0),
             outputTokenLimit: Arr::integer($data, 'outputTokenLimit', 0),
             selectedModel: $data['selectedModel'] ?? null,
+            providerId: $data['providerId'] ?? null,
         );
     }
 
@@ -35,6 +37,7 @@ readonly class MetadataContextInfoRequest implements Arrayable
             'promptTokenLimit' => $this->promptTokenLimit,
             'outputTokenLimit' => $this->outputTokenLimit,
             'selectedModel' => $this->selectedModel,
+            'providerId' => $this->providerId,
         ], fn ($value): bool => $value !== null);
     }
 }

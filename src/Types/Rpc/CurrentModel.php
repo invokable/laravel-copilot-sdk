@@ -27,6 +27,8 @@ readonly class CurrentModel implements Arrayable
         public AutoTier|string|null $autoTier = null,
         public AutoTier|string|null $activatingAutoTier = null,
         public AutoTier|string|null $pendingAutoTier = null,
+        public ?string $providerId = null,
+        public ?string $planBaseProviderId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -38,6 +40,8 @@ readonly class CurrentModel implements Arrayable
             autoTier: isset($data['autoTier']) ? (AutoTier::tryFrom($data['autoTier']) ?? $data['autoTier']) : null,
             activatingAutoTier: isset($data['activatingAutoTier']) ? (AutoTier::tryFrom($data['activatingAutoTier']) ?? $data['activatingAutoTier']) : null,
             pendingAutoTier: isset($data['pendingAutoTier']) ? (AutoTier::tryFrom($data['pendingAutoTier']) ?? $data['pendingAutoTier']) : null,
+            providerId: $data['providerId'] ?? null,
+            planBaseProviderId: $data['planBaseProviderId'] ?? null,
         );
     }
 
@@ -50,6 +54,8 @@ readonly class CurrentModel implements Arrayable
             'autoTier' => $this->autoTier instanceof AutoTier ? $this->autoTier->value : $this->autoTier,
             'activatingAutoTier' => $this->activatingAutoTier instanceof AutoTier ? $this->activatingAutoTier->value : $this->activatingAutoTier,
             'pendingAutoTier' => $this->pendingAutoTier instanceof AutoTier ? $this->pendingAutoTier->value : $this->pendingAutoTier,
+            'providerId' => $this->providerId,
+            'planBaseProviderId' => $this->planBaseProviderId,
         ], fn ($v) => $v !== null);
     }
 }

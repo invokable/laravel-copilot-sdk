@@ -312,6 +312,16 @@ class SessionRpc
     }
 
     /**
+     * Session quota RPC operations.
+     *
+     * @experimental This API group may change or be removed.
+     */
+    public function quota(): PendingQuota
+    {
+        return new PendingQuota($this->client, $this->sessionId);
+    }
+
+    /**
      * Session GitHub authentication RPC operations.
      */
     public function gitHubAuth(): PendingSessionAuth

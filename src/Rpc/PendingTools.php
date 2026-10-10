@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
+use Revolution\Copilot\Types\Rpc\PendingExternalToolRequestList;
 use Revolution\Copilot\Types\Rpc\ToolsGetCurrentMetadataResult;
 use Revolution\Copilot\Types\Rpc\ToolsSetRequest;
 use Revolution\Copilot\Types\Rpc\ToolsUpdateSubagentSettingsResult;
@@ -35,6 +36,20 @@ class PendingTools
 
         return HandlePendingToolCallResult::fromArray(
             $this->client->request('session.tools.handlePendingToolCall', $paramsArray),
+        );
+    }
+
+    /**
+     * List external tool requests that are still waiting for a result.
+     *
+     * @experimental
+     */
+    public function listPendingRequests(): PendingExternalToolRequestList
+    {
+        return PendingExternalToolRequestList::fromArray(
+            $this->client->request('session.tools.listPendingRequests', [
+                'sessionId' => $this->sessionId,
+            ]),
         );
     }
 

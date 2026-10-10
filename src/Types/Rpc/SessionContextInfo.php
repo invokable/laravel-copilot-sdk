@@ -25,6 +25,8 @@ readonly class SessionContextInfo implements Arrayable
         public int $toolDefinitionsTokens,
         public int $mcpToolsTokens,
         public int $totalTokens,
+        public ?ModelProviderRef $provider = null,
+        public ?string $displayModelName = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -40,12 +42,18 @@ readonly class SessionContextInfo implements Arrayable
             toolDefinitionsTokens: Arr::integer($data, 'toolDefinitionsTokens', 0),
             mcpToolsTokens: Arr::integer($data, 'mcpToolsTokens', 0),
             totalTokens: Arr::integer($data, 'totalTokens', 0),
+            provider: isset($data['provider'])
+                ? ($data['provider'] instanceof ModelProviderRef
+                    ? $data['provider']
+                    : ModelProviderRef::fromArray($data['provider']))
+                : null,
+            displayModelName: $data['displayModelName'] ?? null,
         );
     }
 
     public function toArray(): array
     {
-        return [
+        return array_filter([
             'bufferTokens' => $this->bufferTokens,
             'compactionThreshold' => $this->compactionThreshold,
             'conversationTokens' => $this->conversationTokens,
@@ -56,6 +64,8 @@ readonly class SessionContextInfo implements Arrayable
             'toolDefinitionsTokens' => $this->toolDefinitionsTokens,
             'mcpToolsTokens' => $this->mcpToolsTokens,
             'totalTokens' => $this->totalTokens,
-        ];
+            'provider' => $this->provider?->toArray(),
+            'displayModelName' => $this->displayModelName,
+        ], fn ($value) => $value !== null);
     }
 }

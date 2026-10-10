@@ -23,6 +23,7 @@ readonly class CodeChanges implements Arrayable
         public int $linesAdded,
         public int $linesRemoved,
         public int $filesModifiedCount,
+        public ?array $filesModified = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -31,15 +32,17 @@ readonly class CodeChanges implements Arrayable
             linesAdded: Arr::integer($data, 'linesAdded'),
             linesRemoved: Arr::integer($data, 'linesRemoved'),
             filesModifiedCount: Arr::integer($data, 'filesModifiedCount'),
+            filesModified: isset($data['filesModified']) ? array_values($data['filesModified']) : null,
         );
     }
 
     public function toArray(): array
     {
-        return [
+        return array_filter([
             'linesAdded' => $this->linesAdded,
             'linesRemoved' => $this->linesRemoved,
             'filesModifiedCount' => $this->filesModifiedCount,
-        ];
+            'filesModified' => $this->filesModified,
+        ], static fn ($value) => $value !== null);
     }
 }
