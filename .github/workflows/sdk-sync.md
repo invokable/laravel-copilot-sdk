@@ -3,129 +3,135 @@ name: SDK Sync
 description: Automatically tracks official github/copilot-sdk changes and creates PRs to update the Laravel implementation.
 
 on:
-  schedule: # 日本時間で午前4時頃。曜日の指定は英語と1日ずれるので火・木・土。すぐに同期が必要な時は手動実行。
-    #- cron: weekly on monday around 4:00 utc+9
-    #- cron: weekly on wednesday around 4:00 utc+9
-    #- cron: weekly on friday around 4:00 utc+9
-    - cron: daily around 4:00 utc+9 on weekdays
-  workflow_dispatch:
-
-steps:
-    -   name: Detect SDK changes
-        id: changes
-        env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-            cd copilot-sdk
-            git fetch origin main --quiet
-            CURRENT=$(git rev-parse HEAD)
-            LATEST=$(git rev-parse origin/main)
-            
-            if [ "$CURRENT" = "$LATEST" ]; then
-                echo "status=up-to-date" >> $GITHUB_OUTPUT
-                exit 0
-            fi
-            
-            # Generate change summary for the agent
-            mkdir -p /tmp/gh-aw
-            echo "$CURRENT" > /tmp/gh-aw/current-commit.txt
-            echo "$LATEST" > /tmp/gh-aw/latest-commit.txt
-            
-            # Extract release info and key file changes
-            git log --oneline "$CURRENT..origin/main" > /tmp/gh-aw/commits.txt
-            
-            # Check critical files (limit to files that actually matter)
-            echo "nodejs/src/generated/rpc.ts nodejs/src/generated/session-events.ts python/copilot/generated/rpc.py nodejs/src/client.ts nodejs/src/session.ts nodejs/src/types.ts" | tr ' ' '\n' | while read file; do
-                if git diff "$CURRENT..origin/main" -- "$file" > /tmp/gh-aw/diff-$(echo "$file" | sed 's|/|-|g').txt 2>/dev/null; then
-                    [ -s "/tmp/gh-aw/diff-$(echo "$file" | sed 's|/|-|g').txt" ] && echo "changed" || echo "unchanged"
-                fi
-            done > /tmp/gh-aw/file-status.txt
-            
-            echo "status=changes-detected" >> $GITHUB_OUTPUT
-    
-    -   name: Check for duplicate sync PR
-        if: steps.changes.outputs.status == 'changes-detected'
-        env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            EXPR_GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-            OPEN_PRS=$(gh pr list --repo "$EXPR_GITHUB_REPOSITORY" --label sdk-sync --state open --json number --jq length)
-            if [ "$OPEN_PRS" -gt 0 ]; then
-                echo "Found $OPEN_PRS open sdk-sync PR(s). Skipping duplicate."
-                exit 1
-            fi
-
-    -   name: Save open sdk-sync issues
-        if: steps.changes.outputs.status == 'changes-detected'
-        env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            EXPR_GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-            gh issue list \
-              --repo "$EXPR_GITHUB_REPOSITORY" \
-              --label sdk-sync \
-              --state open \
-              --limit 100 \
-              --json number,title,url \
-              --jq '.[] | "#\(.number) \(.title) \(.url)"' > /tmp/gh-aw/open-sdk-sync-issues.txt
-    -   name: Set up PHP (if changes detected)
-        if: steps.changes.outputs.status == 'changes-detected'
-        uses: shivammathur/setup-php@2.40.0
-        with:
-            php-version: 8.5
-            extensions: mbstring, xml, phar, dom, tokenizer, iconv
-            coverage: xdebug
-            ini-values: memory_limit=512M
-    -   name: Install Composer dependencies
-        run: composer install -q --no-interaction --prefer-dist --optimize-autoloader
-
-permissions:
-  contents: read
-  issues: read
-  pull-requests: read
-  copilot-requests: none
-
-model: gpt-6-luna
+    schedule: # 日本時間で午前4時頃。曜日の指定は英語と1日ずれるので火・木・土。すぐに同期が必要な時は手動実行。
+        #- cron: weekly on monday around 4:00 utc+9
+        #- cron: weekly on wednesday around 4:00 utc+9
+        #- cron: weekly on friday around 4:00 utc+9
+        - cron: daily around 4:00 utc+9 on weekdays
+    workflow_dispatch:
 
 max-ai-credits: 500
 
 timeout-minutes: 30
 
 engine:
-  id: copilot
-  copilot-sdk: true
-  agent: laravel-sdk-sync
+    id: copilot
+    copilot-sdk: true
+    agent: laravel-sdk-sync
+    model-routing:
+        goal: cost
+        mode: auto
+        allowed-models:
+            - gpt-6-luna
+            - gpt-6.1-sol
+            - claude-haiku-5.5
+            - claude-sonnet-5.5
+
+steps:
+    - name: Detect SDK changes
+      id: changes
+      env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+          cd copilot-sdk
+          git fetch origin main --quiet
+          CURRENT=$(git rev-parse HEAD)
+          LATEST=$(git rev-parse origin/main)
+
+          if [ "$CURRENT" = "$LATEST" ]; then
+              echo "status=up-to-date" >> $GITHUB_OUTPUT
+              exit 0
+          fi
+
+          # Generate change summary for the agent
+          mkdir -p /tmp/gh-aw
+          echo "$CURRENT" > /tmp/gh-aw/current-commit.txt
+          echo "$LATEST" > /tmp/gh-aw/latest-commit.txt
+
+          # Extract release info and key file changes
+          git log --oneline "$CURRENT..origin/main" > /tmp/gh-aw/commits.txt
+
+          # Check critical files (limit to files that actually matter)
+          echo "nodejs/src/generated/rpc.ts nodejs/src/generated/session-events.ts python/copilot/generated/rpc.py nodejs/src/client.ts nodejs/src/session.ts nodejs/src/types.ts" | tr ' ' '\n' | while read file; do
+              if git diff "$CURRENT..origin/main" -- "$file" > /tmp/gh-aw/diff-$(echo "$file" | sed 's|/|-|g').txt 2>/dev/null; then
+                  [ -s "/tmp/gh-aw/diff-$(echo "$file" | sed 's|/|-|g').txt" ] && echo "changed" || echo "unchanged"
+              fi
+          done > /tmp/gh-aw/file-status.txt
+
+          echo "status=changes-detected" >> $GITHUB_OUTPUT
+
+    - name: Check for duplicate sync PR
+      if: steps.changes.outputs.status == 'changes-detected'
+      env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPR_GITHUB_REPOSITORY: ${{ github.repository }}
+      run: |
+          OPEN_PRS=$(gh pr list --repo "$EXPR_GITHUB_REPOSITORY" --label sdk-sync --state open --json number --jq length)
+          if [ "$OPEN_PRS" -gt 0 ]; then
+              echo "Found $OPEN_PRS open sdk-sync PR(s). Skipping duplicate."
+              exit 1
+          fi
+
+    - name: Save open sdk-sync issues
+      if: steps.changes.outputs.status == 'changes-detected'
+      env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPR_GITHUB_REPOSITORY: ${{ github.repository }}
+      run: |
+          gh issue list \
+            --repo "$EXPR_GITHUB_REPOSITORY" \
+            --label sdk-sync \
+            --state open \
+            --limit 100 \
+            --json number,title,url \
+            --jq '.[] | "#\(.number) \(.title) \(.url)"' > /tmp/gh-aw/open-sdk-sync-issues.txt
+    - name: Set up PHP (if changes detected)
+      if: steps.changes.outputs.status == 'changes-detected'
+      uses: shivammathur/setup-php@2.40.0
+      with:
+          php-version: 8.5
+          extensions: mbstring, xml, phar, dom, tokenizer, iconv
+          coverage: xdebug
+          ini-values: memory_limit=512M
+    - name: Install Composer dependencies
+      run: composer install -q --no-interaction --prefer-dist --optimize-autoloader
+
+permissions:
+    contents: read
+    issues: read
+    pull-requests: read
+    copilot-requests: none
 
 checkout:
-  - path: .
-    submodules: recursive
-    fetch-depth: 0
+    - path: .
+      submodules: recursive
+      fetch-depth: 0
 
 tools:
-  github:
-    mode: gh-proxy
-    toolsets: [repos]
-  cli-proxy: true
-  bash: ["*"]
-  edit: true
-  cache-memory: true
+    github:
+        mode: gh-proxy
+        toolsets: [ repos ]
+    cli-proxy: true
+    bash: [ "*" ]
+    edit: true
+    cache-memory: true
 
 safe-outputs:
-  create-pull-request:
-    labels: [sdk-sync, copilot]
-    reviewers: [kawax]
-    draft: true
-    fallback-as-issue: true
-    if-no-changes: ignore
-    signed-commits: false
-  create-issue:
-    labels: [sdk-sync, copilot]
+    create-pull-request:
+        labels: [ sdk-sync, copilot ]
+        reviewers: [ kawax ]
+        draft: true
+        fallback-as-issue: true
+        if-no-changes: ignore
+        signed-commits: false
+    create-issue:
+        labels: [ sdk-sync, copilot ]
 
 network:
-  allowed:
-    - defaults
-    - github
-    - php
+    allowed:
+        - defaults
+        - github
+        - php
 ---
 
 # Official Copilot SDK Sync
