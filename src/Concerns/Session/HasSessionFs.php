@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Concerns\Session;
 
 use Revolution\Copilot\Contracts\SessionFsBinaryProvider;
 use Revolution\Copilot\Contracts\SessionFsProvider;
+use Revolution\Copilot\Enums\SessionFSErrorCode;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Types\Rpc\SessionFsError;
 use Revolution\Copilot\Types\Rpc\SessionFsReadFileBytesRequest;
@@ -18,7 +19,7 @@ use Revolution\Copilot\Types\Rpc\SessionFsWriteFileRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsWriteFileResult;
 use Throwable;
 
-trait SessionFs
+trait HasSessionFs
 {
     protected SessionFsProvider|array|null $sessionFsProvider = null;
 
@@ -70,7 +71,7 @@ trait SessionFs
     {
         $provider = $this->requireSessionFsProvider();
         if (! $this->supportsSessionFsBinary($provider)) {
-            return (new SessionFsReadFileBytesResult('', new SessionFsError('UNKNOWN', 'Binary reads are not supported')))->toArray();
+            return (new SessionFsReadFileBytesResult('', new SessionFsError(SessionFSErrorCode::UNKNOWN, 'Binary reads are not supported')))->toArray();
         }
 
         try {
@@ -92,16 +93,16 @@ trait SessionFs
     {
         $provider = $this->requireSessionFsProvider();
         if (! $this->supportsSessionFsBinary($provider)) {
-            return (new SessionFsWriteFileBytesResult(new SessionFsError('UNKNOWN', 'Binary writes are not supported')))->toArray();
+            return (new SessionFsWriteFileBytesResult(new SessionFsError(SessionFSErrorCode::UNKNOWN, 'Binary writes are not supported')))->toArray();
         }
 
         if (strlen($request->content) > 67_106_816) {
-            return (new SessionFsWriteFileBytesResult(new SessionFsError('UNKNOWN', 'sessionFs.writeFileBytes content exceeds the binary write limit')))->toArray();
+            return (new SessionFsWriteFileBytesResult(new SessionFsError(SessionFSErrorCode::UNKNOWN, 'sessionFs.writeFileBytes content exceeds the binary write limit')))->toArray();
         }
 
         $bytes = base64_decode($request->content, true);
         if ($bytes === false || base64_encode($bytes) !== $request->content || strlen($bytes) > 50_330_112) {
-            return (new SessionFsWriteFileBytesResult(new SessionFsError('UNKNOWN', 'invalid sessionFs.writeFileBytes base64 content')))->toArray();
+            return (new SessionFsWriteFileBytesResult(new SessionFsError(SessionFSErrorCode::UNKNOWN, 'invalid sessionFs.writeFileBytes base64 content')))->toArray();
         }
 
         try {
@@ -137,12 +138,10 @@ trait SessionFs
         $properties = get_object_vars($exception);
         $errorCode = $properties['code'] ?? $exception->getCode();
         $isNotFound = $errorCode === 'ENOENT' || $errorCode === 2;
-        $writeChanged = $properties['writeChanged'] ?? null;
 
         return new SessionFsError(
-            code: $isNotFound ? 'ENOENT' : 'UNKNOWN',
+            code: $isNotFound ? SessionFSErrorCode::ENOENT : SessionFSErrorCode::UNKNOWN,
             message: $exception->getMessage(),
-            writeChanged: $writeChanged === true ? true : null,
         );
     }
 }

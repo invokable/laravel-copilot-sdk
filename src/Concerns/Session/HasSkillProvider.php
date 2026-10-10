@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Concerns\Session;
 
 use Illuminate\Contracts\Support\Arrayable;
-use Revolution\Copilot\Contracts\SkillProvider as SkillProviderContract;
+use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Types\Rpc\SkillProviderListRequest;
@@ -15,18 +15,18 @@ use Revolution\Copilot\Types\Rpc\SkillProviderReadResult;
 use Revolution\Copilot\Types\SkillProviderCallOptions;
 use Throwable;
 
-trait SkillProvider
+trait HasSkillProvider
 {
-    protected SkillProviderContract|array|null $skillProvider = null;
+    protected SkillProvider|array|null $skillProvider = null;
 
     /**
      * Register the provider used for session-scoped skill callbacks.
      *
-     * @param  SkillProviderContract|array{listSkills: callable, readSkill: callable}|null  $provider
+     * @param  SkillProvider|array{listSkills: callable, readSkill: callable}|null  $provider
      *
      * @internal
      */
-    public function registerSkillProvider(SkillProviderContract|array|null $provider): void
+    public function registerSkillProvider(SkillProvider|array|null $provider): void
     {
         $this->skillProvider = $provider;
     }
@@ -42,7 +42,7 @@ trait SkillProvider
         $options = new SkillProviderCallOptions($token);
 
         try {
-            $skills = $provider instanceof SkillProviderContract
+            $skills = $provider instanceof SkillProvider
                 ? $provider->listSkills($options)
                 : ($provider['listSkills'])($options);
         } catch (Throwable) {
@@ -77,7 +77,7 @@ trait SkillProvider
         $options = new SkillProviderCallOptions($token);
 
         try {
-            $markdown = $provider instanceof SkillProviderContract
+            $markdown = $provider instanceof SkillProvider
                 ? $provider->readSkill($request->name, $options)
                 : ($provider['readSkill'])($request->name, $options);
         } catch (Throwable) {
@@ -95,7 +95,7 @@ trait SkillProvider
         return new SkillProviderReadResult($markdown);
     }
 
-    private function requireSkillProvider(): SkillProviderContract|array
+    private function requireSkillProvider(): SkillProvider|array
     {
         if ($this->skillProvider === null) {
             throw new JsonRpcException(-32603, 'No skill provider configured for session');

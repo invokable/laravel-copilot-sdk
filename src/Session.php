@@ -15,11 +15,11 @@ use Revolution\Copilot\Concerns\Session\HasElicitationHandler;
 use Revolution\Copilot\Concerns\Session\HasExitPlanModeHandler;
 use Revolution\Copilot\Concerns\Session\HasHooks;
 use Revolution\Copilot\Concerns\Session\HasPermissionHandler;
+use Revolution\Copilot\Concerns\Session\HasSessionFs;
+use Revolution\Copilot\Concerns\Session\HasSkillProvider;
 use Revolution\Copilot\Concerns\Session\HasToolHandlers;
 use Revolution\Copilot\Concerns\Session\HasUiApi;
 use Revolution\Copilot\Concerns\Session\HasUserInputHandler;
-use Revolution\Copilot\Concerns\Session\SessionFs;
-use Revolution\Copilot\Concerns\Session\SkillProvider;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\AutoTier;
@@ -62,12 +62,12 @@ class Session implements CopilotSession
     use HasExitPlanModeHandler;
     use HasHooks;
     use HasPermissionHandler;
+    use HasSessionFs;
+    use HasSkillProvider;
     use HasToolHandlers;
     use HasUiApi;
     use HasUserInputHandler;
     use Macroable;
-    use SessionFs;
-    use SkillProvider;
 
     /**
      * Event handlers (wildcard).
