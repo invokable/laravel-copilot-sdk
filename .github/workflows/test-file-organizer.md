@@ -27,7 +27,7 @@ permissions:
 engine:
   id: copilot
   copilot-sdk: true
-  model: auto
+  model: gpt-6-luna
 
 checkout:
   - path: .

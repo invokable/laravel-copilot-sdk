@@ -24,6 +24,9 @@
         "laravel/ai": "^1.0",
         "laravel/pao": "^1.0"
     },
+    "conflict": {
+        "brianium/paratest": "7.26.1"
+    },
     "autoload": {
         "psr-4": {
             "Revolution\\Copilot\\": "src/"
