@@ -10,11 +10,11 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use Revolution\Copilot\Concerns\Client\HandlesServerRequests;
 use Revolution\Copilot\Concerns\Client\HandlesSessionFs;
+use Revolution\Copilot\Concerns\Client\HandlesSkillProvider;
 use Revolution\Copilot\Concerns\Client\ManagesModels;
 use Revolution\Copilot\Concerns\Client\ManagesSessions;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
-use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Enums\RuntimeConnectionKind;
@@ -37,8 +37,6 @@ use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\GitHubMcpToolConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
-use Revolution\Copilot\Types\Rpc\SkillProviderListRequest;
-use Revolution\Copilot\Types\Rpc\SkillProviderReadRequest;
 use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -54,6 +52,7 @@ class Client implements CopilotClient
     use Conditionable;
     use HandlesServerRequests;
     use HandlesSessionFs;
+    use HandlesSkillProvider;
     use Macroable;
     use ManagesModels;
     use ManagesSessions;
@@ -834,21 +833,6 @@ class Client implements CopilotClient
         return $registrationId;
     }
 
-    private function validateSkillProvider(mixed $provider): void
-    {
-        if (
-            $provider !== null
-            && ! $provider instanceof SkillProvider
-            && (! is_array($provider)
-                || ! is_callable($provider['listSkills'] ?? null)
-                || ! is_callable($provider['readSkill'] ?? null))
-        ) {
-            throw new \InvalidArgumentException(
-                'skillProvider must implement SkillProvider or provide callable listSkills and readSkill entries.',
-            );
-        }
-    }
-
     /**
      * Register session handlers before the RPC whenever the session ID is known.
      */
@@ -876,30 +860,6 @@ class Client implements CopilotClient
         if (isset($config['onEvent']) && is_callable($config['onEvent'])) {
             $session->on($config['onEvent']);
         }
-    }
-
-    private function handleSkillProviderList(array $params, CancellationToken $token): array
-    {
-        $request = SkillProviderListRequest::fromArray($params);
-        $session = $this->sessions[$request->sessionId] ?? null;
-
-        if (! $session instanceof Session) {
-            throw new RuntimeException("Session not found: {$request->sessionId}");
-        }
-
-        return $session->handleSkillProviderList($request, $token)->toArray();
-    }
-
-    private function handleSkillProviderRead(array $params, CancellationToken $token): array
-    {
-        $request = SkillProviderReadRequest::fromArray($params);
-        $session = $this->sessions[$request->sessionId] ?? null;
-
-        if (! $session instanceof Session) {
-            throw new RuntimeException("Session not found: {$request->sessionId}");
-        }
-
-        return $session->handleSkillProviderRead($request, $token)->toArray();
     }
 
     private function acquireGitHubToken(array $params): array
