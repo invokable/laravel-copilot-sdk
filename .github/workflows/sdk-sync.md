@@ -16,7 +16,7 @@ timeout-minutes: 30
 
 engine:
     id: copilot
-    copilot-sdk: true
+    #copilot-sdk: true
     agent: laravel-sdk-sync
     model-routing:
         goal: cost
