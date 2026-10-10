@@ -7,6 +7,8 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\PluginList;
 use Revolution\Copilot\Types\Rpc\PluginsReloadRequest;
+use Revolution\Copilot\Types\Rpc\SessionPluginsRetryManagedRequest;
+use Revolution\Copilot\Types\Rpc\SessionPluginsRetryManagedResult;
 
 /**
  * Pending plugins RPC operations for a session.
@@ -47,6 +49,25 @@ class PendingPlugins
         $paramsArray['sessionId'] = $this->sessionId;
 
         $this->client->request('session.plugins.reload', $paramsArray);
+    }
+
+    /**
+     * Retry installation or update of plugins required by managed settings.
+     *
+     * @experimental
+     */
+    public function retryManaged(SessionPluginsRetryManagedRequest|array|null $params = null): SessionPluginsRetryManagedResult
+    {
+        $paramsArray = match (true) {
+            $params instanceof SessionPluginsRetryManagedRequest => $params->toArray(),
+            is_array($params) => SessionPluginsRetryManagedRequest::fromArray($params)->toArray(),
+            default => [],
+        };
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SessionPluginsRetryManagedResult::fromArray(
+            $this->client->request('session.plugins.retryManaged', $paramsArray),
+        );
     }
 
     /**

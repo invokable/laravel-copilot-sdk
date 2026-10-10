@@ -17,6 +17,7 @@ readonly class ManagedSettingsResolveResult implements Arrayable
         public ManagedSettingsMeta|array|null $meta = null,
         public array $layers = [],
         public array $diagnostics = [],
+        public ?ManagedPermissionsContext $permissionsContext = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -28,6 +29,11 @@ readonly class ManagedSettingsResolveResult implements Arrayable
             meta: isset($data['meta']) ? ($data['meta'] instanceof ManagedSettingsMeta ? $data['meta'] : ManagedSettingsMeta::fromArray($data['meta'])) : null,
             layers: array_map(static fn ($layer) => $layer instanceof ManagedSettingsLayer ? $layer : ManagedSettingsLayer::fromArray($layer), $data['layers'] ?? []),
             diagnostics: array_map(static fn ($diagnostic) => $diagnostic instanceof ManagedSettingsDiagnostic ? $diagnostic : ManagedSettingsDiagnostic::fromArray($diagnostic), $data['diagnostics'] ?? []),
+            permissionsContext: isset($data['permissionsContext'])
+                ? ($data['permissionsContext'] instanceof ManagedPermissionsContext
+                    ? $data['permissionsContext']
+                    : ManagedPermissionsContext::fromArray($data['permissionsContext']))
+                : null,
         );
     }
 
@@ -40,6 +46,7 @@ readonly class ManagedSettingsResolveResult implements Arrayable
             'meta' => $this->meta instanceof ManagedSettingsMeta ? $this->meta->toArray() : $this->meta,
             'layers' => array_map(static fn ($layer) => $layer instanceof ManagedSettingsLayer ? $layer->toArray() : $layer, $this->layers),
             'diagnostics' => array_map(static fn ($diagnostic) => $diagnostic instanceof ManagedSettingsDiagnostic ? $diagnostic->toArray() : $diagnostic, $this->diagnostics),
+            'permissionsContext' => $this->permissionsContext?->toArray(),
         ], fn ($value) => $value !== null);
     }
 }

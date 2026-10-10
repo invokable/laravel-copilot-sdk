@@ -35,6 +35,7 @@ readonly class ModelSwitchToRequest implements Arrayable
         public ?string $contextTier = null,
         public ?bool $deferIfModelChangeQueued = null,
         public AutoTier|string|null $autoTier = null,
+        public ?string $providerId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -54,6 +55,7 @@ readonly class ModelSwitchToRequest implements Arrayable
             contextTier: $data['contextTier'] ?? null,
             deferIfModelChangeQueued: $data['deferIfModelChangeQueued'] ?? null,
             autoTier: isset($data['autoTier']) ? (AutoTier::tryFrom($data['autoTier']) ?? $data['autoTier']) : null,
+            providerId: $data['providerId'] ?? null,
         );
     }
 
@@ -80,6 +82,7 @@ readonly class ModelSwitchToRequest implements Arrayable
             'contextTier' => $this->contextTier,
             'deferIfModelChangeQueued' => $this->deferIfModelChangeQueued,
             'autoTier' => $this->autoTier instanceof AutoTier ? $this->autoTier->value : $this->autoTier,
+            'providerId' => $this->providerId,
         ], fn ($v) => $v !== null);
     }
 }

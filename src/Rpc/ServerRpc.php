@@ -231,4 +231,14 @@ class ServerRpc
     {
         return new PendingCatalog($this->client);
     }
+
+    /**
+     * Host session catalog RPC operations.
+     *
+     * @experimental
+     */
+    public function host(): PendingHost
+    {
+        return new PendingHost($this->client);
+    }
 }

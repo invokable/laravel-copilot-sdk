@@ -48,6 +48,15 @@ describe('ModelMetricRequests', function () {
             ->and($requests->cost)->toBe(3.5);
     });
 
+    it('normalizes integer costs from array', function () {
+        $requests = ModelMetricRequests::fromArray([
+            'count' => 0,
+            'cost' => 0,
+        ]);
+
+        expect($requests->cost)->toBe(0.0);
+    });
+
     it('converts to array', function () {
         $requests = new ModelMetricRequests(count: 5, cost: 1.0);
 

@@ -16,15 +16,32 @@ readonly class AccountStatus implements Arrayable
         public bool $active,
         public string $selectionId,
         public ?string $derivedFrom = null,
+        public ?string $authSource = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
-        return new self($data['host'] ?? '', $data['login'] ?? '', AccountKind::tryFrom($data['kind'] ?? '') ?? ($data['kind'] ?? ''), (bool) ($data['active'] ?? false), $data['selectionId'] ?? '', $data['derivedFrom'] ?? null);
+        return new self(
+            host: $data['host'] ?? '',
+            login: $data['login'] ?? '',
+            kind: AccountKind::tryFrom($data['kind'] ?? '') ?? ($data['kind'] ?? ''),
+            active: (bool) ($data['active'] ?? false),
+            selectionId: $data['selectionId'] ?? '',
+            derivedFrom: $data['derivedFrom'] ?? null,
+            authSource: $data['authSource'] ?? null,
+        );
     }
 
     public function toArray(): array
     {
-        return array_filter(['host' => $this->host, 'login' => $this->login, 'kind' => $this->kind instanceof AccountKind ? $this->kind->value : $this->kind, 'derivedFrom' => $this->derivedFrom, 'active' => $this->active, 'selectionId' => $this->selectionId], fn ($value) => $value !== null);
+        return array_filter([
+            'host' => $this->host,
+            'login' => $this->login,
+            'kind' => $this->kind instanceof AccountKind ? $this->kind->value : $this->kind,
+            'derivedFrom' => $this->derivedFrom,
+            'active' => $this->active,
+            'selectionId' => $this->selectionId,
+            'authSource' => $this->authSource,
+        ], fn ($value) => $value !== null);
     }
 }

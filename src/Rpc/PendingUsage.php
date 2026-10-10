@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\UsageGetMetricsResult;
+use Revolution\Copilot\Types\Rpc\UsageSetCodeChangesRequest;
 
 /**
  * Pending usage RPC operations for a session.
@@ -29,5 +30,20 @@ class PendingUsage
                 'sessionId' => $this->sessionId,
             ]),
         );
+    }
+
+    /**
+     * Replace the absolute code-change totals reported by a relay host.
+     *
+     * @experimental
+     */
+    public function setCodeChanges(UsageSetCodeChangesRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof UsageSetCodeChangesRequest
+            ? $params
+            : UsageSetCodeChangesRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.usage.setCodeChanges', $paramsArray);
     }
 }

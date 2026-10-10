@@ -6,7 +6,10 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
+use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
 use Revolution\Copilot\Types\Rpc\ModelListRequest;
+use Revolution\Copilot\Types\Rpc\ModelClearStartupSeedRequest;
+use Revolution\Copilot\Types\Rpc\ModelClearStartupSeedResult;
 use Revolution\Copilot\Types\Rpc\ModelSetAllowedModelsRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetAllowedModelsResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
@@ -92,6 +95,40 @@ class PendingModel
 
         return ModelSetAllowedModelsResult::fromArray(
             $this->client->request('session.model.setAllowedModels', $paramsArray),
+        );
+    }
+
+    /**
+     * Apply managed and repository model overrides to the session.
+     *
+     * @experimental
+     */
+    public function applyStartupOverlay(ModelApplyStartupOverlayRequest|array $params): ModelSwitchToResult
+    {
+        $paramsArray = ($params instanceof ModelApplyStartupOverlayRequest
+            ? $params
+            : ModelApplyStartupOverlayRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ModelSwitchToResult::fromArray(
+            $this->client->request('session.model.applyStartupOverlay', $paramsArray),
+        );
+    }
+
+    /**
+     * Clear an unchanged startup model/provider seed before default model resolution.
+     *
+     * @internal This operation is intended for SDK host coordination.
+     */
+    public function clearStartupSeed(ModelClearStartupSeedRequest|array $params): ModelClearStartupSeedResult
+    {
+        $paramsArray = ($params instanceof ModelClearStartupSeedRequest
+            ? $params
+            : ModelClearStartupSeedRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ModelClearStartupSeedResult::fromArray(
+            $this->client->request('session.model.clearStartupSeed', $paramsArray),
         );
     }
 }

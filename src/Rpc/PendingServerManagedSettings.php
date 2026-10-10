@@ -7,6 +7,8 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsComposeRequest;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsComposeResult;
+use Revolution\Copilot\Types\Rpc\ManagedSettingsPermissionsEvaluateRequest;
+use Revolution\Copilot\Types\Rpc\ManagedSettingsPermissionsEvaluateResult;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsReadResult;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsResolveRequest;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsResolveResult;
@@ -70,6 +72,22 @@ class PendingServerManagedSettings
 
         return ManagedSettingsComposeResult::fromArray(
             $this->client->request('managedSettings.compose', $paramsArray),
+        );
+    }
+
+    /**
+     * Evaluate ordered operations against a supplied managed-permissions context.
+     *
+     * @experimental
+     */
+    public function evaluatePermissions(ManagedSettingsPermissionsEvaluateRequest|array $params): ManagedSettingsPermissionsEvaluateResult
+    {
+        $paramsArray = ($params instanceof ManagedSettingsPermissionsEvaluateRequest
+            ? $params
+            : ManagedSettingsPermissionsEvaluateRequest::fromArray($params))->toArray();
+
+        return ManagedSettingsPermissionsEvaluateResult::fromArray(
+            $this->client->request('managedSettings.permissions.evaluate', $paramsArray),
         );
     }
 }
