@@ -27,7 +27,7 @@ readonly class ModelMetricRequests implements Arrayable
     {
         return new self(
             count: Arr::integer($data, 'count'),
-            cost: Arr::float($data, 'cost'),
+            cost: is_int($data['cost'] ?? null) ? (float) Arr::integer($data, 'cost') : Arr::float($data, 'cost'),
         );
     }
 
