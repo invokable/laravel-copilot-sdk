@@ -9,11 +9,11 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use Revolution\Copilot\Concerns\Client\HandlesServerRequests;
+use Revolution\Copilot\Concerns\Client\HandlesSessionFs;
 use Revolution\Copilot\Concerns\Client\ManagesModels;
 use Revolution\Copilot\Concerns\Client\ManagesSessions;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
-use Revolution\Copilot\Contracts\SessionFsProvider;
 use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
@@ -37,10 +37,6 @@ use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\GitHubMcpToolConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
-use Revolution\Copilot\Types\Rpc\SessionFsReadFileBytesRequest;
-use Revolution\Copilot\Types\Rpc\SessionFsReadFileRequest;
-use Revolution\Copilot\Types\Rpc\SessionFsWriteFileBytesRequest;
-use Revolution\Copilot\Types\Rpc\SessionFsWriteFileRequest;
 use Revolution\Copilot\Types\Rpc\SkillProviderListRequest;
 use Revolution\Copilot\Types\Rpc\SkillProviderReadRequest;
 use Revolution\Copilot\Types\RuntimeConnection;
@@ -57,6 +53,7 @@ class Client implements CopilotClient
 {
     use Conditionable;
     use HandlesServerRequests;
+    use HandlesSessionFs;
     use Macroable;
     use ManagesModels;
     use ManagesSessions;
@@ -852,21 +849,6 @@ class Client implements CopilotClient
         }
     }
 
-    private function validateSessionFsProvider(mixed $provider): void
-    {
-        if (
-            $provider !== null
-            && ! $provider instanceof SessionFsProvider
-            && (! is_array($provider)
-                || ! is_callable($provider['readFile'] ?? null)
-                || ! is_callable($provider['writeFile'] ?? null))
-        ) {
-            throw new \InvalidArgumentException(
-                'sessionFsProvider must implement SessionFsProvider or provide callable readFile and writeFile entries.',
-            );
-        }
-    }
-
     /**
      * Register session handlers before the RPC whenever the session ID is known.
      */
@@ -918,46 +900,6 @@ class Client implements CopilotClient
         }
 
         return $session->handleSkillProviderRead($request, $token)->toArray();
-    }
-
-    private function sessionForFsRequest(array $params): Session
-    {
-        $sessionId = $params['sessionId'] ?? null;
-        $session = is_string($sessionId) ? ($this->sessions[$sessionId] ?? null) : null;
-
-        if (! $session instanceof Session) {
-            throw new RuntimeException('Session not found for SessionFs request');
-        }
-
-        return $session;
-    }
-
-    private function handleSessionFsReadFile(array $params): array
-    {
-        return $this->sessionForFsRequest($params)->handleSessionFsReadFile(
-            SessionFsReadFileRequest::fromArray($params),
-        );
-    }
-
-    private function handleSessionFsReadFileBytes(array $params): array
-    {
-        return $this->sessionForFsRequest($params)->handleSessionFsReadFileBytes(
-            SessionFsReadFileBytesRequest::fromArray($params),
-        );
-    }
-
-    private function handleSessionFsWriteFile(array $params): array
-    {
-        return $this->sessionForFsRequest($params)->handleSessionFsWriteFile(
-            SessionFsWriteFileRequest::fromArray($params),
-        );
-    }
-
-    private function handleSessionFsWriteFileBytes(array $params): array
-    {
-        return $this->sessionForFsRequest($params)->handleSessionFsWriteFileBytes(
-            SessionFsWriteFileBytesRequest::fromArray($params),
-        );
     }
 
     private function acquireGitHubToken(array $params): array
