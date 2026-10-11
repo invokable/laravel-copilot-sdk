@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\SandboxCredentialSuggestionsResult;
 use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionRequest;
 use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionResult;
 use Revolution\Copilot\Types\Rpc\SandboxEnforcementStatus;
@@ -28,6 +29,20 @@ class PendingSandbox
     {
         return SandboxEnforcementStatus::fromArray(
             $this->client->request('session.sandbox.getEnforcementStatus', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * List possible unconfigured credentials for new sandboxed shells without exposing their values.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function getCredentialSuggestions(): SandboxCredentialSuggestionsResult
+    {
+        return SandboxCredentialSuggestionsResult::fromArray(
+            $this->client->request('session.sandbox.getCredentialSuggestions', [
                 'sessionId' => $this->sessionId,
             ]),
         );

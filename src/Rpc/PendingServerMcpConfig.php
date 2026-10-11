@@ -14,6 +14,8 @@ use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
 use Revolution\Copilot\Types\Rpc\McpPlanInstallRequest;
+use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsRequest;
+use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsResult;
 
 /**
  * Pending MCP configuration RPC operations (server-scoped).
@@ -26,6 +28,36 @@ class PendingServerMcpConfig
     public function __construct(
         protected JsonRpcClient $client,
     ) {}
+
+    /**
+     * MCP registry RPC operations.
+     *
+     * @experimental
+     *
+     * @internal Internal SDK API; not part of the public surface.
+     */
+    public function registry(): PendingServerMcpRegistry
+    {
+        return new PendingServerMcpRegistry($this->client);
+    }
+
+    /**
+     * Determine whether GitHub MCP tools can be replaced by the host's GitHub CLI.
+     *
+     * @experimental
+     *
+     * @internal Internal SDK API; not part of the public surface.
+     */
+    public function shouldExcludeGitHubTools(McpShouldExcludeGitHubToolsRequest|array $params): McpShouldExcludeGitHubToolsResult
+    {
+        $paramsArray = ($params instanceof McpShouldExcludeGitHubToolsRequest
+            ? $params
+            : McpShouldExcludeGitHubToolsRequest::fromArray($params))->toArray();
+
+        return McpShouldExcludeGitHubToolsResult::fromArray(
+            $this->client->request('mcp.shouldExcludeGitHubTools', $paramsArray),
+        );
+    }
 
     /**
      * List all MCP server configurations.

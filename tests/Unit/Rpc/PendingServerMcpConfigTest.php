@@ -7,6 +7,7 @@ use Revolution\Copilot\Enums\McpPlanScope;
 use Revolution\Copilot\Enums\McpServerCardEmbeddedKind;
 use Revolution\Copilot\Enums\McpServerCardMediaType;
 use Revolution\Copilot\Enums\McpServerCardUrlKind;
+use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
@@ -23,6 +24,8 @@ use Revolution\Copilot\Types\Rpc\McpPlanInstallSourceCard;
 use Revolution\Copilot\Types\Rpc\McpServerCardEmbedded;
 use Revolution\Copilot\Types\Rpc\McpServerCardUrl;
 use Revolution\Copilot\Types\Rpc\McpServerValue;
+use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsRequest;
+use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsResult;
 
 describe('PendingServerMcpConfig', function () {
     it('calls mcp.config.list and returns result', function () {
@@ -364,5 +367,44 @@ describe('PendingServerMcpConfig planInstall (typed objects)', function () {
         );
 
         expect($result['kind'])->toBe('planned');
+    });
+});
+
+describe('PendingServerMcpConfig GitHub tool filtering', function () {
+    it('checks whether GitHub MCP tools can be excluded with typed tool filters', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('mcp.shouldExcludeGitHubTools', [
+                'availableTools' => ['builtin:bash'],
+                'excludedTools' => ['builtin:write'],
+                'toolFilterPrecedence' => 'excluded',
+            ])
+            ->andReturn(['excludeGhReplaceableTools' => true]);
+
+        $result = (new PendingServerMcpConfig($client))->shouldExcludeGitHubTools(
+            new McpShouldExcludeGitHubToolsRequest(
+                availableTools: ['builtin:bash'],
+                excludedTools: ['builtin:write'],
+                toolFilterPrecedence: OptionsUpdateToolFilterPrecedence::Excluded,
+            ),
+        );
+
+        expect($result)->toBeInstanceOf(McpShouldExcludeGitHubToolsResult::class)
+            ->and($result->excludeGhReplaceableTools)->toBeTrue();
+    });
+
+    it('checks GitHub tool filtering with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('mcp.shouldExcludeGitHubTools', ['excludedTools' => ['builtin:bash']])
+            ->andReturn(['excludeGhReplaceableTools' => false]);
+
+        $result = (new PendingServerMcpConfig($client))->shouldExcludeGitHubTools([
+            'excludedTools' => ['builtin:bash'],
+        ]);
+
+        expect($result->excludeGhReplaceableTools)->toBeFalse();
     });
 });
