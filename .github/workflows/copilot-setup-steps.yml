@@ -31,9 +31,9 @@ jobs:
           persist-credentials: false
 
       - name: Install gh-aw CLI
-        uses: github/gh-aw-actions/setup-cli@7a073567000cd18a81b85d31527ac08d414c9599 # v0.91.7
+        uses: github/gh-aw-actions/setup-cli@866158eb5c6cbfd3c614104e3d3d6634e246d220 # v0.91.8
         with:
-          version: v0.91.7
+          version: v0.91.8
 
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
