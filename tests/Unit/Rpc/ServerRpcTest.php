@@ -5,8 +5,13 @@ declare(strict_types=1);
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingCatalog;
 use Revolution\Copilot\Rpc\PendingServerAccount;
+use Revolution\Copilot\Rpc\PendingServerConnectors;
+use Revolution\Copilot\Rpc\PendingServerGit;
+use Revolution\Copilot\Rpc\PendingServerGitHubOwners;
+use Revolution\Copilot\Rpc\PendingServerGitHubRepository;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Rpc\PendingServerModels;
+use Revolution\Copilot\Rpc\PendingServerSandboxProxyCa;
 use Revolution\Copilot\Rpc\PendingServerSessionFs;
 use Revolution\Copilot\Rpc\PendingServerSkills;
 use Revolution\Copilot\Rpc\PendingServerTools;
@@ -61,6 +66,19 @@ describe('ServerRpc', function () {
         $rpc = new ServerRpc(createMockRpcClient());
 
         expect($rpc->catalog())->toBeInstanceOf(PendingCatalog::class);
+    });
+
+    it('exposes new server groups and dispatches their RPC methods', function () {
+        $rpc = new ServerRpc(new JsonRpcClient(new StdioTransport(
+            fopen('php://memory', 'r'),
+            fopen('php://memory', 'w'),
+        )));
+
+        expect($rpc->connectors())->toBeInstanceOf(PendingServerConnectors::class)
+            ->and($rpc->git())->toBeInstanceOf(PendingServerGit::class)
+            ->and($rpc->gitHubRepository())->toBeInstanceOf(PendingServerGitHubRepository::class)
+            ->and($rpc->gitHubOwners())->toBeInstanceOf(PendingServerGitHubOwners::class)
+            ->and($rpc->sandboxProxyCa())->toBeInstanceOf(PendingServerSandboxProxyCa::class);
     });
 });
 

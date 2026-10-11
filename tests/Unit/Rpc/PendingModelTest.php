@@ -7,7 +7,10 @@ use Revolution\Copilot\Enums\ModelSwitchAutoTierStatus;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingModel;
+use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
+use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
+use Revolution\Copilot\Types\Rpc\ModelClearStartupSeedRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
@@ -135,5 +138,44 @@ describe('PendingModel', function () {
 
         expect($result)->toBeInstanceOf(ModelSwitchAutoTierResult::class)
             ->and($result->status)->toBe(ModelSwitchAutoTierStatus::UNCHANGED);
+    });
+
+    it('clears a matching startup model seed through the internal typed RPC', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.model.clearStartupSeed', [
+                'expectedModel' => 'gpt-5',
+                'expectedProviderId' => 'loki',
+                'sessionId' => 'session-1',
+            ])
+            ->andReturn(['cleared' => true]);
+
+        $result = (new SessionRpc($client, 'session-1'))->model()->clearStartupSeed(
+            new ModelClearStartupSeedRequest('gpt-5', 'loki'),
+        );
+
+        expect($result->cleared)->toBeTrue();
+    });
+
+    it('applies repository model overlays with provider identity', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.model.applyStartupOverlay', [
+                'repoModel' => 'gpt-5',
+                'repoModelProviderId' => 'loki',
+                'sessionId' => 'session-1',
+            ])
+            ->andReturn(['modelId' => 'gpt-5']);
+
+        $result = (new SessionRpc($client, 'session-1'))->model()->applyStartupOverlay(
+            new ModelApplyStartupOverlayRequest(
+                repoModel: 'gpt-5',
+                repoModelProviderId: 'loki',
+            ),
+        );
+
+        expect($result->modelId)->toBe('gpt-5');
     });
 });

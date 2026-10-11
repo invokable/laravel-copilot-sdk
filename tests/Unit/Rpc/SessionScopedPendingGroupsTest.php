@@ -10,14 +10,20 @@ use Revolution\Copilot\Rpc\PendingInstructions;
 use Revolution\Copilot\Rpc\PendingLsp;
 use Revolution\Copilot\Rpc\PendingManagedSettings;
 use Revolution\Copilot\Rpc\PendingMarketplaces;
+use Revolution\Copilot\Rpc\PendingMcp;
 use Revolution\Copilot\Rpc\PendingPlugins;
 use Revolution\Copilot\Rpc\PendingProvider;
 use Revolution\Copilot\Rpc\PendingQueue;
+use Revolution\Copilot\Rpc\PendingServerGit;
+use Revolution\Copilot\Rpc\PendingServerSandboxProxyCa;
+use Revolution\Copilot\Rpc\PendingSessions;
+use Revolution\Copilot\Rpc\PendingUi;
 use Revolution\Copilot\Rpc\PendingWorkflow;
 use Revolution\Copilot\Rpc\PendingWorkflowJournal;
 use Revolution\Copilot\Rpc\SessionRpc;
+use Revolution\Copilot\Types\Rpc\CustomizationsReloadResult;
 
-describe('session-scoped Pending RPC groups', function () {
+describe('SessionRpc session-scoped operations', function () {
     it('runs a workflow with its owning session id', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
@@ -177,5 +183,101 @@ describe('session-scoped Pending RPC groups', function () {
             'force' => true,
         ]);
         $session->shutdown(['detachSessionEndHooks' => true]);
+    });
+
+    it('returns the detailed customization reload outcome', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.customizations.reload', ['sessionId' => 'session-3'])
+            ->andReturn([
+                'errors' => [],
+                'outcomes' => [['subsystem' => 'agents', 'status' => 'reloaded']],
+                'warnings' => ['No project instructions found'],
+            ]);
+
+        $result = (new PendingCustomizations($client, 'session-3'))->reload();
+
+        expect($result)->toBeInstanceOf(CustomizationsReloadResult::class)
+            ->and($result->outcomes[0]->subsystem)->toBe('agents')
+            ->and($result->warnings)->toHaveCount(1);
+    });
+
+    it('forwards new server and session-scoped method params without losing session scope', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sandbox.proxyCa.getStatus', ['sandboxConfig' => ['enabled' => true]])
+            ->andReturn(['state' => 'present', 'canInstall' => true]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('git.currentBranchRemote', ['cwd' => '/repo'])
+            ->andReturn(['remote' => 'origin']);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.ui.handleHumanAskUser', ['requestId' => 'ask-1', 'sessionId' => 'session-4'])
+            ->andReturn(['success' => true]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.loadWorkspace', ['sessionId' => 'session-4', 'sessionsHome' => '/sessions'])
+            ->andReturn(['workspaceJson' => '{"id":"workspace-1"}']);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.createWorkspace', [
+                'sessionId' => 'session-5',
+                'convention' => 'copilot',
+                'context' => ['cwd' => '/repo'],
+                'sessionStatePath' => '/sessions/session-5',
+            ])
+            ->andReturn(['workspaceJson' => '{"id":"workspace-2"}']);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.updateWorkspaceFields', [
+                'sessionId' => 'session-5',
+                'sessionsHome' => '/sessions',
+                'fieldsJson' => '{"branch":"main"}',
+            ])
+            ->andReturn([]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.mcp.listConfigured', ['sessionId' => 'session-4'])
+            ->andReturn(['servers' => []]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.mcp.setConnectedIdeInfo', [
+                'ideInfo' => ['name' => 'editor'],
+                'sessionId' => 'session-4',
+            ])
+            ->andReturn([]);
+
+        $status = (new PendingServerSandboxProxyCa($client))->getStatus(['enabled' => true]);
+        $remote = (new PendingServerGit($client))->currentBranchRemote('/repo');
+        $ui = (new PendingUi($client, 'session-4'))->handleHumanAskUser(['requestId' => 'ask-1']);
+        $workspace = (new PendingSessions($client))->loadWorkspace([
+            'sessionId' => 'session-4',
+            'sessionsHome' => '/sessions',
+        ]);
+        $sessions = new PendingSessions($client);
+        $createdWorkspace = $sessions->createWorkspace([
+            'sessionId' => 'session-5',
+            'convention' => 'copilot',
+            'context' => ['cwd' => '/repo'],
+            'sessionStatePath' => '/sessions/session-5',
+        ]);
+        $sessions->updateWorkspaceFields([
+            'sessionId' => 'session-5',
+            'sessionsHome' => '/sessions',
+            'fieldsJson' => '{"branch":"main"}',
+        ]);
+        $mcp = new PendingMcp($client, 'session-4');
+        $configured = $mcp->listConfigured();
+        $mcp->setConnectedIdeInfo(['ideInfo' => ['name' => 'editor']]);
+
+        expect($status->state)->toBe('present')
+            ->and($remote->remote)->toBe('origin')
+            ->and($ui['success'])->toBeTrue()
+            ->and($workspace->workspaceJson)->toBe('{"id":"workspace-1"}')
+            ->and($createdWorkspace->workspaceJson)->toBe('{"id":"workspace-2"}')
+            ->and($configured)->toBe(['servers' => []]);
     });
 });
