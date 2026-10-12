@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types;
 
+use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 
@@ -12,6 +13,8 @@ use Illuminate\Support\Arr;
  */
 readonly class ProviderConfig implements Arrayable
 {
+    public ?Closure $bearerTokenProvider;
+
     /**
      * @param  string  $baseUrl  API endpoint URL
      * @param  ?string  $type  Provider type. Defaults to "openai" for generic OpenAI-compatible APIs.
@@ -36,6 +39,7 @@ readonly class ProviderConfig implements Arrayable
      * @param  ?int  $maxPromptTokens  Overrides the resolved model's default max prompt tokens. The runtime
      *                                 triggers conversation compaction before this limit is exceeded.
      * @param  ?int  $maxOutputTokens  Overrides the resolved model's default max output tokens.
+     * @param  (callable(array{providerName: string, sessionId: string}): string)|null  $bearerTokenProvider  Callback used to acquire bearer tokens on demand.
      */
     public function __construct(
         public string $baseUrl,
@@ -52,7 +56,12 @@ readonly class ProviderConfig implements Arrayable
         public ?int $maxPromptTokens = null,
         public ?int $maxOutputTokens = null,
         public ?string $modelProvider = null,
-    ) {}
+        ?callable $bearerTokenProvider = null,
+    ) {
+        $this->bearerTokenProvider = $bearerTokenProvider === null
+            ? null
+            : Closure::fromCallable($bearerTokenProvider);
+    }
 
     /**
      * Create from array data.
@@ -67,6 +76,7 @@ readonly class ProviderConfig implements Arrayable
             apiKey: $data['apiKey'] ?? null,
             bearerToken: $data['bearerToken'] ?? null,
             hasBearerTokenProvider: $data['hasBearerTokenProvider'] ?? null,
+            bearerTokenProvider: $data['bearerTokenProvider'] ?? null,
             azure: $data['azure'] ?? null,
             headers: $data['headers'] ?? null,
             modelId: $data['modelId'] ?? null,

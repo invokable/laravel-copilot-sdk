@@ -111,6 +111,18 @@ describe('ProviderConfig', function () {
         ]);
     });
 
+    it('keeps bearer token callbacks out of the serialized config', function () {
+        $callback = fn (array $args): string => $args['sessionId'];
+        $config = ProviderConfig::fromArray([
+            'baseUrl' => 'https://api.example.com',
+            'bearerTokenProvider' => $callback,
+        ]);
+
+        expect($config->bearerTokenProvider)->toBeInstanceOf(Closure::class)
+            ->and(($config->bearerTokenProvider)(['providerName' => 'default', 'sessionId' => 'session-1']))->toBe('session-1')
+            ->and($config->toArray())->not->toHaveKey('bearerTokenProvider');
+    });
+
     it('implements Arrayable interface', function () {
         $config = new ProviderConfig(baseUrl: 'https://example.com');
 

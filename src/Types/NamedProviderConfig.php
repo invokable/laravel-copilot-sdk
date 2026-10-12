@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types;
 
+use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 
@@ -21,6 +22,8 @@ use Illuminate\Support\Arr;
  */
 readonly class NamedProviderConfig implements Arrayable
 {
+    public ?Closure $bearerTokenProvider;
+
     /**
      * @param  string  $name  Stable identifier referenced by ProviderModelConfig. Must not contain '/'.
      * @param  string  $baseUrl  API endpoint URL.
@@ -32,6 +35,7 @@ readonly class NamedProviderConfig implements Arrayable
      * @param  ?bool  $hasBearerTokenProvider  When true, the SDK client supplies bearer tokens on demand via a callback.
      * @param  ?array  $azure  Azure-specific options.
      * @param  ?array<string, string>  $headers  Custom HTTP headers to include in all outbound requests to the provider.
+     * @param  (callable(array{providerName: string, sessionId: string}): string)|null  $bearerTokenProvider  Callback used to acquire bearer tokens on demand.
      */
     public function __construct(
         public string $name,
@@ -45,7 +49,12 @@ readonly class NamedProviderConfig implements Arrayable
         public ?array $azure = null,
         public ?array $headers = null,
         public ?string $modelProvider = null,
-    ) {}
+        ?callable $bearerTokenProvider = null,
+    ) {
+        $this->bearerTokenProvider = $bearerTokenProvider === null
+            ? null
+            : Closure::fromCallable($bearerTokenProvider);
+    }
 
     public static function fromArray(array $data): self
     {
@@ -58,6 +67,7 @@ readonly class NamedProviderConfig implements Arrayable
             apiKey: $data['apiKey'] ?? null,
             bearerToken: $data['bearerToken'] ?? null,
             hasBearerTokenProvider: $data['hasBearerTokenProvider'] ?? null,
+            bearerTokenProvider: $data['bearerTokenProvider'] ?? null,
             azure: $data['azure'] ?? null,
             headers: $data['headers'] ?? null,
             modelProvider: $data['modelProvider'] ?? null,
