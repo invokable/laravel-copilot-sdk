@@ -29,8 +29,7 @@ function startClientWithProviderTokenHandler(
     array &$handlers,
     array &$requests,
     array $responses = [],
-): Client
-{
+): Client {
     $processManager = Mockery::mock(ProcessManager::class);
     $processManager->shouldReceive('start')->once();
     $processManager->shouldReceive('getStdioTransport')
