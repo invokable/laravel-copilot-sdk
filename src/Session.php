@@ -7,6 +7,7 @@ namespace Revolution\Copilot;
 use Closure;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Revolt\EventLoop;
 use Revolution\Copilot\Concerns\Session\HasAutoModeSwitchHandler;
@@ -14,6 +15,7 @@ use Revolution\Copilot\Concerns\Session\HasCommandHandlers;
 use Revolution\Copilot\Concerns\Session\HasElicitationHandler;
 use Revolution\Copilot\Concerns\Session\HasExitPlanModeHandler;
 use Revolution\Copilot\Concerns\Session\HasHooks;
+use Revolution\Copilot\Concerns\Session\HasMcpAuthHandler;
 use Revolution\Copilot\Concerns\Session\HasPermissionHandler;
 use Revolution\Copilot\Concerns\Session\HasSessionFs;
 use Revolution\Copilot\Concerns\Session\HasSkillProvider;
@@ -38,6 +40,7 @@ use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Types\AutoModeSwitchRequest;
 use Revolution\Copilot\Types\ElicitationContext;
 use Revolution\Copilot\Types\ExitPlanModeRequest;
+use Revolution\Copilot\Types\McpAuthRequest;
 use Revolution\Copilot\Types\Rpc\LogRequest;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
@@ -61,6 +64,7 @@ class Session implements CopilotSession
     use HasElicitationHandler;
     use HasExitPlanModeHandler;
     use HasHooks;
+    use HasMcpAuthHandler;
     use HasPermissionHandler;
     use HasSessionFs;
     use HasSkillProvider;
@@ -707,6 +711,23 @@ class Session implements CopilotSession
 
                 $this->handleAutoModeSwitchRequest($request, $requestId);
             }
+        } elseif ($event->is(SessionEventType::MCP_OAUTH_REQUIRED)) {
+            $requestId = $event->data['requestId'] ?? null;
+
+            if (! is_string($requestId) || $requestId === '') {
+                return;
+            }
+
+            if ($this->mcpAuthHandler === null) {
+                Log::warning('Received MCP OAuth request without a registered MCP auth handler.', [
+                    'sessionId' => $this->sessionId,
+                    'requestId' => $requestId,
+                ]);
+
+                return;
+            }
+
+            $this->executeMcpAuthAndRespond(McpAuthRequest::fromArray($event->data));
         } elseif ($event->is(SessionEventType::CAPABILITIES_CHANGED)) {
             $this->mergeCapabilities($event->data);
         }

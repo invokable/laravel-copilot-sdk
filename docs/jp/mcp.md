@@ -36,6 +36,36 @@ Artisan::command('copilot:mcp', function () {
 });
 ```
 
+## MCP OAuthトークンをホストから渡す
+
+MCPサーバーがOAuth認証を要求する場合は、`onMcpAuthRequest`でホスト側の認証処理を指定できます。コールバックにはOAuthリクエスト情報と`sessionId`が渡され、トークンを返すとCLIランタイムに渡されます。`null`または`McpAuthResult`の`cancelled`を返すと認証をキャンセルします。
+
+```php
+use Revolution\Copilot\Types\McpAuthRequest;
+use Revolution\Copilot\Types\McpAuthResult;
+use Revolution\Copilot\Types\McpAuthToken;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    mcpServers: [
+        'private-mcp' => [
+            'type' => 'http',
+            'url' => 'https://mcp.example.com',
+        ],
+    ],
+    onMcpAuthRequest: function (McpAuthRequest $request, array $context): McpAuthToken|McpAuthResult|null {
+        // アプリケーション独自の認証サービスからトークンを取得
+        $accessToken = $credentialProvider->tokenFor($request->serverName);
+
+        return $accessToken === null
+            ? new McpAuthResult(kind: 'cancelled')
+            : new McpAuthToken(accessToken: $accessToken, tokenType: 'Bearer');
+    },
+);
+```
+
+ハンドラーを指定すると、`mcp.oauth_required`イベントの受信登録も自動で行われます。ブラウザーを開けないWebリクエスト、キュー、バッチなどでもホスト側で認証できます。セッション再開時も`ResumeSessionConfig`に同じハンドラーを指定してください。
+
 ## MCPサーバーのステータス
 
 セッション内のMCPサーバーのステータスは以下の値を取ります：

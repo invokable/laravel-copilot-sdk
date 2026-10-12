@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Log;
 use Revolt\EventLoop;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\AutoTier;
@@ -16,6 +17,9 @@ use Revolution\Copilot\Types\Hooks\SubagentStartHookInput;
 use Revolution\Copilot\Types\Hooks\SubagentStartHookOutput;
 use Revolution\Copilot\Types\Hooks\SubagentStopHookInput;
 use Revolution\Copilot\Types\Hooks\SubagentStopHookOutput;
+use Revolution\Copilot\Types\McpAuthRequest;
+use Revolution\Copilot\Types\McpAuthResult;
+use Revolution\Copilot\Types\McpAuthToken;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -68,6 +72,194 @@ describe('Session', function () {
 
         expect($session->id())->toBe('test-session-id')
             ->and($session->sessionId)->toBe('test-session-id');
+    });
+
+    it('sends a host-provided token for MCP OAuth requests', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->with('session.mcp.oauth.handlePendingRequest', [
+                'requestId' => 'oauth-request-1',
+                'result' => [
+                    'kind' => 'token',
+                    'accessToken' => 'host-access-token',
+                    'expiresIn' => 3600,
+                    'tokenType' => 'Bearer',
+                ],
+                'sessionId' => 'session-1',
+            ])
+            ->once()
+            ->andReturn(['success' => true]);
+
+        $received = null;
+        $session = new Session('session-1', $client);
+        $session->registerMcpAuthHandler(function (McpAuthRequest $request, array $context) use (&$received): McpAuthToken {
+            $received = [$request, $context];
+
+            return new McpAuthToken('host-access-token', 'Bearer', 3600);
+        });
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'mcp.oauth_required',
+            'data' => [
+                'requestId' => 'oauth-request-1',
+                'serverName' => 'private-mcp',
+                'serverUrl' => 'https://mcp.example.test',
+                'reason' => 'initial',
+                'wwwAuthenticateParams' => ['scope' => 'read'],
+                'resourceMetadata' => '{"resource":"metadata"}',
+                'staticClientConfig' => ['clientId' => 'host-client'],
+            ],
+        ]));
+
+        expect($received[0])->toBeInstanceOf(McpAuthRequest::class)
+            ->and($received[0]->serverName)->toBe('private-mcp')
+            ->and($received[0]->wwwAuthenticateParams)->toBe(['scope' => 'read'])
+            ->and($received[1])->toBe(['sessionId' => 'session-1']);
+    });
+
+    it('sends array token data for MCP OAuth requests', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->with('session.mcp.oauth.handlePendingRequest', [
+                'requestId' => 'oauth-request-2',
+                'result' => [
+                    'kind' => 'token',
+                    'accessToken' => 'array-token',
+                ],
+                'sessionId' => 'session-1',
+            ])
+            ->once()
+            ->andReturn(['success' => true]);
+
+        $session = new Session('session-1', $client);
+        $session->registerMcpAuthHandler(fn () => ['accessToken' => 'array-token']);
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'mcp.oauth_required',
+            'data' => ['requestId' => 'oauth-request-2'],
+        ]));
+    });
+
+    it('sends token results for MCP OAuth requests', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->with('session.mcp.oauth.handlePendingRequest', [
+                'requestId' => 'oauth-request-result',
+                'result' => [
+                    'kind' => 'token',
+                    'accessToken' => 'result-token',
+                    'expiresIn' => 1800,
+                    'tokenType' => 'Bearer',
+                ],
+                'sessionId' => 'session-1',
+            ])
+            ->once()
+            ->andReturn(['success' => true]);
+
+        $session = new Session('session-1', $client);
+        $session->registerMcpAuthHandler(fn () => new McpAuthResult(
+            kind: 'token',
+            accessToken: 'result-token',
+            tokenType: 'Bearer',
+            expiresIn: 1800,
+        ));
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'mcp.oauth_required',
+            'data' => ['requestId' => 'oauth-request-result'],
+        ]));
+    });
+
+    it('cancels MCP OAuth requests when the handler declines', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->with('session.mcp.oauth.handlePendingRequest', [
+                'requestId' => 'oauth-request-3',
+                'result' => ['kind' => 'cancelled'],
+                'sessionId' => 'session-1',
+            ])
+            ->once()
+            ->andReturn(['success' => true]);
+
+        $session = new Session('session-1', $client);
+        $session->registerMcpAuthHandler(fn () => new McpAuthResult('cancelled'));
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'mcp.oauth_required',
+            'data' => ['requestId' => 'oauth-request-3'],
+        ]));
+    });
+
+    it('cancels MCP OAuth requests when the handler returns null', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->with('session.mcp.oauth.handlePendingRequest', [
+                'requestId' => 'oauth-request-null',
+                'result' => ['kind' => 'cancelled'],
+                'sessionId' => 'session-1',
+            ])
+            ->once()
+            ->andReturn(['success' => true]);
+
+        $session = new Session('session-1', $client);
+        $session->registerMcpAuthHandler(fn () => null);
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'mcp.oauth_required',
+            'data' => ['requestId' => 'oauth-request-null'],
+        ]));
+    });
+
+    it('cancels MCP OAuth requests when the handler throws', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->with('session.mcp.oauth.handlePendingRequest', [
+                'requestId' => 'oauth-request-4',
+                'result' => ['kind' => 'cancelled'],
+                'sessionId' => 'session-1',
+            ])
+            ->once()
+            ->andReturn(['success' => true]);
+
+        $session = new Session('session-1', $client);
+        $session->registerMcpAuthHandler(fn () => throw new RuntimeException('token unavailable'));
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'mcp.oauth_required',
+            'data' => ['requestId' => 'oauth-request-4'],
+        ]));
+    });
+
+    it('warns and does not respond when MCP OAuth has no handler', function () {
+        Log::spy();
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->never();
+
+        $session = new Session('session-1', $client);
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'mcp.oauth_required',
+            'data' => ['requestId' => 'oauth-request-5'],
+        ]));
+
+        Log::shouldHaveReceived('warning')
+            ->once()
+            ->with('Received MCP OAuth request without a registered MCP auth handler.', [
+                'sessionId' => 'session-1',
+                'requestId' => 'oauth-request-5',
+            ]);
+    });
+
+    it('ignores MCP OAuth events without a request ID', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->never();
+
+        $handlerCalls = 0;
+        $session = new Session('session-1', $client);
+        $session->registerMcpAuthHandler(function () use (&$handlerCalls): null {
+            $handlerCalls++;
+
+            return null;
+        });
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'mcp.oauth_required',
+            'data' => ['serverName' => 'private-mcp'],
+        ]));
+
+        expect($handlerCalls)->toBe(0);
     });
 
     it('send dispatches session.send request', function () {

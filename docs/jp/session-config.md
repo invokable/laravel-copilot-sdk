@@ -11,6 +11,8 @@ use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SystemMessageConfig;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\UserInputRequest;
+use Revolution\Copilot\Types\McpAuthRequest;
+use Revolution\Copilot\Types\McpAuthToken;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverrideSupports;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverrideLimits;
@@ -142,6 +144,15 @@ $config = new SessionConfig(
     onElicitationRequest: function (ElicitationContext $context) {
         // エリシテーションリクエストを処理
         return ['action' => 'accept', 'content' => ['field' => 'value']];
+    },
+
+    // MCPサーバーがOAuth認証を要求したときにホスト側でトークンを取得
+    onMcpAuthRequest: function (McpAuthRequest $request, array $context): ?McpAuthToken {
+        $accessToken = $credentialProvider->tokenFor($request->serverName);
+
+        return $accessToken === null
+            ? null
+            : new McpAuthToken(accessToken: $accessToken, tokenType: 'Bearer');
     },
 
     // プランモード終了リクエストのハンドラー
