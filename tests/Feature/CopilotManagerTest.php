@@ -9,7 +9,11 @@ use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\CopilotManager;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\MemoryConfiguration;
+use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\ToolSearchConfig;
 
 use function Pest\Laravel\mock;
 
@@ -166,7 +170,11 @@ describe('CopilotManager', function () {
 
         $mockClient = Mockery::mock(CopilotClient::class);
         $mockClient->shouldReceive('start')->once();
-        $mockClient->shouldReceive('createSession')->once()->andReturn($mockSession);
+        $mockClient->shouldReceive('createSession')
+            ->with(Mockery::on(fn ($config) => $config->toolSearch instanceof ToolSearchConfig
+                && $config->toolSearch->enabled === true))
+            ->once()
+            ->andReturn($mockSession);
         $mockClient->shouldReceive('stop')->andReturn([]);
 
         $this->app->bind(Client::class, fn () => $mockClient);
@@ -180,7 +188,7 @@ describe('CopilotManager', function () {
             $receivedSession = $session;
 
             return 'callback-result';
-        });
+        }, config: new SessionConfig(toolSearch: new ToolSearchConfig(enabled: true)));
 
         expect($callbackCalled)->toBeTrue()
             ->and($receivedSession)->toBe($mockSession)
@@ -249,13 +257,17 @@ describe('CopilotManager', function () {
 
         $mockClient = Mockery::mock(CopilotClient::class);
         $mockClient->shouldReceive('start')->once();
-        $mockClient->shouldReceive('createSession')->once()->andReturn($mockSession);
+        $mockClient->shouldReceive('createSession')
+            ->with(Mockery::on(fn ($config) => $config->memory instanceof MemoryConfiguration
+                && $config->memory->enabled))
+            ->once()
+            ->andReturn($mockSession);
         $mockClient->shouldReceive('stop')->andReturn([]);
 
         $this->app->bind(Client::class, fn () => $mockClient);
 
         $manager = new CopilotManager(['timeout' => 60.0]);
-        $result = $manager->run('test prompt');
+        $result = $manager->run('test prompt', config: new SessionConfig(memory: new MemoryConfiguration(enabled: true)));
 
         expect($result)->toBe($mockEvent)
             ->and($result->content())->toBe('Test response');
@@ -355,13 +367,21 @@ describe('CopilotManager', function () {
             $mockSession->expects('disconnect')->once();
 
             $mock->expects('start')->once();
-            $mock->expects('resumeSession')->once()->andReturn($mockSession);
+            $mock->expects('resumeSession')
+                ->with('resume-id', Mockery::on(fn ($config) => $config->toolSearch instanceof ToolSearchConfig
+                    && $config->toolSearch->deferThreshold === 9))
+                ->once()
+                ->andReturn($mockSession);
             $mock->expects('stop')->andReturn([]);
         });
         $this->app->bind(Client::class, fn () => $mockClient);
 
         $manager = new CopilotManager;
-        $manager->start(function () {}, resume: 'resume-id');
+        $manager->start(
+            function () {},
+            config: new ResumeSessionConfig(toolSearch: new ToolSearchConfig(enabled: true, deferThreshold: 9)),
+            resume: 'resume-id',
+        );
 
         $manager->stop();
     });

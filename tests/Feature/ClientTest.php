@@ -14,8 +14,17 @@ use Revolution\Copilot\Protocol;
 use Revolution\Copilot\Session;
 use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Transport\StdioTransport;
+use Revolution\Copilot\Types\CanvasProviderIdentity;
 use Revolution\Copilot\Types\CommandDefinition;
+use Revolution\Copilot\Types\ImageGenerationConfig;
+use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ModelInfo;
+use Revolution\Copilot\Types\NamedProviderConfig;
+use Revolution\Copilot\Types\ProviderModelConfig;
+use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
+use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\ToolSearchConfig;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
@@ -228,7 +237,19 @@ describe('Client', function () {
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
             ->with('session.create', Mockery::on(fn ($params) => ($params['askUserVariant'] ?? null) === 'elicitation'
-                && ($params['capi'] ?? null) === ['autoTier' => 'balance']))
+                && ($params['capi'] ?? null) === ['autoTier' => 'balance']
+                && ($params['toolSearch'] ?? null) === ['enabled' => true, 'deferThreshold' => 12]
+                && ($params['imageGeneration'] ?? null) === ['enabled' => true]
+                && ($params['canvasProvider'] ?? null) === ['id' => 'host-canvas']
+                && ($params['providers'] ?? null) === [['name' => 'openai', 'baseUrl' => 'https://api.example.com']]
+                && ($params['models'] ?? null) === [['id' => 'gpt-custom', 'provider' => 'openai']]
+                && ($params['memory'] ?? null) === ['enabled' => true]
+                && ($params['featureFlags'] ?? null) === ['feature-a' => true]
+                && ($params['expAssignments'] ?? null) === ['assignment' => 'treatment']
+                && ($params['refreshCustomInstructions'] ?? null) === true
+                && ($params['diagnostics'] ?? null) === ['sources' => ['mcp' => ['level' => 'debug']]]
+                && ! array_key_exists('requestMcpApps', $params)
+                && ! array_key_exists('enableMcpApps', $params)))
             ->once()
             ->andReturn(['sessionId' => 'test-session-123']);
 
@@ -247,11 +268,22 @@ describe('Client', function () {
 
         $client = new Client;
         $client->start();
-        $session = $client->createSession([
-            'onPermissionRequest' => PermissionHandler::approveAll(),
-            'askUserVariant' => 'elicitation',
-            'capi' => ['autoTier' => 'balance'],
-        ]);
+        $session = $client->createSession(new SessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            askUserVariant: 'elicitation',
+            capi: ['autoTier' => 'balance'],
+            toolSearch: new ToolSearchConfig(enabled: true, deferThreshold: 12),
+            imageGeneration: new ImageGenerationConfig(enabled: true),
+            canvasProvider: new CanvasProviderIdentity(id: 'host-canvas'),
+            providers: [new NamedProviderConfig(name: 'openai', baseUrl: 'https://api.example.com')],
+            models: [new ProviderModelConfig(id: 'gpt-custom', provider: 'openai')],
+            memory: new MemoryConfiguration(enabled: true),
+            featureFlags: ['feature-a' => true],
+            expAssignments: ['assignment' => 'treatment'],
+            refreshCustomInstructions: true,
+            diagnostics: ['sources' => ['mcp' => ['level' => 'debug']]],
+            enableMcpApps: false,
+        ));
 
         expect($session)->toBe($mockSession);
 
@@ -446,7 +478,19 @@ describe('Client', function () {
                 && ($params['customAgentsLocalOnly'] ?? null) === true
                 && ! array_key_exists('skipCustomInstructions', $params)
                 && ! array_key_exists('coauthorEnabled', $params)
-                && ! array_key_exists('manageScheduleEnabled', $params)))
+                && ! array_key_exists('manageScheduleEnabled', $params)
+                && ! array_key_exists('toolSearch', $params)
+                && ! array_key_exists('providers', $params)
+                && ! array_key_exists('models', $params)
+                && ! array_key_exists('memory', $params)
+                && ! array_key_exists('imageGeneration', $params)
+                && ! array_key_exists('canvasProvider', $params)
+                && ! array_key_exists('featureFlags', $params)
+                && ! array_key_exists('expAssignments', $params)
+                && ! array_key_exists('refreshCustomInstructions', $params)
+                && ! array_key_exists('diagnostics', $params)
+                && ! array_key_exists('requestMcpApps', $params)
+                && ! array_key_exists('enableMcpApps', $params)))
             ->once()
             ->andReturn(['sessionId' => 'test-session-123']);
         $mockRpcClient->shouldReceive('request')
@@ -566,7 +610,19 @@ describe('Client', function () {
                 && ($params['pluginDirectories'] ?? null) === ['/app/plugins/reviewer']
                 && ($params['instructionDirectories'] ?? null) === ['/app/instructions']
                 && ($params['remoteSession'] ?? null) === 'export'
-                && ($params['cloud']['repository'] ?? null) === ['owner' => 'myorg', 'name' => 'myrepo', 'branch' => 'main']))
+                && ($params['cloud']['repository'] ?? null) === ['owner' => 'myorg', 'name' => 'myrepo', 'branch' => 'main']
+                && ($params['toolSearch'] ?? null) === ['enabled' => true, 'deferThreshold' => 12]
+                && ($params['imageGeneration'] ?? null) === ['enabled' => true]
+                && ($params['canvasProvider'] ?? null) === ['id' => 'host-canvas']
+                && ($params['providers'] ?? null) === [['name' => 'openai', 'baseUrl' => 'https://api.example.com']]
+                && ($params['models'] ?? null) === [['id' => 'gpt-custom', 'provider' => 'openai']]
+                && ($params['memory'] ?? null) === ['enabled' => true]
+                && ($params['featureFlags'] ?? null) === ['feature-a' => true]
+                && ($params['expAssignments'] ?? null) === ['assignment' => 'treatment']
+                && ($params['refreshCustomInstructions'] ?? null) === false
+                && ($params['diagnostics'] ?? null) === ['sources' => ['mcp' => ['level' => 'debug']]]
+                && ($params['requestMcpApps'] ?? null) === true
+                && ! array_key_exists('enableMcpApps', $params)))
             ->once()
             ->andReturn(['sessionId' => 'test-session-123']);
 
@@ -590,6 +646,17 @@ describe('Client', function () {
             'pluginDirectories' => ['/app/plugins/reviewer'],
             'instructionDirectories' => ['/app/instructions'],
             'remoteSession' => 'export',
+            'toolSearch' => new ToolSearchConfig(enabled: true, deferThreshold: 12),
+            'imageGeneration' => new ImageGenerationConfig(enabled: true),
+            'canvasProvider' => new CanvasProviderIdentity(id: 'host-canvas'),
+            'providers' => [new NamedProviderConfig(name: 'openai', baseUrl: 'https://api.example.com')],
+            'models' => [new ProviderModelConfig(id: 'gpt-custom', provider: 'openai')],
+            'memory' => new MemoryConfiguration(enabled: true),
+            'featureFlags' => ['feature-a' => true],
+            'expAssignments' => ['assignment' => 'treatment'],
+            'refreshCustomInstructions' => false,
+            'diagnostics' => ['sources' => ['mcp' => ['level' => 'debug']]],
+            'enableMcpApps' => true,
             'cloud' => [
                 'repository' => [
                     'owner' => 'myorg',
@@ -639,7 +706,21 @@ describe('Client', function () {
                     && ! array_key_exists('handler', $cmds[0])
                     && ($params['askUserVariant'] ?? null) === 'legacy'
                     && ($params['capi'] ?? null) === ['autoTier' => 'efficiency']
-                    && ($params['enforceManagedModelDefaults'] ?? null) === true;
+                    && ($params['enforceManagedModelDefaults'] ?? null) === true
+                    && ! array_key_exists('toolSearch', $params)
+                    && ! array_key_exists('providers', $params)
+                    && ! array_key_exists('models', $params)
+                    && ! array_key_exists('memory', $params)
+                    && ! array_key_exists('imageGeneration', $params)
+                    && ! array_key_exists('canvasProvider', $params)
+                    && ! array_key_exists('featureFlags', $params)
+                    && ! array_key_exists('expAssignments', $params)
+                    && ! array_key_exists('diagnostics', $params)
+                    && ! array_key_exists('enableCitations', $params)
+                    && ! array_key_exists('excludedBuiltinAgents', $params)
+                    && ! array_key_exists('sessionLimits', $params)
+                    && ! array_key_exists('requestMcpApps', $params)
+                    && ! array_key_exists('enableMcpApps', $params);
             }))
             ->once()
             ->andReturn(['sessionId' => 'test-session-123']);
@@ -693,7 +774,20 @@ describe('Client', function () {
                 && ($params['instructionDirectories'] ?? null) === ['/app/instructions']
                 && ($params['remoteSession'] ?? null) === 'export'
                 && ($params['largeOutput'] ?? null) === ['enabled' => true, 'maxSizeBytes' => 1024]
-                && ($params['enableMcpApps'] ?? null) === true
+                && ($params['requestMcpApps'] ?? null) === true
+                && ! array_key_exists('enableMcpApps', $params)
+                && ($params['toolSearch'] ?? null) === ['enabled' => true, 'deferThreshold' => 8]
+                && ($params['imageGeneration'] ?? null) === ['enabled' => true]
+                && ($params['canvasProvider'] ?? null) === ['id' => 'resume-host']
+                && ($params['providers'] ?? null) === [['name' => 'anthropic', 'baseUrl' => 'https://api.anthropic.com']]
+                && ($params['models'] ?? null) === [['id' => 'claude-custom', 'provider' => 'anthropic']]
+                && ($params['memory'] ?? null) === ['enabled' => true]
+                && ($params['featureFlags'] ?? null) === ['resume-feature' => false]
+                && ($params['expAssignments'] ?? null) === ['resume-assignment' => 'control']
+                && ($params['diagnostics'] ?? null) === ['sources' => ['mcp' => ['level' => 'trace']]]
+                && ($params['enableCitations'] ?? null) === false
+                && ($params['excludedBuiltinAgents'] ?? null) === ['explainer']
+                && ($params['sessionLimits'] ?? null) === ['maxAiCredits' => 20.0]
                 && ($params['enableSkills'] ?? null) === true
                 && ! array_key_exists('cloud', $params)))
             ->once()
@@ -720,6 +814,18 @@ describe('Client', function () {
             'instructionDirectories' => ['/app/instructions'],
             'remoteSession' => 'export',
             'largeOutput' => ['enabled' => true, 'maxSizeBytes' => 1024],
+            'toolSearch' => new ToolSearchConfig(enabled: true, deferThreshold: 8),
+            'imageGeneration' => new ImageGenerationConfig(enabled: true),
+            'canvasProvider' => new CanvasProviderIdentity(id: 'resume-host'),
+            'providers' => [new NamedProviderConfig(name: 'anthropic', baseUrl: 'https://api.anthropic.com')],
+            'models' => [new ProviderModelConfig(id: 'claude-custom', provider: 'anthropic')],
+            'memory' => new MemoryConfiguration(enabled: true),
+            'featureFlags' => ['resume-feature' => false],
+            'expAssignments' => ['resume-assignment' => 'control'],
+            'diagnostics' => ['sources' => ['mcp' => ['level' => 'trace']]],
+            'enableCitations' => false,
+            'excludedBuiltinAgents' => ['explainer'],
+            'sessionLimits' => new SessionLimitsConfig(maxAiCredits: 20),
             'enableMcpApps' => true,
             'enableSkills' => true,
             'cloud' => [
@@ -833,7 +939,20 @@ describe('Client', function () {
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
-            ->with('session.resume', Mockery::any())
+            ->with('session.resume', Mockery::on(fn ($params) => ($params['toolSearch'] ?? null) === ['enabled' => true, 'deferThreshold' => 6]
+                && ($params['imageGeneration'] ?? null) === ['enabled' => true]
+                && ($params['canvasProvider'] ?? null) === ['id' => 'resume-object-host']
+                && ($params['providers'] ?? null) === [['name' => 'provider', 'baseUrl' => 'https://api.example.com']]
+                && ($params['models'] ?? null) === [['id' => 'custom-model', 'provider' => 'provider']]
+                && ($params['memory'] ?? null) === ['enabled' => true]
+                && ($params['featureFlags'] ?? null) === ['object-feature' => true]
+                && ($params['expAssignments'] ?? null) === ['assignment' => 'treatment']
+                && ($params['diagnostics'] ?? null) === ['sources' => ['mcp' => ['level' => 'debug']]]
+                && ($params['enableCitations'] ?? null) === true
+                && ($params['excludedBuiltinAgents'] ?? null) === ['explainer']
+                && ($params['sessionLimits'] ?? null) === ['maxAiCredits' => 5.0]
+                && ! array_key_exists('requestMcpApps', $params)
+                && ! array_key_exists('enableMcpApps', $params)))
             ->once()
             ->andReturn(['sessionId' => 'test-session-123']);
         $mockRpcClient->shouldReceive('request')
@@ -862,13 +981,25 @@ describe('Client', function () {
 
         $client = new Client;
         $client->start();
-        $session = $client->resumeSession('test-session-123', [
-            'onPermissionRequest' => PermissionHandler::approveAll(),
-            'skipCustomInstructions' => true,
-            'customAgentsLocalOnly' => true,
-            'coauthorEnabled' => false,
-            'manageScheduleEnabled' => true,
-        ]);
+        $session = $client->resumeSession('test-session-123', new ResumeSessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            skipCustomInstructions: true,
+            customAgentsLocalOnly: true,
+            coauthorEnabled: false,
+            manageScheduleEnabled: true,
+            toolSearch: new ToolSearchConfig(enabled: true, deferThreshold: 6),
+            imageGeneration: new ImageGenerationConfig(enabled: true),
+            canvasProvider: new CanvasProviderIdentity(id: 'resume-object-host'),
+            providers: [new NamedProviderConfig(name: 'provider', baseUrl: 'https://api.example.com')],
+            models: [new ProviderModelConfig(id: 'custom-model', provider: 'provider')],
+            memory: new MemoryConfiguration(enabled: true),
+            featureFlags: ['object-feature' => true],
+            expAssignments: ['assignment' => 'treatment'],
+            diagnostics: ['sources' => ['mcp' => ['level' => 'debug']]],
+            enableCitations: true,
+            excludedBuiltinAgents: ['explainer'],
+            sessionLimits: new SessionLimitsConfig(maxAiCredits: 5),
+        ));
 
         expect($session)->toBe($mockSession);
 
