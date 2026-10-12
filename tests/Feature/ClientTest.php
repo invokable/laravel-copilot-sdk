@@ -23,7 +23,6 @@ use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\ImageGenerationConfig;
 use Revolution\Copilot\Types\MemoryConfiguration;
-use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\NamedProviderConfig;
 use Revolution\Copilot\Types\ProviderModelConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
