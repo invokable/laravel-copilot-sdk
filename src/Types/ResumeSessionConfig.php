@@ -67,8 +67,6 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                           When provided, enables `exitPlanMode.request` callbacks.
      * @param  ?Closure  $onAutoModeSwitchRequest  Handler for auto-mode-switch requests from the agent.
      *                                             When provided, enables `autoModeSwitch.request` callbacks.
-     * @param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
-     *                                                                                                         Handler for host-provided OAuth tokens requested by MCP servers.
      * @param  AskUserVariant|string|null  $askUserVariant  Variant of the built-in ask_user tool.
      * @param  ?bool  $enableSessionTelemetry  Enables or disables internal session telemetry.
      *                                         When false, disables session telemetry. When omitted or true,
@@ -163,6 +161,9 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  SandboxConfig|array|null  $sandbox  Sandbox policy for this session.
      * @param  ?bool  $enforceManagedModelDefaults  When true, conflicts with non-overridable managed model controls are rejected.
      * @param  ImageGenerationConfig|array|null  $imageGeneration  Image generation opt-in. Re-supply after runtime restart.
+     * @param  ?Closure  $onMcpAuthRequest  Handler for host-provided OAuth tokens requested by MCP servers.
+     *
+     * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
     public function __construct(
         public ?string $clientName = null,
@@ -183,7 +184,6 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?Closure $onElicitationRequest = null,
         public ?Closure $onExitPlanModeRequest = null,
         public ?Closure $onAutoModeSwitchRequest = null,
-        public ?Closure $onMcpAuthRequest = null,
         public ?bool $enableSessionTelemetry = null,
         public ?bool $enableGitHubTelemetryForwarding = null,
         public SessionHooks|array|null $hooks = null,
@@ -251,6 +251,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public SessionFsProvider|array|null $sessionFsProvider = null,
         public ?bool $enforceManagedModelDefaults = null,
         public ImageGenerationConfig|array|null $imageGeneration = null,
+        public ?Closure $onMcpAuthRequest = null,
     ) {}
 
     /**

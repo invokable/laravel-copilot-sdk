@@ -12,6 +12,11 @@ use Illuminate\Support\Arr;
  */
 readonly class McpAuthRequest implements Arrayable
 {
+    /**
+     * @param  'initial'|'refresh'|'reauth'|'upscope'  $reason
+     * @param  array{resourceMetadataUrl?: string, scope?: string, error?: string}|null  $wwwAuthenticateParams
+     * @param  array{clientId: string, clientSecret?: string, grantType?: 'client_credentials', publicClient?: bool, scope?: string}|null  $staticClientConfig
+     */
     public function __construct(
         public string $requestId,
         public string $serverName,

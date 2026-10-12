@@ -15,7 +15,11 @@ use Revolution\Copilot\Session;
 use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\CommandDefinition;
+use Revolution\Copilot\Types\McpAuthRequest;
+use Revolution\Copilot\Types\McpAuthToken;
 use Revolution\Copilot\Types\ModelInfo;
+use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\SessionEvent;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
@@ -257,6 +261,106 @@ describe('Client', function () {
 
         fclose($stdin);
         fclose($stdout);
+    });
+
+    it('registers MCP OAuth interest and its handler after creating a session', function () {
+        Event::fake();
+
+        $handlerContext = null;
+        $handler = function (McpAuthRequest $request, array $context) use (&$handlerContext): McpAuthToken {
+            $handlerContext = [$request->serverName, $context];
+
+            return new McpAuthToken('host-token');
+        };
+
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn (array $params) => ! array_key_exists('onMcpAuthRequest', $params)))
+            ->once()
+            ->ordered()
+            ->andReturn(['sessionId' => 'created-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.eventLog.registerInterest', [
+                'sessionId' => 'created-session',
+                'eventType' => 'mcp.oauth_required',
+            ])
+            ->once()
+            ->ordered()
+            ->andReturn(['handle' => 'oauth-interest']);
+        $rpc->shouldReceive('request')
+            ->with('session.mcp.oauth.handlePendingRequest', [
+                'requestId' => 'oauth-request',
+                'result' => ['kind' => 'token', 'accessToken' => 'host-token'],
+                'sessionId' => 'created-session',
+            ])
+            ->once()
+            ->ordered()
+            ->andReturn(['success' => true]);
+
+        $client = new Client;
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $session = $client->createSession(new SessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            onMcpAuthRequest: $handler,
+        ));
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'mcp.oauth_required',
+            'data' => [
+                'requestId' => 'oauth-request',
+                'serverName' => 'private-mcp',
+                'serverUrl' => 'https://mcp.example.test',
+                'reason' => 'initial',
+            ],
+        ]));
+
+        expect($handlerContext)->toBe(['private-mcp', ['sessionId' => 'created-session']]);
+    });
+
+    it('registers MCP OAuth interest when resuming a session with a callback alias', function () {
+        Event::fake();
+
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.resume', Mockery::on(fn (array $params) => ! array_key_exists('onMcpAuthRequest', $params)))
+            ->once()
+            ->ordered()
+            ->andReturn(['sessionId' => 'resumed-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.eventLog.registerInterest', [
+                'sessionId' => 'resumed-session',
+                'eventType' => 'mcp.oauth_required',
+            ])
+            ->once()
+            ->ordered()
+            ->andReturn(['handle' => 'oauth-interest']);
+        $rpc->shouldReceive('request')
+            ->with('session.mcp.oauth.handlePendingRequest', [
+                'requestId' => 'resume-oauth-request',
+                'result' => ['kind' => 'cancelled'],
+                'sessionId' => 'resumed-session',
+            ])
+            ->once()
+            ->ordered()
+            ->andReturn(['success' => true]);
+
+        $client = new Client;
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $session = $client->resumeSession('resumed-session', [
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+            'on_mcp_auth_request' => fn () => null,
+        ]);
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'mcp.oauth_required',
+            'data' => ['requestId' => 'resume-oauth-request'],
+        ]));
+
+        expect($session->id())->toBe('resumed-session');
     });
 
     it('createSession sends only name/description for array commands in RPC request', function () {

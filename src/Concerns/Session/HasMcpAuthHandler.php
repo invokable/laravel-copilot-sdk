@@ -22,12 +22,12 @@ use Throwable;
 trait HasMcpAuthHandler
 {
     /**
-     * @var Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null
+     * @var Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array{accessToken?: string, tokenType?: string, expiresIn?: int, kind?: 'token'|'cancelled'}|null
      */
     protected ?Closure $mcpAuthHandler = null;
 
     /**
-     * @param  Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null  $handler
+     * @param  Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array{accessToken?: string, tokenType?: string, expiresIn?: int, kind?: 'token'|'cancelled'}|null  $handler
      *
      * @internal
      */

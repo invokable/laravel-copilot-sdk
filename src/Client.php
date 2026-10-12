@@ -354,7 +354,7 @@ class Client implements CopilotClient
     /**
      * Create a new conversation session.
      *
-     * @param  SessionConfig|array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, excluded_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  SessionConfig|array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws JsonRpcException
      */
@@ -612,7 +612,7 @@ class Client implements CopilotClient
     /**
      * Resume an existing session.
      *
-     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws JsonRpcException
      */
@@ -965,18 +965,6 @@ class Client implements CopilotClient
             }
         }
 
-        private function registerMcpAuthRequestInterest(string $sessionId, array $config): void
-        {
-            if (! isset($config['onMcpAuthRequest']) || ! is_callable($config['onMcpAuthRequest'])) {
-                return;
-            }
-
-            $this->rpcClient->request('session.eventLog.registerInterest', [
-                'sessionId' => $sessionId,
-                'eventType' => 'mcp.oauth_required',
-            ]);
-        }
-
         if ($hooks !== null) {
             $session->registerHooks($hooks);
         }
@@ -984,6 +972,18 @@ class Client implements CopilotClient
         if (isset($config['onEvent']) && is_callable($config['onEvent'])) {
             $session->on($config['onEvent']);
         }
+    }
+
+    private function registerMcpAuthRequestInterest(string $sessionId, array $config): void
+    {
+        if (! isset($config['onMcpAuthRequest']) || ! is_callable($config['onMcpAuthRequest'])) {
+            return;
+        }
+
+        $this->rpcClient->request('session.eventLog.registerInterest', [
+            'sessionId' => $sessionId,
+            'eventType' => 'mcp.oauth_required',
+        ]);
     }
 
     private function acquireGitHubToken(array $params): array
