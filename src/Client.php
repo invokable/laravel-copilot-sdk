@@ -574,9 +574,6 @@ class Client implements CopilotClient
         if ($preRegisteredSessionId === null) {
             $this->registerSessionHandlers($session, $tools, $commands, $config, $hooks);
         }
-        if ($preRegisteredSessionId === null && $bearerTokenProviders !== []) {
-            $this->bearerTokenProviders[$sessionId] = $bearerTokenProviders;
-        }
         $session->setWorkspacePath($workspacePath);
         if ($tokenProviderRegistrationId !== null || $bearerTokenProviders !== []) {
             $session->setOnDisconnected(function () use ($tokenProviderRegistrationId, $sessionId): void {
@@ -589,6 +586,9 @@ class Client implements CopilotClient
         $session->setCapabilities($capabilities);
         $session->registerSkillProvider($skillProvider);
         $session->registerSessionFsProvider($sessionFsProvider);
+        if ($preRegisteredSessionId === null && $bearerTokenProviders !== []) {
+            $this->bearerTokenProviders[$sessionId] = $bearerTokenProviders;
+        }
         $this->sessions[$sessionId] = $session;
 
         try {
