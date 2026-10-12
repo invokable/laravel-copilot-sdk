@@ -13,6 +13,7 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
+use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 
 /**
  * Configuration for resuming a session.
@@ -48,12 +49,15 @@ readonly class ResumeSessionConfig implements Arrayable
      *                            When the CLI has a TUI, each command appears as `/name` for the user to invoke.
      *                            Each entry should have 'name', 'handler', and optionally 'description'.
      * @param  SystemMessageConfig|array|null  $systemMessage  System message configuration. Controls how the system prompt is constructed.
+     * @param  ToolSearchConfig|array|null  $toolSearch  Override for the runtime's built-in tool-search behavior.
      * @param  ?array  $availableTools  List of source-qualified tool filters to allow. When specified, only these tools will be available.
      *                                  Examples: `builtin:*`, `builtin:bash`, `mcp:*`, `mcp:github-read_issue`, `custom:*`.
      * @param  ?array  $excludedTools  List of source-qualified tool filters to disable. When both lists are set,
      *                                 excludedTools wins (`toolFilterPrecedence: "excluded"`).
      * @param  ProviderConfig|array|null  $provider  Custom provider configuration (BYOK - Bring Your Own Key).
      *                                               When specified, uses the provided API endpoint instead of the Copilot API.
+     * @param  NamedProviderConfig[]|null  $providers  Named BYOK provider connections (transport + credentials).
+     * @param  ProviderModelConfig[]|null  $models  BYOK model definitions added to the session's selectable model list.
      * @param  CapiSessionOptions|array|null  $capi  Provider-scoped options for the built-in Copilot API (CAPI), such as
      *                                               opting out of the WebSocket Responses transport. See {@see CapiSessionOptions}.
      * @param  ?Closure  $onPermissionRequest  Handler for permission requests from the server.
@@ -109,6 +113,7 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  InfiniteSessionConfig|array|null  $infiniteSessions  Infinite session configuration for persistent workspaces and automatic compaction.
      *                                                              When enabled (default), sessions automatically manage context limits and persist state.
      *                                                              Set to `new InfiniteSessionConfig(enabled: false)` to disable.
+     * @param  MemoryConfiguration|array|null  $memory  Memory configuration for the session. When omitted, the runtime default applies.
      * @param  ?bool  $suppressResumeEvent  When true, skips emitting the session.resume event.
      *                                      Useful for reconnecting to a session without triggering resume-related side effects.
      * @param  ?bool  $continuePendingWork  When true, tool calls and permission requests left in flight by the previous session lifetime
@@ -146,10 +151,14 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?bool  $enableSessionStore  When true, enables the cross-session store for search and retrieval.
      * @param  ?bool  $enableSkills  When true, enables skill loading.
      * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of the original prompt.
+     * @param  ?bool  $enableCitations  Experimental: enable native model citations, normalized onto the `assistant.message` event.
+     * @param  ?array  $excludedBuiltinAgents  Names of built-in agents to exclude from the session.
+     * @param  SessionLimitsConfig|array|null  $sessionLimits  Limits applied to this session's current accounting window.
      * @param  ?array  $featureFlags  Feature-flag values resolved by the host for this session. Re-supply them when resuming after a runtime restart.
      * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
      *                                                                   path as CLI-fetched assignments. Applies to both session creation and resume. @internal
      * @param  ?bool  $enableManagedSettings  When true, the runtime self-fetches enterprise managed settings.
+     * @param  CanvasProviderIdentity|array|null  $canvasProvider  Stable identity for a host/SDK connection that supplies built-in canvases.
      * @param  ?bool  $enableFileChangeTracking  Opt in to capturing file changes for session rewind and cumulative diffs.
      * @param  ?array  $disabledMcpServers  Exact MCP server names to disable for this session.
      * @param  ManagedSettings|array|null  $managedSettings  Host-injected enterprise managed permissions for this session.
@@ -252,6 +261,14 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?bool $enforceManagedModelDefaults = null,
         public ImageGenerationConfig|array|null $imageGeneration = null,
         public ?Closure $onMcpAuthRequest = null,
+        public ToolSearchConfig|array|null $toolSearch = null,
+        public ?array $providers = null,
+        public ?array $models = null,
+        public MemoryConfiguration|array|null $memory = null,
+        public ?bool $enableCitations = null,
+        public ?array $excludedBuiltinAgents = null,
+        public SessionLimitsConfig|array|null $sessionLimits = null,
+        public CanvasProviderIdentity|array|null $canvasProvider = null,
     ) {}
 
     /**
@@ -264,6 +281,13 @@ readonly class ResumeSessionConfig implements Arrayable
             $systemMessage = $data['systemMessage'] instanceof SystemMessageConfig
                 ? $data['systemMessage']
                 : SystemMessageConfig::fromArray($data['systemMessage']);
+        }
+
+        $toolSearch = null;
+        if (isset($data['toolSearch'])) {
+            $toolSearch = $data['toolSearch'] instanceof ToolSearchConfig
+                ? $data['toolSearch']
+                : ToolSearchConfig::fromArray($data['toolSearch']);
         }
 
         $provider = null;
@@ -285,6 +309,13 @@ readonly class ResumeSessionConfig implements Arrayable
             $infiniteSessions = $data['infiniteSessions'] instanceof InfiniteSessionConfig
                 ? $data['infiniteSessions']
                 : InfiniteSessionConfig::fromArray($data['infiniteSessions']);
+        }
+
+        $memory = null;
+        if (isset($data['memory'])) {
+            $memory = $data['memory'] instanceof MemoryConfiguration
+                ? $data['memory']
+                : MemoryConfiguration::fromArray($data['memory']);
         }
 
         $hooks = null;
@@ -315,6 +346,20 @@ readonly class ResumeSessionConfig implements Arrayable
                 : LargeToolOutputConfig::fromArray($data['largeOutput']);
         }
 
+        $sessionLimits = null;
+        if (isset($data['sessionLimits'])) {
+            $sessionLimits = $data['sessionLimits'] instanceof SessionLimitsConfig
+                ? $data['sessionLimits']
+                : SessionLimitsConfig::fromArray($data['sessionLimits']);
+        }
+
+        $canvasProvider = null;
+        if (isset($data['canvasProvider'])) {
+            $canvasProvider = $data['canvasProvider'] instanceof CanvasProviderIdentity
+                ? $data['canvasProvider']
+                : CanvasProviderIdentity::fromArray($data['canvasProvider']);
+        }
+
         return new self(
             clientName: $data['clientName'] ?? null,
             model: $data['model'] ?? null,
@@ -329,9 +374,12 @@ readonly class ResumeSessionConfig implements Arrayable
             tools: $data['tools'] ?? null,
             commands: $data['commands'] ?? null,
             systemMessage: $systemMessage,
+            toolSearch: $toolSearch,
             availableTools: $data['availableTools'] ?? null,
             excludedTools: $data['excludedTools'] ?? null,
             provider: $provider,
+            providers: $data['providers'] ?? null,
+            models: $data['models'] ?? null,
             capi: $capi,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
             onUserInputRequest: $data['onUserInputRequest'] ?? null,
@@ -360,6 +408,7 @@ readonly class ResumeSessionConfig implements Arrayable
             coauthorEnabled: $data['coauthorEnabled'] ?? null,
             manageScheduleEnabled: $data['manageScheduleEnabled'] ?? null,
             infiniteSessions: $infiniteSessions,
+            memory: $memory,
             suppressResumeEvent: $data['suppressResumeEvent'] ?? $data['disableResume'] ?? null,
             continuePendingWork: $data['continuePendingWork'] ?? null,
             openCanvases: $data['openCanvases'] ?? null,
@@ -389,12 +438,16 @@ readonly class ResumeSessionConfig implements Arrayable
             enableSessionStore: $data['enableSessionStore'] ?? null,
             enableSkills: $data['enableSkills'] ?? null,
             displayPrompt: $data['displayPrompt'] ?? null,
+            enableCitations: $data['enableCitations'] ?? null,
+            excludedBuiltinAgents: $data['excludedBuiltinAgents'] ?? null,
+            sessionLimits: $sessionLimits,
             featureFlags: $data['featureFlags'] ?? null,
             expAssignments: isset($data['expAssignments'])
                 ? ($data['expAssignments'] instanceof CopilotExpAssignmentResponse ? $data['expAssignments'] : CopilotExpAssignmentResponse::fromArray($data['expAssignments']))
                 : null,
             enableManagedSettings: $data['enableManagedSettings'] ?? null,
             enforceManagedModelDefaults: $data['enforceManagedModelDefaults'] ?? null,
+            canvasProvider: $canvasProvider,
             imageGeneration: isset($data['imageGeneration'])
                 ? ($data['imageGeneration'] instanceof ImageGenerationConfig ? $data['imageGeneration'] : ImageGenerationConfig::fromArray($data['imageGeneration']))
                 : null,
@@ -468,6 +521,22 @@ readonly class ResumeSessionConfig implements Arrayable
             ? $this->expAssignments->toArray()
             : $this->expAssignments;
 
+        $toolSearch = $this->toolSearch instanceof ToolSearchConfig
+            ? $this->toolSearch->toArray()
+            : $this->toolSearch;
+
+        $memory = $this->memory instanceof MemoryConfiguration
+            ? $this->memory->toArray()
+            : $this->memory;
+
+        $sessionLimits = $this->sessionLimits instanceof SessionLimitsConfig
+            ? $this->sessionLimits->toArray()
+            : $this->sessionLimits;
+
+        $canvasProvider = $this->canvasProvider instanceof CanvasProviderIdentity
+            ? $this->canvasProvider->toArray()
+            : $this->canvasProvider;
+
         return array_filter([
             'clientName' => $this->clientName,
             'model' => $this->model,
@@ -482,9 +551,12 @@ readonly class ResumeSessionConfig implements Arrayable
             'tools' => $this->tools,
             'commands' => $this->commands,
             'systemMessage' => $systemMessage,
+            'toolSearch' => $toolSearch,
             'availableTools' => $this->availableTools,
             'excludedTools' => $this->excludedTools,
             'provider' => $provider,
+            'providers' => $this->providers,
+            'models' => $this->models,
             'capi' => $capi,
             'onPermissionRequest' => $this->onPermissionRequest,
             'onUserInputRequest' => $this->onUserInputRequest,
@@ -512,6 +584,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'coauthorEnabled' => $this->coauthorEnabled,
             'manageScheduleEnabled' => $this->manageScheduleEnabled,
             'infiniteSessions' => $infiniteSessions,
+            'memory' => $memory,
             'disableResume' => $this->suppressResumeEvent,
             'continuePendingWork' => $this->continuePendingWork,
             'openCanvases' => $this->openCanvases,
@@ -539,9 +612,13 @@ readonly class ResumeSessionConfig implements Arrayable
             'enableSessionStore' => $this->enableSessionStore,
             'enableSkills' => $this->enableSkills,
             'displayPrompt' => $this->displayPrompt,
+            'enableCitations' => $this->enableCitations,
+            'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
+            'sessionLimits' => $sessionLimits,
             'featureFlags' => $this->featureFlags,
             'expAssignments' => $expAssignments,
             'enableManagedSettings' => $this->enableManagedSettings,
+            'canvasProvider' => $canvasProvider,
             'enforceManagedModelDefaults' => $this->enforceManagedModelDefaults,
             'imageGeneration' => $this->imageGeneration instanceof ImageGenerationConfig
                 ? $this->imageGeneration->toArray()

@@ -108,6 +108,9 @@ $config = new SessionConfig(
     // 配列での指定も可能
     // memory: ['enabled' => true],
 
+    // これらのBYOK・メモリ設定は、作成時と再開時のRPCペイロードに送信される。
+    // 再開時はResumeSessionConfigまたは同じキーを持つ配列で指定する。
+
     // セッションごとのGitHubトークン（マルチテナント対応）
     // クライアントレベルのgithub_tokenとは別に、セッション単位でトークンを指定できる
     gitHubToken: $user->github_token,
@@ -352,6 +355,14 @@ MCP認可のホストIDを識別させたい場合は`authClientIdMetadataUrl`�
 $config = new SessionConfig(
     authClientIdMetadataUrl: 'https://example.com/client-metadata.json',
 );
+```
+
+### MCP Apps
+
+MCP Appsを有効にするには`enableMcpApps: true`を指定します。Laravel側の設定名は`enableMcpApps`のままですが、ランタイムには`requestMcpApps: true`として送信されます。従来の誤ったワイヤキーを修正したため、この設定がランタイムで有効になります。`false`または未指定の場合は送信されません。セッション再開時も`ResumeSessionConfig`または配列で同じ設定を指定できます。
+
+```php
+$config = new SessionConfig(enableMcpApps: true);
 ```
 
 セッション単位の実験的なRPCは`$session->rpc()`から利用できます。

@@ -462,6 +462,16 @@ class Client implements CopilotClient
                 'excludedTools' => $config['excludedTools'] ?? null,
                 'toolFilterPrecedence' => 'excluded',
                 'provider' => $config['provider'] ?? null,
+                'toolSearch' => $this->normalizeArrayableValue($config['toolSearch'] ?? null),
+                'providers' => $this->normalizeArrayableValue($config['providers'] ?? null),
+                'models' => $this->normalizeArrayableValue($config['models'] ?? null),
+                'memory' => $this->normalizeArrayableValue($config['memory'] ?? null),
+                'imageGeneration' => $this->normalizeArrayableValue($config['imageGeneration'] ?? null),
+                'canvasProvider' => $this->normalizeArrayableValue($config['canvasProvider'] ?? null),
+                'featureFlags' => $config['featureFlags'] ?? null,
+                'expAssignments' => $this->normalizeArrayableValue($config['expAssignments'] ?? null),
+                'refreshCustomInstructions' => $config['refreshCustomInstructions'] ?? null,
+                'diagnostics' => $config['diagnostics'] ?? null,
                 'capi' => $this->normalizeCapiSessionOptions($config['capi'] ?? null),
                 'requestPermission' => isset($config['onPermissionRequest']),
                 'requestUserInput' => isset($config['onUserInputRequest']),
@@ -502,7 +512,7 @@ class Client implements CopilotClient
                 'extensionInfo' => $config['extensionInfo'] ?? null,
                 'largeOutput' => $config['largeOutput'] ?? null,
                 'extensionSdkPath' => $config['extensionSdkPath'] ?? null,
-                'enableMcpApps' => $config['enableMcpApps'] ?? null,
+                'requestMcpApps' => ($config['enableMcpApps'] ?? null) === true ? true : null,
                 'githubMcpToolConfig' => $this->normalizeGitHubMcpToolConfig($config['githubMcpToolConfig'] ?? null),
                 'mcpOAuthTokenStorage' => $config['mcpOAuthTokenStorage'] ?? null,
                 'authClientIdMetadataUrl' => $config['authClientIdMetadataUrl'] ?? null,
@@ -517,7 +527,7 @@ class Client implements CopilotClient
                 'enableCitations' => $config['enableCitations'] ?? null,
                 'excludedBuiltinAgents' => $config['excludedBuiltinAgents'] ?? null,
                 'includedBuiltinAgents' => $config['includedBuiltinAgents'] ?? null,
-                'sessionLimits' => $config['sessionLimits'] ?? null,
+                'sessionLimits' => $this->normalizeArrayableValue($config['sessionLimits'] ?? null),
                 'enableManagedSettings' => $config['enableManagedSettings'] ?? null,
                 'enforceManagedModelDefaults' => $config['enforceManagedModelDefaults'] ?? null,
                 'managedSettings' => $config['managedSettings'] ?? null,
@@ -709,6 +719,15 @@ class Client implements CopilotClient
                 'excludedTools' => $config['excludedTools'] ?? null,
                 'toolFilterPrecedence' => 'excluded',
                 'provider' => $config['provider'] ?? null,
+                'toolSearch' => $this->normalizeArrayableValue($config['toolSearch'] ?? null),
+                'providers' => $this->normalizeArrayableValue($config['providers'] ?? null),
+                'models' => $this->normalizeArrayableValue($config['models'] ?? null),
+                'memory' => $this->normalizeArrayableValue($config['memory'] ?? null),
+                'imageGeneration' => $this->normalizeArrayableValue($config['imageGeneration'] ?? null),
+                'canvasProvider' => $this->normalizeArrayableValue($config['canvasProvider'] ?? null),
+                'featureFlags' => $config['featureFlags'] ?? null,
+                'expAssignments' => $this->normalizeArrayableValue($config['expAssignments'] ?? null),
+                'diagnostics' => $config['diagnostics'] ?? null,
                 'capi' => $this->normalizeCapiSessionOptions($config['capi'] ?? null),
                 'requestPermission' => isset($config['onPermissionRequest']),
                 'requestUserInput' => isset($config['onUserInputRequest']),
@@ -751,7 +770,7 @@ class Client implements CopilotClient
                 'extensionInfo' => $config['extensionInfo'] ?? null,
                 'largeOutput' => $config['largeOutput'] ?? null,
                 'extensionSdkPath' => $config['extensionSdkPath'] ?? null,
-                'enableMcpApps' => $config['enableMcpApps'] ?? null,
+                'requestMcpApps' => ($config['enableMcpApps'] ?? null) === true ? true : null,
                 'githubMcpToolConfig' => $this->normalizeGitHubMcpToolConfig($config['githubMcpToolConfig'] ?? null),
                 'mcpOAuthTokenStorage' => $config['mcpOAuthTokenStorage'] ?? null,
                 'authClientIdMetadataUrl' => $config['authClientIdMetadataUrl'] ?? null,
@@ -766,7 +785,7 @@ class Client implements CopilotClient
                 'enableCitations' => $config['enableCitations'] ?? null,
                 'excludedBuiltinAgents' => $config['excludedBuiltinAgents'] ?? null,
                 'includedBuiltinAgents' => $config['includedBuiltinAgents'] ?? null,
-                'sessionLimits' => $config['sessionLimits'] ?? null,
+                'sessionLimits' => $this->normalizeArrayableValue($config['sessionLimits'] ?? null),
                 'enableManagedSettings' => $config['enableManagedSettings'] ?? null,
                 'enforceManagedModelDefaults' => $config['enforceManagedModelDefaults'] ?? null,
                 'managedSettings' => $config['managedSettings'] ?? null,
@@ -869,6 +888,19 @@ class Client implements CopilotClient
         }
 
         return $config instanceof CapiSessionOptions ? $config->toArray() : $config;
+    }
+
+    private function normalizeArrayableValue(mixed $value): mixed
+    {
+        if ($value instanceof Arrayable) {
+            return $this->normalizeArrayableValue($value->toArray());
+        }
+
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        return array_map(fn ($item) => $this->normalizeArrayableValue($item), $value);
     }
 
     /**

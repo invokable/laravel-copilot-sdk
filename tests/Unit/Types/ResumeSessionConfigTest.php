@@ -5,13 +5,18 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Types\CanvasProviderIdentity;
+use Revolution\Copilot\Types\ImageGenerationConfig;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\LargeToolOutputConfig;
+use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
+use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
+use Revolution\Copilot\Types\ToolSearchConfig;
 
 describe('ResumeSessionConfig', function () {
     it('round trips transcript recovery configuration including false', function () {
@@ -41,6 +46,37 @@ describe('ResumeSessionConfig', function () {
 
         expect($config->diagnostics)->toBe($diagnostics)
             ->and($config->toArray()['diagnostics'])->toBe($diagnostics);
+    });
+
+    it('serializes the additional session configuration options', function () {
+        $config = ResumeSessionConfig::fromArray([
+            'toolSearch' => ['enabled' => true, 'deferThreshold' => 15],
+            'canvasProvider' => ['id' => 'resume-host'],
+            'providers' => [['name' => 'openai', 'baseUrl' => 'https://api.example.com']],
+            'models' => [['id' => 'custom-model', 'provider' => 'openai']],
+            'memory' => ['enabled' => true],
+            'enableCitations' => false,
+            'excludedBuiltinAgents' => ['explainer'],
+            'sessionLimits' => ['maxAiCredits' => 25.0],
+            'imageGeneration' => ['enabled' => true],
+        ]);
+
+        expect($config->toolSearch)->toBeInstanceOf(ToolSearchConfig::class)
+            ->and($config->canvasProvider)->toBeInstanceOf(CanvasProviderIdentity::class)
+            ->and($config->memory)->toBeInstanceOf(MemoryConfiguration::class)
+            ->and($config->sessionLimits)->toBeInstanceOf(SessionLimitsConfig::class)
+            ->and($config->imageGeneration)->toBeInstanceOf(ImageGenerationConfig::class)
+            ->and($config->toArray())->toMatchArray([
+                'toolSearch' => ['enabled' => true, 'deferThreshold' => 15],
+                'canvasProvider' => ['id' => 'resume-host'],
+                'providers' => [['name' => 'openai', 'baseUrl' => 'https://api.example.com']],
+                'models' => [['id' => 'custom-model', 'provider' => 'openai']],
+                'memory' => ['enabled' => true],
+                'enableCitations' => false,
+                'excludedBuiltinAgents' => ['explainer'],
+                'sessionLimits' => ['maxAiCredits' => 25],
+                'imageGeneration' => ['enabled' => true],
+            ]);
     });
 
     it('serializes sandbox configuration when resuming', function () {
