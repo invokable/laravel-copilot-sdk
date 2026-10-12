@@ -27,7 +27,6 @@ use Revolution\Copilot\Types\NamedProviderConfig;
 use Revolution\Copilot\Types\ProviderModelConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
-use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\ToolSearchConfig;
 
 beforeEach(function () {
