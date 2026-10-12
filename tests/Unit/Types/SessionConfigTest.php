@@ -89,6 +89,7 @@ describe('SessionConfig', function () {
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];
         $exitPlanModeHandler = fn () => ['approved' => true];
         $autoModeSwitchHandler = fn () => ['approved' => true];
+        $mcpAuthHandler = fn () => null;
         $preToolUseHook = fn () => null;
 
         $config = SessionConfig::fromArray([
@@ -105,6 +106,7 @@ describe('SessionConfig', function () {
             'onUserInputRequest' => $userInputHandler,
             'onExitPlanModeRequest' => $exitPlanModeHandler,
             'onAutoModeSwitchRequest' => $autoModeSwitchHandler,
+            'onMcpAuthRequest' => $mcpAuthHandler,
             'hooks' => ['onPreToolUse' => $preToolUseHook],
             'workingDirectory' => '/home/user/project',
             'streaming' => true,
@@ -135,6 +137,7 @@ describe('SessionConfig', function () {
             ->and($config->onUserInputRequest)->toBe($userInputHandler)
             ->and($config->onExitPlanModeRequest)->toBe($exitPlanModeHandler)
             ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler)
+            ->and($config->onMcpAuthRequest)->toBe($mcpAuthHandler)
             ->and($config->hooks)->toBeInstanceOf(SessionHooks::class)
             ->and($config->hooks->onPreToolUse)->toBe($preToolUseHook)
             ->and($config->workingDirectory)->toBe('/home/user/project')
@@ -209,6 +212,7 @@ describe('SessionConfig', function () {
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];
         $exitPlanModeHandler = fn () => ['approved' => true];
         $autoModeSwitchHandler = fn () => ['approved' => true];
+        $mcpAuthHandler = fn () => null;
         $preToolUseHook = fn () => null;
 
         $config = new SessionConfig(
@@ -225,6 +229,7 @@ describe('SessionConfig', function () {
             onUserInputRequest: $userInputHandler,
             onExitPlanModeRequest: $exitPlanModeHandler,
             onAutoModeSwitchRequest: $autoModeSwitchHandler,
+            onMcpAuthRequest: $mcpAuthHandler,
             hooks: new SessionHooks(onPreToolUse: $preToolUseHook),
             workingDirectory: '/home/user',
             streaming: false,
@@ -270,6 +275,8 @@ describe('SessionConfig', function () {
             ->and($array['manageScheduleEnabled'])->toBeTrue()
             ->and($array['infiniteSessions'])->toBe(['enabled' => false])
             ->and($array['agent'])->toBe('reviewer');
+
+        expect($array)->not->toHaveKey('onMcpAuthRequest');
     });
 
     it('filters null values in toArray', function () {
@@ -329,14 +336,17 @@ describe('SessionConfig', function () {
     it('accepts old handler names as aliases', function () {
         $exitPlanModeHandler = fn () => ['approved' => true];
         $autoModeSwitchHandler = fn () => ['approved' => true];
+        $mcpAuthHandler = fn () => null;
 
         $config = SessionConfig::fromArray([
             'onExitPlanMode' => $exitPlanModeHandler,
             'onAutoModeSwitch' => $autoModeSwitchHandler,
+            'on_mcp_auth_request' => $mcpAuthHandler,
         ]);
 
         expect($config->onExitPlanModeRequest)->toBe($exitPlanModeHandler)
-            ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler);
+            ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler)
+            ->and($config->onMcpAuthRequest)->toBe($mcpAuthHandler);
     });
 
     it('accepts reasoningEffort as enum', function () {

@@ -67,6 +67,8 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                           When provided, enables `exitPlanMode.request` callbacks.
      * @param  ?Closure  $onAutoModeSwitchRequest  Handler for auto-mode-switch requests from the agent.
      *                                             When provided, enables `autoModeSwitch.request` callbacks.
+     * @param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
+     *                                                                                                         Handler for host-provided OAuth tokens requested by MCP servers.
      * @param  AskUserVariant|string|null  $askUserVariant  Variant of the built-in ask_user tool.
      * @param  ?bool  $enableSessionTelemetry  Enables or disables internal session telemetry.
      *                                         When false, disables session telemetry. When omitted or true,
@@ -181,6 +183,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?Closure $onElicitationRequest = null,
         public ?Closure $onExitPlanModeRequest = null,
         public ?Closure $onAutoModeSwitchRequest = null,
+        public ?Closure $onMcpAuthRequest = null,
         public ?bool $enableSessionTelemetry = null,
         public ?bool $enableGitHubTelemetryForwarding = null,
         public SessionHooks|array|null $hooks = null,
@@ -334,6 +337,7 @@ readonly class ResumeSessionConfig implements Arrayable
             onElicitationRequest: $data['onElicitationRequest'] ?? null,
             onExitPlanModeRequest: $data['onExitPlanModeRequest'] ?? $data['onExitPlanMode'] ?? null,
             onAutoModeSwitchRequest: $data['onAutoModeSwitchRequest'] ?? $data['onAutoModeSwitch'] ?? null,
+            onMcpAuthRequest: $data['onMcpAuthRequest'] ?? $data['on_mcp_auth_request'] ?? null,
             enableSessionTelemetry: $data['enableSessionTelemetry'] ?? null,
             enableGitHubTelemetryForwarding: $data['enableGitHubTelemetryForwarding'] ?? null,
             hooks: $hooks,

@@ -366,6 +366,7 @@ class Client implements CopilotClient
             ? $config
             : [
                 ...$config->toArray(),
+                'onMcpAuthRequest' => $config->onMcpAuthRequest,
                 'provider' => $config->provider,
                 'providers' => $config->providers,
                 'gitHubTokenProvider' => $config->gitHubTokenProvider,
@@ -592,6 +593,7 @@ class Client implements CopilotClient
         $this->sessions[$sessionId] = $session;
 
         try {
+            $this->registerMcpAuthRequestInterest($sessionId, $config);
             $this->applyPostCreateOptionsPatch($sessionId, $session, $config);
         } catch (Throwable $e) {
             unset($this->sessions[$sessionId]);
@@ -622,6 +624,7 @@ class Client implements CopilotClient
             ? $config
             : [
                 ...$config->toArray(),
+                'onMcpAuthRequest' => $config->onMcpAuthRequest,
                 'provider' => $config->provider,
                 'gitHubTokenProvider' => $config->gitHubTokenProvider,
                 'skillProvider' => $config->skillProvider,
@@ -820,6 +823,8 @@ class Client implements CopilotClient
         $this->sessions[$resumedSessionId] = $session;
 
         try {
+            $this->registerMcpAuthRequestInterest($resumedSessionId, $config);
+
             if (! empty($config['mcpServers'])) {
                 $this->rpcClient->request('session.mcp.reloadWithConfig', [
                     'sessionId' => $resumedSessionId,
@@ -953,10 +958,23 @@ class Client implements CopilotClient
             'onElicitationRequest' => 'registerElicitationHandler',
             'onExitPlanModeRequest' => 'registerExitPlanModeHandler',
             'onAutoModeSwitchRequest' => 'registerAutoModeSwitchHandler',
+            'onMcpAuthRequest' => 'registerMcpAuthHandler',
         ] as $option => $method) {
             if (isset($config[$option]) && is_callable($config[$option])) {
                 $session->{$method}($config[$option]);
             }
+        }
+
+        private function registerMcpAuthRequestInterest(string $sessionId, array $config): void
+        {
+            if (! isset($config['onMcpAuthRequest']) || ! is_callable($config['onMcpAuthRequest'])) {
+                return;
+            }
+
+            $this->rpcClient->request('session.eventLog.registerInterest', [
+                'sessionId' => $sessionId,
+                'eventType' => 'mcp.oauth_required',
+            ]);
         }
 
         if ($hooks !== null) {
@@ -1103,6 +1121,10 @@ class Client implements CopilotClient
 
     private function normalizeSessionConfigAliases(array $config): array
     {
+        if (! isset($config['onMcpAuthRequest']) && isset($config['on_mcp_auth_request'])) {
+            $config['onMcpAuthRequest'] = $config['on_mcp_auth_request'];
+        }
+
         if (! isset($config['onExitPlanModeRequest']) && isset($config['onExitPlanMode'])) {
             $config['onExitPlanModeRequest'] = $config['onExitPlanMode'];
         }
