@@ -215,6 +215,38 @@ $result = Copilot::client()->rpc()->skills()->getDiscoveryPaths(
     new SkillsGetDiscoveryPathsRequest(scope: 'project')
 );
 
+// plugins (サーバースコープのプラグイン管理)
+use Revolution\Copilot\Types\Rpc\PluginsInstallRequest;
+use Revolution\Copilot\Types\Rpc\PluginsUninstallRequest;
+use Revolution\Copilot\Types\Rpc\PluginsUpdateRequest;
+use Revolution\Copilot\Types\Rpc\PluginsEnableRequest;
+use Revolution\Copilot\Types\Rpc\PluginsDisableRequest;
+use Revolution\Copilot\Types\Rpc\PluginsBuiltinSetRequest;
+use Revolution\Copilot\Types\Rpc\PluginsMarketplacesBrowseRequest;
+use Revolution\Copilot\Types\Rpc\PluginsMarketplacesRefreshRequest;
+use Revolution\Copilot\Types\Rpc\PluginsMarketplacesRemoveRequest;
+use Revolution\Copilot\Types\Rpc\PluginsMarketplacesAddRequest;
+
+$plugins = Copilot::client()->rpc()->plugins();
+$result = $plugins->list(); // 返り値は PluginList
+$installed = $plugins->install(new PluginsInstallRequest(source: 'eslint@official'));
+$plugins->uninstall(new PluginsUninstallRequest(name: 'eslint@official'));
+$plugins->update(new PluginsUpdateRequest(name: 'eslint@official'));
+$plugins->updateAll();
+$plugins->enable(new PluginsEnableRequest(names: ['eslint@official']));
+$plugins->disable(new PluginsDisableRequest(names: ['eslint@official']));
+
+// ビルトインプラグインのディレクトリ設定
+$plugins->builtin()->set(new PluginsBuiltinSetRequest(paths: ['/opt/copilot/plugins']));
+
+// マーケットプレイス管理
+$marketplaces = $plugins->marketplaces();
+$marketplaces->list();
+$marketplaces->add(new PluginsMarketplacesAddRequest(source: 'github/copilot-plugins'));
+$marketplaces->remove(new PluginsMarketplacesRemoveRequest(name: 'official', force: true));
+$marketplaces->browse(new PluginsMarketplacesBrowseRequest(name: 'official'));
+$marketplaces->refresh(new PluginsMarketplacesRefreshRequest(name: 'official'));
+
 // agents (experimental: カスタムエージェント管理)
 // カスタムエージェントの探索
 use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
