@@ -120,6 +120,14 @@ class ServerRpc
     }
 
     /**
+     * Server-level plugin management RPC operations.
+     */
+    public function plugins(): PendingServerPlugins
+    {
+        return new PendingServerPlugins($this->client);
+    }
+
+    /**
      * Server-level agents RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.

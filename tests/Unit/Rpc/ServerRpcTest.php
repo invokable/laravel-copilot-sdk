@@ -11,6 +11,7 @@ use Revolution\Copilot\Rpc\PendingServerGitHubOwners;
 use Revolution\Copilot\Rpc\PendingServerGitHubRepository;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Rpc\PendingServerModels;
+use Revolution\Copilot\Rpc\PendingServerPlugins;
 use Revolution\Copilot\Rpc\PendingServerSandboxProxyCa;
 use Revolution\Copilot\Rpc\PendingServerSessionFs;
 use Revolution\Copilot\Rpc\PendingServerSkills;
@@ -60,6 +61,12 @@ describe('ServerRpc', function () {
         $rpc = new ServerRpc(createMockRpcClient());
 
         expect($rpc->skills())->toBeInstanceOf(PendingServerSkills::class);
+    });
+
+    it('returns PendingServerPlugins from plugins()', function () {
+        $rpc = new ServerRpc(createMockRpcClient());
+
+        expect($rpc->plugins())->toBeInstanceOf(PendingServerPlugins::class);
     });
 
     it('returns PendingCatalog from catalog()', function () {
