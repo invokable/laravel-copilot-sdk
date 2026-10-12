@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\MarketplaceAddResult;
+use Revolution\Copilot\Types\Rpc\MarketplaceBrowseResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceListResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceRefreshResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceRemoveResult;
@@ -65,16 +66,16 @@ class PendingServerPluginsMarketplaces
 
     /**
      * List plugins advertised by a marketplace.
-     *
-     * @return array<string, mixed>
      */
-    public function browse(PluginsMarketplacesBrowseRequest|array $params): array
+    public function browse(PluginsMarketplacesBrowseRequest|array $params): MarketplaceBrowseResult
     {
         $paramsArray = ($params instanceof PluginsMarketplacesBrowseRequest
             ? $params
             : PluginsMarketplacesBrowseRequest::fromArray($params))->toArray();
 
-        return $this->client->request('plugins.marketplaces.browse', $paramsArray);
+        return MarketplaceBrowseResult::fromArray(
+            $this->client->request('plugins.marketplaces.browse', $paramsArray),
+        );
     }
 
     /**

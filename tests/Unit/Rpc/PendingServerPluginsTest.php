@@ -8,6 +8,7 @@ use Revolution\Copilot\Rpc\PendingServerPluginsBuiltin;
 use Revolution\Copilot\Rpc\PendingServerPluginsMarketplaces;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\Rpc\MarketplaceAddResult;
+use Revolution\Copilot\Types\Rpc\MarketplaceBrowseResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceListResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceRefreshResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceRemoveResult;
@@ -268,7 +269,7 @@ describe('PendingServerPluginsMarketplaces', function () {
             ->and($result->dependentPlugins)->toBe(['eslint']);
     });
 
-    it('browses a marketplace and returns its flexible result as an array', function () {
+    it('browses a marketplace and decodes its plugin entries', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
@@ -279,7 +280,8 @@ describe('PendingServerPluginsMarketplaces', function () {
             new PluginsMarketplacesBrowseRequest('official'),
         );
 
-        expect($result)->toBe(['plugins' => [['name' => 'eslint']]]);
+        expect($result)->toBeInstanceOf(MarketplaceBrowseResult::class)
+            ->and($result->plugins[0]->name)->toBe('eslint');
     });
 
     it('refreshes all marketplaces when no name is provided', function () {
