@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\McpInstallationSecretStorage;
 use Revolution\Copilot\Enums\McpPlanInstallSourceCardKind;
 use Revolution\Copilot\Enums\McpPlanScope;
+use Revolution\Copilot\Enums\McpPlanValueCategory;
 use Revolution\Copilot\Enums\McpServerCardEmbeddedKind;
 use Revolution\Copilot\Enums\McpServerCardMediaType;
 use Revolution\Copilot\Enums\McpServerCardUrlKind;
@@ -11,6 +13,8 @@ use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Types\Rpc\McpApplyInstallRequest;
+use Revolution\Copilot\Types\Rpc\McpApplyUninstallRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigAddRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigEnableRequest;
@@ -19,9 +23,14 @@ use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
+use Revolution\Copilot\Types\Rpc\McpInstallationInput;
+use Revolution\Copilot\Types\Rpc\McpInstallationSecret;
 use Revolution\Copilot\Types\Rpc\McpPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\McpPlanInstallSourceCard;
+use Revolution\Copilot\Types\Rpc\McpPlanUninstallRequest;
+use Revolution\Copilot\Types\Rpc\McpPrepareInstallRequest;
 use Revolution\Copilot\Types\Rpc\McpServerCardEmbedded;
+use Revolution\Copilot\Types\Rpc\McpServerCardReference;
 use Revolution\Copilot\Types\Rpc\McpServerCardUrl;
 use Revolution\Copilot\Types\Rpc\McpServerValue;
 use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsRequest;
@@ -367,6 +376,161 @@ describe('PendingServerMcpConfig planInstall (typed objects)', function () {
         );
 
         expect($result['kind'])->toBe('planned');
+    });
+});
+
+describe('PendingServerMcpConfig installation lifecycle', function () {
+    it('prepares an installation with typed nested values and returns the raw result', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('mcp.prepareInstall', [
+                'contract' => [
+                    'protocolVersion' => 1,
+                    'requiredCapabilities' => ['mcp-server-card', 'mcp-install-planning'],
+                ],
+                'planHandle' => 'plan-1',
+                'choiceId' => 'choice-1',
+                'policySessionId' => 'session-1',
+                'inputs' => [
+                    ['category' => 'header', 'key' => 'Authorization', 'value' => '******'],
+                ],
+                'secrets' => [
+                    ['placeholder' => '$API_KEY', 'value' => 'secret-value'],
+                ],
+                'secretStorage' => 'keychain',
+                'source' => [
+                    'kind' => 'url',
+                    'mediaType' => 'application/mcp-server-card+json',
+                    'url' => 'https://example.com/card.json',
+                ],
+            ])
+            ->andReturn(['kind' => 'prepared', 'operationId' => 'operation-1']);
+
+        $pending = new PendingServerMcpConfig($client);
+        $result = $pending->prepareInstall(new McpPrepareInstallRequest(
+            contract: new CatalogClientContract(1, ['mcp-server-card', 'mcp-install-planning']),
+            planHandle: 'plan-1',
+            choiceId: 'choice-1',
+            inputs: [
+                new McpInstallationInput(McpPlanValueCategory::Header, 'Authorization', '******'),
+            ],
+            policySessionId: 'session-1',
+            secrets: [
+                new McpInstallationSecret('$API_KEY', 'secret-value'),
+            ],
+            secretStorage: McpInstallationSecretStorage::Keychain,
+            source: new McpServerCardReference(McpServerCardUrl::fromArray([
+                'kind' => 'url',
+                'mediaType' => 'application/mcp-server-card+json',
+                'url' => 'https://example.com/card.json',
+            ])),
+        ));
+        $arrayResult = $pending->prepareInstall([
+            'contract' => [
+                'protocolVersion' => 1,
+                'requiredCapabilities' => ['mcp-server-card', 'mcp-install-planning'],
+            ],
+            'planHandle' => 'plan-1',
+            'choiceId' => 'choice-1',
+            'policySessionId' => 'session-1',
+            'inputs' => [
+                ['category' => 'header', 'key' => 'Authorization', 'value' => '******'],
+            ],
+            'secrets' => [
+                ['placeholder' => '$API_KEY', 'value' => 'secret-value'],
+            ],
+            'secretStorage' => 'keychain',
+            'source' => [
+                'kind' => 'url',
+                'mediaType' => 'application/mcp-server-card+json',
+                'url' => 'https://example.com/card.json',
+            ],
+        ]);
+
+        expect($result)->toBe(['kind' => 'prepared', 'operationId' => 'operation-1']);
+        expect($arrayResult)->toBe(['kind' => 'prepared', 'operationId' => 'operation-1']);
+    });
+
+    it('applies an installation from typed or array params without adding sessionId', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('mcp.applyInstall', [
+                'contract' => ['protocolVersion' => 1, 'requiredCapabilities' => ['mcp-server-card']],
+                'operationId' => 'operation-1',
+                'policySessionId' => 'session-1',
+            ])
+            ->andReturn(['kind' => 'installed']);
+
+        $pending = new PendingServerMcpConfig($client);
+        $result = $pending->applyInstall([
+            'contract' => ['protocolVersion' => 1, 'requiredCapabilities' => ['mcp-server-card']],
+            'operationId' => 'operation-1',
+            'policySessionId' => 'session-1',
+        ]);
+        $typedResult = $pending->applyInstall(new McpApplyInstallRequest(
+            contract: new CatalogClientContract(1, ['mcp-server-card']),
+            operationId: 'operation-1',
+            policySessionId: 'session-1',
+        ));
+
+        expect($result)->toBe(['kind' => 'installed']);
+        expect($typedResult)->toBe(['kind' => 'installed']);
+    });
+
+    it('plans an uninstall with a typed request', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('mcp.planUninstall', [
+                'contract' => ['protocolVersion' => 1, 'requiredCapabilities' => ['mcp-server-card']],
+                'installationId' => 'installation-1',
+                'policySessionId' => 'session-1',
+            ])
+            ->andReturn(['kind' => 'uninstall-planned']);
+
+        $pending = new PendingServerMcpConfig($client);
+        $result = $pending->planUninstall(new McpPlanUninstallRequest(
+            contract: new CatalogClientContract(1, ['mcp-server-card']),
+            installationId: 'installation-1',
+            policySessionId: 'session-1',
+        ));
+        $arrayResult = $pending->planUninstall([
+            'contract' => ['protocolVersion' => 1, 'requiredCapabilities' => ['mcp-server-card']],
+            'installationId' => 'installation-1',
+            'policySessionId' => 'session-1',
+        ]);
+
+        expect($result)->toBe(['kind' => 'uninstall-planned']);
+        expect($arrayResult)->toBe(['kind' => 'uninstall-planned']);
+    });
+
+    it('applies an uninstall from typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('mcp.applyUninstall', [
+                'contract' => ['protocolVersion' => 1, 'requiredCapabilities' => []],
+                'planHandle' => 'uninstall-plan-1',
+                'policySessionId' => 'session-1',
+            ])
+            ->andReturn(['kind' => 'uninstalled']);
+
+        $pending = new PendingServerMcpConfig($client);
+        $result = $pending->applyUninstall(new McpApplyUninstallRequest(
+            contract: new CatalogClientContract(1, []),
+            planHandle: 'uninstall-plan-1',
+            policySessionId: 'session-1',
+        ));
+        $arrayResult = $pending->applyUninstall([
+            'contract' => ['protocolVersion' => 1, 'requiredCapabilities' => []],
+            'planHandle' => 'uninstall-plan-1',
+            'policySessionId' => 'session-1',
+        ]);
+
+        expect($result)->toBe(['kind' => 'uninstalled']);
+        expect($arrayResult)->toBe(['kind' => 'uninstalled']);
     });
 });
 

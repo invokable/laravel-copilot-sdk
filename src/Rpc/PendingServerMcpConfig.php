@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\McpApplyInstallRequest;
+use Revolution\Copilot\Types\Rpc\McpApplyUninstallRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigAddRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigEnableRequest;
@@ -14,6 +16,8 @@ use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
 use Revolution\Copilot\Types\Rpc\McpPlanInstallRequest;
+use Revolution\Copilot\Types\Rpc\McpPlanUninstallRequest;
+use Revolution\Copilot\Types\Rpc\McpPrepareInstallRequest;
 use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsRequest;
 use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsResult;
 
@@ -39,6 +43,18 @@ class PendingServerMcpConfig
     public function registry(): PendingServerMcpRegistry
     {
         return new PendingServerMcpRegistry($this->client);
+    }
+
+    /**
+     * MCP installation lifecycle RPC operations.
+     *
+     * @experimental
+     *
+     * @internal Internal SDK API; not part of the public surface.
+     */
+    public function installations(): PendingServerMcpInstallations
+    {
+        return new PendingServerMcpInstallations($this->client);
     }
 
     /**
@@ -154,5 +170,69 @@ class PendingServerMcpConfig
             : McpPlanInstallRequest::fromArray($params))->toArray();
 
         return $this->client->request('mcp.planInstall', $paramsArray);
+    }
+
+    /**
+     * Prepares an MCP installation from a previously generated plan.
+     *
+     * @experimental
+     *
+     * @return array<string, mixed>
+     */
+    public function prepareInstall(McpPrepareInstallRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof McpPrepareInstallRequest
+            ? $params
+            : McpPrepareInstallRequest::fromArray($params))->toArray();
+
+        return $this->client->request('mcp.prepareInstall', $paramsArray);
+    }
+
+    /**
+     * Applies a previously prepared MCP installation.
+     *
+     * @experimental
+     *
+     * @return array<string, mixed>
+     */
+    public function applyInstall(McpApplyInstallRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof McpApplyInstallRequest
+            ? $params
+            : McpApplyInstallRequest::fromArray($params))->toArray();
+
+        return $this->client->request('mcp.applyInstall', $paramsArray);
+    }
+
+    /**
+     * Plans removal of an owned MCP installation.
+     *
+     * @experimental
+     *
+     * @return array<string, mixed>
+     */
+    public function planUninstall(McpPlanUninstallRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof McpPlanUninstallRequest
+            ? $params
+            : McpPlanUninstallRequest::fromArray($params))->toArray();
+
+        return $this->client->request('mcp.planUninstall', $paramsArray);
+    }
+
+    /**
+     * Applies a previously generated MCP removal plan.
+     *
+     * @experimental
+     *
+     * @return array<string, mixed>
+     */
+    public function applyUninstall(McpApplyUninstallRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof McpApplyUninstallRequest
+            ? $params
+            : McpApplyUninstallRequest::fromArray($params))->toArray();
+
+        return $this->client->request('mcp.applyUninstall', $paramsArray);
     }
 }
