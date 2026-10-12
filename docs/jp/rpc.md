@@ -78,6 +78,77 @@ $unusedRequestId = $registry->allocateRequestId()->requestId;
 $cancelResult = $registry->cancel(new McpRegistryCancelRequest(requestId: $unusedRequestId));
 // 未使用IDの解放ではcanceledはfalse。実行中の検索を停止した場合のみtrue。
 
+// MCPカタログ経由のインストール / アンインストール (experimental)
+// 結果は kind を持つ判別ユニオンの連想配列です。kind を確認してから各フィールドを参照してください。
+use Revolution\Copilot\Enums\McpInstallationSecretStorage;
+use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Types\Rpc\McpApplyInstallRequest;
+use Revolution\Copilot\Types\Rpc\McpApplyUninstallRequest;
+use Revolution\Copilot\Types\Rpc\McpInstallationOperationRequest;
+use Revolution\Copilot\Types\Rpc\McpInstallationsRequest;
+use Revolution\Copilot\Types\Rpc\McpPlanUninstallRequest;
+use Revolution\Copilot\Types\Rpc\McpPrepareInstallRequest;
+use Revolution\Copilot\Types\Rpc\McpServerCardReference;
+
+$mcp = Copilot::client()->rpc()->mcp();
+$contract = new CatalogClientContract(
+    protocolVersion: 1,
+    requiredCapabilities: ['mcp-server-card', 'mcp-install-planning'],
+);
+
+// $candidateHandle、$searchId、$cardReferenceはカタログ検索結果から取得します。
+// $sessionIdはこのClientに既に接続されているセッションIDです。
+$planned = $mcp->planInstall([
+    'contract' => $contract->toArray(),
+    'source' => ['kind' => 'candidate', 'candidateHandle' => $candidateHandle, 'searchId' => $searchId],
+]);
+
+if (($planned['kind'] ?? null) === 'planned') {
+    $plan = $planned['plan'];
+    $prepared = $mcp->prepareInstall(new McpPrepareInstallRequest(
+        contract: $contract,
+        planHandle: $plan['planHandle'],
+        choiceId: $plan['transportChoices'][0]['choiceId'],
+        inputs: [],
+        policySessionId: $sessionId,
+        secrets: [],
+        secretStorage: McpInstallationSecretStorage::Keychain,
+        source: McpServerCardReference::fromArray($cardReference),
+    ));
+
+    // applyInstall中に、クライアント作成時に設定したinstallation_confirmation_handlerが呼び出されます。
+    if (($prepared['kind'] ?? null) === 'outcome'
+        && ($prepared['outcome']['kind'] ?? null) === 'install-prepared') {
+        $applied = $mcp->applyInstall(new McpApplyInstallRequest(
+            contract: $contract,
+            operationId: $prepared['outcome']['operation']['operationId'],
+            policySessionId: $sessionId,
+        ));
+    }
+}
+
+// 所有するインストールの一覧と未完了操作の復旧
+$installations = $mcp->installations();
+$installations->list(new McpInstallationsRequest(contract: $contract, policySessionId: $sessionId));
+$installations->recover(new McpInstallationsRequest(contract: $contract, policySessionId: $sessionId));
+$installations->status(new McpInstallationOperationRequest($contract, $operationId));
+$installations->cancel(new McpInstallationOperationRequest($contract, $operationId));
+
+// アンインストールは所有権のあるinstallationIdを指定して計画し、返されたplanHandleを適用します。
+$uninstallPlan = $mcp->planUninstall(new McpPlanUninstallRequest(
+    contract: $contract,
+    installationId: $installationId,
+    policySessionId: $sessionId,
+));
+if (($uninstallPlan['kind'] ?? null) === 'outcome'
+    && ($uninstallPlan['outcome']['kind'] ?? null) === 'uninstall-planned') {
+    $mcp->applyUninstall(new McpApplyUninstallRequest(
+        contract: $contract,
+        planHandle: $uninstallPlan['outcome']['plan']['planHandle'],
+        policySessionId: $sessionId,
+    ));
+}
+
 // GitHub MCPツールを除外できるか判定 (experimental/internal)
 use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
 use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsRequest;
