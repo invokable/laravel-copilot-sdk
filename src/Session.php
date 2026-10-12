@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Revolution\Copilot;
 
 use Closure;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
-use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Revolt\EventLoop;
 use Revolution\Copilot\Concerns\Session\HasAutoModeSwitchHandler;
