@@ -175,9 +175,11 @@ describe('NamedProviderConfig with transport and hasBearerTokenProvider', functi
             'name' => 'my-provider',
             'baseUrl' => 'https://api.example.com',
             'transport' => 'websockets',
+            'bearerTokenProvider' => fn (array $args): string => $args['providerName'],
         ]);
 
-        expect($config->transport)->toBe('websockets');
+        expect($config->transport)->toBe('websockets')
+            ->and(($config->bearerTokenProvider)(['providerName' => 'named', 'sessionId' => 'session-1']))->toBe('named');
     });
 
     it('can be created with hasBearerTokenProvider', function () {
@@ -196,12 +198,15 @@ describe('NamedProviderConfig with transport and hasBearerTokenProvider', functi
             baseUrl: 'https://api.example.com',
             transport: 'http',
             hasBearerTokenProvider: true,
+            bearerTokenProvider: fn (array $args): string => $args['providerName'],
         );
 
         $array = $config->toArray();
 
         expect($array)->toHaveKey('transport', 'http')
-            ->and($array)->toHaveKey('hasBearerTokenProvider', true);
+            ->and($array)->toHaveKey('hasBearerTokenProvider', true)
+            ->and(($config->bearerTokenProvider)(['providerName' => 'byok', 'sessionId' => 'session-1']))->toBe('byok')
+            ->and($array)->not->toHaveKey('bearerTokenProvider');
     });
 });
 

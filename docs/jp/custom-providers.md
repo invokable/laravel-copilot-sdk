@@ -13,6 +13,7 @@
 | `wireApi`        | `string\|null` | APIフォーマット（openai/azureのみ）。`completions`（デフォルト）または`responses` |
 | `apiKey`         | `string\|null` | APIキー。Ollamaなどのローカルプロバイダーでは不要                                |
 | `bearerToken`    | `string\|null` | Bearer Token認証用。`apiKey`より優先される                              |
+| `bearerTokenProvider` | `callable\|null` | 各プロバイダーリクエストでBearerトークンを取得するコールバック。シリアライズされません |
 | `azure`          | `array\|null`  | Azure固有のオプション。`['apiVersion' => '2024-10-21']`など             |
 | `modelId`        | `string\|null` | ランタイムがエージェント設定やトークン制限の検索に使うモデル名。未設定時は`SessionConfig::$model`にフォールバック |
 | `wireModel`      | `string\|null` | プロバイダーAPIに送信するモデル名。Azureのデプロイ名やカスタムファインチューン名など。未設定時は`modelId`にフォールバック |
@@ -103,6 +104,31 @@ $response = Copilot::run(
     ),
 );
 ```
+
+## Azure Managed Identity
+
+有効期限付きトークンを使う場合は、`bearerTokenProvider`で各リクエスト時にトークンを取得できます。コールバックには`providerName`と`sessionId`を含む配列が渡されます。次の例では、アプリケーション側のトークン取得サービスを呼び出します。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\ProviderConfig;
+use Revolution\Copilot\Types\SessionConfig;
+
+$response = Copilot::run(
+    prompt: 'Hello!',
+    config: new SessionConfig(
+        model: 'gpt-4',
+        provider: new ProviderConfig(
+            type: 'azure',
+            baseUrl: 'https://my-resource.openai.azure.com',
+            azure: ['apiVersion' => '2024-10-21'],
+            bearerTokenProvider: fn (array $args): string => app(AzureManagedIdentityTokenProvider::class)->getToken(),
+        ),
+    ),
+);
+```
+
+トークンの取得・キャッシュ・更新はコールバック側で行ってください。ランタイムは各プロバイダーリクエストでコールバックを呼び出します。
 
 ## 重要な注意点
 

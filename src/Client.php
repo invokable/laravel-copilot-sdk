@@ -35,8 +35,12 @@ use Revolution\Copilot\Types\CommandDefinition;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\GitHubMcpToolConfig;
+use Revolution\Copilot\Types\NamedProviderConfig;
+use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
+use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireRequest;
+use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireResult;
 use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -85,6 +89,13 @@ class Client implements CopilotClient
      * @var array<string, array{provider: callable, sessionId: ?string}>
      */
     protected array $gitHubTokenProviders = [];
+
+    /**
+     * Session-scoped BYOK bearer token callbacks keyed by provider name.
+     *
+     * @var array<string, array<string, callable(array{providerName: string, sessionId: string}): string>>
+     */
+    protected array $bearerTokenProviders = [];
 
     /**
      * Create a new CopilotClient.
@@ -219,6 +230,11 @@ class Client implements CopilotClient
             );
 
             $this->rpcClient->setRequestHandler(
+                'providerToken.getToken',
+                fn (array $params) => $this->acquireProviderToken($params),
+            );
+
+            $this->rpcClient->setRequestHandler(
                 'skillProvider.list',
                 fn (array $params, CancellationToken $token) => $this->handleSkillProviderList($params, $token),
             );
@@ -297,6 +313,7 @@ class Client implements CopilotClient
 
         $this->sessions = [];
         $this->gitHubTokenProviders = [];
+        $this->bearerTokenProviders = [];
 
         // Stop JSON-RPC client
         if ($this->rpcClient !== null) {
@@ -349,10 +366,13 @@ class Client implements CopilotClient
             ? $config
             : [
                 ...$config->toArray(),
+                'provider' => $config->provider,
+                'providers' => $config->providers,
                 'gitHubTokenProvider' => $config->gitHubTokenProvider,
                 'skillProvider' => $config->skillProvider,
                 'sessionFsProvider' => $config->sessionFsProvider,
             ]);
+        [$config, $bearerTokenProviders] = $this->extractBearerTokenProviders($config);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
             throw new \InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
@@ -400,7 +420,9 @@ class Client implements CopilotClient
 
         // Local sessions use a client-generated ID so incoming session callbacks
         // can be routed while the runtime is still processing session.create.
-        $preRegisteredSessionId = ! $isCloudSession && ($skillProvider !== null || $sessionFsProvider !== null)
+        $preRegisteredSessionId = ! $isCloudSession && (
+            $skillProvider !== null || $sessionFsProvider !== null || $bearerTokenProviders !== []
+        )
             ? ($config['sessionId'] ?? (string) Str::uuid())
             : null;
         $session = null;
@@ -415,6 +437,9 @@ class Client implements CopilotClient
             $session->registerSessionFsProvider($sessionFsProvider);
             $this->registerSessionHandlers($session, $tools, $commands, $config, $hooks);
             $this->sessions[$preRegisteredSessionId] = $session;
+            if ($bearerTokenProviders !== []) {
+                $this->bearerTokenProviders[$preRegisteredSessionId] = $bearerTokenProviders;
+            }
         }
 
         try {
@@ -507,6 +532,7 @@ class Client implements CopilotClient
             }
             if ($preRegisteredSessionId !== null) {
                 unset($this->sessions[$preRegisteredSessionId]);
+                unset($this->bearerTokenProviders[$preRegisteredSessionId]);
             }
             throw $e;
         }
@@ -515,6 +541,7 @@ class Client implements CopilotClient
         if (! is_string($sessionId) || $sessionId === '') {
             if ($preRegisteredSessionId !== null) {
                 unset($this->sessions[$preRegisteredSessionId]);
+                unset($this->bearerTokenProviders[$preRegisteredSessionId]);
             }
             if ($tokenProviderRegistrationId !== null) {
                 unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
@@ -524,6 +551,7 @@ class Client implements CopilotClient
         }
         if ($preRegisteredSessionId !== null && $sessionId !== $preRegisteredSessionId) {
             unset($this->sessions[$preRegisteredSessionId]);
+            unset($this->bearerTokenProviders[$preRegisteredSessionId]);
             if ($tokenProviderRegistrationId !== null) {
                 unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
             }
@@ -546,10 +574,16 @@ class Client implements CopilotClient
         if ($preRegisteredSessionId === null) {
             $this->registerSessionHandlers($session, $tools, $commands, $config, $hooks);
         }
+        if ($preRegisteredSessionId === null && $bearerTokenProviders !== []) {
+            $this->bearerTokenProviders[$sessionId] = $bearerTokenProviders;
+        }
         $session->setWorkspacePath($workspacePath);
-        if ($tokenProviderRegistrationId !== null) {
-            $session->setOnDisconnected(function () use ($tokenProviderRegistrationId): void {
-                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+        if ($tokenProviderRegistrationId !== null || $bearerTokenProviders !== []) {
+            $session->setOnDisconnected(function () use ($tokenProviderRegistrationId, $sessionId): void {
+                if ($tokenProviderRegistrationId !== null) {
+                    unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+                }
+                unset($this->bearerTokenProviders[$sessionId]);
             });
         }
         $session->setCapabilities($capabilities);
@@ -561,6 +595,7 @@ class Client implements CopilotClient
             $this->applyPostCreateOptionsPatch($sessionId, $session, $config);
         } catch (Throwable $e) {
             unset($this->sessions[$sessionId]);
+            unset($this->bearerTokenProviders[$sessionId]);
             if ($tokenProviderRegistrationId !== null) {
                 unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
             }
@@ -587,10 +622,12 @@ class Client implements CopilotClient
             ? $config
             : [
                 ...$config->toArray(),
+                'provider' => $config->provider,
                 'gitHubTokenProvider' => $config->gitHubTokenProvider,
                 'skillProvider' => $config->skillProvider,
                 'sessionFsProvider' => $config->sessionFsProvider,
             ]);
+        [$config, $bearerTokenProviders] = $this->extractBearerTokenProviders($config);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
             throw new \InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
@@ -645,6 +682,10 @@ class Client implements CopilotClient
         $session->registerSessionFsProvider($sessionFsProvider);
         $this->registerSessionHandlers($session, $tools, $commands, $config, $hooks);
         $this->sessions[$sessionId] = $session;
+        unset($this->bearerTokenProviders[$sessionId]);
+        if ($bearerTokenProviders !== []) {
+            $this->bearerTokenProviders[$sessionId] = $bearerTokenProviders;
+        }
 
         try {
             $response = $this->rpcClient->request('session.resume', array_filter([
@@ -737,6 +778,7 @@ class Client implements CopilotClient
                 unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
             }
             unset($this->sessions[$sessionId]);
+            unset($this->bearerTokenProviders[$sessionId]);
             throw $e;
         }
 
@@ -746,6 +788,7 @@ class Client implements CopilotClient
                 unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
             }
             unset($this->sessions[$sessionId]);
+            unset($this->bearerTokenProviders[$sessionId]);
 
             throw new RuntimeException('Failed to resume session');
         }
@@ -754,6 +797,7 @@ class Client implements CopilotClient
                 unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
             }
             unset($this->sessions[$sessionId]);
+            unset($this->bearerTokenProviders[$sessionId]);
 
             throw new RuntimeException('Runtime returned a different session ID than requested');
         }
@@ -764,9 +808,12 @@ class Client implements CopilotClient
         if (isset($response['transcriptRecovery']) && is_array($response['transcriptRecovery'])) {
             $session->setTranscriptRecovery(TranscriptRecovery::fromArray($response['transcriptRecovery']));
         }
-        if ($tokenProviderRegistrationId !== null) {
-            $session->setOnDisconnected(function () use ($tokenProviderRegistrationId): void {
-                unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+        if ($tokenProviderRegistrationId !== null || $bearerTokenProviders !== []) {
+            $session->setOnDisconnected(function () use ($tokenProviderRegistrationId, $sessionId): void {
+                if ($tokenProviderRegistrationId !== null) {
+                    unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+                }
+                unset($this->bearerTokenProviders[$sessionId]);
             });
         }
         $session->setCapabilities($capabilities);
@@ -783,6 +830,7 @@ class Client implements CopilotClient
             $this->applyPostCreateOptionsPatch($resumedSessionId, $session, $config);
         } catch (Throwable $e) {
             unset($this->sessions[$resumedSessionId]);
+            unset($this->bearerTokenProviders[$resumedSessionId]);
             if ($tokenProviderRegistrationId !== null) {
                 unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
             }
@@ -816,6 +864,64 @@ class Client implements CopilotClient
         }
 
         return $config instanceof CapiSessionOptions ? $config->toArray() : $config;
+    }
+
+    /**
+     * @return array{array, array<string, callable(array{providerName: string, sessionId: string}): string>}
+     */
+    private function extractBearerTokenProviders(array $config): array
+    {
+        $providers = [];
+        $provider = $config['provider'] ?? null;
+        $providerConfig = $provider instanceof ProviderConfig ? $provider->toArray() : $provider;
+        $bearerTokenProvider = $provider instanceof ProviderConfig
+            ? $provider->bearerTokenProvider
+            : (is_array($provider) ? ($provider['bearerTokenProvider'] ?? null) : null);
+
+        if ($bearerTokenProvider !== null) {
+            if (! is_callable($bearerTokenProvider)) {
+                throw new \InvalidArgumentException('provider.bearerTokenProvider must be callable');
+            }
+
+            $providers['default'] = $bearerTokenProvider;
+            unset($providerConfig['bearerTokenProvider']);
+            $providerConfig['hasBearerTokenProvider'] = true;
+            $config['provider'] = $providerConfig;
+        }
+
+        if (is_array($config['providers'] ?? null)) {
+            foreach ($config['providers'] as $index => $namedProvider) {
+                $namedProviderConfig = $namedProvider instanceof NamedProviderConfig
+                    ? $namedProvider->toArray()
+                    : $namedProvider;
+                $bearerTokenProvider = $namedProvider instanceof NamedProviderConfig
+                    ? $namedProvider->bearerTokenProvider
+                    : (is_array($namedProvider) ? ($namedProvider['bearerTokenProvider'] ?? null) : null);
+
+                if ($bearerTokenProvider === null) {
+                    continue;
+                }
+
+                if (! is_callable($bearerTokenProvider)) {
+                    throw new \InvalidArgumentException("providers.{$index}.bearerTokenProvider must be callable");
+                }
+
+                $providerName = $namedProvider instanceof NamedProviderConfig
+                    ? $namedProvider->name
+                    : ($namedProvider['name'] ?? null);
+
+                if (! is_string($providerName)) {
+                    throw new \InvalidArgumentException("providers.{$index}.name must be a string");
+                }
+
+                $providers[$providerName] = $bearerTokenProvider;
+                unset($namedProviderConfig['bearerTokenProvider']);
+                $namedProviderConfig['hasBearerTokenProvider'] = true;
+                $config['providers'][$index] = $namedProviderConfig;
+            }
+        }
+
+        return [$config, $providers];
     }
 
     private function registerGitHubTokenProvider(?callable $provider, ?string $sessionId = null): ?string
@@ -888,8 +994,29 @@ class Client implements CopilotClient
         return $result;
     }
 
+    private function acquireProviderToken(array $params): array
+    {
+        $request = ProviderTokenAcquireRequest::fromArray($params);
+        $provider = $this->bearerTokenProviders[$request->sessionId][$request->providerName] ?? null;
+
+        if ($provider === null) {
+            throw new RuntimeException(
+                "No bearer-token provider registered for provider \"{$request->providerName}\"",
+            );
+        }
+
+        $token = $provider([
+            'providerName' => $request->providerName,
+            'sessionId' => $request->sessionId,
+        ]);
+
+        return (new ProviderTokenAcquireResult(token: $token))->toArray();
+    }
+
     protected function forgetGitHubTokenProviderForSession(string $sessionId): void
     {
+        unset($this->bearerTokenProviders[$sessionId]);
+
         foreach ($this->gitHubTokenProviders as $registrationId => $registration) {
             if ($registration['sessionId'] === $sessionId) {
                 unset($this->gitHubTokenProviders[$registrationId]);
