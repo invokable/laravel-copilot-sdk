@@ -339,6 +339,33 @@ $session = Copilot::client()->createSession(new SessionConfig(
 コールバックには`host`、`sessionId`、`reason`（`initial`または`refresh`）が渡されます。
 `gitHubToken`と`gitHubTokenProvider`は同時に指定できません。
 
+## SessionFsプロバイダー
+
+クライアントオプション`sessionFs`（`session_fs`でも可）を指定すると、Copilot CLIのセッション状態（session-stateファイルやSQLite）を独自のストレージへ委譲できます。この場合、すべてのセッション設定で`createSessionFsProvider`が必須です。`createSession()`と`resumeSession()`の両方で、セッションのIDが確定した後・ランタイムへのリクエスト送信前に呼び出されます。
+
+```php
+use Revolution\Copilot\Client;
+use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Support\PermissionHandler;
+use Revolution\Copilot\Types\SessionConfig;
+
+$client = new Client(['sessionFs' => [
+    'initialCwd' => '/workspace',
+    'sessionStatePath' => '/session-state',
+    'conventions' => 'posix', // または windows
+    'capabilities' => ['sqlite' => true, 'binary' => true], // 任意
+]]);
+
+$session = $client->createSession(new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveAll(),
+    createSessionFsProvider: fn (CopilotSession $session) => new MySessionFsProvider($session->id()),
+));
+```
+
+`createSessionFsProvider`は`Closure`で、`SessionConfig`と`ResumeSessionConfig`の配列/`fromArray()`/`toArray()`でも使えます。`capabilities.sqlite`を指定した場合はプロバイダーが`SessionFsSqliteCapableProvider`（または配列の`sqlite`キー）、`capabilities.binary`を指定した場合は`SessionFsBinaryProvider`（または`readFileBytes`/`writeFileBytes`）を実装している必要があります。満たさない場合は`InvalidArgumentException`になります。
+
+クライアントオプション`sessionFs`が無い場合、`createSessionFsProvider`は呼び出されず、従来の`sessionFsProvider`（`readFile`/`writeFile`のみ）がそのまま使えます。詳細は[Getting Started](../getting-started.md)を参照してください。
+
 ## 高度なセッションオプション
 
 組み込みの`ask_user`ツールでは構造化エリシテーション形式を使用できます。また、CAPI tierを指定してモデルの自動選択を調整できます。

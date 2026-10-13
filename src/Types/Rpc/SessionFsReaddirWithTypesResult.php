@@ -13,9 +13,11 @@ readonly class SessionFsReaddirWithTypesResult implements Arrayable
 {
     /**
      * @param  array<SessionFsEntry>  $entries  Directory entries with type information
+     * @param  ?SessionFsError  $error  Structured provider error, if the read failed
      */
     public function __construct(
         public array $entries,
+        public ?SessionFsError $error = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -25,13 +27,20 @@ readonly class SessionFsReaddirWithTypesResult implements Arrayable
                 fn (array $entry) => SessionFsEntry::fromArray($entry),
                 $data['entries'] ?? [],
             ),
+            error: isset($data['error']) ? SessionFsError::fromArray($data['error']) : null,
         );
     }
 
     public function toArray(): array
     {
-        return [
+        $result = [
             'entries' => array_map(fn (SessionFsEntry $entry) => $entry->toArray(), $this->entries),
         ];
+
+        if ($this->error !== null) {
+            $result['error'] = $this->error->toArray();
+        }
+
+        return $result;
     }
 }

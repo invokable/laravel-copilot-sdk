@@ -97,7 +97,10 @@ describe('session-scoped providers', function () {
             sessionId: 'session-1',
         ));
 
-        expect($result['error']['code'])->toBe('UNKNOWN');
+        expect($result)->toBe([
+            'code' => 'UNKNOWN',
+            'message' => 'invalid sessionFs.writeFileBytes base64 content',
+        ]);
     });
 
     it('maps missing SessionFs files to ENOENT errors', function () {
@@ -114,6 +117,34 @@ describe('session-scoped providers', function () {
 
         expect($result['error']['code'])->toBe('ENOENT')
             ->and($result['error']['message'])->toBe('file not found');
+    });
+
+    it('maps binary read errors and returns bare errors for binary writes', function () {
+        $session = new Session('session-1', Mockery::mock(JsonRpcClient::class));
+        $session->registerSessionFsProvider([
+            'readFile' => fn () => '',
+            'writeFile' => fn () => null,
+            'readFileBytes' => fn () => throw new RuntimeException('binary missing', 2),
+            'writeFileBytes' => fn () => throw new RuntimeException('binary write failed'),
+        ]);
+
+        $read = $session->handleSessionFsReadFileBytes(new SessionFsReadFileBytesRequest(
+            path: '/missing.bin',
+            sessionId: 'session-1',
+        ));
+        $write = $session->handleSessionFsWriteFileBytes(new SessionFsWriteFileBytesRequest(
+            content: base64_encode('payload'),
+            path: '/output.bin',
+            sessionId: 'session-1',
+        ));
+
+        expect($read)->toBe([
+            'content' => '',
+            'error' => ['code' => 'ENOENT', 'message' => 'binary missing'],
+        ])->and($write)->toBe([
+            'code' => 'UNKNOWN',
+            'message' => 'binary write failed',
+        ]);
     });
 
     it('releases provider callbacks when the session disconnects', function () {

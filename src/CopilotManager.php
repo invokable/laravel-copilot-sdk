@@ -18,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\SessionFsConfig;
 use Revolution\Copilot\Types\TelemetryConfig;
 use RuntimeException;
 
@@ -219,7 +220,10 @@ class CopilotManager implements Factory
         if ($this->client === null && $config === null) {
             if (filled(data_get($this->config, 'url'))) {
                 // TCP mode: connect to existing server
-                $options['cli_url'] = $this->config['url'];
+                $options = [
+                    'cli_url' => $this->config['url'],
+                    'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? null,
+                ];
             } else {
                 // Stdio mode: start new process
                 $options = [
@@ -236,6 +240,7 @@ class CopilotManager implements Factory
                     'remote' => $this->config['remote'] ?? false,
                     'installation_confirmation_handler' => $this->config['installation_confirmation_handler']
                         ?? $this->config['installationConfirmationHandler'] ?? null,
+                    'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? null,
                 ];
             }
 
@@ -266,7 +271,7 @@ class CopilotManager implements Factory
     /**
      * Configure the client to use stdio transport with given options.
      *
-     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable}  $config  Configuration options for stdio transport.
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array}  $config  Configuration options for stdio transport.
      */
     public function useStdio(?array $config = null): static
     {
@@ -290,6 +295,8 @@ class CopilotManager implements Factory
             'remote',
             'installation_confirmation_handler',
             'installationConfirmationHandler',
+            'session_fs',
+            'sessionFs',
         ]));
 
         return $this;
@@ -310,7 +317,10 @@ class CopilotManager implements Factory
             throw new RuntimeException('No TCP URL provided for Copilot client.');
         }
 
-        $this->client(['connection' => RuntimeConnection::forUri($url)]);
+        $this->client(array_filter([
+            'connection' => RuntimeConnection::forUri($url),
+            'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? config('copilot.session_fs'),
+        ], fn ($value) => $value !== null));
 
         return $this;
     }

@@ -44,6 +44,7 @@ use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireResult;
 use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\SessionFsConfig;
 use Revolution\Copilot\Types\TranscriptRecovery;
 use RuntimeException;
 use Throwable;
@@ -98,10 +99,17 @@ class Client implements CopilotClient
     protected array $bearerTokenProviders = [];
 
     /**
+     * Validated `sessionFs` client option, registered with the runtime on start().
+     */
+    protected ?SessionFsConfig $sessionFsConfig = null;
+
+    /**
      * Create a new CopilotClient.
      */
     public function __construct(protected array $options = [])
     {
+        $this->sessionFsConfig = $this->normalizeSessionFsConfig($options);
+
         $connection = $this->normalizeConnection($options);
 
         // URI mode: connect to existing server
@@ -249,6 +257,17 @@ class Client implements CopilotClient
                 'sessionFs.readFileBytes' => 'handleSessionFsReadFileBytes',
                 'sessionFs.writeFile' => 'handleSessionFsWriteFile',
                 'sessionFs.writeFileBytes' => 'handleSessionFsWriteFileBytes',
+                'sessionFs.appendFile' => 'handleSessionFsAppendFile',
+                'sessionFs.exists' => 'handleSessionFsExists',
+                'sessionFs.stat' => 'handleSessionFsStat',
+                'sessionFs.mkdir' => 'handleSessionFsMkdir',
+                'sessionFs.readdir' => 'handleSessionFsReaddir',
+                'sessionFs.readdirWithTypes' => 'handleSessionFsReaddirWithTypes',
+                'sessionFs.rm' => 'handleSessionFsRm',
+                'sessionFs.rename' => 'handleSessionFsRename',
+                'sessionFs.sqliteQuery' => 'handleSessionFsSqliteQuery',
+                'sessionFs.sqliteTransaction' => 'handleSessionFsSqliteTransaction',
+                'sessionFs.sqliteExists' => 'handleSessionFsSqliteExists',
             ] as $method => $handler) {
                 $this->rpcClient->setRequestHandler(
                     $method,
@@ -268,6 +287,8 @@ class Client implements CopilotClient
 
             // Verify protocol version
             $this->verifyProtocolVersion();
+
+            $this->registerSessionFsWithRuntime();
 
             ClientStarted::dispatch($this);
 
@@ -398,6 +419,9 @@ class Client implements CopilotClient
             throw new \InvalidArgumentException('Skill providers are not supported for cloud sessions.');
         }
 
+        // Cloud sessions run remotely and have no local session filesystem to delegate.
+        $sessionFsFactory = $isCloudSession ? null : $this->resolveSessionFsFactory($config);
+
         $tokenProviderRegistrationId = $this->registerGitHubTokenProvider(
             $config['gitHubTokenProvider'] ?? null,
         );
@@ -424,7 +448,7 @@ class Client implements CopilotClient
         // Local sessions use a client-generated ID so incoming session callbacks
         // can be routed while the runtime is still processing session.create.
         $preRegisteredSessionId = ! $isCloudSession && (
-            $skillProvider !== null || $sessionFsProvider !== null || $bearerTokenProviders !== []
+            $skillProvider !== null || $sessionFsProvider !== null || $sessionFsFactory !== null || $bearerTokenProviders !== []
         )
             ? ($config['sessionId'] ?? (string) Str::uuid())
             : null;
@@ -436,6 +460,16 @@ class Client implements CopilotClient
                 'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
                     || array_key_exists('managedSettings', $config),
             ]);
+            if ($sessionFsFactory !== null) {
+                try {
+                    $sessionFsProvider = $this->createSessionFsProviderFor($session, $sessionFsFactory);
+                } catch (Throwable $e) {
+                    if ($tokenProviderRegistrationId !== null) {
+                        unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+                    }
+                    throw $e;
+                }
+            }
             $session->registerSkillProvider($skillProvider);
             $session->registerSessionFsProvider($sessionFsProvider);
             $this->registerSessionHandlers($session, $tools, $commands, $config, $hooks);
@@ -662,6 +696,7 @@ class Client implements CopilotClient
         $this->validateSkillProvider($skillProvider);
         $sessionFsProvider = $config['sessionFsProvider'] ?? null;
         $this->validateSessionFsProvider($sessionFsProvider);
+        $sessionFsFactory = $this->resolveSessionFsFactory($config);
 
         $tokenProviderRegistrationId = $this->registerGitHubTokenProvider(
             $config['gitHubTokenProvider'] ?? null,
@@ -696,6 +731,16 @@ class Client implements CopilotClient
             'managedSettingsEnabled' => ($config['enableManagedSettings'] ?? false) === true
                 || array_key_exists('managedSettings', $config),
         ]);
+        if ($sessionFsFactory !== null) {
+            try {
+                $sessionFsProvider = $this->createSessionFsProviderFor($session, $sessionFsFactory);
+            } catch (Throwable $e) {
+                if ($tokenProviderRegistrationId !== null) {
+                    unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+                }
+                throw $e;
+            }
+        }
         $session->registerSkillProvider($skillProvider);
         $session->registerSessionFsProvider($sessionFsProvider);
         $this->registerSessionHandlers($session, $tools, $commands, $config, $hooks);

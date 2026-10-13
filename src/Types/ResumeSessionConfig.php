@@ -177,6 +177,9 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?bool  $enforceManagedModelDefaults  When true, conflicts with non-overridable managed model controls are rejected.
      * @param  ImageGenerationConfig|array|null  $imageGeneration  Image generation opt-in. Re-supply after runtime restart.
      * @param  ?Closure  $onMcpAuthRequest  Handler for host-provided OAuth tokens requested by MCP servers.
+     * @param  ?Closure  $createSessionFsProvider  Factory `fn (CopilotSession $session): SessionFsProvider` invoked for each created or resumed session.
+     *                                             Required when the client `sessionFs` option is set; it is called before the runtime request so
+     *                                             the provider can serve `sessionFs.*` callbacks for that session.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -277,6 +280,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public CanvasProviderIdentity|array|null $canvasProvider = null,
         public ?array $agentDirectories = null,
         public ?array $hookDirectories = null,
+        public ?Closure $createSessionFsProvider = null,
     ) {}
 
     /**
@@ -395,6 +399,7 @@ readonly class ResumeSessionConfig implements Arrayable
             onExitPlanModeRequest: $data['onExitPlanModeRequest'] ?? $data['onExitPlanMode'] ?? null,
             onAutoModeSwitchRequest: $data['onAutoModeSwitchRequest'] ?? $data['onAutoModeSwitch'] ?? null,
             onMcpAuthRequest: $data['onMcpAuthRequest'] ?? $data['on_mcp_auth_request'] ?? null,
+            createSessionFsProvider: $data['createSessionFsProvider'] ?? $data['create_session_fs_provider'] ?? null,
             enableSessionTelemetry: $data['enableSessionTelemetry'] ?? null,
             enableGitHubTelemetryForwarding: $data['enableGitHubTelemetryForwarding'] ?? null,
             hooks: $hooks,
@@ -570,6 +575,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'capi' => $capi,
             'onPermissionRequest' => $this->onPermissionRequest,
             'onUserInputRequest' => $this->onUserInputRequest,
+            'createSessionFsProvider' => $this->createSessionFsProvider,
             'onElicitationRequest' => $this->onElicitationRequest,
             'onExitPlanModeRequest' => $this->onExitPlanModeRequest,
             'onAutoModeSwitchRequest' => $this->onAutoModeSwitchRequest,
