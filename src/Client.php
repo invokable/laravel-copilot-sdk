@@ -354,7 +354,7 @@ class Client implements CopilotClient
     /**
      * Create a new conversation session.
      *
-     * @param  SessionConfig|array{session_id?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  SessionConfig|array{session_id?: string, name?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
      *
      * @throws JsonRpcException
      */
@@ -447,6 +447,7 @@ class Client implements CopilotClient
             $response = $this->rpcClient->request('session.create', array_filter([
                 ...TraceContext::get(),
                 'sessionId' => $preRegisteredSessionId ?? ($config['sessionId'] ?? null),
+                'name' => $config['name'] ?? null,
                 'allowedModels' => $config['allowedModels'] ?? null,
                 'clientName' => $config['clientName'] ?? null,
                 'model' => $config['model'] ?? null,

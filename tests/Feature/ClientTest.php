@@ -251,6 +251,7 @@ describe('Client', function () {
                 && ($params['expAssignments'] ?? null) === ['assignment' => 'treatment']
                 && ($params['refreshCustomInstructions'] ?? null) === true
                 && ($params['diagnostics'] ?? null) === ['sources' => ['mcp' => ['level' => 'debug']]]
+                && ($params['name'] ?? null) === 'startup-check'
                 && ! array_key_exists('requestMcpApps', $params)
                 && ! array_key_exists('enableMcpApps', $params)))
             ->once()
@@ -286,6 +287,7 @@ describe('Client', function () {
             refreshCustomInstructions: true,
             diagnostics: ['sources' => ['mcp' => ['level' => 'debug']]],
             enableMcpApps: false,
+            name: 'startup-check',
         ));
 
         expect($session)->toBe($mockSession);

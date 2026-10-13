@@ -18,6 +18,14 @@ use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
 
 describe('SessionConfig', function () {
+    it('round-trips a session name', function () {
+        $config = SessionConfig::fromArray(['name' => 'issue-triage']);
+
+        expect($config->name)->toBe('issue-triage')
+            ->and($config->toArray()['name'])->toBe('issue-triage')
+            ->and((new SessionConfig(name: 'release-check'))->toArray()['name'])->toBe('release-check');
+    });
+
     it('serializes the ask user variant', function () {
         $config = SessionConfig::fromArray(['askUserVariant' => 'elicitation']);
 
