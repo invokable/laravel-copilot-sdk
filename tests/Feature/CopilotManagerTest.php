@@ -11,6 +11,7 @@ use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\ToolSearchConfig;
@@ -384,6 +385,30 @@ describe('CopilotManager', function () {
         );
 
         $manager->stop();
+    });
+
+    it('forwards GitHub telemetry handlers from manager configuration and useStdio options', function () {
+        $handler = fn (GitHubTelemetryNotification $notification) => null;
+        $receivedOptions = [];
+
+        $this->app->bind(Client::class, function ($app, array $parameters) use (&$receivedOptions) {
+            $receivedOptions[] = $parameters['options'];
+
+            $client = Mockery::mock(CopilotClient::class);
+            $client->shouldReceive('start')->once();
+            $client->shouldReceive('stop')->andReturn([]);
+
+            return $client;
+        });
+
+        $manager = new CopilotManager(['onGitHubTelemetry' => $handler]);
+        $manager->client();
+        $manager->useStdio(['on_github_telemetry' => $handler]);
+        $manager->stop();
+
+        expect($receivedOptions)->toHaveCount(2)
+            ->and($receivedOptions[0]['onGitHubTelemetry'])->toBe($handler)
+            ->and($receivedOptions[1]['on_github_telemetry'])->toBe($handler);
     });
 
     it('use stdio', function () {

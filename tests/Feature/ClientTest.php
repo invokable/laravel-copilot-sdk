@@ -25,6 +25,7 @@ use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\NamedProviderConfig;
 use Revolution\Copilot\Types\ProviderModelConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionConfig;
@@ -46,6 +47,14 @@ describe('Client', function () {
 
         expect($client)->toBeInstanceOf(Client::class)
             ->and($client->getState())->toBe(ConnectionState::DISCONNECTED);
+    });
+
+    it('rejects a non-callable GitHub telemetry handler', function () {
+        expect(fn () => new Client(['on_github_telemetry' => 'not-callable']))
+            ->toThrow(InvalidArgumentException::class, 'onGitHubTelemetry must be callable');
+
+        expect(fn () => new Client(['onGitHubTelemetry' => null]))
+            ->toThrow(InvalidArgumentException::class, 'onGitHubTelemetry must be callable');
     });
 
     it('creates ProcessManager via app container', function () {
@@ -88,6 +97,36 @@ describe('Client', function () {
 
         fclose($stdin);
         fclose($stdout);
+    });
+
+    it('opts into GitHub telemetry forwarding during connect when a handler is configured', function () {
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(23);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', [
+                'enableGitHubTelemetryForwarding' => true,
+                'supportedTaskKinds' => ['agent', 'client', 'shell'],
+            ])
+            ->once()
+            ->andReturn(['protocolVersion' => Protocol::version()]);
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client([
+            'onGitHubTelemetry' => fn (GitHubTelemetryNotification $notification) => null,
+        ]);
+        $client->start();
+
+        expect($client->getState())->toBe(ConnectionState::CONNECTED);
     });
 
     it('routes skill installation reviews through the installation confirmation callback', function () {
@@ -450,6 +489,107 @@ describe('Client', function () {
         ]));
 
         expect($session->id())->toBe('resumed-session');
+    });
+
+    it('enables GitHub telemetry forwarding for created and resumed sessions when a client handler is configured', function () {
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn (array $params) => ($params['enableGitHubTelemetryForwarding'] ?? null) === true))
+            ->once()
+            ->andReturn(['sessionId' => 'created-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.resume', Mockery::on(fn (array $params) => ($params['enableGitHubTelemetryForwarding'] ?? null) === true))
+            ->once()
+            ->andReturn(['sessionId' => 'resumed-session']);
+
+        $client = new Client([
+            'on_github_telemetry' => fn (GitHubTelemetryNotification $notification) => null,
+        ]);
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $created = $client->createSession(new SessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            enableGitHubTelemetryForwarding: false,
+        ));
+        $resumed = $client->resumeSession('resumed-session', new ResumeSessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            enableGitHubTelemetryForwarding: false,
+        ));
+
+        expect($created->id())->toBe('created-session')
+            ->and($resumed->id())->toBe('resumed-session');
+    });
+
+    it('preserves session GitHub telemetry forwarding when no client handler is configured', function () {
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn (array $params) => ($params['enableGitHubTelemetryForwarding'] ?? null) === false))
+            ->once()
+            ->andReturn(['sessionId' => 'created-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.resume', Mockery::on(fn (array $params) => ($params['enableGitHubTelemetryForwarding'] ?? null) === false))
+            ->once()
+            ->andReturn(['sessionId' => 'resumed-session']);
+
+        $client = new Client;
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $client->createSession(new SessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            enableGitHubTelemetryForwarding: false,
+        ));
+        $client->resumeSession('resumed-session', new ResumeSessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            enableGitHubTelemetryForwarding: false,
+        ));
+    });
+
+    it('dispatches GitHub telemetry notifications as typed values', function () {
+        $received = null;
+        $client = new Client([
+            'on_github_telemetry' => function (GitHubTelemetryNotification $notification) use (&$received): void {
+                $received = $notification;
+            },
+        ]);
+        $handleNotification = new ReflectionMethod(Client::class, 'handleNotification');
+
+        $handleNotification->invoke($client, 'gitHubTelemetry.event', [
+            'sessionId' => 'telemetry-session',
+            'restricted' => true,
+            'event' => [
+                'kind' => 'tool_call_executed',
+                'properties' => ['tool' => 'search'],
+                'metrics' => ['duration' => 1.5],
+            ],
+        ]);
+
+        expect($received)->toBeInstanceOf(GitHubTelemetryNotification::class)
+            ->and($received->sessionId)->toBe('telemetry-session')
+            ->and($received->restricted)->toBeTrue()
+            ->and($received->event->kind)->toBe('tool_call_executed')
+            ->and($received->event->properties)->toBe(['tool' => 'search'])
+            ->and($received->event->metrics)->toBe(['duration' => 1.5]);
+    });
+
+    it('continues receiving GitHub telemetry after a handler throws', function () {
+        $calls = 0;
+        $client = new Client([
+            'onGitHubTelemetry' => function (GitHubTelemetryNotification $notification) use (&$calls): void {
+                $calls++;
+
+                throw new RuntimeException('Telemetry sink unavailable');
+            },
+        ]);
+        $handleNotification = new ReflectionMethod(Client::class, 'handleNotification');
+
+        $handleNotification->invoke($client, 'gitHubTelemetry.event', ['event' => []]);
+        $handleNotification->invoke($client, 'gitHubTelemetry.event', ['event' => []]);
+
+        expect($calls)->toBe(2);
     });
 
     it('createSession sends only name/description for array commands in RPC request', function () {
