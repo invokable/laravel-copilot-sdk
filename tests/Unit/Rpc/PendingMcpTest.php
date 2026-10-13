@@ -4,17 +4,25 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingMcp;
+use Revolution\Copilot\Types\Rpc\McpCancelSamplingExecutionParams;
 use Revolution\Copilot\Types\Rpc\McpDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpEnableRequest;
+use Revolution\Copilot\Types\Rpc\McpExecuteSamplingParams;
 use Revolution\Copilot\Types\Rpc\McpOauthCompleteRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
+use Revolution\Copilot\Types\Rpc\McpOauthProbeRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondResult;
 use Revolution\Copilot\Types\Rpc\McpPromptsGetRequest;
 use Revolution\Copilot\Types\Rpc\McpPromptsListRequest;
+use Revolution\Copilot\Types\Rpc\McpRestartServerRequest;
 use Revolution\Copilot\Types\Rpc\McpServerList;
+use Revolution\Copilot\Types\Rpc\McpSetEnvValueModeParams;
+use Revolution\Copilot\Types\Rpc\McpStartServerRequest;
 use Revolution\Copilot\Types\Rpc\MoveMcpLoadingToBackgroundResult;
+use Revolution\Copilot\Types\Rpc\SessionMcpOauthCancelLoginRequest;
+use Revolution\Copilot\Types\Rpc\SessionMcpOauthPrepareLoginRequest;
 
 describe('PendingMcp', function () {
     it('calls session.mcp.list and returns result', function () {
@@ -239,6 +247,225 @@ describe('PendingMcp', function () {
 
         expect($prompts->prompts[0]->name)->toBe('summarize')
             ->and($rendered->messages[0]->content['text'])->toBe('Summarize this');
+    });
+
+    it('starts a session MCP server with optional configuration', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('session.mcp.startServer', [
+                'serverName' => 'docs',
+                'config' => ['type' => 'http', 'url' => 'https://mcp.example.com'],
+                'expectedInstallationId' => 'installation-1',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn([]);
+
+        $pending = new PendingMcp($client, 'session-abc');
+        $params = [
+            'serverName' => 'docs',
+            'config' => ['type' => 'http', 'url' => 'https://mcp.example.com'],
+            'expectedInstallationId' => 'installation-1',
+        ];
+
+        $pending->startServer(new McpStartServerRequest(
+            serverName: 'docs',
+            config: ['type' => 'http', 'url' => 'https://mcp.example.com'],
+            expectedInstallationId: 'installation-1',
+        ));
+        $pending->startServer($params);
+    });
+
+    it('restarts a session MCP server from array parameters', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('session.mcp.restartServer', [
+                'serverName' => 'docs',
+                'expectedInstallationId' => 'installation-1',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn([]);
+
+        $pending = new PendingMcp($client, 'session-abc');
+        $params = [
+            'serverName' => 'docs',
+            'expectedInstallationId' => 'installation-1',
+        ];
+
+        $pending->restartServer($params);
+        $pending->restartServer(new McpRestartServerRequest(
+            serverName: 'docs',
+            expectedInstallationId: 'installation-1',
+        ));
+    });
+
+    it('maps the result of removing the auto-managed GitHub MCP server', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.mcp.removeGitHub', ['sessionId' => 'session-abc'])
+            ->andReturn(['removed' => true]);
+
+        $result = (new PendingMcp($client, 'session-abc'))->removeGitHub();
+
+        expect($result->removed)->toBeTrue();
+    });
+
+    it('sets the MCP environment value mode and returns the recorded mode', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('session.mcp.setEnvValueMode', [
+                'mode' => 'indirect',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(['mode' => 'indirect']);
+
+        $pending = new PendingMcp($client, 'session-abc');
+        $typedResult = $pending->setEnvValueMode(new McpSetEnvValueModeParams(mode: 'indirect'));
+        $arrayResult = $pending->setEnvValueMode(['mode' => 'indirect']);
+
+        expect($typedResult->mode)->toBe('indirect')
+            ->and($arrayResult->mode)->toBe('indirect');
+    });
+
+    it('executes MCP sampling and maps its outcome', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('session.mcp.executeSampling', [
+                'requestId' => 'sampling-1',
+                'serverName' => 'docs',
+                'mcpRequestId' => 'mcp-request-1',
+                'request' => ['messages' => []],
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(['action' => 'success', 'result' => ['content' => []]]);
+
+        $pending = new PendingMcp($client, 'session-abc');
+        $params = [
+            'requestId' => 'sampling-1',
+            'serverName' => 'docs',
+            'mcpRequestId' => 'mcp-request-1',
+            'request' => ['messages' => []],
+        ];
+        $typedResult = $pending->executeSampling(McpExecuteSamplingParams::fromArray($params));
+        $arrayResult = $pending->executeSampling($params);
+
+        expect($typedResult->action)->toBe('success')
+            ->and($typedResult->result)->toBe(['content' => []])
+            ->and($arrayResult->action)->toBe('success')
+            ->and($arrayResult->result)->toBe(['content' => []]);
+    });
+
+    it('cancels MCP sampling and maps whether an execution was found', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('session.mcp.cancelSamplingExecution', [
+                'requestId' => 'sampling-1',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(['cancelled' => false]);
+
+        $pending = new PendingMcp($client, 'session-abc');
+        $typedResult = $pending->cancelSamplingExecution(new McpCancelSamplingExecutionParams(requestId: 'sampling-1'));
+        $arrayResult = $pending->cancelSamplingExecution(['requestId' => 'sampling-1']);
+
+        expect($typedResult->cancelled)->toBeFalse()
+            ->and($arrayResult->cancelled)->toBeFalse();
+    });
+
+    it('probes MCP OAuth through the grouped OAuth RPC API', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.mcp.oauth.probe', [
+                'serverName' => 'docs',
+                'expectedInstallationId' => 'installation-1',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(['status' => 'authenticated', 'httpResponse' => ['status' => 200]]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.mcp.oauth.probe', [
+                'serverName' => 'docs',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(['status' => 'no-auth-required', 'httpResponse' => ['status' => 204]]);
+
+        $oauth = (new PendingMcp($client, 'session-abc'))->oauth();
+        $typedResult = $oauth->probe(new McpOauthProbeRequest(
+            serverName: 'docs',
+            expectedInstallationId: 'installation-1',
+        ));
+        $arrayResult = $oauth->probe(['serverName' => 'docs']);
+
+        expect($typedResult->status)->toBe('authenticated')
+            ->and($typedResult->httpResponse)->toBe(['status' => 200])
+            ->and($arrayResult->status)->toBe('no-auth-required')
+            ->and($arrayResult->httpResponse)->toBe(['status' => 204]);
+    });
+
+    it('prepares an owned OAuth login and returns its handle and expiry', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('session.mcp.oauth.prepareLogin', [
+                'serverName' => 'docs',
+                'expectedInstallationId' => 'installation-1',
+                'forceReauth' => false,
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn([
+                'loginId' => 'login-1',
+                'expiresAt' => '2026-10-13T14:00:00.000Z',
+            ]);
+
+        $oauth = (new PendingMcp($client, 'session-abc'))->oauth();
+        $request = new SessionMcpOauthPrepareLoginRequest(
+            serverName: 'docs',
+            expectedInstallationId: 'installation-1',
+            forceReauth: false,
+        );
+        $typedResult = $oauth->prepareLogin($request);
+        $arrayResult = $oauth->prepareLogin([
+            'serverName' => 'docs',
+            'expectedInstallationId' => 'installation-1',
+            'forceReauth' => false,
+        ]);
+
+        expect($typedResult->loginId)->toBe('login-1')
+            ->and($typedResult->expiresAt)->toBe('2026-10-13T14:00:00.000Z')
+            ->and($arrayResult->loginId)->toBe('login-1')
+            ->and($arrayResult->expiresAt)->toBe('2026-10-13T14:00:00.000Z');
+    });
+
+    it('cancels the matching owned OAuth login', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('session.mcp.oauth.cancelLogin', [
+                'expectedInstallationId' => 'installation-1',
+                'loginId' => 'login-1',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(['cancelled' => true]);
+
+        $oauth = (new PendingMcp($client, 'session-abc'))->oauth();
+        $request = new SessionMcpOauthCancelLoginRequest(
+            expectedInstallationId: 'installation-1',
+            loginId: 'login-1',
+        );
+        $typedResult = $oauth->cancelLogin($request);
+        $arrayResult = $oauth->cancelLogin([
+            'expectedInstallationId' => 'installation-1',
+            'loginId' => 'login-1',
+        ]);
+
+        expect($typedResult->cancelled)->toBeTrue()
+            ->and($arrayResult->cancelled)->toBeTrue();
     });
 
 });

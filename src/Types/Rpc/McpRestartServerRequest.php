@@ -16,11 +16,12 @@ readonly class McpRestartServerRequest implements Arrayable
 {
     /**
      * @param  string  $serverName  Name of the MCP server to restart
-     * @param  array|null  $config  Optional server configuration
+     * @param  array<string, mixed>|McpServerValue|null  $config  Optional server configuration
      */
     public function __construct(
         public string $serverName,
-        public ?array $config = null,
+        public array|McpServerValue|null $config = null,
+        public ?string $expectedInstallationId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -28,6 +29,7 @@ readonly class McpRestartServerRequest implements Arrayable
         return new self(
             serverName: Arr::string($data, 'serverName'),
             config: $data['config'] ?? null,
+            expectedInstallationId: $data['expectedInstallationId'] ?? null,
         );
     }
 
@@ -35,7 +37,8 @@ readonly class McpRestartServerRequest implements Arrayable
     {
         return array_filter([
             'serverName' => $this->serverName,
-            'config' => $this->config,
+            'config' => $this->config instanceof McpServerValue ? $this->config->toArray() : $this->config,
+            'expectedInstallationId' => $this->expectedInstallationId,
         ], fn ($v) => $v !== null);
     }
 }

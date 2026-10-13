@@ -587,6 +587,39 @@ $session->rpc()->mcp()->disable(new McpDisableRequest(serverName: 'server-name')
 $session->rpc()->mcp()->reload();
 // 進行中のMCPロードをバックグラウンドに移行(待機中のターンを解放)
 $session->rpc()->mcp()->moveLoadingToBackground();
+
+// セッション内のMCPサーバーを起動・再起動（永続設定は変更しない）
+use Revolution\Copilot\Types\Rpc\McpRestartServerRequest;
+use Revolution\Copilot\Types\Rpc\McpStartServerRequest;
+
+$session->rpc()->mcp()->startServer(new McpStartServerRequest(
+    serverName: 'server-name',
+    config: ['type' => 'http', 'url' => 'https://mcp.example.com'],
+));
+$session->rpc()->mcp()->restartServer(new McpRestartServerRequest(
+    serverName: 'server-name',
+    expectedInstallationId: 'installation-id',
+));
+
+// 自動管理されているGitHub MCPサーバーの削除と環境変数値の解決方法
+$removed = $session->rpc()->mcp()->removeGitHub();
+$mode = $session->rpc()->mcp()->setEnvValueMode(['mode' => 'indirect']);
+// $removed->removed、$mode->mode
+
+// MCP samplingの実行とキャンセル
+use Revolution\Copilot\Types\Rpc\McpCancelSamplingExecutionParams;
+use Revolution\Copilot\Types\Rpc\McpExecuteSamplingParams;
+
+$sampling = $session->rpc()->mcp()->executeSampling(new McpExecuteSamplingParams(
+    requestId: 'sampling-1',
+    serverName: 'server-name',
+    mcpRequestId: 'mcp-request-1',
+    request: ['messages' => [], 'maxTokens' => 256],
+));
+$cancelled = $session->rpc()->mcp()->cancelSamplingExecution(
+    new McpCancelSamplingExecutionParams(requestId: 'sampling-1'),
+);
+
 // MCPサーバーが実行中かどうかを確認
 use Revolution\Copilot\Types\Rpc\McpIsServerRunningRequest;
 
@@ -637,6 +670,9 @@ $result = $session->rpc()->mcp()->resources()->listTemplates(new McpResourcesLis
 // MCP OAuthログイン（認証が必要なMCPサーバー向け）
 use Revolution\Copilot\Types\Rpc\McpOauthCompleteRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthProbeRequest;
+use Revolution\Copilot\Types\Rpc\SessionMcpOauthCancelLoginRequest;
+use Revolution\Copilot\Types\Rpc\SessionMcpOauthPrepareLoginRequest;
 
 $result = $session->rpc()->mcp()->login(new McpOauthLoginRequest(serverName: 'my-server'));
 // $result->authorizationUrl - OAuthフローのURL（認証が必要な場合）
@@ -648,6 +684,17 @@ $result = $session->rpc()->mcp()->login(new McpOauthLoginRequest(
 $session->rpc()->mcp()->complete(new McpOauthCompleteRequest(
     authorizationId: $result->authorizationId,
     callbackUrl: $callbackUrl,
+));
+
+// OAuth状態を確認し、所有インストールに紐づいたログインを準備・キャンセル
+$probe = $session->rpc()->mcp()->oauth()->probe(new McpOauthProbeRequest(serverName: 'my-server'));
+$prepared = $session->rpc()->mcp()->oauth()->prepareLogin(new SessionMcpOauthPrepareLoginRequest(
+    serverName: 'my-server',
+    expectedInstallationId: 'installation-id',
+));
+$cancelled = $session->rpc()->mcp()->oauth()->cancelLogin(new SessionMcpOauthCancelLoginRequest(
+    expectedInstallationId: 'installation-id',
+    loginId: $prepared->loginId,
 ));
 
 // plugins (experimental: プラグインの一覧)

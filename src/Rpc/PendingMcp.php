@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\McpCancelSamplingExecutionParams;
+use Revolution\Copilot\Types\Rpc\McpCancelSamplingExecutionResult;
 use Revolution\Copilot\Types\Rpc\McpDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpEnableRequest;
+use Revolution\Copilot\Types\Rpc\McpExecuteSamplingParams;
 use Revolution\Copilot\Types\Rpc\McpIsServerRunningRequest;
 use Revolution\Copilot\Types\Rpc\McpIsServerRunningResult;
 use Revolution\Copilot\Types\Rpc\McpListToolsRequest;
@@ -23,7 +26,13 @@ use Revolution\Copilot\Types\Rpc\McpPromptsGetRequest;
 use Revolution\Copilot\Types\Rpc\McpPromptsGetResult;
 use Revolution\Copilot\Types\Rpc\McpPromptsListRequest;
 use Revolution\Copilot\Types\Rpc\McpPromptsListResult;
+use Revolution\Copilot\Types\Rpc\McpRemoveGitHubResult;
+use Revolution\Copilot\Types\Rpc\McpRestartServerRequest;
+use Revolution\Copilot\Types\Rpc\McpSamplingExecutionResult;
 use Revolution\Copilot\Types\Rpc\McpServerList;
+use Revolution\Copilot\Types\Rpc\McpSetEnvValueModeParams;
+use Revolution\Copilot\Types\Rpc\McpSetEnvValueModeResult;
+use Revolution\Copilot\Types\Rpc\McpStartServerRequest;
 use Revolution\Copilot\Types\Rpc\McpStopServerRequest;
 use Revolution\Copilot\Types\Rpc\MoveMcpLoadingToBackgroundResult;
 
@@ -124,6 +133,12 @@ class PendingMcp
         );
     }
 
+    /** MCP OAuth RPC operations. */
+    public function oauth(): PendingMcpOauth
+    {
+        return new PendingMcpOauth($this->client, $this->sessionId);
+    }
+
     /**
      * Resolves a pending MCP OAuth request with a host-provided token or cancellation.
      *
@@ -132,12 +147,7 @@ class PendingMcp
      */
     public function handlePendingRequest(McpOauthHandlePendingRequest|array $params): McpOauthHandlePendingResult
     {
-        $paramsArray = ($params instanceof McpOauthHandlePendingRequest ? $params : McpOauthHandlePendingRequest::fromArray($params))->toArray();
-        $paramsArray['sessionId'] = $this->sessionId;
-
-        return McpOauthHandlePendingResult::fromArray(
-            $this->client->request('session.mcp.oauth.handlePendingRequest', $paramsArray),
-        );
+        return $this->oauth()->handlePendingRequest($params);
     }
 
     /**
@@ -147,12 +157,7 @@ class PendingMcp
      */
     public function authenticationStateChanged(McpOauthAuthenticationStateChangedRequest|array $params = []): void
     {
-        $paramsArray = ($params instanceof McpOauthAuthenticationStateChangedRequest
-            ? $params
-            : McpOauthAuthenticationStateChangedRequest::fromArray($params))->toArray();
-        $paramsArray['sessionId'] = $this->sessionId;
-
-        $this->client->request('session.mcp.oauth.authenticationStateChanged', $paramsArray);
+        $this->oauth()->authenticationStateChanged($params);
     }
 
     /**
@@ -160,12 +165,7 @@ class PendingMcp
      */
     public function login(McpOauthLoginRequest|array $params): McpOauthLoginResult
     {
-        $paramsArray = ($params instanceof McpOauthLoginRequest ? $params : McpOauthLoginRequest::fromArray($params))->toArray();
-        $paramsArray['sessionId'] = $this->sessionId;
-
-        return McpOauthLoginResult::fromArray(
-            $this->client->request('session.mcp.oauth.login', $paramsArray),
-        );
+        return $this->oauth()->login($params);
     }
 
     /**
@@ -173,21 +173,98 @@ class PendingMcp
      */
     public function respond(McpOauthRespondRequest|array $params): McpOauthRespondResult
     {
-        $paramsArray = ($params instanceof McpOauthRespondRequest ? $params : McpOauthRespondRequest::fromArray($params))->toArray();
-        $paramsArray['sessionId'] = $this->sessionId;
-
-        return McpOauthRespondResult::fromArray(
-            $this->client->request('session.mcp.oauth.respond', $paramsArray),
-        );
+        return $this->oauth()->respond($params);
     }
 
     /** Complete an MCP OAuth login through a host-managed redirect callback. */
     public function complete(McpOauthCompleteRequest|array $params): void
     {
-        $paramsArray = ($params instanceof McpOauthCompleteRequest ? $params : McpOauthCompleteRequest::fromArray($params))->toArray();
+        $this->oauth()->complete($params);
+    }
+
+    /**
+     * Start a specific MCP server on this session.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function startServer(McpStartServerRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof McpStartServerRequest ? $params : McpStartServerRequest::fromArray($params))->toArray();
         $paramsArray['sessionId'] = $this->sessionId;
 
-        $this->client->request('session.mcp.oauth.complete', $paramsArray);
+        $this->client->request('session.mcp.startServer', $paramsArray);
+    }
+
+    /**
+     * Restart a specific MCP server on this session.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function restartServer(McpRestartServerRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof McpRestartServerRequest ? $params : McpRestartServerRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.mcp.restartServer', $paramsArray);
+    }
+
+    /**
+     * Remove the auto-managed GitHub MCP server when present.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function removeGitHub(): McpRemoveGitHubResult
+    {
+        return McpRemoveGitHubResult::fromArray(
+            $this->client->request('session.mcp.removeGitHub', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Set how MCP server environment values are resolved.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function setEnvValueMode(McpSetEnvValueModeParams|array $params): McpSetEnvValueModeResult
+    {
+        $paramsArray = ($params instanceof McpSetEnvValueModeParams ? $params : McpSetEnvValueModeParams::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return McpSetEnvValueModeResult::fromArray(
+            $this->client->request('session.mcp.setEnvValueMode', $paramsArray),
+        );
+    }
+
+    /**
+     * Execute an MCP sampling inference request.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function executeSampling(McpExecuteSamplingParams|array $params): McpSamplingExecutionResult
+    {
+        $paramsArray = ($params instanceof McpExecuteSamplingParams ? $params : McpExecuteSamplingParams::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return McpSamplingExecutionResult::fromArray(
+            $this->client->request('session.mcp.executeSampling', $paramsArray),
+        );
+    }
+
+    /**
+     * Cancel an in-flight MCP sampling execution.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function cancelSamplingExecution(McpCancelSamplingExecutionParams|array $params): McpCancelSamplingExecutionResult
+    {
+        $paramsArray = ($params instanceof McpCancelSamplingExecutionParams ? $params : McpCancelSamplingExecutionParams::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return McpCancelSamplingExecutionResult::fromArray(
+            $this->client->request('session.mcp.cancelSamplingExecution', $paramsArray),
+        );
     }
 
     /**
