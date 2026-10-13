@@ -337,6 +337,12 @@ Copilot::start(function (CopilotSession $session) {
 ```php
 // model
 $session->rpc()->model()->getCurrent();
+// 現在のモデルにおける reasoning summary の表示ポリシーを取得する（experimental）
+$policy = $session->rpc()->model()->getReasoningSummaries(new ModelGetReasoningSummariesRequest(
+    persistedShowReasoning: true, // 未設定なら省略
+    summariesVisible: true, // ホストUIで現在表示中かどうか
+));
+// $policy->ready、$policy->sessionShowsSummaries、$policy->visibility など
 $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'gpt-4'));
 // reasoningEffortを指定する場合（対応モデルのみ）
 $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'claude-opus-4.7', reasoningEffort: ReasoningEffort::HIGH));
