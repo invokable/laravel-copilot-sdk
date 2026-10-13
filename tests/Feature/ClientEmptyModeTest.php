@@ -40,7 +40,7 @@ beforeEach(function () {
         $rpcClient = Mockery::mock(JsonRpcClient::class);
         $rpcClient->shouldReceive('start')->once();
         $rpcClient->shouldReceive('setNotificationHandler')->once();
-        $rpcClient->shouldReceive('setRequestHandler')->times(23);
+        $rpcClient->shouldReceive('setRequestHandler')->times(26);
         $rpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()

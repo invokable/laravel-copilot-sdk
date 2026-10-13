@@ -11,6 +11,7 @@ use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
+use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
@@ -131,6 +132,12 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                When provided on resume, the runtime can rehydrate canvas state so consumers
      *                                do not need to re-open canvases that were active before the previous shutdown.
      *                                Experimental: this is part of an experimental API and may change or be removed.
+     * @param  ?array  $canvases  Declarative metadata for canvases contributed by this session participant.
+     *                            Experimental: this is part of an experimental API and may change or be removed.
+     * @param  CanvasHandler|null  $canvasHandler  Handles provider-side canvas open, close, and action requests.
+     *                                             Handler methods stay in-process and are never sent to the CLI.
+     *                                             Experimental: this is part of an experimental API and may change or be removed.
+     * @param  ?bool  $requestCanvasRenderer  Renderer-side opt-in for canvas agent tools. Experimental.
      * @param  ?bool  $allowTranscriptRecovery  Allow repair of a damaged session transcript during resume. Defaults to true; false rejects recovery.
      * @param  ?string  $gitHubToken  GitHub token for per-session authentication.
      *                                When provided, the runtime resolves this token into a full GitHub identity
@@ -224,6 +231,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public RemoteSessionMode|string|null $remoteSession = null,
         public ExtensionInfo|array|null $extensionInfo = null,
         public ?array $canvases = null,
+        public ?CanvasHandler $canvasHandler = null,
         public ?bool $requestCanvasRenderer = null,
         public ?bool $requestExtensions = null,
         public ?Closure $onEvent = null,
@@ -433,6 +441,7 @@ readonly class ResumeSessionConfig implements Arrayable
             remoteSession: $data['remoteSession'] ?? null,
             extensionInfo: $extensionInfo,
             canvases: $data['canvases'] ?? null,
+            canvasHandler: $data['canvasHandler'] ?? null,
             requestCanvasRenderer: $data['requestCanvasRenderer'] ?? null,
             requestExtensions: $data['requestExtensions'] ?? null,
             onEvent: $data['onEvent'] ?? null,
@@ -611,7 +620,15 @@ readonly class ResumeSessionConfig implements Arrayable
             'gitHubToken' => $this->gitHubToken,
             'remoteSession' => $remoteSession,
             'extensionInfo' => $extensionInfo,
-            'canvases' => $this->canvases,
+            'canvases' => $this->canvases === null
+                ? null
+                : array_map(
+                    fn (CanvasDeclaration|array $canvas) => $canvas instanceof CanvasDeclaration
+                        ? $canvas->toArray()
+                        : $canvas,
+                    $this->canvases,
+                ),
+            'canvasHandler' => $this->canvasHandler,
             'requestCanvasRenderer' => $this->requestCanvasRenderer,
             'requestExtensions' => $this->requestExtensions,
             'onEvent' => $this->onEvent,

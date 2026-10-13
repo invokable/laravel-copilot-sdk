@@ -8,6 +8,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\ConnectRemoteSessionParams;
 use Revolution\Copilot\Types\Rpc\RemoteEnableRequest;
 use Revolution\Copilot\Types\Rpc\RemoteEnableResult;
+use Revolution\Copilot\Types\Rpc\RemoteNotifySteerableChangedRequest;
 use Revolution\Copilot\Types\Rpc\RemoteSessionConnectionResult;
 
 /**
@@ -68,5 +69,18 @@ class PendingRemote
         return RemoteSessionConnectionResult::fromArray(
             $this->client->request('session.remote.connectRemoteSession', $paramsArray),
         );
+    }
+
+    /**
+     * Notify the runtime that this session's remote-steerability changed.
+     */
+    public function notifySteerableChanged(RemoteNotifySteerableChangedRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof RemoteNotifySteerableChangedRequest
+            ? $params
+            : RemoteNotifySteerableChangedRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.remote.notifySteerableChanged', $paramsArray);
     }
 }

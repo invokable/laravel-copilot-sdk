@@ -12,6 +12,7 @@ use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Enums\Verbosity;
+use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\Rpc\ManagedMcpServerConfig;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
@@ -154,9 +155,11 @@ readonly class SessionConfig implements Arrayable
      *                                                        - `"on"` — export to GitHub AND enable remote steering
      * @param  CloudSessionOptions|array|null  $cloud  Creates a remote session in the cloud instead of a local session.
      *                                                 The optional repository is associated with the cloud session.
-     * @param  ?array  $canvases  Canvases contributed by this session participant. The declaring connection becomes
-     *                            the live provider for canvas operations.
+     * @param  ?array  $canvases  Declarative metadata for canvases contributed by this session participant.
      *                            Experimental: this is part of an experimental API and may change or be removed.
+     * @param  CanvasHandler|null  $canvasHandler  Handles provider-side canvas open, close, and action requests.
+     *                                             Handler methods stay in-process and are never sent to the CLI.
+     *                                             Experimental: this is part of an experimental API and may change or be removed.
      * @param  ?bool  $requestCanvasRenderer  Renderer-side opt-in: when true, the runtime surfaces canvas agent tools
      *                                        to the model for this connection. Default off so SDK callers that cannot
      *                                        display canvases stay clean.
@@ -277,6 +280,7 @@ readonly class SessionConfig implements Arrayable
         public RemoteSessionMode|string|null $remoteSession = null,
         public CloudSessionOptions|array|null $cloud = null,
         public ?array $canvases = null,
+        public ?CanvasHandler $canvasHandler = null,
         public ?bool $requestCanvasRenderer = null,
         public ?bool $requestExtensions = null,
         public ExtensionInfo|array|null $extensionInfo = null,
@@ -480,6 +484,7 @@ readonly class SessionConfig implements Arrayable
             remoteSession: $data['remoteSession'] ?? null,
             cloud: $cloud,
             canvases: $data['canvases'] ?? null,
+            canvasHandler: $data['canvasHandler'] ?? null,
             requestCanvasRenderer: $data['requestCanvasRenderer'] ?? null,
             requestExtensions: $data['requestExtensions'] ?? null,
             extensionInfo: $extensionInfo,
@@ -667,7 +672,15 @@ readonly class SessionConfig implements Arrayable
             'gitHubToken' => $this->gitHubToken,
             'remoteSession' => $remoteSession,
             'cloud' => $cloud,
-            'canvases' => $this->canvases,
+            'canvases' => $this->canvases === null
+                ? null
+                : array_map(
+                    fn (CanvasDeclaration|array $canvas) => $canvas instanceof CanvasDeclaration
+                        ? $canvas->toArray()
+                        : $canvas,
+                    $this->canvases,
+                ),
+            'canvasHandler' => $this->canvasHandler,
             'requestCanvasRenderer' => $this->requestCanvasRenderer,
             'requestExtensions' => $this->requestExtensions,
             'extensionInfo' => $extensionInfo,
