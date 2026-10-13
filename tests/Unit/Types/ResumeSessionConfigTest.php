@@ -125,6 +125,8 @@ describe('ResumeSessionConfig', function () {
             'customAgents' => [['name' => 'agent1']],
             'defaultAgent' => ['excludedTools' => ['builtin:bash']],
             'skillDirectories' => ['/path/to/skills'],
+            'agentDirectories' => ['/path/to/agents'],
+            'hookDirectories' => ['/path/to/hooks'],
             'pluginDirectories' => ['/path/to/plugins'],
             'instructionDirectories' => ['/path/to/instructions'],
             'disabledSkills' => ['skill1'],
@@ -174,6 +176,8 @@ describe('ResumeSessionConfig', function () {
             ->and($config->customAgents)->toBe([['name' => 'agent1']])
             ->and($config->defaultAgent)->toBe(['excludedTools' => ['builtin:bash']])
             ->and($config->skillDirectories)->toBe(['/path/to/skills'])
+            ->and($config->agentDirectories)->toBe(['/path/to/agents'])
+            ->and($config->hookDirectories)->toBe(['/path/to/hooks'])
             ->and($config->pluginDirectories)->toBe(['/path/to/plugins'])
             ->and($config->instructionDirectories)->toBe(['/path/to/instructions'])
             ->and($config->disabledSkills)->toBe(['skill1'])
@@ -213,6 +217,8 @@ describe('ResumeSessionConfig', function () {
             ->and($config->customAgents)->toBeNull()
             ->and($config->defaultAgent)->toBeNull()
             ->and($config->skillDirectories)->toBeNull()
+            ->and($config->agentDirectories)->toBeNull()
+            ->and($config->hookDirectories)->toBeNull()
             ->and($config->pluginDirectories)->toBeNull()
             ->and($config->instructionDirectories)->toBeNull()
             ->and($config->disabledSkills)->toBeNull()
@@ -275,6 +281,8 @@ describe('ResumeSessionConfig', function () {
             customAgents: [['name' => 'agent1']],
             defaultAgent: ['excludedTools' => ['builtin:bash']],
             skillDirectories: ['/skills'],
+            agentDirectories: ['/agents'],
+            hookDirectories: ['/hooks'],
             pluginDirectories: ['/plugins'],
             instructionDirectories: ['/instructions'],
             disabledSkills: ['skill1'],
@@ -321,6 +329,8 @@ describe('ResumeSessionConfig', function () {
             ->and($array['customAgents'])->toBe([['name' => 'agent1']])
             ->and($array['defaultAgent'])->toBe(['excludedTools' => ['builtin:bash']])
             ->and($array['skillDirectories'])->toBe(['/skills'])
+            ->and($array['agentDirectories'])->toBe(['/agents'])
+            ->and($array['hookDirectories'])->toBe(['/hooks'])
             ->and($array['pluginDirectories'])->toBe(['/plugins'])
             ->and($array['instructionDirectories'])->toBe(['/instructions'])
             ->and($array['disabledSkills'])->toBe(['skill1'])
@@ -350,6 +360,22 @@ describe('ResumeSessionConfig', function () {
         $config = new ResumeSessionConfig;
 
         expect($config->toArray())->toBe([]);
+    });
+
+    it('preserves explicitly empty discovery roots in toArray', function () {
+        $config = ResumeSessionConfig::fromArray([
+            'skillDirectories' => [],
+            'agentDirectories' => [],
+            'hookDirectories' => [],
+            'instructionDirectories' => [],
+        ]);
+
+        expect($config->toArray())->toMatchArray([
+            'skillDirectories' => [],
+            'agentDirectories' => [],
+            'hookDirectories' => [],
+            'instructionDirectories' => [],
+        ]);
     });
 
     it('handles provider as array in toArray', function () {

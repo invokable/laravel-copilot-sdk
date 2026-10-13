@@ -2,7 +2,23 @@
 
 `hooks` を使うと、Copilot セッションの各ライフサイクルで処理を差し込めます。  
 ツール実行制御、監査ログ、プロンプト補強、エラーハンドリングなどを、コア実装を変更せずに追加できます。
-これはカスタムエージェント定義内の宣言型 `hooks` や、`enableFileHooks` によるファイルベースフック読み込みとは別の機能です。エージェント単位の設定は[カスタムエージェント](./custom-agents.md#エージェント単位の宣言型フック)を参照してください。
+これはカスタムエージェント定義内の宣言型 `hooks` や、ファイルベースフック読み込みとは別の機能です。エージェント単位の設定は[カスタムエージェント](./custom-agents.md#エージェント単位の宣言型フック)を参照してください。
+
+## ファイルベースフックの検出
+
+`hookDirectories` には、ファイルベースフックを検出する明示的なルートを指定できます。これは検出専用で、エージェントに一般的なファイルアクセス権限を付与しません。`enableConfigDiscovery` や `enableFileHooks` が無効でも明示ルートは利用でき、相対パスは指定時の有効な `workingDirectory` を基準に一度だけ解決されます。省略または `null` は他の検出元を変更せず、`[]` は明示したSDKルートだけをクリアします。フックのソース無効化設定や Managed Settings は引き続き適用されます。
+
+`enableFileHooks` はリポジトリ由来のファイルフック（`.github/hooks/` や信頼されたリポジトリ設定のルート）を制御します。明示的な `hookDirectories` やPHPコールバックの `hooks` は無効化しません。
+
+```php
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    workingDirectory: '/workspace/project',
+    enableFileHooks: false,
+    hookDirectories: ['../shared-hooks'],
+);
+```
 
 ## フックの流れ
 

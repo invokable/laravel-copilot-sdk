@@ -49,9 +49,9 @@ $config = new SessionConfig(
     // configディレクトリを上書き設定
     configDirectory: '',
 
-    // MCP設定やスキルディレクトリの自動検出を有効化
-    // .mcp.json や .vscode/mcp.json をワーキングディレクトリから自動検出し、
-    // 明示的に指定した mcpServers や skillDirectories とマージする（名前衝突時は明示指定が優先）
+    // MCP設定とスキルディレクトリの自動検出を有効化
+    // .mcp.json や .vscode/mcp.json、スキルディレクトリをワーキングディレクトリから検出し、
+    // 明示的に指定した mcpServers や skillDirectories とマージする（MCP名の衝突時は明示指定が優先）
     enableConfigDiscovery: true,
 
     // カスタムツール
@@ -248,16 +248,16 @@ $config = new SessionConfig(
     // セッション開始時にアクティブにするエージェントを指定。customAgentsのnameと一致する必要がある。
     agent: 'reviewer',
 
-    // スキルディレクトリ
+    // スキル・エージェント・フック・指示ファイルの明示的な検出ルート
     skillDirectories: [],
+    agentDirectories: [],
+    hookDirectories: [],
+    instructionDirectories: [],
 
     // Plugin Directory。スキル、フック、MCP、カスタムエージェントなどをまとめて読み込む
     pluginDirectories: [],
 
-    // カスタム指示ファイルを検索する追加ディレクトリ
-    instructionDirectories: [],
-
-    // ワーキングディレクトリ以外にエージェントがアクセスできる追加ディレクトリ
+    // ワーキングディレクトリ以外にエージェントがファイルアクセスできる追加ディレクトリ
     additionalDirectories: ['/path/to/shared'],
 
     // 無効なスキル
@@ -301,6 +301,10 @@ $config = new SessionConfig(
 
 $response = Copilot::run('...', config: $config);
 ```
+
+`skillDirectories`、`agentDirectories`、`hookDirectories`、`instructionDirectories` は、それぞれスキル・カスタムエージェント・ファイルフック・カスタム指示の**検出専用ルート**です。これらを指定しても、エージェントに一般的なファイルアクセス権限は付与されません。通常のファイルアクセス先を追加する場合は `additionalDirectories` を使います。
+
+検出ルートは `enableConfigDiscovery` の有効・無効にかかわらず指定できます。相対パスは指定時の有効な `workingDirectory` を基準に一度だけ解決され、後から作業ディレクトリが変わってもルートは移動しません。省略または `null` は既定の検出元を変更せず、`[]` はSDKが明示したルートだけをクリアします。スキル・エージェント・フック・指示ファイルそれぞれのソース無効化設定や Managed Settings は引き続き適用されます。
 
 `limitTo`はホスト単位のegress許可リストです。`Domain(hostname)`、`Domain(IP)`、`Domain(*.example.com)`形式を使い、schemeやport、pathは指定できません。`disableAssistedPermissionsMode: true`はAssisted Permissionsの有効化を禁止します。`enforceManagedModelDefaults`を有効にすると、上書き不可のManaged Settingsと競合するモデル設定の変更がエラーになります。
 

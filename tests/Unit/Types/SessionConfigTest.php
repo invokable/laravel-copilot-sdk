@@ -127,6 +127,8 @@ describe('SessionConfig', function () {
                 ],
             ]],
             'skillDirectories' => ['/path/to/skills'],
+            'agentDirectories' => ['/path/to/agents'],
+            'hookDirectories' => ['/path/to/hooks'],
             'instructionDirectories' => ['/path/to/instructions'],
             'disabledSkills' => ['skill1'],
             'skipCustomInstructions' => true,
@@ -164,6 +166,8 @@ describe('SessionConfig', function () {
                 ],
             ]])
             ->and($config->skillDirectories)->toBe(['/path/to/skills'])
+            ->and($config->agentDirectories)->toBe(['/path/to/agents'])
+            ->and($config->hookDirectories)->toBe(['/path/to/hooks'])
             ->and($config->instructionDirectories)->toBe(['/path/to/instructions'])
             ->and($config->disabledSkills)->toBe(['skill1'])
             ->and($config->skipCustomInstructions)->toBeTrue()
@@ -197,6 +201,8 @@ describe('SessionConfig', function () {
             ->and($config->mcpServers)->toBeNull()
             ->and($config->customAgents)->toBeNull()
             ->and($config->skillDirectories)->toBeNull()
+            ->and($config->agentDirectories)->toBeNull()
+            ->and($config->hookDirectories)->toBeNull()
             ->and($config->instructionDirectories)->toBeNull()
             ->and($config->disabledSkills)->toBeNull()
             ->and($config->skipCustomInstructions)->toBeNull()
@@ -260,6 +266,9 @@ describe('SessionConfig', function () {
                 ],
             ]],
             skillDirectories: ['/skills'],
+            agentDirectories: ['/agents'],
+            hookDirectories: ['/hooks'],
+            instructionDirectories: ['/instructions'],
             disabledSkills: ['skill1'],
             skipCustomInstructions: true,
             customAgentsLocalOnly: true,
@@ -296,6 +305,9 @@ describe('SessionConfig', function () {
                 ],
             ]])
             ->and($array['skillDirectories'])->toBe(['/skills'])
+            ->and($array['agentDirectories'])->toBe(['/agents'])
+            ->and($array['hookDirectories'])->toBe(['/hooks'])
+            ->and($array['instructionDirectories'])->toBe(['/instructions'])
             ->and($array['disabledSkills'])->toBe(['skill1'])
             ->and($array['skipCustomInstructions'])->toBeTrue()
             ->and($array['customAgentsLocalOnly'])->toBeTrue()
@@ -311,6 +323,22 @@ describe('SessionConfig', function () {
         $config = new SessionConfig;
 
         expect($config->toArray())->toBe([]);
+    });
+
+    it('preserves explicitly empty discovery roots in toArray', function () {
+        $config = SessionConfig::fromArray([
+            'skillDirectories' => [],
+            'agentDirectories' => [],
+            'hookDirectories' => [],
+            'instructionDirectories' => [],
+        ]);
+
+        expect($config->toArray())->toMatchArray([
+            'skillDirectories' => [],
+            'agentDirectories' => [],
+            'hookDirectories' => [],
+            'instructionDirectories' => [],
+        ]);
     });
 
     it('handles systemMessage as array in toArray', function () {
