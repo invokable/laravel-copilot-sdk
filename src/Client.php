@@ -17,6 +17,7 @@ use Revolution\Copilot\Concerns\Client\ManagesSessions;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Transport;
+use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Enums\RuntimeConnectionKind;
 use Revolution\Copilot\Enums\TaskKind;
@@ -29,6 +30,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Support\CancellationToken;
+use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Transport\TcpTransport;
 use Revolution\Copilot\Types\CapiSessionOptions;
@@ -48,6 +50,7 @@ use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\SessionFsConfig;
 use Revolution\Copilot\Types\TranscriptRecovery;
+use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
@@ -105,6 +108,8 @@ class Client implements CopilotClient
      */
     protected ?SessionFsConfig $sessionFsConfig = null;
 
+    protected CopilotClientMode $mode = CopilotClientMode::CopilotCli;
+
     /**
      * @var list<string>
      */
@@ -131,10 +136,25 @@ class Client implements CopilotClient
         $this->onGitHubTelemetry = $onGitHubTelemetry === null
             ? null
             : Closure::fromCallable($onGitHubTelemetry);
+        $configuredMode = $options['mode'] ?? CopilotClientMode::CopilotCli;
+        $this->mode = $configuredMode instanceof CopilotClientMode
+            ? $configuredMode
+            : (is_string($configuredMode) ? CopilotClientMode::tryFrom($configuredMode) : null)
+                ?? throw new InvalidArgumentException('mode must be either "copilot-cli" or "empty".');
         $this->builtinPluginDirectories = $this->normalizeBuiltinPluginDirectories($options);
         $this->sessionFsConfig = $this->normalizeSessionFsConfig($options);
 
         $connection = $this->normalizeConnection($options);
+        $baseDirectory = $options['baseDirectory'] ?? $options['base_directory'] ?? $options['copilot_home'] ?? null;
+
+        if ($this->mode === CopilotClientMode::Empty
+            && ! filled($baseDirectory)
+            && $this->sessionFsConfig === null
+            && $connection->kindValue() !== RuntimeConnectionKind::URI->value) {
+            throw new InvalidArgumentException(
+                'mode "empty" requires a baseDirectory, sessionFs, or an external TCP URL.',
+            );
+        }
 
         // URI mode: connect to existing server
         if ($connection->kindValue() === RuntimeConnectionKind::URI->value) {
@@ -169,8 +189,9 @@ class Client implements CopilotClient
             'useLoggedInUser' => data_get($options, 'use_logged_in_user'),
             'telemetry' => data_get($options, 'telemetry'),
             'sessionIdleTimeoutSeconds' => data_get($options, 'session_idle_timeout_seconds', 0),
-            'baseDirectory' => data_get($options, 'baseDirectory', data_get($options, 'base_directory', data_get($options, 'copilot_home'))),
+            'baseDirectory' => $baseDirectory,
             'remote' => data_get($options, 'remote', false),
+            'mode' => $this->mode,
         ]);
     }
 
@@ -478,6 +499,8 @@ class Client implements CopilotClient
                 'skillProvider' => $config->skillProvider,
                 'sessionFsProvider' => $config->sessionFsProvider,
             ]);
+        $config = $this->normalizeToolFilters($config);
+        $config = $this->applyModeDefaults($config);
         [$config, $bearerTokenProviders] = $this->extractBearerTokenProviders($config);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
@@ -763,6 +786,8 @@ class Client implements CopilotClient
                 'skillProvider' => $config->skillProvider,
                 'sessionFsProvider' => $config->sessionFsProvider,
             ]);
+        $config = $this->normalizeToolFilters($config);
+        $config = $this->applyModeDefaults($config);
         [$config, $bearerTokenProviders] = $this->extractBearerTokenProviders($config);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
@@ -1215,11 +1240,23 @@ class Client implements CopilotClient
     private function applyPostCreateOptionsPatch(string $sessionId, Session $session, array $config): void
     {
         $patch = array_filter([
-            'skipCustomInstructions' => $config['skipCustomInstructions'] ?? null,
-            'customAgentsLocalOnly' => $config['customAgentsLocalOnly'] ?? null,
-            'coauthorEnabled' => $config['coauthorEnabled'] ?? null,
-            'manageScheduleEnabled' => $config['manageScheduleEnabled'] ?? null,
+            'skipCustomInstructions' => $config['skipCustomInstructions'] ?? (
+                $this->mode === CopilotClientMode::Empty ? true : null
+            ),
+            'customAgentsLocalOnly' => $config['customAgentsLocalOnly'] ?? (
+                $this->mode === CopilotClientMode::Empty ? true : null
+            ),
+            'coauthorEnabled' => $config['coauthorEnabled'] ?? (
+                $this->mode === CopilotClientMode::Empty ? false : null
+            ),
+            'manageScheduleEnabled' => $config['manageScheduleEnabled'] ?? (
+                $this->mode === CopilotClientMode::Empty ? false : null
+            ),
             'suppressCustomAgentPrompt' => $config['suppressCustomAgentPrompt'] ?? null,
+            'installedPlugins' => $this->mode === CopilotClientMode::Empty ? [] : null,
+            'includedBuiltinSkills' => $this->mode === CopilotClientMode::Empty
+                ? ($config['includedBuiltinSkills'] ?? [])
+                : null,
         ], fn ($value) => $value !== null);
 
         if ($patch === []) {
@@ -1308,6 +1345,122 @@ class Client implements CopilotClient
         }
 
         return $config;
+    }
+
+    private function normalizeToolFilters(array $config): array
+    {
+        foreach (['availableTools', 'excludedTools'] as $field) {
+            $filters = $config[$field] ?? null;
+
+            if ($filters === null) {
+                continue;
+            }
+
+            if ($filters instanceof ToolSet) {
+                $filters = $filters->toArray();
+            } elseif (is_string($filters)) {
+                throw new InvalidArgumentException(
+                    "{$field} must be a ToolSet or array of source-qualified filters, not a string.",
+                );
+            } elseif (! is_array($filters)) {
+                throw new InvalidArgumentException("{$field} must be a ToolSet or array of source-qualified filters.");
+            }
+
+            $filters = array_values($filters);
+
+            foreach ($filters as $filter) {
+                if (! is_string($filter)) {
+                    throw new InvalidArgumentException("{$field} entries must be strings.");
+                }
+                if ($filter === '*') {
+                    throw new InvalidArgumentException(
+                        "Invalid {$field} entry '*': there is no bare wildcard. Use a source-qualified filter such as 'builtin:*'.",
+                    );
+                }
+            }
+
+            $config[$field] = $filters;
+        }
+
+        return $config;
+    }
+
+    private function applyModeDefaults(array $config): array
+    {
+        if ($this->mode !== CopilotClientMode::Empty) {
+            return $config;
+        }
+
+        if (($config['availableTools'] ?? null) === null) {
+            throw new InvalidArgumentException('availableTools is required when mode is "empty".');
+        }
+
+        foreach ([
+            'enableSessionTelemetry' => false,
+            'mcpOAuthTokenStorage' => 'in-memory',
+            'skipEmbeddingRetrieval' => true,
+            'embeddingCacheStorage' => 'in-memory',
+            'enableOnDemandInstructionDiscovery' => false,
+            'enableFileHooks' => false,
+            'enableHostGitOperations' => false,
+            'enableSessionStore' => false,
+            'enableSkills' => false,
+            'memory' => ['enabled' => false],
+            'customAgentsLocalOnly' => true,
+            'enableExperimentalMode' => false,
+        ] as $key => $default) {
+            if (($config[$key] ?? null) === null) {
+                $config[$key] = $default;
+            }
+        }
+
+        $config['systemMessage'] = $this->systemMessageForEmptyMode($config['systemMessage'] ?? null);
+
+        return $config;
+    }
+
+    private function systemMessageForEmptyMode(mixed $systemMessage): array
+    {
+        if ($systemMessage instanceof Arrayable) {
+            $systemMessage = $systemMessage->toArray();
+        }
+
+        if ($systemMessage === null) {
+            return [
+                'mode' => 'customize',
+                'sections' => ['environment_context' => ['action' => 'remove']],
+            ];
+        }
+
+        if (! is_array($systemMessage)) {
+            throw new InvalidArgumentException('systemMessage must be an array or Arrayable value.');
+        }
+
+        if (($systemMessage['mode'] ?? null) === 'replace') {
+            return $systemMessage;
+        }
+
+        $sections = $systemMessage['sections'] ?? [];
+        $sections = is_array($sections) ? $sections : [];
+
+        if (($systemMessage['mode'] ?? null) === 'customize') {
+            if (array_key_exists('environment_context', $sections)) {
+                return $systemMessage;
+            }
+
+            $systemMessage['sections'] = [
+                ...$sections,
+                'environment_context' => ['action' => 'remove'],
+            ];
+
+            return $systemMessage;
+        }
+
+        return array_filter([
+            'mode' => 'customize',
+            'content' => $systemMessage['content'] ?? null,
+            'sections' => ['environment_context' => ['action' => 'remove']],
+        ], fn ($value) => $value !== null);
     }
 
     /**
