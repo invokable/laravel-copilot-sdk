@@ -874,11 +874,11 @@ $inserted = $queue->insertAt(new QueueInsertAtRequest(
 $queue->moveItem(['id' => $inserted->id, 'toPosition' => 1]);
 $duplicated = $queue->duplicateAt(['id' => $inserted->id]);
 $queue->updateText(['id' => $duplicated->id, 'prompt' => 'Review and test the changes']);
-$sent = $queue->sendNow(['id' => $duplicated->id]);
-// $sent->steered - 実行中のターンに送られたかどうか
-
 $removedAt = $queue->removeAt(['id' => $duplicated->id]);
 // $removedAt->removed - 項目を削除できたかどうか
+
+$sent = $queue->sendNow(['id' => $inserted->id]);
+// $sent->steered - 実行中のターンに送られたかどうか
 
 // ドレインを一時停止する。停止は自動解除されないため、必ず false で再開する
 $queue->setDrainPaused(['paused' => true]);
