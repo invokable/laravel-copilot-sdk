@@ -6,10 +6,19 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerSkills;
 use Revolution\Copilot\Rpc\PendingServerSkillsConfig;
 use Revolution\Copilot\Transport\StdioTransport;
+use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\ServerSkill;
 use Revolution\Copilot\Types\Rpc\ServerSkillList;
+use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillInstallationOperationRequest;
+use Revolution\Copilot\Types\Rpc\SkillInstallationsRequest;
+use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillsConfigSetDisabledSkillsRequest;
+use Revolution\Copilot\Types\Rpc\SkillsConfigSetSkillDisabledRequest;
 use Revolution\Copilot\Types\Rpc\SkillsDiscoverRequest;
+use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
 
 describe('ServerSkill', function () {
     it('can be created from array with all fields', function () {
@@ -248,6 +257,97 @@ describe('PendingServerSkills', function () {
         expect($result)->toBeInstanceOf(ServerSkillList::class)
             ->and($result->skills)->toBeEmpty();
     });
+
+    it('dispatches skill installation and removal RPCs with typed or array requests', function () {
+        $contractData = ['protocolVersion' => 3, 'requiredCapabilities' => ['ai-skill-installation']];
+        $cases = [
+            [
+                'planInstall',
+                'skills.planInstall',
+                ['contract' => $contractData, 'candidateHandle' => 'candidate-1', 'policySessionId' => 'session-1'],
+                SkillPlanInstallRequest::class,
+                ['kind' => 'planned'],
+            ],
+            [
+                'applyInstall',
+                'skills.applyInstall',
+                ['contract' => $contractData, 'planHandle' => 'plan-1', 'policySessionId' => 'session-1'],
+                SkillApplyInstallRequest::class,
+                ['kind' => 'outcome'],
+            ],
+            [
+                'planUninstall',
+                'skills.planUninstall',
+                ['contract' => $contractData, 'installationId' => 'installation-1', 'policySessionId' => 'session-1'],
+                SkillPlanUninstallRequest::class,
+                ['kind' => 'planned'],
+            ],
+            [
+                'applyUninstall',
+                'skills.applyUninstall',
+                ['contract' => $contractData, 'planHandle' => 'uninstall-plan-1', 'policySessionId' => 'session-1'],
+                SkillApplyUninstallRequest::class,
+                ['kind' => 'outcome'],
+            ],
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+
+        foreach ($cases as [$method, $rpcMethod, $params, $requestClass, $result]) {
+            $client->shouldReceive('request')
+                ->twice()
+                ->with($rpcMethod, $params)
+                ->andReturn($result, $result);
+        }
+
+        $skills = new PendingServerSkills($client);
+
+        foreach ($cases as [$method, $rpcMethod, $params, $requestClass, $expectedResult]) {
+            $typedParams = $requestClass::fromArray($params);
+
+            expect($skills->{$method}($params))->toBe($expectedResult)
+                ->and($skills->{$method}($typedParams))->toBe($expectedResult);
+        }
+    });
+
+    it('round-trips skill installation lifecycle requests', function () {
+        $contractData = ['protocolVersion' => 3, 'requiredCapabilities' => ['ai-skill-installation']];
+        $contract = new CatalogClientContract(3, ['ai-skill-installation']);
+        $requests = [
+            SkillPlanInstallRequest::class => [
+                new SkillPlanInstallRequest($contract, 'candidate-1', 'session-1'),
+                ['contract' => $contractData, 'candidateHandle' => 'candidate-1', 'policySessionId' => 'session-1'],
+            ],
+            SkillApplyInstallRequest::class => [
+                new SkillApplyInstallRequest($contract, 'plan-1', 'session-1'),
+                ['contract' => $contractData, 'planHandle' => 'plan-1', 'policySessionId' => 'session-1'],
+            ],
+            SkillInstallationsRequest::class => [
+                new SkillInstallationsRequest($contract, 'session-1'),
+                ['contract' => $contractData, 'policySessionId' => 'session-1'],
+            ],
+            SkillInstallationOperationRequest::class => [
+                new SkillInstallationOperationRequest($contract, 'operation-1'),
+                ['contract' => $contractData, 'operationId' => 'operation-1'],
+            ],
+            SkillSetEnabledRequest::class => [
+                new SkillSetEnabledRequest($contract, 'installation-1', false, 'session-1'),
+                ['contract' => $contractData, 'installationId' => 'installation-1', 'enabled' => false, 'policySessionId' => 'session-1'],
+            ],
+            SkillPlanUninstallRequest::class => [
+                new SkillPlanUninstallRequest($contract, 'installation-1', 'session-1'),
+                ['contract' => $contractData, 'installationId' => 'installation-1', 'policySessionId' => 'session-1'],
+            ],
+            SkillApplyUninstallRequest::class => [
+                new SkillApplyUninstallRequest($contract, 'uninstall-plan-1', 'session-1'),
+                ['contract' => $contractData, 'planHandle' => 'uninstall-plan-1', 'policySessionId' => 'session-1'],
+            ],
+        ];
+
+        foreach ($requests as $requestClass => [$request, $expected]) {
+            expect($request->toArray())->toBe($expected)
+                ->and($requestClass::fromArray($expected)->toArray())->toBe($expected);
+        }
+    });
 });
 
 describe('PendingServerSkillsConfig', function () {
@@ -288,5 +388,19 @@ describe('PendingServerSkillsConfig', function () {
 
         $config = new PendingServerSkillsConfig($client);
         $config->setDisabledSkills(new SkillsConfigSetDisabledSkillsRequest(disabledSkills: []));
+    });
+
+    it('sets a single skill disabled state from a typed or array request', function () {
+        $params = ['name' => 'skill-a', 'disabled' => true];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('skills.config.setSkillDisabled', $params);
+
+        $config = new PendingServerSkillsConfig($client);
+        $config->setSkillDisabled($params);
+        $config->setSkillDisabled(SkillsConfigSetSkillDisabledRequest::fromArray($params));
+
+        expect(SkillsConfigSetSkillDisabledRequest::fromArray($params)->toArray())->toBe($params);
     });
 });
