@@ -27,6 +27,18 @@ describe('ResumeSessionConfig', function () {
             ->and($config->toArray())->toHaveKey('allowTranscriptRecovery', false);
     });
 
+    it('supports the GitHub cache store option', function () {
+        $default = new ResumeSessionConfig;
+        $fromArray = ResumeSessionConfig::fromArray(['enableGitHubCacheStore' => true]);
+        $explicitFalse = ResumeSessionConfig::fromArray(['enableGitHubCacheStore' => false]);
+
+        expect($default->enableGitHubCacheStore)->toBeNull()
+            ->and($default->toArray())->not->toHaveKey('enableGitHubCacheStore')
+            ->and($fromArray->enableGitHubCacheStore)->toBeTrue()
+            ->and($fromArray->toArray())->toHaveKey('enableGitHubCacheStore', true)
+            ->and($explicitFalse->toArray())->toHaveKey('enableGitHubCacheStore', false);
+    });
+
     it('serializes ToolSet tool filters', function () {
         $availableTools = (new ToolSet)->addBuiltIn('ask_user');
         $excludedTools = (new ToolSet)->addCustom('unsafe_tool');
