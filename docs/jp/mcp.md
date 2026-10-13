@@ -36,6 +36,14 @@ Artisan::command('copilot:mcp', function () {
 });
 ```
 
+## MCP Apps（experimental）
+
+`enableMcpApps`を有効にしたセッションでは、`$session->rpc()->mcp()->apps()`からMCP Appsのツールやリソースを操作できます。`listTools()`でアプリから呼び出せるツールを取得し、`callTool()`でツールを実行し、`readResource()`で`ui://`リソース（HTMLなど）を取得します。ツール一覧と呼び出しには、呼び出し元サーバーを示す`originServerName`が必要です。
+
+`getHostContext()` / `setHostContext()`では、テーマやロケールなどホストコンテキストを読み書きできます。`diagnose()`はサーバーのMCP Apps対応状態を返します。
+
+SDKはデータ取得・設定用のRPCを提供しますが、取得したHTMLの描画やiframeの管理は行いません。これらはLivewireやInertiaなど呼び出し側アプリケーションで実装してください。詳細なコード例は[RPCドキュメント](./rpc.md#mcp-apps-experimental)を参照してください。
+
 ## MCP OAuthトークンをホストから渡す
 
 MCPサーバーがOAuth認証を要求する場合は、`onMcpAuthRequest`でホスト側の認証処理を指定できます。コールバックにはOAuthリクエスト情報と`sessionId`が渡され、トークンを返すとCLIランタイムに渡されます。`null`または`McpAuthResult`の`cancelled`を返すと認証をキャンセルします。
