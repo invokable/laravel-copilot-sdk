@@ -449,6 +449,21 @@ $env = Copilot::client()->rpc()->environments()->get(['environmentId' => 'env-id
 Copilot::client()->rpc()->environments()->delete(['environmentId' => 'env-id']);
 ```
 
+### contentExclusion
+
+セッション作成前に、コンテンツ除外ポリシーのJSONを検証できます。
+
+```php
+use Revolution\Copilot\Types\Rpc\ContentExclusionValidatePoliciesRequest;
+
+$result = Copilot::client()->rpc()->contentExclusion()->validatePolicies(
+    new ContentExclusionValidatePoliciesRequest(policiesJson: $policiesJson),
+);
+// $result->policies は検証され、正規化されたポリシー
+```
+
+`policiesJson` は未解析のJSON文字列のままCLIに渡されます。JSONの解析またはスキーマ検証に失敗した場合は、CLIからのRPCエラー（`JsonRpcException`）が発生します。
+
 ### Runtime・Host のライフサイクル（experimental）
 
 `host.dispose()` は `hostId` を指定してホストリスナーを破棄します。
