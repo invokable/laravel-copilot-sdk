@@ -124,6 +124,7 @@ safe-outputs:
         signed-commits: false
     create-issue:
         labels: [ sdk-sync, copilot ]
+        max: 5
 
 network:
     allowed:
@@ -152,8 +153,8 @@ The previous workflow steps have pre-computed:
 
 Read `/tmp/gh-aw/open-sdk-sync-issues.txt` first.
 
-- If it contains unresolved implementation tasks from previous syncs, continue the sync while explicitly including those items in this implementation.
-- If a needed change cannot be completed in this run, create a **new issue** with label `sdk-sync` describing the deferred work, then reference it in the PR body.
+- Treat unresolved implementation tasks from previous syncs as a handoff backlog, **not additional work for this run**. Maintainers will manually assign agents to those issues later; do not assign agents, dispatch workflows, or implement that backlog automatically.
+- Use the snapshot to avoid duplicating deferred tasks. Keep existing issues open and reference them in the PR body where relevant. Fetch an issue's body only if needed to establish whether it already covers a task.
 
 ## Step 2: Check for Duplicate PRs (Fast-Track)
 
@@ -197,6 +198,18 @@ Using the mapping table below, determine which Laravel files need updates:
 | `nodejs/src/types.ts` | `src/Types/*.php` |
 | Protocol version changes | `src/Protocol.php` |
 
+### Scope and Time Budget (Required)
+
+The agent has a **30-minute execution limit**. Do not increase the timeout or attempt to finish a large upstream update in one run.
+
+- Record the start time. Spend at most 5 minutes analyzing and mapping changes.
+- If the mapped work includes multiple substantial features or cannot confidently fit the budget, select **one small, coherent implementation group**. Include its required types, contracts, fakes, tests, and affected docs; defer the other groups. Do not start a group too large to finish and validate in this run.
+- Before implementation, split deferred work by independent feature/API group into multiple focused issues using the `create_issue` safe output. Create at most **4 issues before validation**, reserving the fifth slot for the selected group if it cannot be completed. Reuse existing issues for already-covered work. If more groups remain, combine related groups into clearly separated task checklists within those issues so no work is lost.
+- Each issue must include the exact upstream commit range and compare link, affected upstream and Laravel paths/APIs, implementation requirements, required tests/docs, dependencies on the selected group or other issues, and acceptance criteria. Include any relevant diff excerpts because the submodule may advance before a maintainer assigns an agent.
+- Leave issues **unassigned** for maintainers to manually assign agents later. Use temporary issue IDs so the PR can reference newly created issues before safe outputs are processed.
+- Stop expanding implementation scope by elapsed minute 20; reserve the remaining time for validation, cleanup, and safe outputs. By minute 25, stop coding and finalize the handoff and PR.
+- If the selected group cannot be safely completed and validated, revert only incomplete implementation edits and record that group in a deferred issue too. Submit only coherent, validated changes; an issue-only handoff is acceptable when no implementation fits.
+
 ### Implementation Conventions (Strict)
 
 - **Type classes**: `readonly class` with `Arrayable` interface, `fromArray()`, `toArray()`
@@ -210,7 +223,7 @@ Using the mapping table below, determine which Laravel files need updates:
 ## Step 5: Implement Changes
 
 1. Update submodule: Read `/tmp/gh-aw/latest-commit.txt` and check out that commit in `copilot-sdk/`
-2. Implement mapped Laravel changes (use Python version of rpc.py as reference — easier to read)
+2. Implement only the selected, budgeted Laravel changes (use Python version of rpc.py as reference — easier to read). Do not expand scope to deferred issues.
 3. For new type classes: ensure `readonly`, `Arrayable`, `fromArray()`, `toArray()`. Use `Arr::string()`, `Arr::integer()`, `Arr::float()`, `Arr::array()`, and `Arr::boolean()` where the type is clearly defined.
 4. For new RPC methods: add `Pending*` class in `src/Rpc/` and types in `src/Types/Rpc/`
 
@@ -258,7 +271,10 @@ Body:
 - Summary of changes
 - List of modified Laravel files
 - Deferred implementation issues created/linked during this run (if any)
+- Explicitly distinguish implemented groups from deferred groups. Advancing the submodule does **not** mean the entire upstream range has been ported; do not claim full synchronization or close deferred issues.
 - Link: `https://github.com/github/copilot-sdk/compare/<old>..<new>`
+
+If no coherent implementation was completed, create/link the deferred issues without creating an empty PR.
 
 ## Safe Output Requirement
 
@@ -273,3 +289,4 @@ If required data or tools are unavailable and prevent meaningful analysis, call 
 3. **Shallow analysis** — Focus on structural changes (new methods/types/enums); skip minor tweaks
 4. **No broad exploration** — Do not search for "where this might be used" unless it affects the mapping
 5. **Minimal testing** — Test only new/modified code; do not refactor or add coverage beyond what's needed
+6. **Bounded sync** — Port a small, complete subset when changes are large; hand off the rest as focused, unassigned issues instead of consuming the entire timeout
