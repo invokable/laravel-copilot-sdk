@@ -6,6 +6,11 @@ use Revolution\Copilot\Enums\EventsReadDirection;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingSessions;
 use Revolution\Copilot\Types\Rpc\EventsReadResult;
+use Revolution\Copilot\Types\Rpc\RemoteControlConfig;
+use Revolution\Copilot\Types\Rpc\RemoteControlConfigExistingMcSession;
+use Revolution\Copilot\Types\Rpc\RemoteControlStatusResult;
+use Revolution\Copilot\Types\Rpc\RemoteControlStopResult;
+use Revolution\Copilot\Types\Rpc\RemoteControlTransferResult;
 use Revolution\Copilot\Types\Rpc\SessionBulkDeleteResult;
 use Revolution\Copilot\Types\Rpc\SessionList;
 use Revolution\Copilot\Types\Rpc\SessionPruneResult;
@@ -20,6 +25,8 @@ use Revolution\Copilot\Types\Rpc\SessionSizes;
 use Revolution\Copilot\Types\Rpc\SessionsListRequest;
 use Revolution\Copilot\Types\Rpc\SessionsPruneOldRequest;
 use Revolution\Copilot\Types\Rpc\SessionsReadPersistedEventsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsSetRemoteControlSteeringRequest;
+use Revolution\Copilot\Types\Rpc\SessionsStartRemoteControlRequest;
 use Revolution\Copilot\Types\SessionListFilter;
 
 describe('PendingSessions', function () {
@@ -244,5 +251,133 @@ describe('PendingSessions', function () {
         expect($result)->toBeInstanceOf(SessionPruneResult::class)
             ->and($result->candidates)->toBe(['session-id'])
             ->and($result->dryRun)->toBeFalse();
+    });
+
+    it('starts remote control with nested configuration and returns active status', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.startRemoteControl', [
+                'sessionId' => 'session-remote-control',
+                'config' => [
+                    'remote' => true,
+                    'steerable' => true,
+                    'explicit' => true,
+                    'silent' => false,
+                    'existingMcSession' => [
+                        'mcSessionId' => 'mc-session-1',
+                        'mcTaskId' => 'mc-task-1',
+                    ],
+                ],
+            ])
+            ->andReturn([
+                'status' => [
+                    'state' => 'active',
+                    'attachedSessionId' => 'session-remote-control',
+                    'frontendUrl' => 'https://github.com/mission-control/session/1',
+                    'isSteerable' => true,
+                ],
+            ]);
+
+        $pending = new PendingSessions($client);
+        $result = $pending->startRemoteControl(new SessionsStartRemoteControlRequest(
+            sessionId: 'session-remote-control',
+            config: new RemoteControlConfig(
+                remote: true,
+                steerable: true,
+                explicit: true,
+                silent: false,
+                existingMcSession: new RemoteControlConfigExistingMcSession(
+                    mcSessionId: 'mc-session-1',
+                    mcTaskId: 'mc-task-1',
+                ),
+            ),
+        ));
+
+        expect($result)->toBeInstanceOf(RemoteControlStatusResult::class)
+            ->and($result->status->state)->toBe('active')
+            ->and($result->status->frontendUrl)->toBe('https://github.com/mission-control/session/1');
+    });
+
+    it('stops remote control with an empty object and returns stopped status', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.stopRemoteControl', [])
+            ->andReturn([
+                'status' => ['state' => 'off'],
+                'stopped' => false,
+            ]);
+
+        $pending = new PendingSessions($client);
+        $result = $pending->stopRemoteControl();
+
+        expect($result)->toBeInstanceOf(RemoteControlStopResult::class)
+            ->and($result->status->state)->toBe('off')
+            ->and($result->stopped)->toBeFalse();
+    });
+
+    it('transfers remote control with optional source omitted', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.transferRemoteControl', ['toSessionId' => 'session-target'])
+            ->andReturn([
+                'status' => [
+                    'state' => 'connecting',
+                    'attachedSessionId' => 'session-target',
+                ],
+                'transferred' => true,
+            ]);
+
+        $pending = new PendingSessions($client);
+        $result = $pending->transferRemoteControl(['toSessionId' => 'session-target']);
+
+        expect($result)->toBeInstanceOf(RemoteControlTransferResult::class)
+            ->and($result->status->state)->toBe('connecting')
+            ->and($result->transferred)->toBeTrue();
+    });
+
+    it('sets remote-control steering with typed parameters', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.setRemoteControlSteering', ['enabled' => false])
+            ->andReturn([
+                'status' => [
+                    'state' => 'active',
+                    'attachedSessionId' => 'session-remote-control',
+                    'isSteerable' => false,
+                ],
+            ]);
+
+        $pending = new PendingSessions($client);
+        $result = $pending->setRemoteControlSteering(
+            new SessionsSetRemoteControlSteeringRequest(enabled: false),
+        );
+
+        expect($result)->toBeInstanceOf(RemoteControlStatusResult::class)
+            ->and($result->status->state)->toBe('active')
+            ->and($result->status->isSteerable)->toBeFalse();
+    });
+
+    it('gets remote-control status with an empty object', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.getRemoteControlStatus', [])
+            ->andReturn([
+                'status' => [
+                    'state' => 'error',
+                    'error' => 'Remote export failed',
+                ],
+            ]);
+
+        $pending = new PendingSessions($client);
+        $result = $pending->getRemoteControlStatus();
+
+        expect($result)->toBeInstanceOf(RemoteControlStatusResult::class)
+            ->and($result->status->state)->toBe('error')
+            ->and($result->status->error)->toBe('Remote export failed');
     });
 });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingRemote;
 use Revolution\Copilot\Types\Rpc\RemoteEnableResult;
+use Revolution\Copilot\Types\Rpc\RemoteNotifySteerableChangedRequest;
 
 describe('PendingRemote', function () {
     it('calls session.remote.enable and returns RemoteEnableResult', function () {
@@ -52,6 +53,24 @@ describe('PendingRemote', function () {
 
         $pending = new PendingRemote($client, 'session-remote-3');
         $result = $pending->disable();
+
+        expect($result)->toBeNull();
+    });
+
+    it('reports remote-steerability changes for its session', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.remote.notifySteerableChanged', [
+                'remoteSteerable' => false,
+                'sessionId' => 'session-remote-4',
+            ])
+            ->andReturn([]);
+
+        $pending = new PendingRemote($client, 'session-remote-4');
+        $result = $pending->notifySteerableChanged(
+            new RemoteNotifySteerableChangedRequest(remoteSteerable: false),
+        );
 
         expect($result)->toBeNull();
     });

@@ -63,6 +63,57 @@ Copilot::start(function (CopilotSession $session): void {
 });
 ```
 
+## ランタイム全体の Remote Control（TCP モード）
+
+`remote: true`はCLIプロセスの起動時に使う設定で、stdioモードに限られます。TCPモードで既存のCLIサーバーに接続する場合、この設定は無視されます。
+
+TCPモードでは`$client->rpc()->sessions()`からランタイム全体で1つのRemote Controlを管理できます。セッション単位の`remote()->enable()`とは異なり、操作対象セッションの開始・停止・移譲や、現在の状態の取得ができます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\RemoteControlConfig;
+use Revolution\Copilot\Types\Rpc\SessionsStartRemoteControlRequest;
+
+$client = Copilot::useTcp(url: 'tcp://127.0.0.1:12345')->client();
+
+$result = $client->rpc()->sessions()->startRemoteControl(
+    new SessionsStartRemoteControlRequest(
+        sessionId: $sessionId,
+        config: new RemoteControlConfig(
+            remote: true,
+            steerable: true,
+            explicit: true,
+            silent: false,
+        ),
+    ),
+);
+
+if ($result->status->frontendUrl !== null) {
+    echo 'Remote URL: '.$result->status->frontendUrl.PHP_EOL;
+}
+```
+
+現在の状態は`off`、`connecting`、`active`、`error`のいずれかです。`active`では`frontendUrl`や`isSteerable`も参照できます。
+
+```php
+$status = $client->rpc()->sessions()->getRemoteControlStatus();
+
+$client->rpc()->sessions()->setRemoteControlSteering(['enabled' => true]);
+$client->rpc()->sessions()->transferRemoteControl([
+    'toSessionId' => $nextSessionId,
+    'expectedFromSessionId' => $sessionId,
+]);
+$client->rpc()->sessions()->stopRemoteControl([
+    'expectedSessionId' => $nextSessionId,
+]);
+```
+
+セッションのリモート操作可否が変わったことをランタイムに知らせるには、セッションスコープのRPCを使います。
+
+```php
+$session->rpc()->remote()->notifySteerableChanged(['remoteSteerable' => true]);
+```
+
 ## QRコード生成
 
 取得したURLはQRコードにしてモバイルへ渡せます。  
