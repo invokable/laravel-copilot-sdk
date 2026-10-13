@@ -216,6 +216,7 @@ readonly class SessionConfig implements Arrayable
      * @param  ?bool  $enforceManagedModelDefaults  When true, conflicts with non-overridable managed model controls are rejected.
      * @param  ImageGenerationConfig|array|null  $imageGeneration  Image generation opt-in. Re-supply after runtime restart.
      * @param  ?Closure  $onMcpAuthRequest  Handler for host-provided OAuth tokens requested by MCP servers.
+     * @param  ?string  $name  Optional local-session name. It must be non-empty, have no leading or trailing whitespace, be at most 100 UTF-16 code units, and contain no control characters or double quotes. Naming a session makes it persistent immediately; cloud sessions reject it.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -316,6 +317,7 @@ readonly class SessionConfig implements Arrayable
         public ?bool $enforceManagedModelDefaults = null,
         public ImageGenerationConfig|array|null $imageGeneration = null,
         public ?Closure $onMcpAuthRequest = null,
+        public ?string $name = null,
     ) {}
 
     /**
@@ -520,6 +522,7 @@ readonly class SessionConfig implements Arrayable
             allowedModels: $data['allowedModels'] ?? null,
             skillProvider: $data['skillProvider'] ?? null,
             sessionFsProvider: $data['sessionFsProvider'] ?? null,
+            name: $data['name'] ?? null,
         );
     }
 
@@ -700,6 +703,7 @@ readonly class SessionConfig implements Arrayable
             'diagnostics' => $this->diagnostics,
             'sandbox' => $this->sandbox instanceof SandboxConfig ? $this->sandbox->toArray() : $this->sandbox,
             'allowedModels' => $this->allowedModels,
+            'name' => $this->name,
         ], fn ($value) => $value !== null);
     }
 }
