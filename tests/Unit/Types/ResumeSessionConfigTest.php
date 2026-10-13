@@ -17,6 +17,7 @@ use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
 use Revolution\Copilot\Types\ToolSearchConfig;
+use Revolution\Copilot\Support\ToolSet;
 
 describe('ResumeSessionConfig', function () {
     it('round trips transcript recovery configuration including false', function () {
@@ -24,6 +25,19 @@ describe('ResumeSessionConfig', function () {
 
         expect($config->allowTranscriptRecovery)->toBeFalse()
             ->and($config->toArray())->toHaveKey('allowTranscriptRecovery', false);
+    });
+
+    it('serializes ToolSet tool filters', function () {
+        $availableTools = (new ToolSet)->addBuiltIn('ask_user');
+        $excludedTools = (new ToolSet)->addCustom('unsafe_tool');
+
+        $config = new ResumeSessionConfig(
+            availableTools: $availableTools,
+            excludedTools: $excludedTools,
+        );
+
+        expect($config->toArray()['availableTools'])->toBe(['builtin:ask_user'])
+            ->and($config->toArray()['excludedTools'])->toBe(['custom:unsafe_tool']);
     });
 
     it('serializes the ask user variant', function () {

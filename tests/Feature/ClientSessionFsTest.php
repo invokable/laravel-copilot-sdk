@@ -259,7 +259,11 @@ describe('Client sessionFs option', function () {
         $manager->client();
         $manager->stop();
 
-        expect($captured[0])->toBe(['cli_url' => '127.0.0.1:1234', 'session_fs' => sessionFsOptions()]);
+        expect($captured[0])->toBe([
+            'cli_url' => '127.0.0.1:1234',
+            'mode' => 'copilot-cli',
+            'session_fs' => sessionFsOptions(),
+        ]);
     });
 });
 

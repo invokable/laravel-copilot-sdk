@@ -444,6 +444,42 @@ describe('CopilotManager', function () {
             ->and($receivedOptions[2]['builtinPluginDirectories'])->toBe(['/tcp/plugins']);
     });
 
+    it('forwards client mode through configured stdio and TCP options', function () {
+        $receivedOptions = [];
+
+        $this->app->bind(Client::class, function ($app, array $parameters) use (&$receivedOptions) {
+            $receivedOptions[] = $parameters['options'];
+
+            $client = Mockery::mock(CopilotClient::class);
+            $client->shouldReceive('start')->once();
+            $client->shouldReceive('stop')->andReturn([]);
+
+            return $client;
+        });
+
+        $configuredManager = new CopilotManager(['mode' => 'empty']);
+        $configuredManager->client();
+        $configuredManager->stop();
+
+        $defaultManager = new CopilotManager;
+        $defaultManager->useStdio();
+        $defaultManager->stop();
+
+        $stdioManager = new CopilotManager;
+        $stdioManager->useStdio(['mode' => 'empty']);
+        $stdioManager->stop();
+
+        $tcpManager = new CopilotManager(['mode' => 'empty']);
+        $tcpManager->useTcp('tcp://127.0.0.1:12345');
+        $tcpManager->stop();
+
+        expect($receivedOptions)->toHaveCount(4)
+            ->and($receivedOptions[0]['mode'])->toBe('empty')
+            ->and($receivedOptions[1]['mode'])->toBe('copilot-cli')
+            ->and($receivedOptions[2]['mode'])->toBe('empty')
+            ->and($receivedOptions[3]['mode'])->toBe('empty');
+    });
+
     it('use stdio', function () {
         $mockClient = mock(CopilotClient::class, function (MockInterface $mock) {
             $mock->expects('start')->once();

@@ -226,8 +226,8 @@
 | `postToolUseFailure` hook | `SessionHooks::$onPostToolUseFailure` と hook dispatch map を追加する。`onPostToolUse` は成功時、`onPostToolUseFailure` は失敗時の hook として分離する。 |
 | tool filter precedence | `session.create` / `session.resume` に `toolFilterPrecedence: "excluded"` を送る。`availableTools` と `excludedTools` が両方ある場合は denylist が勝つ。docs/comments は source-qualified filter (`builtin:*`, `mcp:*`, `custom:*`) 前提に更新する。 |
 | `skipCustomInstructions` / `customAgentsLocalOnly` / `coauthorEnabled` / `manageScheduleEnabled` | `SessionConfig` / `ResumeSessionConfig` で round-trip し、create/resume 後に公式 Python / Node と同じく `session.options.update` で反映する。 |
-| `CopilotClientMode.Empty` | Laravel 版は今回未実装。公式では multi-tenant hardening と `availableTools` 必須検証を含むため、Laravel config/API と安全 default の設計判断が必要。現時点では `permission_approve` の default deny-all と明示的 tool filters を使う。 |
-| `ToolSet` helper | 今回未実装。Laravel 版では当面 `availableTools` / `excludedTools` に source-qualified string 配列を直接渡す。GA 前後に `Support\ToolSet` 相当を追加する余地がある。 |
+| `CopilotClientMode.Empty` | `CopilotClientMode` enum と client/manager/config の `mode` option を追加。empty mode では永続化先と `availableTools` を必須化し、session defaults、system message、post-create options、CLI environment を公式 SDK に合わせて harden する。 |
+| `ToolSet` helper | `Support\ToolSet` と `BuiltInTools::Isolated` を追加。`availableTools` / `excludedTools` は `ToolSet` または source-qualified filter 配列を受け付け、裸の `*` は拒否する。 |
 
 ### 実装済み内容
 
