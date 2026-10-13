@@ -13,6 +13,8 @@ use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
 use Revolution\Copilot\Types\Rpc\ModelClearStartupSeedRequest;
 use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesRequest;
 use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesResult;
+use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortRequest;
+use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
@@ -91,6 +93,41 @@ describe('PendingModel', function () {
 
         expect($result->ready)->toBeFalse()
             ->and($result->visibility)->toBeNull();
+    });
+
+    it('updates reasoning effort without switching models', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.model.setReasoningEffort', [
+                'reasoningEffort' => 'high',
+                'sessionId' => 'session-xyz',
+            ])
+            ->andReturn(['reasoningEffort' => 'high']);
+
+        $result = (new PendingModel($client, 'session-xyz'))->setReasoningEffort(
+            new ModelSetReasoningEffortRequest(reasoningEffort: ReasoningEffort::HIGH),
+        );
+
+        expect($result)->toBeInstanceOf(ModelSetReasoningEffortResult::class)
+            ->and($result->reasoningEffort)->toBe(ReasoningEffort::HIGH);
+    });
+
+    it('accepts array parameters when updating reasoning effort', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.model.setReasoningEffort', [
+                'reasoningEffort' => 'low',
+                'sessionId' => 'session-xyz',
+            ])
+            ->andReturn(['reasoningEffort' => 'low']);
+
+        $result = (new PendingModel($client, 'session-xyz'))->setReasoningEffort([
+            'reasoningEffort' => 'low',
+        ]);
+
+        expect($result->reasoningEffort)->toBe(ReasoningEffort::LOW);
     });
 
     it('calls session.model.switchTo with typed params', function () {

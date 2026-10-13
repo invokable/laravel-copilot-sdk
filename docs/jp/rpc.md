@@ -471,6 +471,11 @@ $policy = $session->rpc()->model()->getReasoningSummaries(new ModelGetReasoningS
     summariesVisible: true, // ホストUIで現在表示中かどうか
 ));
 // $policy->ready、$policy->sessionShowsSummaries、$policy->visibility など
+// 選択中のモデルを変えずに reasoning effort のみを変更（experimental）
+$effort = $session->rpc()->model()->setReasoningEffort(
+    new ModelSetReasoningEffortRequest(reasoningEffort: ReasoningEffort::HIGH),
+);
+// $effort->reasoningEffort
 $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'gpt-4'));
 // reasoningEffortを指定する場合（対応モデルのみ）
 $session->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: 'claude-opus-4.7', reasoningEffort: ReasoningEffort::HIGH));
@@ -516,6 +521,9 @@ $modeResult = $session->rpc()->mode()->set(new ModeSetRequest(mode: 'plan'));
 // name
 $session->rpc()->name()->get();
 $session->rpc()->name()->set(new NameSetRequest(name: 'My Session'));
+// ユーザーが名前を設定していない場合に、要約をセッション名として適用（experimental）
+$autoName = $session->rpc()->name()->setAuto(new NameSetAutoRequest(summary: 'Summary of the session'));
+// $autoName->applied
 
 // plan
 $session->rpc()->plan()->read();
