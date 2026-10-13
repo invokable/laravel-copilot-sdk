@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Event;
 use Revolution\Copilot\Client;
+use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Enums\InstallationDecision;
 use Revolution\Copilot\Events\Session\ResumeSession;
@@ -360,23 +361,40 @@ describe('Client', function () {
     it('stop method cleans up resources', function () {
         $stdin = fopen('php://memory', 'r+');
         $stdout = fopen('php://memory', 'r+');
+        $callOrder = [];
 
         $mockStdioTransport = Mockery::mock(StdioTransport::class);
 
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->once();
-        $mockProcessManager->shouldReceive('stop')->once();
+        $mockProcessManager->shouldReceive('stop')
+            ->once()
+            ->andReturnUsing(function () use (&$callOrder): void {
+                $callOrder[] = 'process-stop';
+            });
         $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
 
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
-        $mockRpcClient->shouldReceive('stop')->once();
+        $mockRpcClient->shouldReceive('stop')
+            ->once()
+            ->andReturnUsing(function () use (&$callOrder): void {
+                $callOrder[] = 'rpc-stop';
+            });
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(26);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->once()
+            ->andReturnUsing(function () use (&$callOrder): array {
+                $callOrder[] = 'runtime-shutdown';
+
+                return [];
+            });
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -386,7 +404,73 @@ describe('Client', function () {
         $errors = $client->stop();
 
         expect($errors)->toBe([])
-            ->and($client->getState())->toBe(ConnectionState::DISCONNECTED);
+            ->and($client->getState())->toBe(ConnectionState::DISCONNECTED)
+            ->and($callOrder)->toBe(['runtime-shutdown', 'rpc-stop', 'process-stop']);
+
+        fclose($stdin);
+        fclose($stdout);
+    });
+
+    it('continues cleanup and returns an error when runtime shutdown fails', function () {
+        $stdin = fopen('php://memory', 'r+');
+        $stdout = fopen('php://memory', 'r+');
+        $callOrder = [];
+
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('stop')
+            ->once()
+            ->andReturnUsing(function () use (&$callOrder): void {
+                $callOrder[] = 'process-stop';
+            });
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('stop')
+            ->once()
+            ->andReturnUsing(function () use (&$callOrder): void {
+                $callOrder[] = 'rpc-stop';
+            });
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(26);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->once()
+            ->andReturnUsing(function () use (&$callOrder): never {
+                $callOrder[] = 'runtime-shutdown';
+
+                throw new RuntimeException('Shutdown timed out');
+            });
+
+        $mockSession = Mockery::mock(CopilotSession::class);
+        $mockSession->shouldReceive('disconnect')
+            ->once()
+            ->andReturnUsing(function () use (&$callOrder): void {
+                $callOrder[] = 'session-disconnect';
+            });
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client;
+        $client->start();
+        (new ReflectionClass($client))
+            ->getProperty('sessions')
+            ->setValue($client, ['session-1' => $mockSession]);
+
+        $errors = $client->stop();
+
+        expect($errors)->toHaveCount(1)
+            ->and($errors[0]->getMessage())->toBe('Failed to gracefully shut down runtime: Shutdown timed out')
+            ->and($client->getState())->toBe(ConnectionState::DISCONNECTED)
+            ->and($callOrder)->toBe(['session-disconnect', 'runtime-shutdown', 'rpc-stop', 'process-stop']);
 
         fclose($stdin);
         fclose($stdout);

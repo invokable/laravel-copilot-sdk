@@ -433,6 +433,16 @@ $env = Copilot::client()->rpc()->environments()->get(['environmentId' => 'env-id
 Copilot::client()->rpc()->environments()->delete(['environmentId' => 'env-id']);
 ```
 
+### Runtime・Host のライフサイクル（experimental）
+
+`host.dispose()` は `hostId` を指定してホストリスナーを破棄します。
+
+```php
+Copilot::client()->rpc()->host()->dispose(['hostId' => 'host-1']);
+```
+
+SDKが起動したstdioランタイムでは、`Client::stop()` がセッションを切断した後、JSON-RPC接続とプロセスを閉じる前に `runtime.shutdown` を呼び出します。ランタイムのクリーンアップ完了を最大10秒待ち、失敗時はエラーを戻り値に含めたうえで残りの停止処理を続けます。`cli_url` など外部ランタイムへの接続では、共有ランタイムを終了しないようこのRPCを呼び出しません。
+
 ## SessionRpc
 
 Sessionに紐づくRPCクラス。

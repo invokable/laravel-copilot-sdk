@@ -454,6 +454,17 @@ class Client implements CopilotClient
         $this->gitHubTokenProviders = [];
         $this->bearerTokenProviders = [];
 
+        if (! $this->tcpMode && $this->state === ConnectionState::CONNECTED && $this->rpcClient !== null) {
+            try {
+                $this->rpc()->runtime()->shutdown();
+            } catch (Throwable $e) {
+                $errors[] = new RuntimeException(
+                    'Failed to gracefully shut down runtime: '.$e->getMessage(),
+                    previous: $e,
+                );
+            }
+        }
+
         // Stop JSON-RPC client
         if ($this->rpcClient !== null) {
             $this->rpcClient->stop();

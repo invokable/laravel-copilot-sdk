@@ -6,6 +6,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingHost;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Types\Rpc\HostGitHubEnvironmentOptions;
+use Revolution\Copilot\Types\Rpc\HostDisposeRequest;
+use Revolution\Copilot\Types\Rpc\HostDisposeResult;
 use Revolution\Copilot\Types\Rpc\HostListSessionsRequest;
 use Revolution\Copilot\Types\Rpc\HostPublishSessionRequest;
 use Revolution\Copilot\Types\Rpc\HostStartRequest;
@@ -80,4 +82,20 @@ it('starts and publishes host sessions with typed host options', function () {
 
     expect($started->environmentId)->toBe('environment-1')
         ->and($published->sessionUri)->toBe('ahp://host/session-1');
+});
+
+it('disposes a host listener with typed or array parameters', function () {
+    $client = Mockery::mock(JsonRpcClient::class);
+    $client->shouldReceive('request')
+        ->twice()
+        ->with('host.dispose', ['hostId' => 'host-1'])
+        ->andReturn([]);
+
+    $host = (new ServerRpc($client))->host();
+    $typedResult = $host->dispose(new HostDisposeRequest('host-1'));
+    $arrayResult = $host->dispose(['hostId' => 'host-1']);
+
+    expect($typedResult)->toBeInstanceOf(HostDisposeResult::class)
+        ->and($typedResult->toArray())->toBe([])
+        ->and($arrayResult)->toBeInstanceOf(HostDisposeResult::class);
 });

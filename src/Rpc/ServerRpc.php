@@ -249,4 +249,14 @@ class ServerRpc
     {
         return new PendingHost($this->client);
     }
+
+    /**
+     * Runtime lifecycle RPC operations.
+     *
+     * @experimental
+     */
+    public function runtime(): PendingServerRuntime
+    {
+        return new PendingServerRuntime($this->client);
+    }
 }
