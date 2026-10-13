@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
+use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 
 /**
  * Pending catalog RPC operations (server-scoped).
@@ -45,5 +46,24 @@ class PendingCatalog
             : CatalogSearchRequest::fromArray($params))->toArray();
 
         return $this->client->request('catalog.search', $paramsArray);
+    }
+
+    /**
+     * Resolves a candidate from a previous search for this session.
+     *
+     * On a `selected` result, pass its fresh `candidateHandle` to
+     * `PendingServerSkills::planInstall` to continue the skill installation flow.
+     *
+     * @return array<string, mixed>
+     *
+     * @experimental
+     */
+    public function select(CatalogSelectionRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof CatalogSelectionRequest
+            ? $params
+            : CatalogSelectionRequest::fromArray($params))->toArray();
+
+        return $this->client->request('catalog.select', $paramsArray);
     }
 }

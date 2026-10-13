@@ -201,6 +201,81 @@ Copilot::client()->rpc()->skills()->config()->setDisabledSkills(
     new SkillsConfigSetDisabledSkillsRequest(disabledSkills: ['skill-name'])
 );
 
+// 個別のスキルを有効化・無効化
+Copilot::client()->rpc()->skills()->config()->setSkillDisabled(
+    new SkillsConfigSetSkillDisabledRequest(name: 'skill-name', disabled: true)
+);
+
+// catalog.search → catalog.select でスキル候補を選択 (experimental)
+use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Enums\CatalogCandidateKind;
+use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
+use Revolution\Copilot\Types\Rpc\CatalogSelectionDecision;
+use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
+
+$contract = new CatalogClientContract(1, ['catalog-selection', 'ai-skill-installation']);
+$catalog = Copilot::client()->rpc()->catalog();
+$search = $catalog->search(new CatalogSearchRequest(
+    contract: $contract,
+    query: 'code review skill',
+    kinds: [CatalogCandidateKind::AiSkill],
+));
+$selection = $catalog->select(new CatalogSelectionRequest(
+    contract: $contract,
+    sessionId: $sessionId,
+    selectionRef: $search['candidates'][0]['selectionRef'],
+    outcome: CatalogSelectionDecision::Selected,
+));
+
+// スキルのインストール計画と適用
+use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillInstallationOperationRequest;
+use Revolution\Copilot\Types\Rpc\SkillInstallationsRequest;
+use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
+
+$skills = Copilot::client()->rpc()->skills();
+if ($selection['kind'] === 'selected') {
+    $plan = $skills->planInstall(new SkillPlanInstallRequest(
+        contract: $contract,
+        candidateHandle: $selection['candidateHandle'],
+        policySessionId: $sessionId,
+    ));
+    // applyInstall() は installations.confirm による確認後に適用する
+    $result = $skills->applyInstall(new SkillApplyInstallRequest(
+        contract: $contract,
+        planHandle: $plan['planHandle'],
+        policySessionId: $sessionId,
+    ));
+}
+
+// インストール済みスキルと進行中の操作
+$installations = $skills->installations();
+$owned = $installations->list(new SkillInstallationsRequest($contract, $sessionId));
+$pending = $installations->recover(new SkillInstallationsRequest($contract, $sessionId));
+$status = $installations->status(new SkillInstallationOperationRequest($contract, 'operation-id'));
+$cancelled = $installations->cancel(new SkillInstallationOperationRequest($contract, 'operation-id'));
+$enabled = $installations->setEnabled(new SkillSetEnabledRequest(
+    contract: $contract,
+    installationId: 'installation-id',
+    enabled: true,
+    policySessionId: $sessionId,
+));
+
+// アンインストールも計画を確認してから適用
+$removalPlan = $skills->planUninstall(new SkillPlanUninstallRequest(
+    contract: $contract,
+    installationId: 'installation-id',
+    policySessionId: $sessionId,
+));
+$removed = $skills->applyUninstall(new SkillApplyUninstallRequest(
+    contract: $contract,
+    planHandle: $removalPlan['planHandle'],
+    policySessionId: $sessionId,
+));
+
 // skills: スキル作成可能ディレクトリを取得 (experimental)
 // スキルを配置するとランタイムが認識するディレクトリの一覧
 use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Event;
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Enums\ConnectionState;
+use Revolution\Copilot\Enums\InstallationDecision;
 use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Facades\Copilot;
@@ -24,6 +25,7 @@ use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\NamedProviderConfig;
 use Revolution\Copilot\Types\ProviderModelConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -86,6 +88,59 @@ describe('Client', function () {
 
         fclose($stdin);
         fclose($stdout);
+    });
+
+    it('routes skill installation reviews through the installation confirmation callback', function () {
+        $confirmationHandler = null;
+        $reviewedRequest = null;
+        $installationConfirmationHandler = function (InstallationConfirmationRequest $request) use (&$reviewedRequest): InstallationDecision {
+            $reviewedRequest = $request;
+
+            return InstallationDecision::CONFIRM;
+        };
+
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')
+            ->withArgs(function ($method, $handler) use (&$confirmationHandler): bool {
+                if ($method === 'installations.confirm') {
+                    $confirmationHandler = $handler;
+                }
+
+                return true;
+            })
+            ->times(24);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        (new Client(['installation_confirmation_handler' => $installationConfirmationHandler]))->start();
+
+        $response = $confirmationHandler([
+            'confirmationId' => 'confirmation-1',
+            'operationId' => 'skill-operation-1',
+            'expiresAt' => '2026-10-13T12:00:00Z',
+            'reviewFingerprint' => 'fingerprint-1',
+            'review' => ['kind' => 'skill'],
+        ]);
+
+        expect($reviewedRequest)->toBeInstanceOf(InstallationConfirmationRequest::class)
+            ->and($reviewedRequest->review)->toBe(['kind' => 'skill'])
+            ->and($response)->toBe([
+                'confirmationId' => 'confirmation-1',
+                'reviewFingerprint' => 'fingerprint-1',
+                'decision' => 'confirm',
+            ]);
     });
 
     it('falls back to ping when connect handshake is unavailable', function () {
