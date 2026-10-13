@@ -860,6 +860,30 @@ $removed = $session->rpc()->queue()->removeMostRecent();
 
 $session->rpc()->queue()->clear();
 
+// 指定位置に項目を挿入（position は 0 始まり）
+use Revolution\Copilot\Types\Rpc\QueueInsertAtRequest;
+use Revolution\Copilot\Types\Rpc\QueueInsertMessage;
+
+$queue = $session->rpc()->queue();
+$inserted = $queue->insertAt(new QueueInsertAtRequest(
+    position: 0,
+    message: new QueueInsertMessage(prompt: 'Review the changes'),
+));
+// $inserted->id - 挿入された項目の ID
+
+$queue->moveItem(['id' => $inserted->id, 'toPosition' => 1]);
+$duplicated = $queue->duplicateAt(['id' => $inserted->id]);
+$queue->updateText(['id' => $duplicated->id, 'prompt' => 'Review and test the changes']);
+$sent = $queue->sendNow(['id' => $duplicated->id]);
+// $sent->steered - 実行中のターンに送られたかどうか
+
+$removedAt = $queue->removeAt(['id' => $duplicated->id]);
+// $removedAt->removed - 項目を削除できたかどうか
+
+// ドレインを一時停止する。停止は自動解除されないため、必ず false で再開する
+$queue->setDrainPaused(['paused' => true]);
+$queue->setDrainPaused(['paused' => false]);
+
 // schedule (experimental: スケジュール済みプロンプト管理)
 $schedule = $session->rpc()->schedule()->list();
 // $schedule->entries - ScheduleEntry の配列
