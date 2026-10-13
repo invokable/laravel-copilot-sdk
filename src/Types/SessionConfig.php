@@ -124,9 +124,15 @@ readonly class SessionConfig implements Arrayable
      * @param  ?string  $agent  Name of the custom agent to activate when the session starts.
      *                          Must match the `name` of one of the agents in `customAgents`.
      *                          Equivalent to calling `session.rpc.agent.select({ name })` after creation.
-     * @param  ?array  $skillDirectories  Directories to load skills from
+     * @param  ?array<string>  $skillDirectories  Explicit discovery-only skill roots. They do not grant general filesystem access and are available without `enableConfigDiscovery`.
+     *                                            Relative paths resolve once against the effective `workingDirectory`; null/omission preserves other contributions, while `[]` clears only explicit SDK roots.
+     * @param  ?array<string>  $agentDirectories  Explicit discovery-only agent roots. They do not grant general filesystem access and are available without `enableConfigDiscovery`.
+     *                                            Relative paths resolve once against the effective `workingDirectory`; null/omission preserves other contributions, while `[]` clears only explicit SDK roots.
+     * @param  ?array<string>  $hookDirectories  Explicit discovery-only file-hook roots. They do not grant general filesystem access and are available without `enableConfigDiscovery` or `enableFileHooks`.
+     *                                           Relative paths resolve once against the effective `workingDirectory`; null/omission preserves other contributions, while `[]` clears only explicit SDK roots.
      * @param  ?array  $pluginDirectories  Local filesystem paths to Open Plugins-format directories to load for this session.
-     * @param  ?array  $instructionDirectories  Additional directories to search for custom instruction files.
+     * @param  ?array<string>  $instructionDirectories  Explicit discovery-only instruction roots. They do not grant general filesystem access and are available without `enableConfigDiscovery`.
+     *                                                  Relative paths resolve once against the effective `workingDirectory`; null/omission preserves other contributions, while `[]` clears only explicit SDK roots.
      * @param  ?array  $disabledSkills  List of skill names to disable
      * @param  ?bool  $skipCustomInstructions  When true, custom instruction files are not loaded.
      * @param  ?bool  $customAgentsLocalOnly  When true, only local custom agents are considered.
@@ -178,7 +184,7 @@ readonly class SessionConfig implements Arrayable
      * @param  ?string  $embeddingCacheStorage  Controls how the embedding cache is stored ("persistent" or "in-memory").
      * @param  ?string  $organizationCustomInstructions  Organization-level custom instructions to include in the system prompt.
      * @param  ?bool  $enableOnDemandInstructionDiscovery  When true, enables on-demand discovery of instruction files.
-     * @param  ?bool  $enableFileHooks  When true, enables loading of file-based hooks from `.github/hooks/`.
+     * @param  ?bool  $enableFileHooks  When true, enables repository-origin file hooks. Does not control explicit `hookDirectories` or callback hooks.
      * @param  ?bool  $enableHostGitOperations  When true, enables git operations on the host filesystem.
      * @param  ?bool  $enableSessionStore  When true, enables the cross-session store for search and retrieval.
      * @param  ?bool  $enableSkills  When true, enables skill loading.
@@ -319,6 +325,8 @@ readonly class SessionConfig implements Arrayable
         public ImageGenerationConfig|array|null $imageGeneration = null,
         public ?Closure $onMcpAuthRequest = null,
         public ?string $name = null,
+        public ?array $agentDirectories = null,
+        public ?array $hookDirectories = null,
     ) {}
 
     /**
@@ -450,6 +458,8 @@ readonly class SessionConfig implements Arrayable
             defaultAgent: $data['defaultAgent'] ?? null,
             agent: $data['agent'] ?? null,
             skillDirectories: $data['skillDirectories'] ?? null,
+            agentDirectories: $data['agentDirectories'] ?? null,
+            hookDirectories: $data['hookDirectories'] ?? null,
             pluginDirectories: $data['pluginDirectories'] ?? null,
             instructionDirectories: $data['instructionDirectories'] ?? null,
             disabledSkills: $data['disabledSkills'] ?? null,
@@ -635,6 +645,8 @@ readonly class SessionConfig implements Arrayable
             'defaultAgent' => $this->defaultAgent,
             'agent' => $this->agent,
             'skillDirectories' => $this->skillDirectories,
+            'agentDirectories' => $this->agentDirectories,
+            'hookDirectories' => $this->hookDirectories,
             'pluginDirectories' => $this->pluginDirectories,
             'instructionDirectories' => $this->instructionDirectories,
             'disabledSkills' => $this->disabledSkills,

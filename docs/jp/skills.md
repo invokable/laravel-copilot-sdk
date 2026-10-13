@@ -12,7 +12,7 @@ Laravel版では `SessionConfig` の `skillDirectories` と `disabledSkills` を
 
 ## 基本的な使い方
 
-`skillDirectories` に親ディレクトリを指定すると、配下の各サブディレクトリにある `SKILL.md` が読み込まれます。
+`skillDirectories` はスキルを検出するための明示的なルートです。`enableConfigDiscovery` の設定とは独立して利用でき、親ディレクトリを指定すると配下の各サブディレクトリにある `SKILL.md` が検出されます。これは検出専用であり、エージェントに一般的なファイルアクセス権限を与えません。
 
 ```php
 use Revolution\Copilot\Contracts\CopilotSession;
@@ -63,6 +63,8 @@ skills/
 ```
 
 `skillDirectories` には `skills/` のような親ディレクトリを指定します。
+
+相対パスは指定時の有効な `workingDirectory` を基準に一度だけ解決されます。省略または `null` は他の検出元を変更せず、`[]` は明示したSDKルートだけをクリアします。`disabledSkills`、ソース単位の無効化、Managed Settings は明示ルートから検出したスキルにも適用されます。
 
 ## SKILL.md の形式
 

@@ -775,8 +775,13 @@ describe('Client', function () {
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
             ->with('session.create', Mockery::on(fn ($params) => ($params['defaultAgent'] ?? null) === ['excludedTools' => ['builtin:bash']]
+                && ($params['workingDirectory'] ?? null) === '/workspace/project'
+                && ($params['skillDirectories'] ?? null) === []
+                && ($params['agentDirectories'] ?? null) === ['../agents']
+                && ($params['hookDirectories'] ?? null) === ['../hooks']
                 && ($params['pluginDirectories'] ?? null) === ['/app/plugins/reviewer']
-                && ($params['instructionDirectories'] ?? null) === ['/app/instructions']
+                && ($params['instructionDirectories'] ?? null) === ['../instructions']
+                && ($params['enableFileHooks'] ?? null) === false
                 && ($params['remoteSession'] ?? null) === 'export'
                 && ($params['cloud']['repository'] ?? null) === ['owner' => 'myorg', 'name' => 'myrepo', 'branch' => 'main']
                 && ($params['toolSearch'] ?? null) === ['enabled' => true, 'deferThreshold' => 12]
@@ -811,8 +816,13 @@ describe('Client', function () {
         $client->start();
         $session = $client->createSession([
             'defaultAgent' => ['excludedTools' => ['builtin:bash']],
+            'workingDirectory' => '/workspace/project',
+            'skillDirectories' => [],
+            'agentDirectories' => ['../agents'],
+            'hookDirectories' => ['../hooks'],
             'pluginDirectories' => ['/app/plugins/reviewer'],
-            'instructionDirectories' => ['/app/instructions'],
+            'instructionDirectories' => ['../instructions'],
+            'enableFileHooks' => false,
             'remoteSession' => 'export',
             'toolSearch' => new ToolSearchConfig(enabled: true, deferThreshold: 12),
             'imageGeneration' => new ImageGenerationConfig(enabled: true),
@@ -938,8 +948,13 @@ describe('Client', function () {
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
             ->with('session.resume', Mockery::on(fn ($params) => ($params['defaultAgent'] ?? null) === ['excludedTools' => ['builtin:bash']]
+                && ($params['workingDirectory'] ?? null) === '/workspace/project'
+                && ($params['skillDirectories'] ?? null) === ['/app/skills']
+                && ($params['agentDirectories'] ?? null) === ['../agents']
+                && ($params['hookDirectories'] ?? null) === ['/app/hooks']
                 && ($params['pluginDirectories'] ?? null) === ['/app/plugins/reviewer']
                 && ($params['instructionDirectories'] ?? null) === ['/app/instructions']
+                && ($params['enableFileHooks'] ?? null) === false
                 && ($params['remoteSession'] ?? null) === 'export'
                 && ($params['largeOutput'] ?? null) === ['enabled' => true, 'maxSizeBytes' => 1024]
                 && ($params['requestMcpApps'] ?? null) === true
@@ -978,8 +993,13 @@ describe('Client', function () {
         $client->start();
         $session = $client->resumeSession('test-session-123', [
             'defaultAgent' => ['excludedTools' => ['builtin:bash']],
+            'workingDirectory' => '/workspace/project',
+            'skillDirectories' => ['/app/skills'],
+            'agentDirectories' => ['../agents'],
+            'hookDirectories' => ['/app/hooks'],
             'pluginDirectories' => ['/app/plugins/reviewer'],
             'instructionDirectories' => ['/app/instructions'],
+            'enableFileHooks' => false,
             'remoteSession' => 'export',
             'largeOutput' => ['enabled' => true, 'maxSizeBytes' => 1024],
             'toolSearch' => new ToolSearchConfig(enabled: true, deferThreshold: 8),
