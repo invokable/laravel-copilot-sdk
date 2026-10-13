@@ -61,6 +61,40 @@ describe('Client TCP Mode', function () {
             ->and($client->isTcpMode())->toBeTrue();
     });
 
+    it('registers built-in plugin directories with an external server', function () {
+        $paths = ['C:\\copilot\\plugins'];
+        $mockTransport = Mockery::mock(TcpTransport::class, Transport::class);
+        $mockTransport->shouldReceive('start')->once();
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(23);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andReturn(['protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('plugins.builtin.set', ['paths' => $paths])
+            ->once()
+            ->andReturn([]);
+
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client([
+            'connection' => RuntimeConnection::forUri('tcp://127.0.0.1:12345'),
+            'builtinPluginDirectories' => $paths,
+        ]);
+        $reflection = new ReflectionClass($client);
+        $transportProperty = $reflection->getProperty('transport');
+        $transportProperty->setValue($client, $mockTransport);
+
+        $client->start();
+
+        expect($client->getState())->toBe(ConnectionState::CONNECTED)
+            ->and($client->isTcpMode())->toBeTrue();
+    });
+
     it('stop method closes TCP transport', function () {
         $mockTransport = Mockery::mock(TcpTransport::class, Transport::class);
         $mockTransport->shouldReceive('start')->once();

@@ -411,6 +411,39 @@ describe('CopilotManager', function () {
             ->and($receivedOptions[1]['on_github_telemetry'])->toBe($handler);
     });
 
+    it('forwards built-in plugin directories from manager configuration and useStdio options', function () {
+        $receivedOptions = [];
+
+        $this->app->bind(Client::class, function ($app, array $parameters) use (&$receivedOptions) {
+            $receivedOptions[] = $parameters['options'];
+
+            $client = Mockery::mock(CopilotClient::class);
+            $client->shouldReceive('start')->once();
+            $client->shouldReceive('stop')->andReturn([]);
+
+            return $client;
+        });
+
+        config(['copilot.builtin_plugin_directories' => ['/config/plugins']]);
+
+        $manager = new CopilotManager(config('copilot'));
+        $manager->client();
+        $manager->useStdio(['builtinPluginDirectories' => ['/stdio/plugins']]);
+        $manager->stop();
+
+        $tcpManager = new CopilotManager([
+            'url' => 'tcp://127.0.0.1:12345',
+            'builtinPluginDirectories' => ['/tcp/plugins'],
+        ]);
+        $tcpManager->client();
+        $tcpManager->stop();
+
+        expect($receivedOptions)->toHaveCount(3)
+            ->and($receivedOptions[0]['builtin_plugin_directories'])->toBe(['/config/plugins'])
+            ->and($receivedOptions[1]['builtinPluginDirectories'])->toBe(['/stdio/plugins'])
+            ->and($receivedOptions[2]['builtinPluginDirectories'])->toBe(['/tcp/plugins']);
+    });
+
     it('use stdio', function () {
         $mockClient = mock(CopilotClient::class, function (MockInterface $mock) {
             $mock->expects('start')->once();

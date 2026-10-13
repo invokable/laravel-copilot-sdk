@@ -106,6 +106,11 @@ class Client implements CopilotClient
     protected ?SessionFsConfig $sessionFsConfig = null;
 
     /**
+     * @var list<string>
+     */
+    protected array $builtinPluginDirectories = [];
+
+    /**
      * @var Closure(GitHubTelemetryNotification): mixed|null
      */
     protected ?Closure $onGitHubTelemetry = null;
@@ -126,6 +131,7 @@ class Client implements CopilotClient
         $this->onGitHubTelemetry = $onGitHubTelemetry === null
             ? null
             : Closure::fromCallable($onGitHubTelemetry);
+        $this->builtinPluginDirectories = $this->normalizeBuiltinPluginDirectories($options);
         $this->sessionFsConfig = $this->normalizeSessionFsConfig($options);
 
         $connection = $this->normalizeConnection($options);
@@ -166,6 +172,41 @@ class Client implements CopilotClient
             'baseDirectory' => data_get($options, 'baseDirectory', data_get($options, 'base_directory', data_get($options, 'copilot_home'))),
             'remote' => data_get($options, 'remote', false),
         ]);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function normalizeBuiltinPluginDirectories(array $options): array
+    {
+        $directories = array_key_exists('builtinPluginDirectories', $options)
+            ? $options['builtinPluginDirectories']
+            : ($options['builtin_plugin_directories'] ?? []);
+
+        if (! is_array($directories) || ! array_is_list($directories)) {
+            throw new \InvalidArgumentException('builtinPluginDirectories must be a list of absolute paths.');
+        }
+
+        foreach ($directories as $directory) {
+            if (! is_string($directory) || ! $this->isAbsolutePath($directory)) {
+                throw new \InvalidArgumentException(
+                    'builtinPluginDirectories must contain only absolute paths: '.
+                    (is_string($directory) ? $directory : get_debug_type($directory)),
+                );
+            }
+        }
+
+        return $directories;
+    }
+
+    protected function isAbsolutePath(string $path): bool
+    {
+        return str_starts_with($path, '/') || (
+            strlen($path) >= 3
+            && ctype_alpha($path[0])
+            && $path[1] === ':'
+            && in_array($path[2], ['\\', '/'], true)
+        );
     }
 
     protected function normalizeConnection(array $options): RuntimeConnection
@@ -305,6 +346,29 @@ class Client implements CopilotClient
 
             // Verify protocol version
             $this->verifyProtocolVersion();
+
+            if ($this->builtinPluginDirectories !== []) {
+                try {
+                    $this->rpc()->plugins()->builtin()->set([
+                        'paths' => $this->builtinPluginDirectories,
+                    ]);
+                } catch (Throwable $e) {
+                    try {
+                        $this->stop();
+                    } catch (Throwable) {
+                        try {
+                            if ($this->tcpMode) {
+                                $this->transport?->stop();
+                            } else {
+                                $this->processManager?->stop();
+                            }
+                        } catch (Throwable) {
+                        }
+                    }
+
+                    throw $e;
+                }
+            }
 
             $this->registerSessionFsWithRuntime();
 

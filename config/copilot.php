@@ -74,6 +74,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Built-in Plugin Directories
+    |--------------------------------------------------------------------------
+    |
+    | Absolute paths to trusted built-in plugin directories. The client
+    | registers these directories with the runtime when it starts.
+    |
+    */
+    'builtin_plugin_directories' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Timeout
     |--------------------------------------------------------------------------
     |

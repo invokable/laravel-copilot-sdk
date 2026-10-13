@@ -363,6 +363,10 @@ $plugins->disable(new PluginsDisableRequest(names: ['eslint@official']));
 // ビルトインプラグインのディレクトリ設定
 $plugins->builtin()->set(new PluginsBuiltinSetRequest(paths: ['/opt/copilot/plugins']));
 
+// 全セッションで使うディレクトリは、クライアント設定で指定すると
+// Client::start() が最初のセッション作成前に自動登録する
+// config/copilot.php: 'builtin_plugin_directories' => ['/opt/copilot/plugins']
+
 // マーケットプレイス管理
 $marketplaces = $plugins->marketplaces();
 $marketplaces->list();
