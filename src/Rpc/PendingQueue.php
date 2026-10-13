@@ -7,10 +7,23 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\QueueBeginDeferredIdleDrainRequest;
 use Revolution\Copilot\Types\Rpc\QueueBeginDeferredIdleDrainResult;
+use Revolution\Copilot\Types\Rpc\QueueDuplicateAtRequest;
+use Revolution\Copilot\Types\Rpc\QueueDuplicateAtResult;
 use Revolution\Copilot\Types\Rpc\QueueFinishDeferredIdleDrainRequest;
 use Revolution\Copilot\Types\Rpc\QueueFinishDeferredIdleDrainResult;
+use Revolution\Copilot\Types\Rpc\QueueInsertAtRequest;
+use Revolution\Copilot\Types\Rpc\QueueInsertAtResult;
+use Revolution\Copilot\Types\Rpc\QueueMoveItemRequest;
+use Revolution\Copilot\Types\Rpc\QueueMoveItemResult;
 use Revolution\Copilot\Types\Rpc\QueuePendingItemsResult;
+use Revolution\Copilot\Types\Rpc\QueueRemoveAtRequest;
+use Revolution\Copilot\Types\Rpc\QueueRemoveAtResult;
 use Revolution\Copilot\Types\Rpc\QueueRemoveMostRecentResult;
+use Revolution\Copilot\Types\Rpc\QueueSendNowRequest;
+use Revolution\Copilot\Types\Rpc\QueueSendNowResult;
+use Revolution\Copilot\Types\Rpc\QueueSetDrainPausedRequest;
+use Revolution\Copilot\Types\Rpc\QueueUpdateTextRequest;
+use Revolution\Copilot\Types\Rpc\QueueUpdateTextResult;
 
 /**
  * Pending queue RPC operations for a session.
@@ -31,6 +44,98 @@ class PendingQueue
             $this->client->request('session.queue.pendingItems', [
                 'sessionId' => $this->sessionId,
             ]),
+        );
+    }
+
+    /**
+     * Inserts a queued message at a visible queue position.
+     */
+    public function insertAt(QueueInsertAtRequest|array $params): QueueInsertAtResult
+    {
+        $paramsArray = ($params instanceof QueueInsertAtRequest ? $params : QueueInsertAtRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return QueueInsertAtResult::fromArray(
+            $this->client->request('session.queue.insertAt', $paramsArray),
+        );
+    }
+
+    /**
+     * Moves a queued item to another visible queue position.
+     */
+    public function moveItem(QueueMoveItemRequest|array $params): QueueMoveItemResult
+    {
+        $paramsArray = ($params instanceof QueueMoveItemRequest ? $params : QueueMoveItemRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return QueueMoveItemResult::fromArray(
+            $this->client->request('session.queue.moveItem', $paramsArray),
+        );
+    }
+
+    /**
+     * Removes a queued item by its identifier.
+     */
+    public function removeAt(QueueRemoveAtRequest|array $params): QueueRemoveAtResult
+    {
+        $paramsArray = ($params instanceof QueueRemoveAtRequest ? $params : QueueRemoveAtRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return QueueRemoveAtResult::fromArray(
+            $this->client->request('session.queue.removeAt', $paramsArray),
+        );
+    }
+
+    /**
+     * Duplicates a queued item by its identifier.
+     */
+    public function duplicateAt(QueueDuplicateAtRequest|array $params): QueueDuplicateAtResult
+    {
+        $paramsArray = ($params instanceof QueueDuplicateAtRequest ? $params : QueueDuplicateAtRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return QueueDuplicateAtResult::fromArray(
+            $this->client->request('session.queue.duplicateAt', $paramsArray),
+        );
+    }
+
+    /**
+     * Immediately sends a queued item.
+     */
+    public function sendNow(QueueSendNowRequest|array $params): QueueSendNowResult
+    {
+        $paramsArray = ($params instanceof QueueSendNowRequest ? $params : QueueSendNowRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return QueueSendNowResult::fromArray(
+            $this->client->request('session.queue.sendNow', $paramsArray),
+        );
+    }
+
+    /**
+     * Acquires or releases the queued-lane drain pause.
+     *
+     * Acquiring the pause is exclusive and non-idempotent: attempting to pause an already-paused session fails.
+     * The pause is not released automatically when the caller exits; any caller can release it with `paused: false`.
+     */
+    public function setDrainPaused(QueueSetDrainPausedRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof QueueSetDrainPausedRequest ? $params : QueueSetDrainPausedRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.queue.setDrainPaused', $paramsArray);
+    }
+
+    /**
+     * Updates the prompt and optional display text of a queued item.
+     */
+    public function updateText(QueueUpdateTextRequest|array $params): QueueUpdateTextResult
+    {
+        $paramsArray = ($params instanceof QueueUpdateTextRequest ? $params : QueueUpdateTextRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return QueueUpdateTextResult::fromArray(
+            $this->client->request('session.queue.updateText', $paramsArray),
         );
     }
 
