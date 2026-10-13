@@ -224,6 +224,7 @@ class CopilotManager implements Factory
                 $options = [
                     'cli_url' => $this->config['url'],
                     'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? null,
+                    ...Arr::only($this->config, ['builtin_plugin_directories', 'builtinPluginDirectories']),
                     ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
                 ];
             } else {
@@ -243,6 +244,7 @@ class CopilotManager implements Factory
                     'installation_confirmation_handler' => $this->config['installation_confirmation_handler']
                         ?? $this->config['installationConfirmationHandler'] ?? null,
                     'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? null,
+                    ...Arr::only($this->config, ['builtin_plugin_directories', 'builtinPluginDirectories']),
                     ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
                 ];
             }
@@ -274,7 +276,7 @@ class CopilotManager implements Factory
     /**
      * Configure the client to use stdio transport with given options.
      *
-     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array, on_github_telemetry?: callable(GitHubTelemetryNotification): void, onGitHubTelemetry?: callable(GitHubTelemetryNotification): void}  $config  Configuration options for stdio transport.
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array, builtin_plugin_directories?: list<string>, builtinPluginDirectories?: list<string>, on_github_telemetry?: callable(GitHubTelemetryNotification): void, onGitHubTelemetry?: callable(GitHubTelemetryNotification): void}  $config  Configuration options for stdio transport.
      */
     public function useStdio(?array $config = null): static
     {
@@ -300,6 +302,8 @@ class CopilotManager implements Factory
             'installationConfirmationHandler',
             'session_fs',
             'sessionFs',
+            'builtin_plugin_directories',
+            'builtinPluginDirectories',
             'on_github_telemetry',
             'onGitHubTelemetry',
         ]));
@@ -325,6 +329,9 @@ class CopilotManager implements Factory
         $options = array_filter([
             'connection' => RuntimeConnection::forUri($url),
             'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? config('copilot.session_fs'),
+            'builtin_plugin_directories' => $this->config['builtin_plugin_directories']
+                ?? $this->config['builtinPluginDirectories']
+                ?? config('copilot.builtin_plugin_directories'),
         ], fn ($value) => $value !== null);
 
         $this->client([

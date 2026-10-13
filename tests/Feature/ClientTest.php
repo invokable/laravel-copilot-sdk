@@ -57,6 +57,16 @@ describe('Client', function () {
             ->toThrow(InvalidArgumentException::class, 'onGitHubTelemetry must be callable');
     });
 
+    it('rejects relative built-in plugin directory paths for both option aliases', function () {
+        foreach (['builtin_plugin_directories', 'builtinPluginDirectories'] as $option) {
+            expect(fn () => new Client([$option => ['relative/plugins']]))
+                ->toThrow(
+                    InvalidArgumentException::class,
+                    'builtinPluginDirectories must contain only absolute paths: relative/plugins',
+                );
+        }
+    });
+
     it('creates ProcessManager via app container', function () {
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->never(); // Not started yet
@@ -90,13 +100,80 @@ describe('Client', function () {
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
 
-        $client = new Client;
+        $client = new Client(['builtin_plugin_directories' => []]);
         $client->start();
 
         expect($client->getState())->toBe(ConnectionState::CONNECTED);
 
         fclose($stdin);
         fclose($stdout);
+    });
+
+    it('registers built-in plugin directories before creating the first session', function () {
+        $requests = [];
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn(Mockery::mock(StdioTransport::class));
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(23);
+        $mockRpcClient->shouldReceive('request')
+            ->andReturnUsing(function (string $method, array $params) use (&$requests): array {
+                $requests[] = [$method, $params];
+
+                return match ($method) {
+                    'connect' => ['protocolVersion' => Protocol::version()],
+                    'session.create' => ['sessionId' => 'session-1'],
+                    default => [],
+                };
+            });
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client([
+            'builtin_plugin_directories' => ['/opt/copilot/plugins', 'C:\\copilot\\plugins'],
+        ]);
+        $client->start();
+        $client->createSession(new SessionConfig(onPermissionRequest: fn () => ['kind' => 'approve-once']));
+
+        expect(array_column($requests, 0))->toBe(['connect', 'plugins.builtin.set', 'session.create']);
+        expect($requests[1])->toBe([
+            'plugins.builtin.set',
+            ['paths' => ['/opt/copilot/plugins', 'C:\\copilot\\plugins']],
+        ]);
+    });
+
+    it('stops the client and rethrows when built-in plugin registration fails', function () {
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn(Mockery::mock(StdioTransport::class));
+        $mockProcessManager->shouldReceive('stop')->once();
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('stop')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(23);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andReturn(['protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('plugins.builtin.set', ['paths' => ['/opt/copilot/plugins']])
+            ->once()
+            ->andThrow(new RuntimeException('plugin registration failed'));
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client(['builtinPluginDirectories' => ['/opt/copilot/plugins']]);
+
+        expect(fn () => $client->start())
+            ->toThrow(RuntimeException::class, 'plugin registration failed');
+        expect($client->getState())->toBe(ConnectionState::ERROR);
     });
 
     it('opts into GitHub telemetry forwarding during connect when a handler is configured', function () {
