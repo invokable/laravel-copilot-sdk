@@ -6,6 +6,8 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\NameGetResult;
+use Revolution\Copilot\Types\Rpc\NameSetAutoRequest;
+use Revolution\Copilot\Types\Rpc\NameSetAutoResult;
 use Revolution\Copilot\Types\Rpc\NameSetRequest;
 
 /**
@@ -41,5 +43,20 @@ class PendingName
         $paramsArray['sessionId'] = $this->sessionId;
 
         $this->client->request('session.name.set', $paramsArray);
+    }
+
+    /**
+     * Apply an auto-generated summary as the session name when no user-set name exists.
+     *
+     * @experimental
+     */
+    public function setAuto(NameSetAutoRequest|array $params): NameSetAutoResult
+    {
+        $paramsArray = ($params instanceof NameSetAutoRequest ? $params : NameSetAutoRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return NameSetAutoResult::fromArray(
+            $this->client->request('session.name.setAuto', $paramsArray),
+        );
     }
 }

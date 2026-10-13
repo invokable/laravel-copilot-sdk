@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingName;
 use Revolution\Copilot\Types\Rpc\NameGetResult;
+use Revolution\Copilot\Types\Rpc\NameSetAutoRequest;
+use Revolution\Copilot\Types\Rpc\NameSetAutoResult;
 use Revolution\Copilot\Types\Rpc\NameSetRequest;
 
 describe('PendingName', function () {
@@ -63,5 +65,40 @@ describe('PendingName', function () {
 
         $pending = new PendingName($client, 'session-abc');
         $pending->set(['name' => 'Array Name']);
+    });
+
+    it('applies an auto-generated summary as the session name', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.name.setAuto', [
+                'summary' => 'A useful session summary',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(['applied' => true]);
+
+        $result = (new PendingName($client, 'session-abc'))->setAuto(
+            new NameSetAutoRequest(summary: 'A useful session summary'),
+        );
+
+        expect($result)->toBeInstanceOf(NameSetAutoResult::class)
+            ->and($result->applied)->toBeTrue();
+    });
+
+    it('reports when an auto-generated summary was not applied', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.name.setAuto', [
+                'summary' => 'User-named session',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(['applied' => false]);
+
+        $result = (new PendingName($client, 'session-abc'))->setAuto([
+            'summary' => 'User-named session',
+        ]);
+
+        expect($result->applied)->toBeFalse();
     });
 });

@@ -14,6 +14,8 @@ use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesResult;
 use Revolution\Copilot\Types\Rpc\ModelListRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetAllowedModelsRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetAllowedModelsResult;
+use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortRequest;
+use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
@@ -56,6 +58,23 @@ class PendingModel
 
         return ModelGetReasoningSummariesResult::fromArray(
             $this->client->request('session.model.getReasoningSummaries', $paramsArray),
+        );
+    }
+
+    /**
+     * Update the reasoning effort without changing the selected model.
+     *
+     * @experimental
+     */
+    public function setReasoningEffort(ModelSetReasoningEffortRequest|array $params): ModelSetReasoningEffortResult
+    {
+        $paramsArray = ($params instanceof ModelSetReasoningEffortRequest
+            ? $params
+            : ModelSetReasoningEffortRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ModelSetReasoningEffortResult::fromArray(
+            $this->client->request('session.model.setReasoningEffort', $paramsArray),
         );
     }
 
