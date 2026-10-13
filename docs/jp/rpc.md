@@ -940,7 +940,7 @@ use Revolution\Copilot\Types\Rpc\ScheduleStopRequest;
 $stopped = $session->rpc()->schedule()->stop(new ScheduleStopRequest(id: 1));
 // $stopped->stopped - 停止に成功したかどうか
 
-// tasks (experimental: バックグラウンドエージェントタスク管理)
+// tasks (experimental: バックグラウンドタスク管理)
 // エージェントタスクを開始してIDを取得
 use Revolution\Copilot\Types\Rpc\TasksStartAgentRequest;
 
@@ -955,7 +955,59 @@ $result = $session->rpc()->tasks()->startAgent(new TasksStartAgentRequest(
 
 // 現在のタスク一覧を取得
 $list = $session->rpc()->tasks()->list();
-// $list->tasks - TaskAgentInfo または TaskShellInfo の配列
+// $list->tasks - TaskAgentInfo、TaskShellInfo、TaskClientInfo の配列
+
+// アプリケーション所有のジョブをタスクとして登録
+use Revolution\Copilot\Types\Rpc\TasksRegisterRequest;
+
+$registered = $session->rpc()->tasks()->register(new TasksRegisterRequest(
+    clientTaskId: 'import-123',
+    description: '顧客データをインポート',
+    cancellable: true,
+    displayName: '顧客インポート', // 任意
+));
+// $registered->task->id - CLI が割り当てたタスクID
+// $registered->created / $registered->reclaimed - 新規作成・孤立タスクの再取得状態
+
+// クライアント所有タスクの進捗を更新
+use Revolution\Copilot\Enums\TaskClientActiveStatus;
+use Revolution\Copilot\Enums\TaskClientUpdateKind;
+use Revolution\Copilot\Types\Rpc\TaskClientUpdate;
+use Revolution\Copilot\Types\Rpc\TasksUpdateRequest;
+
+$updated = $session->rpc()->tasks()->update(new TasksUpdateRequest(
+    id: $registered->task->id,
+    sequence: 1,
+    update: new TaskClientUpdate(
+        kind: TaskClientUpdateKind::Progress,
+        status: TaskClientActiveStatus::Running,
+        phase: 'importing',
+        percentage: 25,
+    ),
+));
+// sequence は更新ごとに増加させる
+
+// 完了を報告
+$completed = $session->rpc()->tasks()->update(new TasksUpdateRequest(
+    id: $registered->task->id,
+    sequence: 2,
+    update: new TaskClientUpdate(
+        kind: TaskClientUpdateKind::Completed,
+        result: ['imported' => 100],
+    ),
+));
+
+// タスクの進捗を取得（未追跡の場合は null）
+$progress = $session->rpc()->tasks()->getProgress(['id' => $registered->task->id])->progress;
+// TaskAgentProgress、TaskClientProgress、TaskShellProgress、または null
+
+// 切り離されたシェルの状態を更新し、バックグラウンド作業の完了を待つ
+$session->rpc()->tasks()->refresh();
+$session->rpc()->tasks()->waitForPending();
+
+// 現在バックグラウンド化できるタスクを取得、またはそのタスクを即時にバックグラウンド化
+$promotable = $session->rpc()->tasks()->getCurrentPromotable()->task;
+$promotedCurrent = $session->rpc()->tasks()->promoteCurrentToBackground()->task;
 
 // タスクをバックグラウンドモードに移行（同期待ちを解除）
 use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundRequest;
@@ -989,6 +1041,18 @@ $sent = $session->rpc()->tasks()->sendMessage(
 );
 // $sent->sent - メッセージが正常に送信されたかどうか
 // $sent->error - 送信失敗時のエラーメッセージ（nullable）
+
+// メインターンだけを中断し、キュー内のプロンプトは次のターン用に保持
+use Revolution\Copilot\Types\Rpc\InterruptMainTurnRequest;
+
+$interrupted = $session->rpc()->interruptMainTurn(
+    new InterruptMainTurnRequest(flushQueued: true)
+);
+// $interrupted->interrupted - 実行中のメインターンを中断できたかどうか
+
+// メインターンを中断せず、実行中のバックグラウンドエージェントをすべてキャンセル
+$cancelledCount = $session->rpc()->cancelAllBackgroundAgents();
+// キャンセルされたエージェント数
 ```
 
 ### remote (experimental: リモートセッションサポート)

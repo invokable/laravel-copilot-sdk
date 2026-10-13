@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\InterruptMainTurnRequest;
+use Revolution\Copilot\Types\Rpc\InterruptMainTurnResult;
 use Revolution\Copilot\Types\Rpc\SendMessagesRequest;
 use Revolution\Copilot\Types\Rpc\SendMessagesResult;
 use Revolution\Copilot\Types\Rpc\ShutdownRequest;
@@ -475,5 +477,34 @@ class SessionRpc
         return SendMessagesResult::fromArray(
             $this->client->request('session.sendMessages', $paramsArray),
         );
+    }
+
+    /**
+     * Interrupt the main agent turn without cancelling running background work.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function interruptMainTurn(InterruptMainTurnRequest|array $params = []): InterruptMainTurnResult
+    {
+        $paramsArray = $params instanceof InterruptMainTurnRequest
+            ? $params->toArray()
+            : InterruptMainTurnRequest::fromArray($params)->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return InterruptMainTurnResult::fromArray(
+            $this->client->request('session.interruptMainTurn', $paramsArray),
+        );
+    }
+
+    /**
+     * Cancel all running background agents without interrupting the main turn.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function cancelAllBackgroundAgents(): int
+    {
+        return $this->client->request('session.cancelAllBackgroundAgents', [
+            'sessionId' => $this->sessionId,
+        ]);
     }
 }

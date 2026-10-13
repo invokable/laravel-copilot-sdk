@@ -30,6 +30,8 @@ use Revolution\Copilot\Rpc\PendingUi;
 use Revolution\Copilot\Rpc\PendingWorkspaces;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
+use Revolution\Copilot\Types\Rpc\InterruptMainTurnRequest;
+use Revolution\Copilot\Types\Rpc\InterruptMainTurnResult;
 
 describe('SessionRpc', function () {
     it('returns PendingModel from model()', function () {
@@ -191,6 +193,38 @@ describe('SessionRpc', function () {
 
         $rpc = new SessionRpc($client, 'test-session');
         $rpc->suspend();
+    });
+
+    it('interrupts the main turn while preserving queued prompts when requested', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.interruptMainTurn', [
+                'flushQueued' => true,
+                'sessionId' => 'test-session',
+            ])
+            ->andReturn(['interrupted' => true]);
+
+        $result = (new SessionRpc($client, 'test-session'))->interruptMainTurn(
+            new InterruptMainTurnRequest(flushQueued: true),
+        );
+
+        expect($result)->toBeInstanceOf(InterruptMainTurnResult::class)
+            ->and($result->interrupted)->toBeTrue();
+    });
+
+    it('cancels all background agents and returns the cancellation count', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.cancelAllBackgroundAgents', [
+                'sessionId' => 'test-session',
+            ])
+            ->andReturn(3);
+
+        $result = (new SessionRpc($client, 'test-session'))->cancelAllBackgroundAgents();
+
+        expect($result)->toBe(3);
     });
 });
 
