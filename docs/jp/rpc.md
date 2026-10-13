@@ -180,8 +180,57 @@ Copilot::client()->rpc()->sessionFs()->setProvider(new SessionFsSetProviderReque
     conventions: 'posix',
 ));
 
-// sessions (experimental: セッションのフォーク)
-Copilot::client()->rpc()->sessions()->fork(new SessionsForkRequest(
+$sessions = Copilot::client()->rpc()->sessions();
+
+// sessions (experimental: 永続化済みセッションの照会・管理)
+use Revolution\Copilot\Enums\EventsReadDirection;
+use Revolution\Copilot\Types\Rpc\SessionsListRequest;
+use Revolution\Copilot\Types\Rpc\SessionsReadPersistedEventsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsPruneOldRequest;
+use Revolution\Copilot\Types\SessionListFilter;
+
+$listed = $sessions->list(new SessionsListRequest(
+    source: 'local',
+    metadataLimit: 50,
+    filter: new SessionListFilter(cwd: '/path/to/project'),
+));
+// 各 SessionMetadata の isRemote で local / remote セッションを判別
+foreach ($listed->sessions as $session) {
+    echo $session->sessionId;
+}
+
+$sessions->findByTaskId(['taskId' => 'task-id']);
+$sessions->findByPrefix(['prefix' => 'session-id-prefix']);
+$sessions->getLastForContext(['context' => ['cwd' => '/path/to/project']]);
+$sizes = $sessions->getSizes(); // $sizes->sizes は session ID => byte 数
+$inUse = $sessions->checkInUse(['sessionIds' => ['session-id']]);
+$deleted = $sessions->bulkDelete(['sessionIds' => ['session-id']]);
+
+// セッションを開かず、cursor を使って永続化済みイベントをページング
+$cursor = null;
+do {
+    $page = $sessions->readPersistedEvents(new SessionsReadPersistedEventsRequest(
+        sessionId: 'session-id',
+        cursor: $cursor,
+        max: 100,
+        direction: EventsReadDirection::FORWARD,
+    ));
+
+    foreach ($page->events as $event) {
+        // イベントを処理
+    }
+
+    $cursor = $page->cursor;
+} while ($page->hasMore);
+
+// dryRun は削除せず候補と見積もりを返す。実削除する場合は dryRun: false を指定
+$preview = $sessions->pruneOld(new SessionsPruneOldRequest(
+    olderThanDays: 30,
+    dryRun: true,
+));
+
+// sessions.fork
+$sessions->fork(new SessionsForkRequest(
     sessionId: 'source-session-id',
     toEventId: 'evt-boundary', // オプション: この ID より前のイベントのみ含める
 ));
