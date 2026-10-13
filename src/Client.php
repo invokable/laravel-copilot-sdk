@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use InvalidArgumentException;
 use Revolution\Copilot\Concerns\Client\HandlesCanvasProvider;
 use Revolution\Copilot\Concerns\Client\HandlesServerRequests;
 use Revolution\Copilot\Concerns\Client\HandlesSessionFs;
@@ -19,6 +20,7 @@ use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
+use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Enums\RuntimeConnectionKind;
 use Revolution\Copilot\Enums\TaskKind;
 use Revolution\Copilot\Events\Client\ClientStarted;
@@ -31,6 +33,7 @@ use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Support\CanvasHandler;
+use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Transport\TcpTransport;
 use Revolution\Copilot\Types\CanvasDeclaration;
@@ -109,6 +112,8 @@ class Client implements CopilotClient
      */
     protected ?SessionFsConfig $sessionFsConfig = null;
 
+    protected CopilotClientMode $mode = CopilotClientMode::CopilotCli;
+
     /**
      * @var list<string>
      */
@@ -129,22 +134,37 @@ class Client implements CopilotClient
             : (array_key_exists('on_github_telemetry', $options) ? 'on_github_telemetry' : null);
         $onGitHubTelemetry = $telemetryOption === null ? null : $options[$telemetryOption];
         if ($telemetryOption !== null && ! is_callable($onGitHubTelemetry)) {
-            throw new \InvalidArgumentException('onGitHubTelemetry must be callable.');
+            throw new InvalidArgumentException('onGitHubTelemetry must be callable.');
         }
 
         $this->onGitHubTelemetry = $onGitHubTelemetry === null
             ? null
             : Closure::fromCallable($onGitHubTelemetry);
+        $configuredMode = $options['mode'] ?? CopilotClientMode::CopilotCli;
+        $this->mode = $configuredMode instanceof CopilotClientMode
+            ? $configuredMode
+            : (is_string($configuredMode) ? CopilotClientMode::tryFrom($configuredMode) : null)
+                ?? throw new InvalidArgumentException('mode must be either "copilot-cli" or "empty".');
         $this->builtinPluginDirectories = $this->normalizeBuiltinPluginDirectories($options);
         $this->sessionFsConfig = $this->normalizeSessionFsConfig($options);
 
         $connection = $this->normalizeConnection($options);
+        $baseDirectory = $options['baseDirectory'] ?? $options['base_directory'] ?? $options['copilot_home'] ?? null;
+
+        if ($this->mode === CopilotClientMode::Empty
+            && ! filled($baseDirectory)
+            && $this->sessionFsConfig === null
+            && $connection->kindValue() !== RuntimeConnectionKind::URI->value) {
+            throw new InvalidArgumentException(
+                'mode "empty" requires a baseDirectory, sessionFs, or an external TCP URL.',
+            );
+        }
 
         // URI mode: connect to existing server
         if ($connection->kindValue() === RuntimeConnectionKind::URI->value) {
             // Validate auth options with external server
             if (filled(data_get($options, 'github_token')) || data_get($options, 'use_logged_in_user') !== null) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'github_token and use_logged_in_user cannot be used with RuntimeConnection::forUri() (external server manages its own auth)',
                 );
             }
@@ -157,7 +177,7 @@ class Client implements CopilotClient
         }
 
         if ($connection->kindValue() === RuntimeConnectionKind::TCP->value) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'SDK-spawned TCP runtime connections are not supported yet. Use RuntimeConnection::forUri() or cli_url to connect to an existing runtime.',
             );
         }
@@ -173,8 +193,9 @@ class Client implements CopilotClient
             'useLoggedInUser' => data_get($options, 'use_logged_in_user'),
             'telemetry' => data_get($options, 'telemetry'),
             'sessionIdleTimeoutSeconds' => data_get($options, 'session_idle_timeout_seconds', 0),
-            'baseDirectory' => data_get($options, 'baseDirectory', data_get($options, 'base_directory', data_get($options, 'copilot_home'))),
+            'baseDirectory' => $baseDirectory,
             'remote' => data_get($options, 'remote', false),
+            'mode' => $this->mode,
         ]);
     }
 
@@ -188,12 +209,12 @@ class Client implements CopilotClient
             : ($options['builtin_plugin_directories'] ?? []);
 
         if (! is_array($directories) || ! array_is_list($directories)) {
-            throw new \InvalidArgumentException('builtinPluginDirectories must be a list of absolute paths.');
+            throw new InvalidArgumentException('builtinPluginDirectories must be a list of absolute paths.');
         }
 
         foreach ($directories as $directory) {
             if (! is_string($directory) || ! $this->isAbsolutePath($directory)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'builtinPluginDirectories must contain only absolute paths: '.
                     (is_string($directory) ? $directory : get_debug_type($directory)),
                 );
@@ -493,14 +514,16 @@ class Client implements CopilotClient
                 'skillProvider' => $config->skillProvider,
                 'sessionFsProvider' => $config->sessionFsProvider,
             ]);
+        $config = $this->normalizeToolFilters($config);
+        $config = $this->applyModeDefaults($config);
         [$config, $bearerTokenProviders] = $this->extractBearerTokenProviders($config);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
-            throw new \InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
+            throw new InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
         }
 
         if (! isset($config['onPermissionRequest']) || ! is_callable($config['onPermissionRequest'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'An onPermissionRequest handler is required when creating a session. '
                 .'For example, to allow all permissions, use new SessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
             );
@@ -517,7 +540,7 @@ class Client implements CopilotClient
 
         $isCloudSession = ($config['cloud'] ?? null) !== null;
         if ($isCloudSession && $skillProvider !== null) {
-            throw new \InvalidArgumentException('Skill providers are not supported for cloud sessions.');
+            throw new InvalidArgumentException('Skill providers are not supported for cloud sessions.');
         }
 
         // Cloud sessions run remotely and have no local session filesystem to delegate.
@@ -787,14 +810,16 @@ class Client implements CopilotClient
                 'skillProvider' => $config->skillProvider,
                 'sessionFsProvider' => $config->sessionFsProvider,
             ]);
+        $config = $this->normalizeToolFilters($config);
+        $config = $this->applyModeDefaults($config);
         [$config, $bearerTokenProviders] = $this->extractBearerTokenProviders($config);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
-            throw new \InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
+            throw new InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
         }
 
         if (! isset($config['onPermissionRequest']) || ! is_callable($config['onPermissionRequest'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'An onPermissionRequest handler is required when resuming a session. '
                 .'For example, to allow all permissions, use new ResumeSessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
             );
@@ -1086,7 +1111,7 @@ class Client implements CopilotClient
 
         if ($bearerTokenProvider !== null) {
             if (! is_callable($bearerTokenProvider)) {
-                throw new \InvalidArgumentException('provider.bearerTokenProvider must be callable');
+                throw new InvalidArgumentException('provider.bearerTokenProvider must be callable');
             }
 
             $providers['default'] = $bearerTokenProvider;
@@ -1109,7 +1134,7 @@ class Client implements CopilotClient
                 }
 
                 if (! is_callable($bearerTokenProvider)) {
-                    throw new \InvalidArgumentException("providers.{$index}.bearerTokenProvider must be callable");
+                    throw new InvalidArgumentException("providers.{$index}.bearerTokenProvider must be callable");
                 }
 
                 $providerName = $namedProvider instanceof NamedProviderConfig
@@ -1117,7 +1142,7 @@ class Client implements CopilotClient
                     : ($namedProvider['name'] ?? null);
 
                 if (! is_string($providerName)) {
-                    throw new \InvalidArgumentException("providers.{$index}.name must be a string");
+                    throw new InvalidArgumentException("providers.{$index}.name must be a string");
                 }
 
                 $providers[$providerName] = $bearerTokenProvider;
@@ -1182,7 +1207,7 @@ class Client implements CopilotClient
     private function validateCanvasHandler(mixed $handler): void
     {
         if ($handler !== null && ! $handler instanceof CanvasHandler) {
-            throw new \InvalidArgumentException('canvasHandler must be an instance of '.CanvasHandler::class.'.');
+            throw new InvalidArgumentException('canvasHandler must be an instance of '.CanvasHandler::class.'.');
         }
     }
 
@@ -1193,7 +1218,7 @@ class Client implements CopilotClient
         }
 
         if (! is_array($canvases)) {
-            throw new \InvalidArgumentException('canvases must be an array of CanvasDeclaration instances or arrays.');
+            throw new InvalidArgumentException('canvases must be an array of CanvasDeclaration instances or arrays.');
         }
 
         $declarations = [];
@@ -1204,15 +1229,15 @@ class Client implements CopilotClient
             } elseif (is_array($canvas)) {
                 $declaration = CanvasDeclaration::fromArray($canvas);
             } else {
-                throw new \InvalidArgumentException('Each canvas must be a CanvasDeclaration instance or an array.');
+                throw new InvalidArgumentException('Each canvas must be a CanvasDeclaration instance or an array.');
             }
 
             if ($declaration->id === '') {
-                throw new \InvalidArgumentException('Canvas declaration ids must not be empty.');
+                throw new InvalidArgumentException('Canvas declaration ids must not be empty.');
             }
 
             if (array_key_exists($declaration->id, $declarations)) {
-                throw new \InvalidArgumentException("Canvas id \"{$declaration->id}\" is declared more than once.");
+                throw new InvalidArgumentException("Canvas id \"{$declaration->id}\" is declared more than once.");
             }
 
             $declarations[$declaration->id] = $declaration->toArray();
@@ -1292,11 +1317,23 @@ class Client implements CopilotClient
     private function applyPostCreateOptionsPatch(string $sessionId, Session $session, array $config): void
     {
         $patch = array_filter([
-            'skipCustomInstructions' => $config['skipCustomInstructions'] ?? null,
-            'customAgentsLocalOnly' => $config['customAgentsLocalOnly'] ?? null,
-            'coauthorEnabled' => $config['coauthorEnabled'] ?? null,
-            'manageScheduleEnabled' => $config['manageScheduleEnabled'] ?? null,
+            'skipCustomInstructions' => $config['skipCustomInstructions'] ?? (
+                $this->mode === CopilotClientMode::Empty ? true : null
+            ),
+            'customAgentsLocalOnly' => $config['customAgentsLocalOnly'] ?? (
+                $this->mode === CopilotClientMode::Empty ? true : null
+            ),
+            'coauthorEnabled' => $config['coauthorEnabled'] ?? (
+                $this->mode === CopilotClientMode::Empty ? false : null
+            ),
+            'manageScheduleEnabled' => $config['manageScheduleEnabled'] ?? (
+                $this->mode === CopilotClientMode::Empty ? false : null
+            ),
             'suppressCustomAgentPrompt' => $config['suppressCustomAgentPrompt'] ?? null,
+            'installedPlugins' => $this->mode === CopilotClientMode::Empty ? [] : null,
+            'includedBuiltinSkills' => $this->mode === CopilotClientMode::Empty
+                ? ($config['includedBuiltinSkills'] ?? [])
+                : null,
         ], fn ($value) => $value !== null);
 
         if ($patch === []) {
@@ -1385,6 +1422,122 @@ class Client implements CopilotClient
         }
 
         return $config;
+    }
+
+    private function normalizeToolFilters(array $config): array
+    {
+        foreach (['availableTools', 'excludedTools'] as $field) {
+            $filters = $config[$field] ?? null;
+
+            if ($filters === null) {
+                continue;
+            }
+
+            if ($filters instanceof ToolSet) {
+                $filters = $filters->toArray();
+            } elseif (is_string($filters)) {
+                throw new InvalidArgumentException(
+                    "{$field} must be a ToolSet or array of source-qualified filters, not a string.",
+                );
+            } elseif (! is_array($filters)) {
+                throw new InvalidArgumentException("{$field} must be a ToolSet or array of source-qualified filters.");
+            }
+
+            $filters = array_values($filters);
+
+            foreach ($filters as $filter) {
+                if (! is_string($filter)) {
+                    throw new InvalidArgumentException("{$field} entries must be strings.");
+                }
+                if ($filter === '*') {
+                    throw new InvalidArgumentException(
+                        "Invalid {$field} entry '*': there is no bare wildcard. Use a source-qualified filter such as 'builtin:*'.",
+                    );
+                }
+            }
+
+            $config[$field] = $filters;
+        }
+
+        return $config;
+    }
+
+    private function applyModeDefaults(array $config): array
+    {
+        if ($this->mode !== CopilotClientMode::Empty) {
+            return $config;
+        }
+
+        if (($config['availableTools'] ?? null) === null) {
+            throw new InvalidArgumentException('availableTools is required when mode is "empty".');
+        }
+
+        foreach ([
+            'enableSessionTelemetry' => false,
+            'mcpOAuthTokenStorage' => 'in-memory',
+            'skipEmbeddingRetrieval' => true,
+            'embeddingCacheStorage' => 'in-memory',
+            'enableOnDemandInstructionDiscovery' => false,
+            'enableFileHooks' => false,
+            'enableHostGitOperations' => false,
+            'enableSessionStore' => false,
+            'enableSkills' => false,
+            'memory' => ['enabled' => false],
+            'customAgentsLocalOnly' => true,
+            'enableExperimentalMode' => false,
+        ] as $key => $default) {
+            if (($config[$key] ?? null) === null) {
+                $config[$key] = $default;
+            }
+        }
+
+        $config['systemMessage'] = $this->systemMessageForEmptyMode($config['systemMessage'] ?? null);
+
+        return $config;
+    }
+
+    private function systemMessageForEmptyMode(mixed $systemMessage): array
+    {
+        if ($systemMessage instanceof Arrayable) {
+            $systemMessage = $systemMessage->toArray();
+        }
+
+        if ($systemMessage === null) {
+            return [
+                'mode' => 'customize',
+                'sections' => ['environment_context' => ['action' => 'remove']],
+            ];
+        }
+
+        if (! is_array($systemMessage)) {
+            throw new InvalidArgumentException('systemMessage must be an array or Arrayable value.');
+        }
+
+        if (($systemMessage['mode'] ?? null) === 'replace') {
+            return $systemMessage;
+        }
+
+        $sections = $systemMessage['sections'] ?? [];
+        $sections = is_array($sections) ? $sections : [];
+
+        if (($systemMessage['mode'] ?? null) === 'customize') {
+            if (array_key_exists('environment_context', $sections)) {
+                return $systemMessage;
+            }
+
+            $systemMessage['sections'] = [
+                ...$sections,
+                'environment_context' => ['action' => 'remove'],
+            ];
+
+            return $systemMessage;
+        }
+
+        return array_filter([
+            'mode' => 'customize',
+            'content' => $systemMessage['content'] ?? null,
+            'sections' => ['environment_context' => ['action' => 'remove']],
+        ], fn ($value) => $value !== null);
     }
 
     /**

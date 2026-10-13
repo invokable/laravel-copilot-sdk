@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Process\ProcessManager;
 
 describe('ProcessManager CLI Path Resolution', function () {
@@ -101,6 +102,31 @@ describe('ProcessManager Session Idle Timeout', function () {
         $property = $reflection->getProperty('sessionIdleTimeoutSeconds');
 
         expect($property->getValue($manager))->toBe(0);
+    });
+
+    describe('ProcessManager mode environment', function () {
+        it('disables keytar without enabling file logging in empty mode', function () {
+            $manager = new ProcessManager(
+                cliPath: '/test/copilot',
+                mode: CopilotClientMode::Empty,
+            );
+            $method = (new ReflectionClass($manager))->getMethod('buildEnvironment');
+
+            $environment = $method->invoke($manager, []);
+
+            expect($environment['COPILOT_DISABLE_KEYTAR'])->toBe('1')
+                ->and($environment)->not->toHaveKey('COPILOT_RUNTIME_PROCESS_FILE_LOGGING');
+        });
+
+        it('keeps default mode process file logging enabled', function () {
+            $manager = new ProcessManager(cliPath: '/test/copilot');
+            $method = (new ReflectionClass($manager))->getMethod('buildEnvironment');
+
+            $environment = $method->invoke($manager, []);
+
+            expect($environment['COPILOT_RUNTIME_PROCESS_FILE_LOGGING'])->toBe('1')
+                ->and($environment)->not->toHaveKey('COPILOT_DISABLE_KEYTAR');
+        });
     });
 
     it('accepts a positive sessionIdleTimeoutSeconds', function () {

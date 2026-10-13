@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ProviderConfig;
@@ -24,6 +25,27 @@ describe('SessionConfig', function () {
         expect($config->name)->toBe('issue-triage')
             ->and($config->toArray()['name'])->toBe('issue-triage')
             ->and((new SessionConfig(name: 'release-check'))->toArray()['name'])->toBe('release-check');
+    });
+
+    it('serializes ToolSet tool filters', function () {
+        $availableTools = (new ToolSet)->addBuiltIn('read_file');
+        $excludedTools = (new ToolSet)->addMcp('github-delete_repository');
+
+        $config = new SessionConfig(
+            availableTools: $availableTools,
+            excludedTools: $excludedTools,
+        );
+
+        expect($config->toArray()['availableTools'])->toBe(['builtin:read_file'])
+            ->and($config->toArray()['excludedTools'])->toBe(['mcp:github-delete_repository'])
+            ->and(SessionConfig::fromArray([
+                'availableTools' => $availableTools,
+                'excludedTools' => $excludedTools,
+            ])->toArray())
+            ->toMatchArray([
+                'availableTools' => ['builtin:read_file'],
+                'excludedTools' => ['mcp:github-delete_repository'],
+            ]);
     });
 
     it('serializes the ask user variant', function () {

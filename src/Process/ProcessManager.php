@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Process;
 
+use InvalidArgumentException;
+use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Events\Process\ProcessStarted;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\TelemetryConfig;
@@ -34,6 +36,8 @@ class ProcessManager
      */
     protected mixed $stdout = null;
 
+    protected CopilotClientMode $mode = CopilotClientMode::CopilotCli;
+
     /**
      * Create a new ProcessManager.
      */
@@ -49,7 +53,13 @@ class ProcessManager
         protected int $sessionIdleTimeoutSeconds = 0,
         protected ?string $baseDirectory = null,
         protected bool $remote = false,
+        CopilotClientMode|string $mode = CopilotClientMode::CopilotCli,
     ) {
+        $this->mode = $mode instanceof CopilotClientMode
+            ? $mode
+            : CopilotClientMode::tryFrom($mode)
+                ?? throw new InvalidArgumentException('mode must be either "copilot-cli" or "empty".');
+
         $this->cwd ??= getcwd() ?: null;
     }
 
@@ -179,30 +189,7 @@ class ProcessManager
             2 => ['pipe', 'w'],  // stderr
         ];
 
-        $env = array_merge(getenv(), $this->env ?? []);
-        unset($env['NODE_DEBUG']);
-
-        // Keep runtime process diagnostics available when using the SDK-owned
-        // stdio process, matching the official SDK's shutdown diagnostics.
-        $env['COPILOT_RUNTIME_PROCESS_FILE_LOGGING'] = '1';
-
-        // Apply OpenTelemetry environment variables if telemetry is configured
-        if ($this->telemetry !== null) {
-            $telemetry = $this->telemetry instanceof TelemetryConfig
-                ? $this->telemetry
-                : TelemetryConfig::fromArray($this->telemetry);
-            $env = array_merge($env, $telemetry->toEnv());
-        }
-
-        // Set auth token in environment if provided
-        if (filled($this->gitHubToken)) {
-            $env['COPILOT_SDK_AUTH_TOKEN'] = $this->gitHubToken;
-        }
-
-        // Set COPILOT_HOME if specified. The official SDK calls this baseDirectory.
-        if (filled($this->baseDirectory)) {
-            $env['COPILOT_HOME'] = $this->baseDirectory;
-        }
+        $env = $this->buildEnvironment((array) getenv());
 
         $args = ['--headless', '--stdio', '--log-level', $this->logLevel];
 
@@ -274,5 +261,38 @@ class ProcessManager
         $this->process = new ProcessWrapper($rawProcess);
 
         ProcessStarted::dispatch($this);
+    }
+
+    /**
+     * @param  array<string, string>  $parentEnvironment
+     * @return array<string, string>
+     */
+    private function buildEnvironment(array $parentEnvironment): array
+    {
+        $env = array_merge($parentEnvironment, $this->env ?? []);
+        unset($env['NODE_DEBUG']);
+
+        if ($this->mode === CopilotClientMode::Empty) {
+            $env['COPILOT_DISABLE_KEYTAR'] = '1';
+        } else {
+            $env['COPILOT_RUNTIME_PROCESS_FILE_LOGGING'] = '1';
+        }
+
+        if ($this->telemetry !== null) {
+            $telemetry = $this->telemetry instanceof TelemetryConfig
+                ? $this->telemetry
+                : TelemetryConfig::fromArray($this->telemetry);
+            $env = array_merge($env, $telemetry->toEnv());
+        }
+
+        if (filled($this->gitHubToken)) {
+            $env['COPILOT_SDK_AUTH_TOKEN'] = $this->gitHubToken;
+        }
+
+        if (filled($this->baseDirectory)) {
+            $env['COPILOT_HOME'] = $this->baseDirectory;
+        }
+
+        return $env;
     }
 }

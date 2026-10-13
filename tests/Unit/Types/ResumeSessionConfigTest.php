@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\CanvasProviderIdentity;
 use Revolution\Copilot\Types\ImageGenerationConfig;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
@@ -24,6 +25,19 @@ describe('ResumeSessionConfig', function () {
 
         expect($config->allowTranscriptRecovery)->toBeFalse()
             ->and($config->toArray())->toHaveKey('allowTranscriptRecovery', false);
+    });
+
+    it('serializes ToolSet tool filters', function () {
+        $availableTools = (new ToolSet)->addBuiltIn('ask_user');
+        $excludedTools = (new ToolSet)->addCustom('unsafe_tool');
+
+        $config = new ResumeSessionConfig(
+            availableTools: $availableTools,
+            excludedTools: $excludedTools,
+        );
+
+        expect($config->toArray()['availableTools'])->toBe(['builtin:ask_user'])
+            ->and($config->toArray()['excludedTools'])->toBe(['custom:unsafe_tool']);
     });
 
     it('serializes the ask user variant', function () {

@@ -13,6 +13,7 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Enums\Verbosity;
 use Revolution\Copilot\Support\CanvasHandler;
+use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\Rpc\ManagedMcpServerConfig;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
@@ -57,10 +58,10 @@ readonly class SessionConfig implements Arrayable
      *                            Each entry should have 'name', 'handler', and optionally 'description'.
      * @param  SystemMessageConfig|array|null  $systemMessage  System message configuration. Controls how the system prompt is constructed.
      * @param  ToolSearchConfig|array|null  $toolSearch  Override for the runtime's built-in tool-search behavior.
-     * @param  ?array  $availableTools  List of source-qualified tool filters to allow. When specified, only these tools will be available.
-     *                                  Examples: `builtin:*`, `builtin:bash`, `mcp:*`, `mcp:github-read_issue`, `custom:*`.
-     * @param  ?array  $excludedTools  List of source-qualified tool filters to disable. When both lists are set,
-     *                                 excludedTools wins (`toolFilterPrecedence: "excluded"`).
+     * @param  array|ToolSet|null  $availableTools  Source-qualified tool filters to allow. When specified, only these tools will be available.
+     *                                              Examples: `builtin:*`, `builtin:bash`, `mcp:*`, `mcp:github-read_issue`, `custom:*`.
+     * @param  array|ToolSet|null  $excludedTools  Source-qualified tool filters to disable. When both lists are set,
+     *                                             excludedTools wins (`toolFilterPrecedence: "excluded"`).
      * @param  ProviderConfig|array|null  $provider  Custom provider configuration (BYOK - Bring Your Own Key).
      *                                               When specified, uses the provided API endpoint instead of the Copilot API.
      * @param  CapiSessionOptions|array|null  $capi  Provider-scoped options for the built-in Copilot API (CAPI), such as
@@ -248,8 +249,8 @@ readonly class SessionConfig implements Arrayable
         public ?array $commands = null,
         public SystemMessageConfig|array|null $systemMessage = null,
         public ToolSearchConfig|array|null $toolSearch = null,
-        public ?array $availableTools = null,
-        public ?array $excludedTools = null,
+        public array|ToolSet|null $availableTools = null,
+        public array|ToolSet|null $excludedTools = null,
         public ProviderConfig|array|null $provider = null,
         public CapiSessionOptions|array|null $capi = null,
         public ?array $providers = null,
@@ -632,8 +633,8 @@ readonly class SessionConfig implements Arrayable
             'commands' => $this->commands,
             'systemMessage' => $systemMessage,
             'toolSearch' => $toolSearch,
-            'availableTools' => $this->availableTools,
-            'excludedTools' => $this->excludedTools,
+            'availableTools' => $this->availableTools instanceof ToolSet ? $this->availableTools->toArray() : $this->availableTools,
+            'excludedTools' => $this->excludedTools instanceof ToolSet ? $this->excludedTools->toArray() : $this->excludedTools,
             'provider' => $provider,
             'capi' => $capi,
             'providers' => $this->providers,

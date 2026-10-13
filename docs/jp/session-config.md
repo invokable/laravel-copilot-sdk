@@ -420,6 +420,33 @@ $config = new SessionConfig(
 );
 ```
 
+## マルチテナント向け empty モード
+
+クライアント設定の`mode`を`empty`にすると、Copilot CLI のホスト環境やセッション間状態に依存する機能を既定で無効にします。省略時は従来どおり`copilot-cli`です。empty モードでは永続化先として`base_directory`、`session_fs`、または外部サーバーの`url`のいずれかを指定してください。
+
+```php
+// config/copilot.php
+'mode' => env('COPILOT_MODE', 'copilot-cli'),
+'base_directory' => storage_path('app/copilot'),
+```
+
+empty モードでは各セッションに`availableTools`の指定が必要です。安全な組み込みツールだけを許可するには`BuiltInTools::Isolated`を使います。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Support\BuiltInTools;
+use Revolution\Copilot\Support\ToolSet;
+
+$response = Copilot::run(
+    prompt: 'Summarize this text.',
+    config: [
+        'availableTools' => (new ToolSet)->addBuiltIn(BuiltInTools::Isolated),
+    ],
+);
+```
+
+empty モードではセッションテレメトリー、永続 MCP OAuth token storage、embedding retrieval/cache、instruction discovery、file hooks、host git operations、session store、skills、memory、experimental mode が安全側の既定値になります。明示したセッション設定はこれらの既定値より優先されます。`systemMessage`の`replace`はそのまま利用でき、それ以外のモードでは`environment_context`セクションを除去します。CLI プロセスでは`COPILOT_DISABLE_KEYTAR=1`を設定します。
+
 `AskUserVariant::ELICITATION`は`onElicitationRequest`ハンドラーと組み合わせて使用します。デフォルトのvariantは引き続き`legacy`です。
 
 MCP認可のホストIDを識別させたい場合は`authClientIdMetadataUrl`にOAuth Client ID Metadata DocumentのURLを指定します。未設定の場合はホストIDが渡されません。

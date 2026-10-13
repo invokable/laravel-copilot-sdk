@@ -5,6 +5,17 @@ declare(strict_types=1);
 return [
     /*
     |--------------------------------------------------------------------------
+    | Copilot Client Mode
+    |--------------------------------------------------------------------------
+    |
+    | Use "empty" to disable ambient CLI capabilities by default. Empty mode
+    | requires an explicit base directory, session filesystem, or TCP URL.
+    |
+    */
+    'mode' => env('COPILOT_MODE', 'copilot-cli'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Copilot Server URL (TCP Mode)
     |--------------------------------------------------------------------------
     |
