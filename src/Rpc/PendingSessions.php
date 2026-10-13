@@ -6,6 +6,9 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\EventsReadResult;
+use Revolution\Copilot\Types\Rpc\RemoteControlStatusResult;
+use Revolution\Copilot\Types\Rpc\RemoteControlStopResult;
+use Revolution\Copilot\Types\Rpc\RemoteControlTransferResult;
 use Revolution\Copilot\Types\Rpc\SessionBulkDeleteResult;
 use Revolution\Copilot\Types\Rpc\SessionList;
 use Revolution\Copilot\Types\Rpc\SessionPruneResult;
@@ -29,6 +32,10 @@ use Revolution\Copilot\Types\Rpc\SessionsLoadWorkspaceRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadWorkspaceResult;
 use Revolution\Copilot\Types\Rpc\SessionsPruneOldRequest;
 use Revolution\Copilot\Types\Rpc\SessionsReadPersistedEventsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsSetRemoteControlSteeringRequest;
+use Revolution\Copilot\Types\Rpc\SessionsStartRemoteControlRequest;
+use Revolution\Copilot\Types\Rpc\SessionsStopRemoteControlRequest;
+use Revolution\Copilot\Types\Rpc\SessionsTransferRemoteControlRequest;
 use Revolution\Copilot\Types\Rpc\SessionsUpdateWorkspaceFieldsRequest;
 
 /**
@@ -229,5 +236,71 @@ class PendingSessions
             : SessionsUpdateWorkspaceFieldsRequest::fromArray($params))->toArray();
 
         return $this->client->request('sessions.updateWorkspaceFields', $paramsArray);
+    }
+
+    /**
+     * Attach runtime-managed remote control to a session.
+     */
+    public function startRemoteControl(SessionsStartRemoteControlRequest|array $params): RemoteControlStatusResult
+    {
+        $paramsArray = ($params instanceof SessionsStartRemoteControlRequest
+            ? $params
+            : SessionsStartRemoteControlRequest::fromArray($params))->toArray();
+
+        return RemoteControlStatusResult::fromArray(
+            $this->client->request('sessions.startRemoteControl', $paramsArray),
+        );
+    }
+
+    /**
+     * Stop runtime-managed remote control.
+     */
+    public function stopRemoteControl(SessionsStopRemoteControlRequest|array $params = []): RemoteControlStopResult
+    {
+        $paramsArray = ($params instanceof SessionsStopRemoteControlRequest
+            ? $params
+            : SessionsStopRemoteControlRequest::fromArray($params))->toArray();
+
+        return RemoteControlStopResult::fromArray(
+            $this->client->request('sessions.stopRemoteControl', $paramsArray),
+        );
+    }
+
+    /**
+     * Transfer runtime-managed remote control to another session.
+     */
+    public function transferRemoteControl(SessionsTransferRemoteControlRequest|array $params): RemoteControlTransferResult
+    {
+        $paramsArray = ($params instanceof SessionsTransferRemoteControlRequest
+            ? $params
+            : SessionsTransferRemoteControlRequest::fromArray($params))->toArray();
+
+        return RemoteControlTransferResult::fromArray(
+            $this->client->request('sessions.transferRemoteControl', $paramsArray),
+        );
+    }
+
+    /**
+     * Enable or disable runtime-managed remote steering.
+     */
+    public function setRemoteControlSteering(SessionsSetRemoteControlSteeringRequest|array $params): RemoteControlStatusResult
+    {
+        $paramsArray = ($params instanceof SessionsSetRemoteControlSteeringRequest
+            ? $params
+            : SessionsSetRemoteControlSteeringRequest::fromArray($params))->toArray();
+
+        return RemoteControlStatusResult::fromArray(
+            $this->client->request('sessions.setRemoteControlSteering', $paramsArray),
+        );
+    }
+
+    /**
+     * Get the current runtime-managed remote-control status.
+     */
+    public function getRemoteControlStatus(): RemoteControlStatusResult
+    {
+        return RemoteControlStatusResult::fromArray(
+            $this->client->request('sessions.getRemoteControlStatus', []),
+        );
     }
 }
