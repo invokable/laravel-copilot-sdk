@@ -422,6 +422,16 @@ class SessionRpc
     }
 
     /**
+     * Canvas RPC operations.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function canvas(): PendingCanvas
+    {
+        return new PendingCanvas($this->client, $this->sessionId);
+    }
+
+    /**
      * Suspend the current session.
      *
      * Suspends the session, pausing its execution until resumed.

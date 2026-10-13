@@ -36,16 +36,25 @@ use Revolution\Copilot\Exceptions\SessionErrorException;
 use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
+use Revolution\Copilot\Support\CanvasError;
+use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Types\AutoModeSwitchRequest;
+use Revolution\Copilot\Types\CanvasDeclaration;
 use Revolution\Copilot\Types\ElicitationContext;
 use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\McpAuthRequest;
+use Revolution\Copilot\Types\Rpc\CanvasAction;
+use Revolution\Copilot\Types\Rpc\CanvasProviderCloseRequest;
+use Revolution\Copilot\Types\Rpc\CanvasProviderInvokeActionRequest;
+use Revolution\Copilot\Types\Rpc\CanvasProviderOpenRequest;
+use Revolution\Copilot\Types\Rpc\CanvasProviderOpenResult;
 use Revolution\Copilot\Types\Rpc\LogRequest;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
+use Revolution\Copilot\Types\Rpc\OpenCanvasInstance;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
@@ -106,6 +115,18 @@ class Session implements CopilotSession
 
     protected ?TranscriptRecovery $transcriptRecovery = null;
 
+    protected ?CanvasHandler $canvasHandler = null;
+
+    /**
+     * @var array<string, CanvasDeclaration>
+     */
+    protected array $canvasDeclarations = [];
+
+    /**
+     * @var array<string, OpenCanvasInstance>
+     */
+    protected array $openCanvases = [];
+
     /**
      * Wait state: last assistant message.
      */
@@ -164,6 +185,120 @@ class Session implements CopilotSession
     public function setTranscriptRecovery(?TranscriptRecovery $recovery): void
     {
         $this->transcriptRecovery = $recovery;
+    }
+
+    /** @internal */
+    public function registerCanvasHandler(?CanvasHandler $handler, ?array $canvases = null): void
+    {
+        $this->canvasHandler = $handler;
+        $this->canvasDeclarations = [];
+
+        foreach ($canvases ?? [] as $canvas) {
+            $declaration = $canvas instanceof CanvasDeclaration
+                ? $canvas
+                : CanvasDeclaration::fromArray($canvas);
+            $this->canvasDeclarations[$declaration->id] = $declaration;
+        }
+    }
+
+    /** @internal */
+    public function canvasHandler(): ?CanvasHandler
+    {
+        return $this->canvasHandler;
+    }
+
+    /** @internal */
+    public function hasCanvas(string $canvasId): bool
+    {
+        return isset($this->canvasDeclarations[$canvasId]);
+    }
+
+    /** @internal */
+    public function handleCanvasOpen(CanvasProviderOpenRequest $request): CanvasProviderOpenResult
+    {
+        $result = $this->canvasHandler->open($request);
+
+        return $result instanceof CanvasProviderOpenResult
+            ? $result
+            : CanvasProviderOpenResult::fromArray($result);
+    }
+
+    /** @internal */
+    public function handleCanvasClose(CanvasProviderCloseRequest $request): void
+    {
+        $this->canvasHandler->close($request);
+    }
+
+    /** @internal */
+    public function handleCanvasActionInvoke(CanvasProviderInvokeActionRequest $request): mixed
+    {
+        $declaration = $this->canvasDeclarations[$request->canvasId];
+
+        foreach ($declaration->actions ?? [] as $action) {
+            $actionName = $action instanceof CanvasAction ? $action->name : ($action['name'] ?? null);
+
+            if ($actionName === $request->actionName) {
+                return $this->canvasHandler->invoke($request);
+            }
+        }
+
+        throw CanvasError::noHandler();
+    }
+
+    /**
+     * Get a defensive snapshot of the canvas instances currently known to be open.
+     *
+     * @return OpenCanvasInstance[]
+     */
+    public function openCanvases(): array
+    {
+        return array_values($this->openCanvases);
+    }
+
+    /** @internal */
+    public function setOpenCanvases(array $canvases): void
+    {
+        $this->openCanvases = [];
+
+        foreach ($canvases as $canvas) {
+            $instance = $canvas instanceof OpenCanvasInstance
+                ? $canvas
+                : OpenCanvasInstance::fromArray($canvas);
+            $this->upsertOpenCanvas($instance);
+        }
+    }
+
+    private function upsertOpenCanvas(OpenCanvasInstance $canvas): void
+    {
+        $this->openCanvases[$canvas->instanceId] = $canvas;
+    }
+
+    private function updateCanvasState(SessionEvent $event): void
+    {
+        if ($event->type === SessionEventType::SESSION_CANVAS_OPENED) {
+            $data = $event->data;
+
+            if (
+                is_string($data['instanceId'] ?? null)
+                && $data['instanceId'] !== ''
+                && is_string($data['canvasId'] ?? null)
+                && $data['canvasId'] !== ''
+                && is_string($data['extensionId'] ?? null)
+                && $data['extensionId'] !== ''
+            ) {
+                $this->upsertOpenCanvas(OpenCanvasInstance::fromArray($data));
+            }
+
+            return;
+        }
+
+        if (
+            $event->type === SessionEventType::SESSION_CANVAS_CLOSED
+            && is_string($instanceId = $event->data['instanceId'] ?? null)
+            && $instanceId !== ''
+        ) {
+            unset($this->openCanvases[$instanceId]);
+        }
     }
 
     /**
@@ -588,6 +723,7 @@ class Session implements CopilotSession
      */
     public function dispatchEvent(SessionEvent $event): void
     {
+        $this->updateCanvasState($event);
         SessionEventReceived::dispatch($this->sessionId, $event);
 
         // Handle broadcast request events internally (protocol v3+) before dispatching to user handlers.
@@ -807,6 +943,9 @@ class Session implements CopilotSession
         $this->hooks = null;
         $this->skillProvider = null;
         $this->sessionFsProvider = null;
+        $this->canvasHandler = null;
+        $this->canvasDeclarations = [];
+        $this->openCanvases = [];
         $this->capabilities = new SessionCapabilities;
     }
 

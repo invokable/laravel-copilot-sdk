@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use Revolution\Copilot\Concerns\Client\HandlesCanvasProvider;
 use Revolution\Copilot\Concerns\Client\HandlesServerRequests;
 use Revolution\Copilot\Concerns\Client\HandlesSessionFs;
 use Revolution\Copilot\Concerns\Client\HandlesSkillProvider;
@@ -29,8 +30,10 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Support\CancellationToken;
+use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Transport\TcpTransport;
+use Revolution\Copilot\Types\CanvasDeclaration;
 use Revolution\Copilot\Types\CapiSessionOptions;
 use Revolution\Copilot\Types\CommandDefinition;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
@@ -57,6 +60,7 @@ use Throwable;
 class Client implements CopilotClient
 {
     use Conditionable;
+    use HandlesCanvasProvider;
     use HandlesServerRequests;
     use HandlesSessionFs;
     use HandlesSkillProvider;
@@ -301,6 +305,17 @@ class Client implements CopilotClient
                 fn (array $params) => $this->acquireProviderToken($params),
             );
 
+            foreach ([
+                'canvas.open' => 'handleCanvasOpen',
+                'canvas.close' => 'handleCanvasClose',
+                'canvas.action.invoke' => 'handleCanvasActionInvoke',
+            ] as $method => $handler) {
+                $this->rpcClient->setRequestHandler(
+                    $method,
+                    fn (array $params) => $this->{$handler}($params),
+                );
+            }
+
             $this->rpcClient->setRequestHandler(
                 'skillProvider.list',
                 fn (array $params, CancellationToken $token) => $this->handleSkillProviderList($params, $token),
@@ -491,6 +506,10 @@ class Client implements CopilotClient
             );
         }
 
+        $canvasHandler = $config['canvasHandler'] ?? null;
+        $this->validateCanvasHandler($canvasHandler);
+        $config['canvases'] = $this->normalizeCanvasDeclarations($config['canvases'] ?? null);
+
         $skillProvider = $config['skillProvider'] ?? null;
         $this->validateSkillProvider($skillProvider);
         $sessionFsProvider = $config['sessionFsProvider'] ?? null;
@@ -530,7 +549,12 @@ class Client implements CopilotClient
         // Local sessions use a client-generated ID so incoming session callbacks
         // can be routed while the runtime is still processing session.create.
         $preRegisteredSessionId = ! $isCloudSession && (
-            $skillProvider !== null || $sessionFsProvider !== null || $sessionFsFactory !== null || $bearerTokenProviders !== []
+            $skillProvider !== null
+            || $sessionFsProvider !== null
+            || $sessionFsFactory !== null
+            || $bearerTokenProviders !== []
+            || $canvasHandler !== null
+            || $config['canvases'] !== null
         )
             ? ($config['sessionId'] ?? (string) Str::uuid())
             : null;
@@ -776,6 +800,10 @@ class Client implements CopilotClient
             );
         }
 
+        $canvasHandler = $config['canvasHandler'] ?? null;
+        $this->validateCanvasHandler($canvasHandler);
+        $config['canvases'] = $this->normalizeCanvasDeclarations($config['canvases'] ?? null);
+
         $skillProvider = $config['skillProvider'] ?? null;
         $this->validateSkillProvider($skillProvider);
         $sessionFsProvider = $config['sessionFsProvider'] ?? null;
@@ -965,6 +993,9 @@ class Client implements CopilotClient
         $capabilities = $response['capabilities'] ?? null;
 
         $session->setWorkspacePath($workspacePath);
+        if (is_array($response['openCanvases'] ?? null)) {
+            $session->setOpenCanvases($response['openCanvases']);
+        }
         if (isset($response['transcriptRecovery']) && is_array($response['transcriptRecovery'])) {
             $session->setTranscriptRecovery(TranscriptRecovery::fromArray($response['transcriptRecovery']));
         }
@@ -1123,6 +1154,10 @@ class Client implements CopilotClient
         $session->registerCommands($commands);
         $session->registerPermissionHandler($config['onPermissionRequest']);
 
+        if (isset($config['canvasHandler']) || isset($config['canvases'])) {
+            $session->registerCanvasHandler($config['canvasHandler'] ?? null, $config['canvases'] ?? null);
+        }
+
         foreach ([
             'onUserInputRequest' => 'registerUserInputHandler',
             'onElicitationRequest' => 'registerElicitationHandler',
@@ -1142,6 +1177,48 @@ class Client implements CopilotClient
         if (isset($config['onEvent']) && is_callable($config['onEvent'])) {
             $session->on($config['onEvent']);
         }
+    }
+
+    private function validateCanvasHandler(mixed $handler): void
+    {
+        if ($handler !== null && ! $handler instanceof CanvasHandler) {
+            throw new \InvalidArgumentException('canvasHandler must be an instance of '.CanvasHandler::class.'.');
+        }
+    }
+
+    private function normalizeCanvasDeclarations(mixed $canvases): ?array
+    {
+        if ($canvases === null) {
+            return null;
+        }
+
+        if (! is_array($canvases)) {
+            throw new \InvalidArgumentException('canvases must be an array of CanvasDeclaration instances or arrays.');
+        }
+
+        $declarations = [];
+
+        foreach ($canvases as $canvas) {
+            if ($canvas instanceof CanvasDeclaration) {
+                $declaration = $canvas;
+            } elseif (is_array($canvas)) {
+                $declaration = CanvasDeclaration::fromArray($canvas);
+            } else {
+                throw new \InvalidArgumentException('Each canvas must be a CanvasDeclaration instance or an array.');
+            }
+
+            if ($declaration->id === '') {
+                throw new \InvalidArgumentException('Canvas declaration ids must not be empty.');
+            }
+
+            if (array_key_exists($declaration->id, $declarations)) {
+                throw new \InvalidArgumentException("Canvas id \"{$declaration->id}\" is declared more than once.");
+            }
+
+            $declarations[$declaration->id] = $declaration->toArray();
+        }
+
+        return array_values($declarations);
     }
 
     private function registerMcpAuthRequestInterest(string $sessionId, array $config): void

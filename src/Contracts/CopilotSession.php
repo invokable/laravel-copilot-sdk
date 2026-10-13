@@ -14,6 +14,7 @@ use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
+use Revolution\Copilot\Types\Rpc\OpenCanvasInstance;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
@@ -43,6 +44,13 @@ interface CopilotSession
 
     /** Recovery details reported while resuming this session, or null when none occurred. */
     public function transcriptRecovery(): ?TranscriptRecovery;
+
+    /**
+     * Get open canvas instances currently known to this session.
+     *
+     * @return OpenCanvasInstance[]
+     */
+    public function openCanvases(): array;
 
     /** Replace the complete set of tools supplied by this connection. */
     public function setTools(array $tools): void;
