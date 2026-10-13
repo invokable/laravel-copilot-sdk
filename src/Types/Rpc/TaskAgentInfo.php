@@ -34,6 +34,8 @@ readonly class TaskAgentInfo implements Arrayable
         public ?bool $canPromoteToBackground = null,
         public ?string $latestResponse = null,
         public ?string $idleSince = null,
+        public ?string $displayName = null,
+        public ?string $resolvedModel = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -58,6 +60,8 @@ readonly class TaskAgentInfo implements Arrayable
             canPromoteToBackground: $data['canPromoteToBackground'] ?? null,
             latestResponse: $data['latestResponse'] ?? null,
             idleSince: $data['idleSince'] ?? null,
+            displayName: $data['displayName'] ?? null,
+            resolvedModel: $data['resolvedModel'] ?? null,
         );
     }
 
@@ -103,6 +107,12 @@ readonly class TaskAgentInfo implements Arrayable
         }
         if ($this->idleSince !== null) {
             $result['idleSince'] = $this->idleSince;
+        }
+        if ($this->displayName !== null) {
+            $result['displayName'] = $this->displayName;
+        }
+        if ($this->resolvedModel !== null) {
+            $result['resolvedModel'] = $this->resolvedModel;
         }
 
         return $result;

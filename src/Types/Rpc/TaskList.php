@@ -14,7 +14,7 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class TaskList implements Arrayable
 {
     /**
-     * @param  array<TaskAgentInfo|TaskShellInfo>  $tasks
+     * @param  array<TaskAgentInfo|TaskClientInfo|TaskShellInfo>  $tasks
      */
     public function __construct(
         public array $tasks = [],
@@ -23,9 +23,7 @@ readonly class TaskList implements Arrayable
     public static function fromArray(array $data): self
     {
         $tasks = array_map(
-            fn (array $task) => ($task['type'] ?? '') === 'shell'
-                ? TaskShellInfo::fromArray($task)
-                : TaskAgentInfo::fromArray($task),
+            static fn (array $task) => TaskInfo::fromArray($task),
             $data['tasks'] ?? [],
         );
 

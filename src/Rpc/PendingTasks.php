@@ -8,14 +8,24 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\TaskList;
 use Revolution\Copilot\Types\Rpc\TasksCancelRequest;
 use Revolution\Copilot\Types\Rpc\TasksCancelResult;
+use Revolution\Copilot\Types\Rpc\TasksGetCurrentPromotableResult;
+use Revolution\Copilot\Types\Rpc\TasksGetProgressRequest;
+use Revolution\Copilot\Types\Rpc\TasksGetProgressResult;
+use Revolution\Copilot\Types\Rpc\TasksPromoteCurrentToBackgroundResult;
 use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundRequest;
 use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundResult;
+use Revolution\Copilot\Types\Rpc\TasksRefreshResult;
+use Revolution\Copilot\Types\Rpc\TasksRegisterRequest;
+use Revolution\Copilot\Types\Rpc\TasksRegisterResult;
 use Revolution\Copilot\Types\Rpc\TasksRemoveRequest;
 use Revolution\Copilot\Types\Rpc\TasksRemoveResult;
 use Revolution\Copilot\Types\Rpc\TasksSendMessageRequest;
 use Revolution\Copilot\Types\Rpc\TasksSendMessageResult;
 use Revolution\Copilot\Types\Rpc\TasksStartAgentRequest;
 use Revolution\Copilot\Types\Rpc\TasksStartAgentResult;
+use Revolution\Copilot\Types\Rpc\TasksUpdateRequest;
+use Revolution\Copilot\Types\Rpc\TasksUpdateResult;
+use Revolution\Copilot\Types\Rpc\TasksWaitForPendingResult;
 
 /**
  * Pending tasks RPC operations for a session.
@@ -49,6 +59,93 @@ class PendingTasks
     {
         return TaskList::fromArray(
             $this->client->request('session.tasks.list', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Register or reclaim a client-owned task.
+     */
+    public function register(TasksRegisterRequest|array $params): TasksRegisterResult
+    {
+        $paramsArray = ($params instanceof TasksRegisterRequest ? $params : TasksRegisterRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return TasksRegisterResult::fromArray(
+            $this->client->request('session.tasks.register', $paramsArray),
+        );
+    }
+
+    /**
+     * Publish progress or a terminal outcome for a client-owned task.
+     */
+    public function update(TasksUpdateRequest|array $params): TasksUpdateResult
+    {
+        $paramsArray = ($params instanceof TasksUpdateRequest ? $params : TasksUpdateRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return TasksUpdateResult::fromArray(
+            $this->client->request('session.tasks.update', $paramsArray),
+        );
+    }
+
+    /**
+     * Get progress information for a tracked task.
+     */
+    public function getProgress(TasksGetProgressRequest|array $params): TasksGetProgressResult
+    {
+        $paramsArray = ($params instanceof TasksGetProgressRequest ? $params : TasksGetProgressRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return TasksGetProgressResult::fromArray(
+            $this->client->request('session.tasks.getProgress', $paramsArray),
+        );
+    }
+
+    /**
+     * Refresh metadata for detached background shells.
+     */
+    public function refresh(): TasksRefreshResult
+    {
+        return TasksRefreshResult::fromArray(
+            $this->client->request('session.tasks.refresh', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Wait for in-flight background tasks and their follow-up turns to settle.
+     */
+    public function waitForPending(): TasksWaitForPendingResult
+    {
+        return TasksWaitForPendingResult::fromArray(
+            $this->client->request('session.tasks.waitForPending', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Get the first task currently eligible for background promotion.
+     */
+    public function getCurrentPromotable(): TasksGetCurrentPromotableResult
+    {
+        return TasksGetCurrentPromotableResult::fromArray(
+            $this->client->request('session.tasks.getCurrentPromotable', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Promote the first eligible task to background mode.
+     */
+    public function promoteCurrentToBackground(): TasksPromoteCurrentToBackgroundResult
+    {
+        return TasksPromoteCurrentToBackgroundResult::fromArray(
+            $this->client->request('session.tasks.promoteCurrentToBackground', [
                 'sessionId' => $this->sessionId,
             ]),
         );
