@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot;
 
+use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
@@ -38,6 +39,7 @@ use Revolution\Copilot\Types\GitHubMcpToolConfig;
 use Revolution\Copilot\Types\NamedProviderConfig;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
 use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireRequest;
 use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireResult;
@@ -104,10 +106,26 @@ class Client implements CopilotClient
     protected ?SessionFsConfig $sessionFsConfig = null;
 
     /**
+     * @var Closure(GitHubTelemetryNotification): mixed|null
+     */
+    protected ?Closure $onGitHubTelemetry = null;
+
+    /**
      * Create a new CopilotClient.
      */
     public function __construct(protected array $options = [])
     {
+        $telemetryOption = array_key_exists('onGitHubTelemetry', $options)
+            ? 'onGitHubTelemetry'
+            : (array_key_exists('on_github_telemetry', $options) ? 'on_github_telemetry' : null);
+        $onGitHubTelemetry = $telemetryOption === null ? null : $options[$telemetryOption];
+        if ($telemetryOption !== null && ! is_callable($onGitHubTelemetry)) {
+            throw new \InvalidArgumentException('onGitHubTelemetry must be callable.');
+        }
+
+        $this->onGitHubTelemetry = $onGitHubTelemetry === null
+            ? null
+            : Closure::fromCallable($onGitHubTelemetry);
         $this->sessionFsConfig = $this->normalizeSessionFsConfig($options);
 
         $connection = $this->normalizeConnection($options);
@@ -540,7 +558,9 @@ class Client implements CopilotClient
                 'disabledSkills' => $config['disabledSkills'] ?? null,
                 'infiniteSessions' => $config['infiniteSessions'] ?? null,
                 'enableSessionTelemetry' => $config['enableSessionTelemetry'] ?? null,
-                'enableGitHubTelemetryForwarding' => $config['enableGitHubTelemetryForwarding'] ?? null,
+                'enableGitHubTelemetryForwarding' => $this->onGitHubTelemetry !== null
+                    ? true
+                    : ($config['enableGitHubTelemetryForwarding'] ?? null),
                 'gitHubToken' => $config['gitHubToken'] ?? null,
                 'gitHubTokenProviderRegistrationId' => $tokenProviderRegistrationId,
                 'remoteSession' => $config['remoteSession'] ?? null,
@@ -812,7 +832,9 @@ class Client implements CopilotClient
                 'openCanvases' => $config['openCanvases'] ?? null,
                 'allowTranscriptRecovery' => $config['allowTranscriptRecovery'] ?? null,
                 'enableSessionTelemetry' => $config['enableSessionTelemetry'] ?? null,
-                'enableGitHubTelemetryForwarding' => $config['enableGitHubTelemetryForwarding'] ?? null,
+                'enableGitHubTelemetryForwarding' => $this->onGitHubTelemetry !== null
+                    ? true
+                    : ($config['enableGitHubTelemetryForwarding'] ?? null),
                 'gitHubToken' => $config['gitHubToken'] ?? null,
                 'gitHubTokenProviderRegistrationId' => $tokenProviderRegistrationId,
                 'remoteSession' => $config['remoteSession'] ?? null,
@@ -1305,6 +1327,7 @@ class Client implements CopilotClient
             $clientInfo = $clientInfo instanceof Arrayable ? $clientInfo->toArray() : $clientInfo;
             $serverVersion = $this->rpc()->connect(array_filter([
                 'clientInfo' => $clientInfo,
+                'enableGitHubTelemetryForwarding' => $this->onGitHubTelemetry !== null ? true : null,
                 'token' => $this->connectionToken,
                 'supportedTaskKinds' => [TaskKind::AGENT->value, TaskKind::CLIENT->value, TaskKind::SHELL->value],
             ], fn ($value) => $value !== null))->protocolVersion;
@@ -1348,6 +1371,16 @@ class Client implements CopilotClient
 
         if ($method === 'session.lifecycle') {
             $this->handleLifecycleNotification($params);
+        }
+
+        if ($method === 'gitHubTelemetry.event' && $this->onGitHubTelemetry !== null) {
+            $notification = GitHubTelemetryNotification::fromArray($params);
+
+            try {
+                ($this->onGitHubTelemetry)($notification);
+            } catch (Throwable) {
+                // Telemetry handlers must not interrupt RPC notification processing.
+            }
         }
     }
 }

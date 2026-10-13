@@ -2,6 +2,29 @@
 
 Copilot CLIにはOpenTelemetryによるトレース機能が組み込まれています。SDK側で設定するだけで、CLIプロセスのトレースデータを収集できます。
 
+## GitHub telemetry event の受信
+
+OpenTelemetryとは別に、クライアントオプション`onGitHubTelemetry`（または`on_github_telemetry`）でGitHub telemetry eventを受信できます。ハンドラーを指定すると、接続時とセッション作成・再開時に転送が有効になります。セッション設定で`enableGitHubTelemetryForwarding: false`を指定しても、クライアントハンドラーがある場合は転送が優先されます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
+
+Copilot::useStdio([
+    'onGitHubTelemetry' => function (GitHubTelemetryNotification $notification): void {
+        if ($notification->restricted) {
+            // Restricted events must only be sent to first-party Microsoft stores.
+            return;
+        }
+
+        logger()->info('Copilot telemetry event', [
+            'session_id' => $notification->sessionId,
+            'kind' => $notification->event->kind,
+        ]);
+    },
+]);
+```
+
 ## 基本的な使い方
 
 ### CLIプロセスのトレース有効化

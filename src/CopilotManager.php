@@ -14,6 +14,7 @@ use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Testing\WithFake;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\RuntimeConnection;
 use Revolution\Copilot\Types\SessionConfig;
@@ -223,6 +224,7 @@ class CopilotManager implements Factory
                 $options = [
                     'cli_url' => $this->config['url'],
                     'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? null,
+                    ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
                 ];
             } else {
                 // Stdio mode: start new process
@@ -241,6 +243,7 @@ class CopilotManager implements Factory
                     'installation_confirmation_handler' => $this->config['installation_confirmation_handler']
                         ?? $this->config['installationConfirmationHandler'] ?? null,
                     'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? null,
+                    ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
                 ];
             }
 
@@ -271,7 +274,7 @@ class CopilotManager implements Factory
     /**
      * Configure the client to use stdio transport with given options.
      *
-     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array}  $config  Configuration options for stdio transport.
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array, on_github_telemetry?: callable(GitHubTelemetryNotification): void, onGitHubTelemetry?: callable(GitHubTelemetryNotification): void}  $config  Configuration options for stdio transport.
      */
     public function useStdio(?array $config = null): static
     {
@@ -297,6 +300,8 @@ class CopilotManager implements Factory
             'installationConfirmationHandler',
             'session_fs',
             'sessionFs',
+            'on_github_telemetry',
+            'onGitHubTelemetry',
         ]));
 
         return $this;
@@ -317,10 +322,15 @@ class CopilotManager implements Factory
             throw new RuntimeException('No TCP URL provided for Copilot client.');
         }
 
-        $this->client(array_filter([
+        $options = array_filter([
             'connection' => RuntimeConnection::forUri($url),
             'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? config('copilot.session_fs'),
-        ], fn ($value) => $value !== null));
+        ], fn ($value) => $value !== null);
+
+        $this->client([
+            ...$options,
+            ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
+        ]);
 
         return $this;
     }
