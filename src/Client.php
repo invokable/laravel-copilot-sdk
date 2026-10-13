@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use InvalidArgumentException;
 use Revolution\Copilot\Concerns\Client\HandlesServerRequests;
 use Revolution\Copilot\Concerns\Client\HandlesSessionFs;
 use Revolution\Copilot\Concerns\Client\HandlesSkillProvider;
@@ -17,8 +18,8 @@ use Revolution\Copilot\Concerns\Client\ManagesSessions;
 use Revolution\Copilot\Contracts\CopilotClient;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Transport;
-use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Enums\ConnectionState;
+use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Enums\RuntimeConnectionKind;
 use Revolution\Copilot\Enums\TaskKind;
 use Revolution\Copilot\Events\Client\ClientStarted;
@@ -50,7 +51,6 @@ use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\SessionFsConfig;
 use Revolution\Copilot\Types\TranscriptRecovery;
-use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
@@ -130,7 +130,7 @@ class Client implements CopilotClient
             : (array_key_exists('on_github_telemetry', $options) ? 'on_github_telemetry' : null);
         $onGitHubTelemetry = $telemetryOption === null ? null : $options[$telemetryOption];
         if ($telemetryOption !== null && ! is_callable($onGitHubTelemetry)) {
-            throw new \InvalidArgumentException('onGitHubTelemetry must be callable.');
+            throw new InvalidArgumentException('onGitHubTelemetry must be callable.');
         }
 
         $this->onGitHubTelemetry = $onGitHubTelemetry === null
@@ -160,7 +160,7 @@ class Client implements CopilotClient
         if ($connection->kindValue() === RuntimeConnectionKind::URI->value) {
             // Validate auth options with external server
             if (filled(data_get($options, 'github_token')) || data_get($options, 'use_logged_in_user') !== null) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'github_token and use_logged_in_user cannot be used with RuntimeConnection::forUri() (external server manages its own auth)',
                 );
             }
@@ -173,7 +173,7 @@ class Client implements CopilotClient
         }
 
         if ($connection->kindValue() === RuntimeConnectionKind::TCP->value) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'SDK-spawned TCP runtime connections are not supported yet. Use RuntimeConnection::forUri() or cli_url to connect to an existing runtime.',
             );
         }
@@ -205,12 +205,12 @@ class Client implements CopilotClient
             : ($options['builtin_plugin_directories'] ?? []);
 
         if (! is_array($directories) || ! array_is_list($directories)) {
-            throw new \InvalidArgumentException('builtinPluginDirectories must be a list of absolute paths.');
+            throw new InvalidArgumentException('builtinPluginDirectories must be a list of absolute paths.');
         }
 
         foreach ($directories as $directory) {
             if (! is_string($directory) || ! $this->isAbsolutePath($directory)) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     'builtinPluginDirectories must contain only absolute paths: '.
                     (is_string($directory) ? $directory : get_debug_type($directory)),
                 );
@@ -504,11 +504,11 @@ class Client implements CopilotClient
         [$config, $bearerTokenProviders] = $this->extractBearerTokenProviders($config);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
-            throw new \InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
+            throw new InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
         }
 
         if (! isset($config['onPermissionRequest']) || ! is_callable($config['onPermissionRequest'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'An onPermissionRequest handler is required when creating a session. '
                 .'For example, to allow all permissions, use new SessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
             );
@@ -521,7 +521,7 @@ class Client implements CopilotClient
 
         $isCloudSession = ($config['cloud'] ?? null) !== null;
         if ($isCloudSession && $skillProvider !== null) {
-            throw new \InvalidArgumentException('Skill providers are not supported for cloud sessions.');
+            throw new InvalidArgumentException('Skill providers are not supported for cloud sessions.');
         }
 
         // Cloud sessions run remotely and have no local session filesystem to delegate.
@@ -791,11 +791,11 @@ class Client implements CopilotClient
         [$config, $bearerTokenProviders] = $this->extractBearerTokenProviders($config);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
-            throw new \InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
+            throw new InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
         }
 
         if (! isset($config['onPermissionRequest']) || ! is_callable($config['onPermissionRequest'])) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 'An onPermissionRequest handler is required when resuming a session. '
                 .'For example, to allow all permissions, use new ResumeSessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
             );
@@ -1080,7 +1080,7 @@ class Client implements CopilotClient
 
         if ($bearerTokenProvider !== null) {
             if (! is_callable($bearerTokenProvider)) {
-                throw new \InvalidArgumentException('provider.bearerTokenProvider must be callable');
+                throw new InvalidArgumentException('provider.bearerTokenProvider must be callable');
             }
 
             $providers['default'] = $bearerTokenProvider;
@@ -1103,7 +1103,7 @@ class Client implements CopilotClient
                 }
 
                 if (! is_callable($bearerTokenProvider)) {
-                    throw new \InvalidArgumentException("providers.{$index}.bearerTokenProvider must be callable");
+                    throw new InvalidArgumentException("providers.{$index}.bearerTokenProvider must be callable");
                 }
 
                 $providerName = $namedProvider instanceof NamedProviderConfig
@@ -1111,7 +1111,7 @@ class Client implements CopilotClient
                     : ($namedProvider['name'] ?? null);
 
                 if (! is_string($providerName)) {
-                    throw new \InvalidArgumentException("providers.{$index}.name must be a string");
+                    throw new InvalidArgumentException("providers.{$index}.name must be a string");
                 }
 
                 $providers[$providerName] = $bearerTokenProvider;

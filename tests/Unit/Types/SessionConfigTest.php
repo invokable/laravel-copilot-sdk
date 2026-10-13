@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ProviderConfig;
@@ -16,7 +17,6 @@ use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
-use Revolution\Copilot\Support\ToolSet;
 
 describe('SessionConfig', function () {
     it('round-trips a session name', function () {

@@ -6,6 +6,12 @@ namespace Revolution\Copilot\Support;
 
 final class BuiltInTools
 {
+    /**
+     * Keep this list limited to tools confined to one session, with no host
+     * filesystem, environment, network, or cross-session access.
+     *
+     * @var list<string>
+     */
     public const array Isolated = [
         'ask_user',
         'task_complete',

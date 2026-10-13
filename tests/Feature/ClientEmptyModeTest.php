@@ -13,8 +13,17 @@ use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\ResumeSessionConfig;
-use Revolution\Copilot\Types\SessionFsConfig;
 use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\SessionFsConfig;
+
+function matchesEmptyModePayload(array $payload, array $expected): bool
+{
+    $actual = array_intersect_key($payload, $expected);
+    ksort($actual);
+    ksort($expected);
+
+    return $actual === $expected;
+}
 
 beforeEach(function () {
     $this->createEmptyModeClient = function (
@@ -111,7 +120,7 @@ describe('empty client mode', function () {
             'includedBuiltinSkills' => [],
         ];
         $client = ($this->createEmptyModeClient)(
-            fn (array $params) => array_intersect_key($params, $expectedPayload) == $expectedPayload,
+            fn (array $params) => matchesEmptyModePayload($params, $expectedPayload),
             $patch,
         );
 
@@ -153,7 +162,7 @@ describe('empty client mode', function () {
             'includedBuiltinSkills' => ['review'],
         ];
         $client = ($this->createEmptyModeClient)(
-            fn (array $params) => array_intersect_key($params, $expectedPayload) == $expectedPayload,
+            fn (array $params) => matchesEmptyModePayload($params, $expectedPayload),
             $patch,
         );
 
@@ -210,7 +219,7 @@ describe('empty client mode', function () {
             'includedBuiltinSkills' => ['approved'],
         ];
         $client = ($this->createEmptyModeClient)(
-            fn (array $params) => array_intersect_key($params, $expectedPayload) == $expectedPayload,
+            fn (array $params) => matchesEmptyModePayload($params, $expectedPayload),
             $patch,
             'session.resume',
         );

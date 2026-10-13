@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\CanvasProviderIdentity;
 use Revolution\Copilot\Types\ImageGenerationConfig;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
@@ -17,7 +18,6 @@ use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
 use Revolution\Copilot\Types\ToolSearchConfig;
-use Revolution\Copilot\Support\ToolSet;
 
 describe('ResumeSessionConfig', function () {
     it('round trips transcript recovery configuration including false', function () {

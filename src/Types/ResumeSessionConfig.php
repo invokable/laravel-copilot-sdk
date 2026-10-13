@@ -52,9 +52,9 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  SystemMessageConfig|array|null  $systemMessage  System message configuration. Controls how the system prompt is constructed.
      * @param  ToolSearchConfig|array|null  $toolSearch  Override for the runtime's built-in tool-search behavior.
      * @param  array|ToolSet|null  $availableTools  Source-qualified tool filters to allow. When specified, only these tools will be available.
-     *                                  Examples: `builtin:*`, `builtin:bash`, `mcp:*`, `mcp:github-read_issue`, `custom:*`.
+     *                                              Examples: `builtin:*`, `builtin:bash`, `mcp:*`, `mcp:github-read_issue`, `custom:*`.
      * @param  array|ToolSet|null  $excludedTools  Source-qualified tool filters to disable. When both lists are set,
-     *                                 excludedTools wins (`toolFilterPrecedence: "excluded"`).
+     *                                             excludedTools wins (`toolFilterPrecedence: "excluded"`).
      * @param  ProviderConfig|array|null  $provider  Custom provider configuration (BYOK - Bring Your Own Key).
      *                                               When specified, uses the provided API endpoint instead of the Copilot API.
      * @param  NamedProviderConfig[]|null  $providers  Named BYOK provider connections (transport + credentials).

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Enums\CopilotClientMode;
+use Revolution\Copilot\Process\ProcessManager;
 
 describe('ProcessManager CLI Path Resolution', function () {
     it('resolves COPILOT_CLI_PATH from env when cliPath is null', function () {

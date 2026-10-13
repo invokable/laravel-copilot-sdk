@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Process;
 
+use InvalidArgumentException;
+use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Events\Process\ProcessStarted;
 use Revolution\Copilot\Transport\StdioTransport;
-use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Types\TelemetryConfig;
-use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Process\ExecutableFinder;
 
