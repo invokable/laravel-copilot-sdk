@@ -445,7 +445,7 @@ $response = Copilot::run(
 );
 ```
 
-empty モードではセッションテレメトリー、永続 MCP OAuth token storage、embedding retrieval/cache、instruction discovery、file hooks、host git operations、session store、skills、memory、experimental mode が安全側の既定値になります。明示したセッション設定はこれらの既定値より優先されます。`systemMessage`の`replace`はそのまま利用でき、それ以外のモードでは`environment_context`セクションを除去します。CLI プロセスでは`COPILOT_DISABLE_KEYTAR=1`を設定します。
+empty モードではセッションテレメトリー、永続 MCP OAuth token storage、embedding retrieval/cache、instruction discovery、file hooks、host git operations、session store、GitHub cache store、skills、memory、experimental mode が安全側の既定値になります。明示したセッション設定はこれらの既定値より優先されます。`enableGitHubCacheStore: true`を指定すると読み取り専用のGitHub cache storeを要求しますが、`github_sql`ツールが登録されるのはCLIの`GITHUB_CACHE_STORE` feature flagが有効な場合のみです。`systemMessage`の`replace`はそのまま利用でき、それ以外のモードでは`environment_context`セクションを除去します。CLI プロセスでは`COPILOT_DISABLE_KEYTAR=1`を設定します。
 
 `AskUserVariant::ELICITATION`は`onElicitationRequest`ハンドラーと組み合わせて使用します。デフォルトのvariantは引き続き`legacy`です。
 
