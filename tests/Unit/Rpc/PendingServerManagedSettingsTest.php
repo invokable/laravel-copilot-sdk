@@ -22,6 +22,18 @@ it('reads managed settings without a session', function () {
         ->and($result->errorMessage)->toBeNull();
 });
 
+it('clears the managed settings cache without returning a value', function () {
+    $client = Mockery::mock(JsonRpcClient::class);
+    $client->shouldReceive('request')
+        ->once()
+        ->with('managedSettings.clearCache', [])
+        ->andReturn(null);
+
+    $result = (new PendingServerManagedSettings($client))->clearCache();
+
+    expect($result)->toBeNull();
+});
+
 it('exposes managed-settings preview operations', function () {
     $client = Mockery::mock(JsonRpcClient::class);
     $client->shouldReceive('request')->once()->with('managedSettings.resolve', [

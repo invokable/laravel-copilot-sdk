@@ -54,6 +54,26 @@ class ServerRpc
     }
 
     /**
+     * Server-scoped slash command RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function commands(): PendingServerCommands
+    {
+        return new PendingServerCommands($this->client);
+    }
+
+    /**
+     * Server-scoped hooks RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function hooks(): PendingServerHooks
+    {
+        return new PendingServerHooks($this->client);
+    }
+
+    /**
      * Tools RPC operations.
      */
     public function tools(): PendingServerTools
@@ -153,6 +173,16 @@ class ServerRpc
     public function sandboxProxyCa(): PendingServerSandboxProxyCa
     {
         return new PendingServerSandboxProxyCa($this->client);
+    }
+
+    /**
+     * Server-scoped sandbox RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function sandbox(): PendingServerSandbox
+    {
+        return new PendingServerSandbox($this->client);
     }
 
     /**

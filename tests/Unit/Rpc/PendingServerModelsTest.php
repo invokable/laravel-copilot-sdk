@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerModels;
+use Revolution\Copilot\Types\Rpc\BuiltInModelCatalog;
 use Revolution\Copilot\Types\Rpc\ModelList;
 use Revolution\Copilot\Types\Rpc\ModelsListRequest;
 
@@ -73,5 +74,18 @@ describe('PendingServerModels', function () {
         $result = $pending->list(['gitHubToken' => 'ghs_xyz']);
 
         expect($result)->toBeInstanceOf(ModelList::class);
+    });
+
+    it('returns the built-in model catalog', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('models.getBuiltInCatalog', [])
+            ->andReturn(['models' => [['id' => 'gpt-5']]]);
+
+        $result = (new PendingServerModels($client))->getBuiltInCatalog();
+
+        expect($result)->toBeInstanceOf(BuiltInModelCatalog::class)
+            ->and($result->models[0]->id)->toBe('gpt-5');
     });
 });
