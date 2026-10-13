@@ -9,6 +9,8 @@ use Revolution\Copilot\Types\Rpc\CurrentModel;
 use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
 use Revolution\Copilot\Types\Rpc\ModelClearStartupSeedRequest;
 use Revolution\Copilot\Types\Rpc\ModelClearStartupSeedResult;
+use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesRequest;
+use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesResult;
 use Revolution\Copilot\Types\Rpc\ModelListRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetAllowedModelsRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetAllowedModelsResult;
@@ -37,6 +39,23 @@ class PendingModel
             $this->client->request('session.model.getCurrent', [
                 'sessionId' => $this->sessionId,
             ]),
+        );
+    }
+
+    /**
+     * Get reasoning-summary visibility policy for the current model.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function getReasoningSummaries(ModelGetReasoningSummariesRequest|array $params = []): ModelGetReasoningSummariesResult
+    {
+        $paramsArray = ($params instanceof ModelGetReasoningSummariesRequest
+            ? $params
+            : ModelGetReasoningSummariesRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ModelGetReasoningSummariesResult::fromArray(
+            $this->client->request('session.model.getReasoningSummaries', $paramsArray),
         );
     }
 

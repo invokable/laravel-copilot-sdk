@@ -11,6 +11,8 @@ use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
 use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
 use Revolution\Copilot\Types\Rpc\ModelClearStartupSeedRequest;
+use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesRequest;
+use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
@@ -43,6 +45,52 @@ describe('PendingModel', function () {
 
         expect($result)->toBeInstanceOf(CurrentModel::class)
             ->and($result->modelId)->toBeNull();
+    });
+
+    it('gets reasoning-summary policy with the exact session request payload', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.model.getReasoningSummaries', [
+                'persistedShowReasoning' => false,
+                'summariesVisible' => true,
+                'sessionId' => 'session-xyz',
+            ])
+            ->andReturn([
+                'ready' => true,
+                'experimentSettled' => true,
+                'sessionShowsSummaries' => true,
+                'modelDefaultShowsSummaries' => false,
+                'showReasoningHeaders' => true,
+                'visibility' => false,
+                'showHiddenHint' => false,
+                'clearRedundantSetting' => true,
+            ]);
+
+        $result = (new PendingModel($client, 'session-xyz'))->getReasoningSummaries(
+            new ModelGetReasoningSummariesRequest(
+                persistedShowReasoning: false,
+                summariesVisible: true,
+            ),
+        );
+
+        expect($result)->toBeInstanceOf(ModelGetReasoningSummariesResult::class)
+            ->and($result->ready)->toBeTrue()
+            ->and($result->visibility)->toBeFalse()
+            ->and($result->clearRedundantSetting)->toBeTrue();
+    });
+
+    it('omits unset reasoning-summary options from the session request payload', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.model.getReasoningSummaries', ['sessionId' => 'session-xyz'])
+            ->andReturn([]);
+
+        $result = (new PendingModel($client, 'session-xyz'))->getReasoningSummaries();
+
+        expect($result->ready)->toBeFalse()
+            ->and($result->visibility)->toBeNull();
     });
 
     it('calls session.model.switchTo with typed params', function () {
