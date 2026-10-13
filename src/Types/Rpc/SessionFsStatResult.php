@@ -18,6 +18,7 @@ readonly class SessionFsStatResult implements Arrayable
      * @param  bool  $isFile  Whether the path is a file
      * @param  string  $mtime  ISO 8601 timestamp of last modification
      * @param  int|float  $size  File size in bytes
+     * @param  ?SessionFsError  $error  Structured provider error, if the stat failed
      */
     public function __construct(
         public string $birthtime,
@@ -25,6 +26,7 @@ readonly class SessionFsStatResult implements Arrayable
         public bool $isFile,
         public string $mtime,
         public int|float $size,
+        public ?SessionFsError $error = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -35,17 +37,24 @@ readonly class SessionFsStatResult implements Arrayable
             isFile: Arr::boolean($data, 'isFile', false),
             mtime: Arr::string($data, 'mtime', ''),
             size: $data['size'] ?? 0,
+            error: isset($data['error']) ? SessionFsError::fromArray($data['error']) : null,
         );
     }
 
     public function toArray(): array
     {
-        return [
+        $result = [
             'birthtime' => $this->birthtime,
             'isDirectory' => $this->isDirectory,
             'isFile' => $this->isFile,
             'mtime' => $this->mtime,
             'size' => $this->size,
         ];
+
+        if ($this->error !== null) {
+            $result['error'] = $this->error->toArray();
+        }
+
+        return $result;
     }
 }

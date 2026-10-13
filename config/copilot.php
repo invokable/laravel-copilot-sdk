@@ -119,6 +119,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Session Filesystem Provider
+    |--------------------------------------------------------------------------
+    |
+    | Delegate the Copilot CLI session state (session-state files and SQLite) to
+    | your own storage. When set, the client registers it with `sessionFs.setProvider`
+    | on start, and every session must supply `createSessionFsProvider`.
+    |
+    | [
+    |     'initialCwd' => '/workspace',          // required
+    |     'sessionStatePath' => '/session-state', // required
+    |     'conventions' => 'posix',               // required: "posix" or "windows"
+    |     'capabilities' => ['sqlite' => false, 'binary' => false],
+    | ]
+    |
+    */
+    'session_fs' => null,
+
+    /*
+    |--------------------------------------------------------------------------
     | Auto-approve Permission Requests
     |--------------------------------------------------------------------------
     |

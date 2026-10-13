@@ -42,7 +42,7 @@ function startClientWithProviderTokenHandler(
     $rpc->shouldReceive('start')->once();
     $rpc->shouldReceive('setNotificationHandler')->once();
     $rpc->shouldReceive('setRequestHandler')
-        ->times(12)
+        ->times(23)
         ->andReturnUsing(function (string $method, Closure $handler) use (&$handlers): void {
             $handlers[$method] = $handler;
         });

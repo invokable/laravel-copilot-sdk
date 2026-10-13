@@ -924,6 +924,14 @@ $session->rpc()->shutdown(['detachSessionEndHooks' => true]);
 | `SessionFsRmRequest` | ファイル/ディレクトリ削除 |
 | `SessionFsRenameRequest` | ファイル/ディレクトリ名前変更 |
 
+`SessionFsStatResult` / `SessionFsReaddirResult` / `SessionFsReaddirWithTypesResult` は失敗時に使う任意の `error`（`SessionFsError`）を持ちます。
+
+### SessionFsハンドラー
+
+Clientは`sessionFs.readFile` / `readFileBytes` / `writeFile` / `writeFileBytes` に加えて、`appendFile`、`exists`、`stat`、`mkdir`、`readdir`、`readdirWithTypes`、`rm`、`rename`、`sqliteQuery`、`sqliteTransaction`、`sqliteExists` の各リクエストを`Session`のプロバイダーへ振り分けます。ファイル操作の失敗は `ENOENT`（`ENOENT`または errno 2）/ `UNKNOWN` の`error`として返します。`exists`は例外時に`false`、`stat`は失敗時にゼロ値＋`error`を返します。プロバイダーが対応していない操作は`UNKNOWN`エラー（SQLite系はJSON-RPCエラー）になります。`sqliteQuery`/`sqliteExists`の例外はJSON-RPCエラー、`sqliteTransaction`の失敗は結果の`error`（`errorClass`付き）として返します。
+
+プロバイダー側のインターフェース（`SessionFsFilesystemProvider`、`SessionFsSqliteCapableProvider`、`SessionFsSqliteProvider`、`SessionFsSqliteTransactionProvider`）は、従来の`SessionFsProvider`（2メソッド）を壊さないよう別インターフェースとして追加されています。
+
 ### SQLite コールバック型
 
 | 型クラス | 用途 |
@@ -931,6 +939,8 @@ $session->rpc()->shutdown(['detachSessionEndHooks' => true]);
 | `SessionFsSetProviderCapabilities` | プロバイダーの対応機能宣言（SQLiteサポートなど） |
 | `SessionFsSqliteExistsRequest` / `SessionFsSqliteExistsResult` | SQLiteデータベースの存在確認 |
 | `SessionFsSqliteQueryRequest` / `SessionFsSqliteQueryResult` | SQLiteクエリ実行 |
+| `SessionFsSqliteTransactionRequest` / `SessionFsSqliteTransactionStatement` / `SessionFsSqliteTransactionResult` | SQLiteトランザクション（複数ステートメントをアトミックに実行） |
+| `SessionFsSqliteTransactionError` | トランザクション失敗の分類（`errorClass`: `busyOrLocked` / `fatal` / `postCommitAmbiguous`。enum `SessionFSSqliteTransactionErrorClass`） |
 
 SQLiteサポートを有効にするには、`SessionFsSetProviderRequest` の `capabilities` に `SessionFsSetProviderCapabilities(sqlite: true)` を渡します。
 
@@ -944,6 +954,8 @@ $client->rpc()->sessionFs()->setProvider(new SessionFsSetProviderRequest(
     capabilities: new SessionFsSetProviderCapabilities(sqlite: true),
 ));
 ```
+
+通常はこのRPCを直接呼ばず、Clientオプション`sessionFs`（または`config/copilot.php`の`session_fs`）を指定すると`Client::start()`が`sessionFs.setProvider`を1回だけ送信します。セッションには`createSessionFsProvider`が必要です（[SessionConfig](./session-config.md)を参照）。
 
 `SessionFsSqliteQueryType` enum（`src/Enums/`）はクエリ種別を表します:
 - `Exec`: DDL/複数ステートメント（結果なし）

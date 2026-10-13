@@ -45,6 +45,31 @@ describe('session provider configuration', function () {
     });
 });
 
+describe('createSessionFsProvider configuration', function () {
+    it('round-trips the factory through fromArray and toArray for SessionConfig', function () {
+        $factory = fn () => sessionProviderCallbacks()['filesystem'];
+
+        $config = SessionConfig::fromArray(['createSessionFsProvider' => $factory]);
+
+        expect($config->createSessionFsProvider)->toBe($factory)
+            ->and($config->toArray()['createSessionFsProvider'])->toBe($factory)
+            ->and((new SessionConfig(createSessionFsProvider: $factory))->createSessionFsProvider)->toBe($factory)
+            ->and(SessionConfig::fromArray([])->createSessionFsProvider)->toBeNull()
+            ->and(array_key_exists('createSessionFsProvider', (new SessionConfig)->toArray()))->toBeFalse();
+    });
+
+    it('round-trips the factory through fromArray and toArray for ResumeSessionConfig', function () {
+        $factory = fn () => sessionProviderCallbacks()['filesystem'];
+
+        $config = ResumeSessionConfig::fromArray(['createSessionFsProvider' => $factory]);
+
+        expect($config->createSessionFsProvider)->toBe($factory)
+            ->and($config->toArray()['createSessionFsProvider'])->toBe($factory)
+            ->and(ResumeSessionConfig::fromArray([])->createSessionFsProvider)->toBeNull()
+            ->and(array_key_exists('createSessionFsProvider', (new ResumeSessionConfig)->toArray()))->toBeFalse();
+    });
+});
+
 /**
  * @return array{
  *     skill: array{listSkills: Closure, readSkill: Closure},
