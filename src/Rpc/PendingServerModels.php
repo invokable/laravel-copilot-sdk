@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\BuiltInModelCatalog;
 use Revolution\Copilot\Types\Rpc\ModelList;
 use Revolution\Copilot\Types\Rpc\ModelsListRequest;
 
@@ -31,6 +32,16 @@ class PendingServerModels
 
         return ModelList::fromArray(
             $this->client->request('models.list', $paramsArray),
+        );
+    }
+
+    /**
+     * Retrieve the built-in model catalog.
+     */
+    public function getBuiltInCatalog(): BuiltInModelCatalog
+    {
+        return BuiltInModelCatalog::fromArray(
+            $this->client->request('models.getBuiltInCatalog', []),
         );
     }
 }

@@ -37,6 +37,16 @@ class PendingServerManagedSettings
         );
     }
 
+    /**
+     * Clear the managed settings cache.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function clearCache(): void
+    {
+        $this->client->request('managedSettings.clearCache', []);
+    }
+
     /** Resolve device and account policy without creating a session. */
     public function resolve(ManagedSettingsResolveRequest|array $params = []): ManagedSettingsResolveResult
     {

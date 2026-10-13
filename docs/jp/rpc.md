@@ -26,12 +26,28 @@ Copilot::client()->listModels();
 ### メソッドリスト
 
 ```php
+use Revolution\Copilot\Types\Rpc\HooksDiscoverRequest;
+
 Copilot::client()->rpc()->ping();
 
 // models
 Copilot::client()->rpc()->models()->list();
 // セッションごとのGitHubトークンで取得
 Copilot::client()->rpc()->models()->list(new ModelsListRequest(gitHubToken: $token));
+// 組み込みモデルカタログ
+Copilot::client()->rpc()->models()->getBuiltInCatalog();
+
+// 新規セッションで利用可能な組み込みスラッシュコマンド一覧（experimental）
+Copilot::client()->rpc()->commands()->list();
+
+// セッション開始前のフック探索（experimental）
+Copilot::client()->rpc()->hooks()->discover(new HooksDiscoverRequest(
+    projectPaths: ['/path/to/project'],
+));
+
+// ホストのサンドボックス対応状況（experimental）
+$hostSupport = Copilot::client()->rpc()->sandbox()->getHostSupport();
+// $hostSupport->supported, $hostSupport->reason, $hostSupport->capabilities
 
 // tools
 Copilot::client()->rpc()->tools()->list();
@@ -1046,11 +1062,23 @@ $validation = $client->rpc()->managedSettings()->validate(['content' => ['permis
 $preview = $client->rpc()->managedSettings()->compose(['layers' => [
     ['source' => 'device', 'settings' => ['permissions' => []]],
 ]]);
+
+// マネージド設定キャッシュを破棄（experimental）
+$client->rpc()->managedSettings()->clearCache();
 ```
 
 ### sandbox (experimental: サンドボックス制御)
 
 ```php
+// セッション作成前にホストのサンドボックス対応状況を確認
+$hostSupport = $client->rpc()->sandbox()->getHostSupport();
+// $hostSupport->supported, $hostSupport->reason, $hostSupport->capabilities
+
+// Proxy CAの要否とインストール対応状況を確認
+$proxyCa = $client->rpc()->sandboxProxyCa();
+$relevant = $proxyCa->checkRelevance(['enabled' => true]);
+$installable = $proxyCa->checkInstallationSupport();
+
 use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionRequest;
 
 // サンドボックス強制状態を取得
