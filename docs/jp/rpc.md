@@ -460,6 +460,43 @@ Copilot::start(function (CopilotSession $session) {
 });
 ```
 
+### MCP Apps (experimental)
+
+`$session->rpc()->mcp()->apps()`からMCP Apps用のRPCを呼び出せます。`listTools()`と`callTool()`では、呼び出し元のMCPサーバー名`originServerName`が必須です。`callTool()`の結果は自由形式のMCP結果として返されます。
+
+```php
+use Revolution\Copilot\Types\Rpc\MCPAppsDiagnoseRequest;
+use Revolution\Copilot\Types\Rpc\MCPAppsListToolsRequest;
+use Revolution\Copilot\Types\Rpc\McpAppsCallToolRequest;
+use Revolution\Copilot\Types\Rpc\McpAppsReadResourceRequest;
+use Revolution\Copilot\Types\Rpc\McpAppsSetHostContextDetails;
+use Revolution\Copilot\Types\Rpc\McpAppsSetHostContextRequest;
+
+$apps = $session->rpc()->mcp()->apps();
+
+$tools = $apps->listTools(new MCPAppsListToolsRequest(
+    serverName: 'my-server',
+    originServerName: 'my-server',
+));
+$result = $apps->callTool(new McpAppsCallToolRequest(
+    serverName: 'my-server',
+    toolName: 'lookup',
+    originServerName: 'my-server',
+    arguments: ['query' => 'hello'],
+));
+$resource = $apps->readResource(new McpAppsReadResourceRequest(
+    serverName: 'my-server',
+    uri: 'ui://my-app/index.html',
+));
+$context = $apps->getHostContext();
+$apps->setHostContext(new McpAppsSetHostContextRequest(
+    context: new McpAppsSetHostContextDetails(theme: 'dark', locale: 'ja-JP'),
+));
+$diagnostics = $apps->diagnose(new MCPAppsDiagnoseRequest(serverName: 'my-server'));
+```
+
+`readResource()`はHTMLなどのリソースデータを返します。SDKはブラウザー描画やiframe操作を行わないため、取得した内容の描画は呼び出し側アプリケーションの責務です。
+
 ### メソッドリスト
 
 ```php
