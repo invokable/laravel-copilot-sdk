@@ -332,6 +332,16 @@ class PendingMcp
         return new PendingMcpResources($this->client, $this->sessionId);
     }
 
+    /**
+     * MCP Apps RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function apps(): PendingMcpApps
+    {
+        return new PendingMcpApps($this->client, $this->sessionId);
+    }
+
     /** Prompt RPC operations. */
     public function prompts(): PendingMcpPrompts
     {
