@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\HostDisposeRequest;
+use Revolution\Copilot\Types\Rpc\HostDisposeResult;
 use Revolution\Copilot\Types\Rpc\HostListSessionsRequest;
 use Revolution\Copilot\Types\Rpc\HostListSessionsResult;
 use Revolution\Copilot\Types\Rpc\HostPublishSessionRequest;
@@ -62,6 +64,20 @@ class PendingHost
 
         return HostListSessionsResult::fromArray(
             $this->client->request('host.listSessions', $paramsArray),
+        );
+    }
+
+    /**
+     * Dispose a supervised host listener.
+     */
+    public function dispose(HostDisposeRequest|array $params): HostDisposeResult
+    {
+        $paramsArray = $params instanceof HostDisposeRequest
+            ? $params->toArray()
+            : HostDisposeRequest::fromArray($params)->toArray();
+
+        return HostDisposeResult::fromArray(
+            $this->client->request('host.dispose', $paramsArray),
         );
     }
 }

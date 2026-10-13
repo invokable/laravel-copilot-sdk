@@ -46,7 +46,6 @@ describe('Client TCP Mode', function () {
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
-
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
 
         // Use reflection to inject the mock transport
@@ -109,6 +108,9 @@ describe('Client TCP Mode', function () {
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->never();
 
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
 
