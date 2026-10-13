@@ -72,6 +72,11 @@ class FakeSession implements CopilotSession
         return null;
     }
 
+    public function openCanvases(): array
+    {
+        return [];
+    }
+
     public function setTools(array $tools): void
     {
         // No-op in fake

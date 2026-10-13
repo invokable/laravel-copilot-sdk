@@ -16,6 +16,13 @@ use Revolution\Copilot\Types\McpAuthToken;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverrideSupports;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverrideLimits;
+use Revolution\Copilot\Types\Rpc\CanvasAction;
+use Revolution\Copilot\Types\Rpc\CanvasProviderInvokeActionRequest;
+use Revolution\Copilot\Types\Rpc\CanvasProviderOpenRequest;
+use Revolution\Copilot\Types\Rpc\CanvasProviderOpenResult;
+use Revolution\Copilot\Types\CanvasDeclaration;
+use Revolution\Copilot\Support\CanvasError;
+use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Enums\ReasoningEffort;
 
 $config = new SessionConfig(
@@ -280,9 +287,37 @@ $config = new SessionConfig(
         // すべてのセッションイベントを受け取る
     },
 
-    // **実験的機能** Canvas runtime support (v1.0.0-beta.7+)
-    // このセッション参加者が提供するキャンバス。宣言した接続がキャンバス操作のライブプロバイダーになる。
-    // canvases: [...],
+    // **実験的機能** キャンバスの宣言と provider ハンドラー
+    canvases: [
+        new CanvasDeclaration(
+            id: 'editor',
+            displayName: 'Editor',
+            description: 'Opens and edits project files.',
+            actions: [
+                new CanvasAction(name: 'format', description: 'Format the open file.'),
+            ],
+        ),
+    ],
+    canvasHandler: new class extends CanvasHandler
+    {
+        public function open(CanvasProviderOpenRequest $request): CanvasProviderOpenResult|array
+        {
+            return new CanvasProviderOpenResult(
+                url: 'https://app.example.test/canvas/'.$request->instanceId,
+                title: 'Project editor',
+            );
+        }
+
+        public function invoke(CanvasProviderInvokeActionRequest $request): mixed
+        {
+            if ($request->actionName !== 'format') {
+                throw CanvasError::noHandler();
+            }
+
+            return ['formatted' => true];
+        }
+    },
+    requestCanvasRenderer: true,
 
     // **実験的機能** レンダラー側のオプトイン: trueの場合、ランタイムはこの接続用のキャンバスエージェントツールをモデルに提供する。
     // キャンバスを表示できないSDK呼び出し元がクリーンな状態を保つため、デフォルトはoff。
@@ -313,6 +348,8 @@ $response = Copilot::run('...', config: $config);
 セッション再開時には`ResumeSessionConfig`クラスを使用します。`SessionConfig`とほとんど同じですが少しだけ違います。ResumeSessionConfigは設定を変えたい項目のみ指定します。他は新規セッション開始時の設定が引き継がれます。
 
 `ResumeSessionConfig`特有のフィールドとして`openCanvases`があります。セッションが中断された時に既に開いていたキャンバスのスナップショットを提供すると、ランタイムはキャンバスの状態を再ハイドレートできるため、以前のシャットダウン前にアクティブだったキャンバスを再度開く必要がありません。（実験的機能）
+
+Canvas を再開する場合も、`canvases` と `canvasHandler` を再度指定します。`canvasHandler` は PHP プロセス内でのみ使用され、RPC payload には宣言メタデータだけが送られます。開いている状態は `$session->openCanvases()` で取得でき、`session.canvas.opened` / `session.canvas.closed` イベントに合わせて更新されます。
 
 カスタムエージェントの使い方は [Custom Agents](./custom-agents.md) を参照。
 クラウド実行は [Cloud Sessions](./cloud-sessions.md)、Plugin Directoryは [Plugin Directories](./plugin-directories.md) を参照。
