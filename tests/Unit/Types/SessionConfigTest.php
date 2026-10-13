@@ -120,7 +120,12 @@ describe('SessionConfig', function () {
             'streaming' => true,
             'includeSubAgentStreamingEvents' => false,
             'mcpServers' => ['server1' => ['command' => 'npx']],
-            'customAgents' => [['name' => 'agent1']],
+            'customAgents' => [[
+                'name' => 'agent1',
+                'hooks' => [
+                    'preToolUse' => [['permissionDecision' => 'deny']],
+                ],
+            ]],
             'skillDirectories' => ['/path/to/skills'],
             'instructionDirectories' => ['/path/to/instructions'],
             'disabledSkills' => ['skill1'],
@@ -152,7 +157,12 @@ describe('SessionConfig', function () {
             ->and($config->streaming)->toBeTrue()
             ->and($config->includeSubAgentStreamingEvents)->toBeFalse()
             ->and($config->mcpServers)->toBe(['server1' => ['command' => 'npx']])
-            ->and($config->customAgents)->toBe([['name' => 'agent1']])
+            ->and($config->customAgents)->toBe([[
+                'name' => 'agent1',
+                'hooks' => [
+                    'preToolUse' => [['permissionDecision' => 'deny']],
+                ],
+            ]])
             ->and($config->skillDirectories)->toBe(['/path/to/skills'])
             ->and($config->instructionDirectories)->toBe(['/path/to/instructions'])
             ->and($config->disabledSkills)->toBe(['skill1'])
@@ -243,7 +253,12 @@ describe('SessionConfig', function () {
             streaming: false,
             includeSubAgentStreamingEvents: true,
             mcpServers: ['server1' => ['command' => 'test']],
-            customAgents: [['name' => 'agent1']],
+            customAgents: [[
+                'name' => 'agent1',
+                'hooks' => [
+                    'preToolUse' => [['permissionDecision' => 'deny']],
+                ],
+            ]],
             skillDirectories: ['/skills'],
             disabledSkills: ['skill1'],
             skipCustomInstructions: true,
@@ -274,7 +289,12 @@ describe('SessionConfig', function () {
             ->and($array['streaming'])->toBeFalse()
             ->and($array['includeSubAgentStreamingEvents'])->toBeTrue()
             ->and($array['mcpServers'])->toBe(['server1' => ['command' => 'test']])
-            ->and($array['customAgents'])->toBe([['name' => 'agent1']])
+            ->and($array['customAgents'])->toBe([[
+                'name' => 'agent1',
+                'hooks' => [
+                    'preToolUse' => [['permissionDecision' => 'deny']],
+                ],
+            ]])
             ->and($array['skillDirectories'])->toBe(['/skills'])
             ->and($array['disabledSkills'])->toBe(['skill1'])
             ->and($array['skipCustomInstructions'])->toBeTrue()

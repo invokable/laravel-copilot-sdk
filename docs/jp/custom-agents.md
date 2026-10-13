@@ -65,8 +65,34 @@ Copilot::run(
 | `mcpServers` | `array` |  | このエージェント専用のMCPサーバー設定 |
 | `infer` | `bool` |  | 自動選択対象にするか（デフォルト: `true`） |
 | `skills` | `array` |  | 起動時に読み込むスキル名のリスト |
+| `hooks` | `array<string, array<array<string, mixed>>>` |  | エージェント内だけで有効な宣言型フックアクション |
 
 > `description` は具体的に書くほど、自動選択の精度が上がります。
+
+## エージェント単位の宣言型フック
+
+カスタムエージェントの `hooks` には、イベント名をキー、宣言型アクションの配列を値として指定できます。
+アクションは該当するエージェントの定義とともにCLIへ渡され、そのエージェントでのみ有効になります。
+
+```php
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    customAgents: [
+        [
+            'name' => 'restricted-agent',
+            'prompt' => 'Review tool usage.',
+            'hooks' => [
+                'preToolUse' => [
+                    ['permissionDecision' => 'deny'],
+                ],
+            ],
+        ],
+    ],
+);
+```
+
+この `customAgents[*].hooks` はCLIへ渡す宣言型アクションです。アクションの内容はCopilot CLIが受け付ける形式を指定してください。`SessionConfig` のトップレベル `hooks` はPHPのコールバックを登録する別の機能で、セッション全体に適用されます。`.github/hooks/` のファイルベースフック読み込みは `enableFileHooks` で個別に制御します。
 
 ## セッション開始時に特定エージェントを選ぶ
 

@@ -115,7 +115,8 @@ readonly class SessionConfig implements Arrayable
      *                                                 events and subagent.* lifecycle events are forwarded; streaming deltas from
      *                                                 sub-agents are suppressed. Defaults to true.
      * @param  ?array  $mcpServers  MCP server configurations for the session. Keys are server names, values are server configurations.
-     * @param  ?array  $customAgents  Custom agent configurations for the session
+     * @param  ?array  $customAgents  Custom agent configurations for the session. Declarative hook actions are kept
+     *                                on the agent definition and remain separate from session-level callback hooks.
      * @param  ?array  $defaultAgent  Configuration for the default agent (the built-in agent that handles
      *                                turns when no custom agent is selected). Use `excludedTools` to hide
      *                                specific tools from the default agent while keeping them available to
