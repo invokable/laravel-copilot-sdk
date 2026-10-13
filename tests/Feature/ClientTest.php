@@ -27,6 +27,7 @@ use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\ToolSearchConfig;
 
 beforeEach(function () {
@@ -633,6 +634,68 @@ describe('Client', function () {
             'manageScheduleEnabled' => true,
             'onPermissionRequest' => PermissionHandler::approveAll(),
         ]);
+
+        expect($session)->toBe($mockSession);
+    });
+
+    it('forwards custom-agent hooks separately from session callback hooks', function () {
+        $mockStdioTransport = Mockery::mock(StdioTransport::class);
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(12);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+
+        $customAgents = [
+            [
+                'name' => 'restricted-agent',
+                'prompt' => 'Review tool usage.',
+                'hooks' => [
+                    'preToolUse' => [['permissionDecision' => 'deny']],
+                ],
+            ],
+            [
+                'name' => 'other-agent',
+                'prompt' => 'Review documentation.',
+            ],
+        ];
+        $sessionHooks = new SessionHooks(onPreToolUse: fn () => null);
+
+        $mockRpcClient->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn ($params) => ($params['customAgents'] ?? null) === $customAgents
+                && ($params['hooks'] ?? null) === true))
+            ->once()
+            ->andReturn(['sessionId' => 'test-session-123']);
+
+        $mockSession = Mockery::mock(Session::class);
+        $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
+        $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
+        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerCommands')->once()->with([]);
+        $mockSession->shouldReceive('setCapabilities')->once()->with(null);
+        $mockSession->shouldReceive('registerPermissionHandler')->once();
+        $mockSession->shouldReceive('registerHooks')->once()->with($sessionHooks->toArray());
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+        $this->app->bind(Session::class, fn () => $mockSession);
+
+        $client = new Client;
+        $client->start();
+        $session = $client->createSession(new SessionConfig(
+            customAgents: $customAgents,
+            hooks: $sessionHooks,
+            onPermissionRequest: PermissionHandler::approveAll(),
+        ));
 
         expect($session)->toBe($mockSession);
     });
