@@ -424,7 +424,9 @@ describe('CopilotManager', function () {
             return $client;
         });
 
-        $manager = new CopilotManager(['builtin_plugin_directories' => ['/config/plugins']]);
+        config(['copilot.builtin_plugin_directories' => ['/config/plugins']]);
+
+        $manager = new CopilotManager(config('copilot'));
         $manager->client();
         $manager->useStdio(['builtinPluginDirectories' => ['/stdio/plugins']]);
         $manager->stop();
