@@ -34,7 +34,8 @@ final class SdkSyncAudit
             'schema_version' => 1,
             'scope' => 'Current upstream snapshot vs Laravel; names only, not RPC type contents or signatures.',
             'rpc_type_exclusions' => SDK_SYNC_RPC_TYPE_EXCLUSIONS,
-            'missing_rpc_types' => $this->rpcTypes($typescript, $python),
+            'missing_rpc_types' => $this->rpcTypes($typescript, $python, $this->enumTypes($typescript, $python)),
+            'missing_enums' => $this->missingEnums($this->enumTypes($typescript, $python)),
             'rpc_methods' => $this->rpcMethods($typescript, $python),
             'session_config' => $this->config($types, 'SessionConfig'),
             'resume_session_config' => $this->config($types, 'ResumeSessionConfig'),
@@ -144,6 +145,11 @@ final class SdkSyncAudit
         ];
     }
 
+    private function enumKey(string $name): string
+    {
+        return strtolower(ltrim($name, '_'));
+    }
+
     private function interfaceProperties(string $source, string $name, array $ancestors = []): array
     {
         if (in_array($name, $ancestors, true)) {
@@ -197,7 +203,59 @@ final class SdkSyncAudit
         ];
     }
 
-    private function rpcTypes(string $typescript, string $python): array
+    private function enumTypes(string $typescript, string $python): array
+    {
+        $javaDirectory = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
+        $enums = [];
+        $typescript = $this->withoutComments($typescript);
+
+        foreach ($this->names($typescript, '/^export\s+enum\s+(\w+)/m') as $name) {
+            $key = $this->enumKey($name);
+            $enums[$key]['name'] = $name;
+            $enums[$key]['sources']['javascript'] = 'copilot-sdk/nodejs/src/generated/rpc.ts#'.$name;
+        }
+
+        preg_match_all('/^export\s+type\s+(\w+)\s*=\s*(.*?);/ms', $typescript, $aliases, PREG_SET_ORDER);
+
+        foreach ($aliases as $alias) {
+            if (preg_match('/^(?:\s*\|\s*)?"(?:\\\\.|[^"\\\\])*"(?:\s*\|\s*"(?:\\\\.|[^"\\\\])*")*$/s', trim($alias[2]))) {
+                $name = $alias[1];
+                $key = $this->enumKey($name);
+                $enums[$key]['name'] = $name;
+                $enums[$key]['sources']['javascript'] = 'copilot-sdk/nodejs/src/generated/rpc.ts#'.$name;
+            }
+        }
+
+        foreach ($this->files($javaDirectory, 'java') as $file) {
+            $name = basename($file, '.java');
+
+            if (preg_match('/\benum\s+'.preg_quote($name, '/').'\b/', $this->read($file))) {
+                $key = $this->enumKey($name);
+                $enums[$key]['name'] ??= $name;
+                $enums[$key]['sources']['java'] = $file;
+            }
+        }
+
+        preg_match_all('/^class\s+(\w+)\s*\(\s*(?:(?:str)\s*,\s*)?Enum\s*\)\s*:/m', $python, $pythonEnums);
+
+        foreach ($pythonEnums[1] as $name) {
+            $key = $this->enumKey($name);
+            $enums[$key]['name'] ??= $name;
+            $enums[$key]['sources']['python'] = 'copilot-sdk/python/copilot/generated/rpc.py#'.$name;
+        }
+
+        foreach (['javascript', 'java'] as $language) {
+            if (array_filter($enums, fn (array $enum): bool => isset($enum['sources'][$language])) === []) {
+                throw new RuntimeException("No $language RPC enum declarations found");
+            }
+        }
+
+        ksort($enums);
+
+        return $enums;
+    }
+
+    private function rpcTypes(string $typescript, string $python, array $enums): array
     {
         $javaDirectory = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
         $declarations = [
@@ -219,13 +277,13 @@ final class SdkSyncAudit
             $name = basename($file, '.java');
             $requestName = preg_replace('/Params$/', 'Request', $name);
             $canonical = in_array($requestName, $knownNames, true) ? $requestName : $name;
-            $sources[strtolower($canonical)]['name'] = $canonical;
-            $sources[strtolower($canonical)]['sources']['java'] = $file;
+            $sources[$this->enumKey($canonical)]['name'] = $canonical;
+            $sources[$this->enumKey($canonical)]['sources']['java'] = $file;
         }
 
         foreach ($declarations as $language => $names) {
             foreach ($names as $name) {
-                $key = strtolower($name);
+                $key = $this->enumKey($name);
                 $sources[$key]['name'] ??= $name;
                 $sources[$key]['sources'][$language] = $language === 'javascript'
                     ? 'copilot-sdk/nodejs/src/generated/rpc.ts#'.$name
@@ -239,10 +297,36 @@ final class SdkSyncAudit
         $missing = [];
 
         foreach ($sources as $key => $type) {
-            if (! in_array($key, $local, true) && ! in_array($key, $excluded, true)) {
+            if (! in_array($key, $local, true) && ! in_array($key, $excluded, true) && ! isset($enums[$this->enumKey($type['name'])])) {
                 $missing[] = [
                     ...$type,
                     'expected_file' => 'src/Types/Rpc/'.$type['name'].'.php',
+                ];
+            }
+        }
+
+        return $missing;
+    }
+
+    private function missingEnums(array $enums): array
+    {
+        $local = array_map(
+            fn (string $file): string => strtolower(basename($file, '.php')),
+            $this->files('src/Enums', 'php'),
+        );
+        $missing = [];
+
+        foreach ($enums as $key => $enum) {
+            if (isset($enum['sources']['javascript']) || isset($enum['sources']['java'])) {
+                $enumKey = $this->enumKey($enum['name']);
+            } else {
+                continue;
+            }
+
+            if (! in_array($enumKey, $local, true)) {
+                $missing[] = [
+                    ...$enum,
+                    'expected_file' => 'src/Enums/'.$enum['name'].'.php',
                 ];
             }
         }

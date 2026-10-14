@@ -49,7 +49,16 @@ function withSdkSyncFixture(Closure $test): void
         export interface ExistingRequest { changedProperty: string; }
         export interface MissingRequest {}
         export interface TsOnlyRequest {}
+        export type MixedAlias = "one" | ExistingRequest;
         export interface Extension {}
+        export type ExistingEnum = "one" | "two";
+        export type MissingEnum =
+            | "one"
+            | "two";
+        export type TsOnlyEnum = "only";
+        export enum NativeEnum {
+            First = "first",
+        }
         export type JsonValue = unknown;
         export function createServerRpc(connection: MessageConnection) {
             return {
@@ -79,6 +88,14 @@ function withSdkSyncFixture(Closure $test): void
             pass
         class PythonOnlyResult:
             pass
+        class MixedAlias:
+            pass
+        class ExistingEnum(Enum):
+            pass
+        class MissingEnum(Enum):
+            pass
+        class PythonOnlyEnum(str, Enum):
+            pass
         class ServerModelsApi:
             async def list(self):
                 return await self._client.request("models.list", {})
@@ -102,8 +119,13 @@ function withSdkSyncFixture(Closure $test): void
         $write("$java/$name.java", "public class $name {}");
     }
 
+    foreach (['ExistingEnum', 'MissingEnum', 'JavaOnlyEnum'] as $name) {
+        $write("$java/$name.java", "public enum $name {}");
+    }
+
     $write('src/Types/Rpc/ExistingRequest.php', '<?php readonly class ExistingRequest {}');
     $write('src/Types/Rpc/ExtensionInfo.php', '<?php readonly class ExtensionInfo {}');
+    $write('src/Enums/ExistingEnum.php', '<?php enum ExistingEnum: string {}');
     $write('src/Rpc/ServerRpc.php', <<<'PHP'
         <?php
         class ServerRpc {
@@ -215,9 +237,19 @@ describe('SDK sync structural audit', function () {
         withSdkSyncFixture(function (SdkSyncAudit $audit): void {
             $missing = $audit->report()['missing_rpc_types'];
 
-            expect(array_column($missing, 'name'))->toBe(['JavaOnly', 'MissingRequest', 'PythonOnlyResult', 'TsOnlyRequest']);
+            expect(array_column($missing, 'name'))->toBe(['JavaOnly', 'MissingRequest', 'MixedAlias', 'PythonOnlyResult', 'TsOnlyRequest']);
             expect($missing[1]['sources'])->toHaveKeys(['java', 'javascript', 'python']);
             expect($missing[1]['expected_file'])->toBe('src/Types/Rpc/MissingRequest.php');
+        });
+    });
+
+    it('checks upstream enums separately from RPC data types and matches existing enum files', function () {
+        withSdkSyncFixture(function (SdkSyncAudit $audit): void {
+            $enums = $audit->report()['missing_enums'];
+
+            expect(array_column($enums, 'name'))->toBe(['JavaOnlyEnum', 'MissingEnum', 'NativeEnum', 'TsOnlyEnum']);
+            expect($enums[1]['sources'])->toHaveKeys(['java', 'javascript', 'python']);
+            expect($enums[1]['expected_file'])->toBe('src/Enums/MissingEnum.php');
         });
     });
 

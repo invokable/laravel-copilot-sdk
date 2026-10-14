@@ -56,6 +56,7 @@ steps:
           php .github/scripts/check-sdk-sync.php > /tmp/gh-aw/sdk-sync-audit/candidates.json
           jq '{
             missing_rpc_type_count: (.missing_rpc_types | length),
+            missing_enum_count: (.missing_enums | length),
             rpc_methods, session_config, resume_session_config, client_options, hooks
           }' /tmp/gh-aw/sdk-sync-audit/candidates.json > /tmp/gh-aw/sdk-sync-audit/summary.json
 
@@ -107,6 +108,7 @@ Inspect implementation gaps in the Laravel SDK against the prepared official SDK
 Read `/tmp/gh-aw/sdk-sync-audit/summary.json`, then selectively query `/tmp/gh-aw/sdk-sync-audit/candidates.json` with `jq`. Do not load the entire RPC type inventory into context.
 
 - `missing_rpc_types` compares Java filenames with files in `src/Types/Rpc/`, corroborates named JS/Python types, normalizes `Params`/`Request` when confirmed by JS/Python, and lists known exclusions defined at the top of `.github/scripts/check-sdk-sync.php`. It checks **file existence only**, never properties inside existing RPC types.
+- `missing_enums` separately compares Java `enum` files and JS string-literal unions / enums against `src/Enums/`; matching Python `Enum` classes corroborate those named enums. Python-only helper enums are excluded as internal generated details. Do not treat missing enum files as missing `src/Types/Rpc/` classes.
 - `rpc_methods` compares JSON-RPC method names from the public JS/Python RPC layers with `ServerRpc`, `SessionRpc`, and their reachable `Pending*` groups. Language disagreement is evidence to investigate, not proof of a gap.
 - Session configuration includes inherited `SessionConfigBase` properties. Client options check `Client` (including its traits), the default option construction in `CopilotManager::client`, and the `useStdio` filter separately, respecting Laravel aliases.
 - Hooks check both `SessionHooks` properties and the matching dispatch entries in `HasHooks`.
@@ -119,7 +121,7 @@ If any required evidence is missing, invalid, or unreadable, call `report_incomp
 ## Verify and select cohesive tasks
 
 1. Start with the method/configuration/hook summary and the existing issues. Use missing RPC files as leads into their callers and related feature, not as a list of files to port blindly. Inspect only official JS/Python/Java source and corresponding Laravel implementations necessary to verify those leads.
-2. Limit work to RPC capabilities and significant changes to `SessionConfig`, `ResumeSessionConfig`, client options, and hooks. Exclude unrelated events, documentation-only or cosmetic changes, low-impact config additions, primitive/union aliases and enums already represented in PHP, Java generator-only nested/helper types, intentional naming differences, and equivalent existing Laravel behavior. Do not inspect property drift inside existing `src/Types/Rpc` types.
+2. Limit work to RPC capabilities, missing enum implementations, and significant changes to `SessionConfig`, `ResumeSessionConfig`, client options, and hooks. Exclude unrelated events, documentation-only or cosmetic changes, low-impact config additions, primitive/non-enum union aliases, enums already represented in `src/Enums/`, Java generator-only nested/helper types, intentional naming differences, and equivalent existing Laravel behavior. Do not inspect property drift inside existing `src/Types/Rpc` types.
 3. Before declaring an omission, search the current repository for renamed/moved equivalents; the existing sync workflow and manual development may have implemented it differently. Verify the complete entry point and request/callback wiring, not merely a missing filename or identifier. A high-level Session/Client API may already provide a reported RPC capability.
 4. Exclude features that depend on JS in-process objects, browser/DOM rendering, Node-only extension execution, or other runtime/language integration impractical in Laravel/PHP. A generic JSON-RPC wrapper is not automatically impractical just because the CLI capability is UI-related: assess whether it can be used meaningfully over this SDK's transports. Do not file speculative feasibility/research tasks.
 5. Form **one end-to-end implementation task per independently useful capability**. Group its missing request/result/helper types, RPC entry points and `Pending*` methods, related settings, callbacks/traits, contracts, fakes, tests, and directly affected existing docs as needed. Never create one issue per missing file, split an indivisible feature across issues, or combine unrelated features into a catch-all sync issue.
