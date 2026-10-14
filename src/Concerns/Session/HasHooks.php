@@ -72,6 +72,23 @@ trait HasHooks
                 'subagentStop' => is_array($input) ? SubagentStopHookInput::fromArray($input) : $input,
                 default => $input,
             };
+
+            if (
+                in_array($hookType, ['errorOccurred', 'sessionEnd'], true)
+                && is_array($input)
+                && array_key_exists('error', $input)
+            ) {
+                $error = $input['error'];
+                $isErrorObject = is_object($error) || (is_array($error) && ! array_is_list($error));
+
+                if ($isErrorObject) {
+                    $message = is_object($error) ? ($error->message ?? null) : ($error['message'] ?? null);
+                    $input['error'] = is_string($message)
+                        ? $message
+                        : json_encode($error, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                }
+            }
+
             $output = $handler($input, ['sessionId' => $this->sessionId]);
 
             return $output instanceof Arrayable ? $output->toArray() : $output;

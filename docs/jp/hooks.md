@@ -280,7 +280,7 @@ Copilot::start(function (CopilotSession $session) {
 |---|---|---|
 | `reason` | `string` | `complete` / `error` / `abort` / `timeout` / `user_exit` |
 | `finalMessage` | `?string` | 最終メッセージ |
-| `error` | `?string` | 終了時エラー |
+| `error` | `?string` | 終了時エラー。ランタイムがエラーオブジェクトを渡す場合、`message` が文字列ならその値、そうでなければオブジェクトのJSON文字列 |
 
 ### `SessionEndHookOutput`
 
@@ -294,7 +294,7 @@ Copilot::start(function (CopilotSession $session) {
 
 | プロパティ | 型 | 説明 |
 |---|---|---|
-| `error` | `string` | エラーメッセージ |
+| `error` | `string` | エラーメッセージ。ランタイムがエラーオブジェクトを渡す場合、`message` が文字列ならその値、そうでなければオブジェクトのJSON文字列 |
 | `errorContext` | `string` | `model_call` / `tool_execution` / `system` / `user_input` |
 | `recoverable` | `bool` | 回復可能か |
 
