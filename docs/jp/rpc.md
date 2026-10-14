@@ -26,7 +26,52 @@ Copilot::client()->listModels();
 ### メソッドリスト
 
 ```php
+use Revolution\Copilot\Enums\CatalogCandidateKind;
+use Revolution\Copilot\Enums\CatalogSelectionDecision;
+use Revolution\Copilot\Enums\EventsReadDirection;
+use Revolution\Copilot\Enums\McpInstallationSecretStorage;
+use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
+use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
+use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
+use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
+use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 use Revolution\Copilot\Types\Rpc\HooksDiscoverRequest;
+use Revolution\Copilot\Types\Rpc\InstructionsDiscoverRequest;
+use Revolution\Copilot\Types\Rpc\InstructionsGetDiscoveryPathsRequest;
+use Revolution\Copilot\Types\Rpc\McpApplyInstallRequest;
+use Revolution\Copilot\Types\Rpc\McpApplyUninstallRequest;
+use Revolution\Copilot\Types\Rpc\McpInstallationOperationRequest;
+use Revolution\Copilot\Types\Rpc\McpInstallationsRequest;
+use Revolution\Copilot\Types\Rpc\McpPlanUninstallRequest;
+use Revolution\Copilot\Types\Rpc\McpPrepareInstallRequest;
+use Revolution\Copilot\Types\Rpc\McpRegistryCancelRequest;
+use Revolution\Copilot\Types\Rpc\McpRegistrySearchRequest;
+use Revolution\Copilot\Types\Rpc\McpServerCardReference;
+use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsRequest;
+use Revolution\Copilot\Types\Rpc\PluginsBuiltinSetRequest;
+use Revolution\Copilot\Types\Rpc\PluginsDisableRequest;
+use Revolution\Copilot\Types\Rpc\PluginsEnableRequest;
+use Revolution\Copilot\Types\Rpc\PluginsInstallRequest;
+use Revolution\Copilot\Types\Rpc\PluginsMarketplacesAddRequest;
+use Revolution\Copilot\Types\Rpc\PluginsMarketplacesBrowseRequest;
+use Revolution\Copilot\Types\Rpc\PluginsMarketplacesRefreshRequest;
+use Revolution\Copilot\Types\Rpc\PluginsMarketplacesRemoveRequest;
+use Revolution\Copilot\Types\Rpc\PluginsUninstallRequest;
+use Revolution\Copilot\Types\Rpc\PluginsUpdateRequest;
+use Revolution\Copilot\Types\Rpc\SessionsListRequest;
+use Revolution\Copilot\Types\Rpc\SessionsPruneOldRequest;
+use Revolution\Copilot\Types\Rpc\SessionsReadPersistedEventsRequest;
+use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillInstallationOperationRequest;
+use Revolution\Copilot\Types\Rpc\SkillInstallationsRequest;
+use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
+use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
+use Revolution\Copilot\Types\SessionListFilter;
 
 Copilot::client()->rpc()->ping();
 
@@ -77,8 +122,6 @@ Copilot::client()->rpc()->mcp()->reload();
 
 // MCPレジストリ検索 (experimental/internal)
 // $authInfo はホスト側で用意したJSON認証情報です。SDKはその内容を解釈しません。
-use Revolution\Copilot\Types\Rpc\McpRegistrySearchRequest;
-use Revolution\Copilot\Types\Rpc\McpRegistryCancelRequest;
 
 $registry = Copilot::client()->rpc()->mcp()->registry();
 $requestId = $registry->allocateRequestId()->requestId;
@@ -96,15 +139,6 @@ $cancelResult = $registry->cancel(new McpRegistryCancelRequest(requestId: $unuse
 
 // MCPカタログ経由のインストール / アンインストール (experimental)
 // 結果は kind を持つ判別ユニオンの連想配列です。kind を確認してから各フィールドを参照してください。
-use Revolution\Copilot\Enums\McpInstallationSecretStorage;
-use Revolution\Copilot\Types\Rpc\CatalogClientContract;
-use Revolution\Copilot\Types\Rpc\McpApplyInstallRequest;
-use Revolution\Copilot\Types\Rpc\McpApplyUninstallRequest;
-use Revolution\Copilot\Types\Rpc\McpInstallationOperationRequest;
-use Revolution\Copilot\Types\Rpc\McpInstallationsRequest;
-use Revolution\Copilot\Types\Rpc\McpPlanUninstallRequest;
-use Revolution\Copilot\Types\Rpc\McpPrepareInstallRequest;
-use Revolution\Copilot\Types\Rpc\McpServerCardReference;
 
 $mcp = Copilot::client()->rpc()->mcp();
 $contract = new CatalogClientContract(
@@ -166,8 +200,6 @@ if (($uninstallPlan['kind'] ?? null) === 'outcome'
 }
 
 // GitHub MCPツールを除外できるか判定 (experimental/internal)
-use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
-use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsRequest;
 
 $exclude = Copilot::client()->rpc()->mcp()->shouldExcludeGitHubTools(
     new McpShouldExcludeGitHubToolsRequest(
@@ -199,11 +231,6 @@ Copilot::client()->rpc()->sessionFs()->setProvider(new SessionFsSetProviderReque
 $sessions = Copilot::client()->rpc()->sessions();
 
 // sessions (experimental: 永続化済みセッションの照会・管理)
-use Revolution\Copilot\Enums\EventsReadDirection;
-use Revolution\Copilot\Types\Rpc\SessionsListRequest;
-use Revolution\Copilot\Types\Rpc\SessionsReadPersistedEventsRequest;
-use Revolution\Copilot\Types\Rpc\SessionsPruneOldRequest;
-use Revolution\Copilot\Types\SessionListFilter;
 
 $listed = $sessions->list(new SessionsListRequest(
     source: 'local',
@@ -272,11 +299,6 @@ Copilot::client()->rpc()->skills()->config()->setSkillDisabled(
 );
 
 // catalog.search → catalog.select でスキル候補を選択 (experimental)
-use Revolution\Copilot\Types\Rpc\CatalogClientContract;
-use Revolution\Copilot\Enums\CatalogCandidateKind;
-use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
-use Revolution\Copilot\Types\Rpc\CatalogSelectionDecision;
-use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 
 $contract = new CatalogClientContract(1, ['catalog-selection', 'ai-skill-installation']);
 $catalog = Copilot::client()->rpc()->catalog();
@@ -293,13 +315,6 @@ $selection = $catalog->select(new CatalogSelectionRequest(
 ));
 
 // スキルのインストール計画と適用
-use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
-use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
-use Revolution\Copilot\Types\Rpc\SkillInstallationOperationRequest;
-use Revolution\Copilot\Types\Rpc\SkillInstallationsRequest;
-use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
-use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
-use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
 
 $skills = Copilot::client()->rpc()->skills();
 if ($selection['kind'] === 'selected') {
@@ -343,7 +358,6 @@ $removed = $skills->applyUninstall(new SkillApplyUninstallRequest(
 
 // skills: スキル作成可能ディレクトリを取得 (experimental)
 // スキルを配置するとランタイムが認識するディレクトリの一覧
-use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
 
 $result = Copilot::client()->rpc()->skills()->getDiscoveryPaths();
 // $result->paths は SkillDiscoveryPath の配列
@@ -356,16 +370,6 @@ $result = Copilot::client()->rpc()->skills()->getDiscoveryPaths(
 );
 
 // plugins (サーバースコープのプラグイン管理)
-use Revolution\Copilot\Types\Rpc\PluginsInstallRequest;
-use Revolution\Copilot\Types\Rpc\PluginsUninstallRequest;
-use Revolution\Copilot\Types\Rpc\PluginsUpdateRequest;
-use Revolution\Copilot\Types\Rpc\PluginsEnableRequest;
-use Revolution\Copilot\Types\Rpc\PluginsDisableRequest;
-use Revolution\Copilot\Types\Rpc\PluginsBuiltinSetRequest;
-use Revolution\Copilot\Types\Rpc\PluginsMarketplacesBrowseRequest;
-use Revolution\Copilot\Types\Rpc\PluginsMarketplacesRefreshRequest;
-use Revolution\Copilot\Types\Rpc\PluginsMarketplacesRemoveRequest;
-use Revolution\Copilot\Types\Rpc\PluginsMarketplacesAddRequest;
 
 $plugins = Copilot::client()->rpc()->plugins();
 $result = $plugins->list(); // 返り値は PluginList
@@ -393,7 +397,6 @@ $marketplaces->refresh(new PluginsMarketplacesRefreshRequest(name: 'official'));
 
 // agents (experimental: カスタムエージェント管理)
 // カスタムエージェントの探索
-use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
 
 $result = Copilot::client()->rpc()->agents()->discover();
 // $result->agents は AgentInfo の配列
@@ -403,7 +406,6 @@ $result = Copilot::client()->rpc()->agents()->discover(new AgentsDiscoverRequest
 ));
 
 // エージェント作成可能ディレクトリを取得 (experimental)
-use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
 
 $result = Copilot::client()->rpc()->agents()->getDiscoveryPaths();
 // $result->paths は AgentDiscoveryPath の配列
@@ -416,16 +418,14 @@ $result = Copilot::client()->rpc()->agents()->getDiscoveryPaths(
 
 // instructions (experimental: インストラクション管理)
 // インストラクションの探索
-use Revolution\Copilot\Types\Rpc\InstructionsDiscoverRequest as ServerInstructionsDiscoverRequest;
 
 $result = Copilot::client()->rpc()->instructions()->discover();
 // $result->sources は InstructionSource の配列
 $result = Copilot::client()->rpc()->instructions()->discover(
-    new ServerInstructionsDiscoverRequest(projectPaths: ['/path/to/project'])
+    new InstructionsDiscoverRequest(projectPaths: ['/path/to/project'])
 );
 
 // インストラクション作成可能ファイル/ディレクトリを取得 (experimental)
-use Revolution\Copilot\Types\Rpc\InstructionsGetDiscoveryPathsRequest;
 
 $result = Copilot::client()->rpc()->instructions()->getDiscoveryPaths();
 // $result->paths は InstructionDiscoveryPath の配列
