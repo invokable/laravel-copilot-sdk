@@ -506,7 +506,7 @@ class Client implements CopilotClient
      *
      * Custom-agent declarative hooks are forwarded with their agent definition; top-level hooks are session callbacks.
      *
-     * @param  SessionConfig|array{session_id?: string, name?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  SessionConfig|array{session_id?: string, name?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array, interactiveUser?: bool}  $config
      *
      * @throws JsonRpcException
      */
@@ -626,6 +626,7 @@ class Client implements CopilotClient
                 'name' => $config['name'] ?? null,
                 'allowedModels' => $config['allowedModels'] ?? null,
                 'clientName' => $config['clientName'] ?? null,
+                'interactiveUser' => $config['interactiveUser'] ?? null,
                 'model' => $config['model'] ?? null,
                 'reasoningEffort' => $config['reasoningEffort'] ?? null,
                 'reasoningSummary' => $config['reasoningSummary'] ?? null,
@@ -804,7 +805,7 @@ class Client implements CopilotClient
     /**
      * Resume an existing session.
      *
-     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array}  $config
+     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array, interactiveUser?: bool}  $config
      *
      * @throws JsonRpcException
      */
@@ -905,6 +906,7 @@ class Client implements CopilotClient
                 'sessionId' => $sessionId,
                 'allowedModels' => $config['allowedModels'] ?? null,
                 'clientName' => $config['clientName'] ?? null,
+                'interactiveUser' => $config['interactiveUser'] ?? null,
                 'model' => $config['model'] ?? null,
                 'reasoningEffort' => $config['reasoningEffort'] ?? null,
                 'reasoningSummary' => $config['reasoningSummary'] ?? null,

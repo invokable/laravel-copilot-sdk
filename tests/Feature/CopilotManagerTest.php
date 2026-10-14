@@ -228,7 +228,8 @@ describe('CopilotManager', function () {
         $mockClient = Mockery::mock(CopilotClient::class);
         $mockClient->shouldReceive('start')->once();
         $mockClient->shouldReceive('createSession')
-            ->with(Mockery::on(fn ($config) => isset($config->toArray()['model'])))
+            ->with(Mockery::on(fn ($config) => isset($config->toArray()['model'])
+                && ($config->toArray()['interactiveUser'] ?? null) === true))
             ->once()
             ->andReturn($mockSession);
         $mockClient->shouldReceive('stop')->andReturn([]);
@@ -236,7 +237,7 @@ describe('CopilotManager', function () {
         $this->app->bind(Client::class, fn () => $mockClient);
 
         $manager = new CopilotManager(['model' => 'gpt-4']);
-        $session = $manager->createSession();
+        $session = $manager->createSession(['interactiveUser' => true]);
 
         expect($session)->toBe($mockSession);
 
