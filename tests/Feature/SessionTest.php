@@ -548,6 +548,100 @@ describe('Session', function () {
             ->and($result)->toBe(['additionalContext' => 'Prefer a safer command']);
     });
 
+    describe('error hook payload normalization', function () {
+        it('passes the message from error objects to both error hooks', function (string $hookType) {
+            $mockClient = Mockery::mock(JsonRpcClient::class);
+            $session = new Session('test-session', $mockClient);
+            $receivedInput = null;
+            $hookName = $hookType === 'errorOccurred' ? 'onErrorOccurred' : 'onSessionEnd';
+
+            $session->registerHooks([
+                $hookName => function (array $input) use (&$receivedInput): null {
+                    $receivedInput = $input;
+
+                    return null;
+                },
+            ]);
+
+            $session->handleHooksInvoke($hookType, [
+                'error' => ['name' => 'Error', 'message' => 'Request failed'],
+                'reason' => 'error',
+            ]);
+
+            expect($receivedInput)->toBe([
+                'error' => 'Request failed',
+                'reason' => 'error',
+            ]);
+        })->with(['errorOccurred', 'sessionEnd']);
+
+        it('serializes error objects without a string message', function (string $hookType, array $error, string $expected) {
+            $mockClient = Mockery::mock(JsonRpcClient::class);
+            $session = new Session('test-session', $mockClient);
+            $receivedInput = null;
+            $hookName = $hookType === 'errorOccurred' ? 'onErrorOccurred' : 'onSessionEnd';
+
+            $session->registerHooks([
+                $hookName => function (array $input) use (&$receivedInput): null {
+                    $receivedInput = $input;
+
+                    return null;
+                },
+            ]);
+
+            $session->handleHooksInvoke($hookType, ['error' => $error]);
+
+            expect($receivedInput)->toBe(['error' => $expected]);
+        })->with([
+            'errorOccurred with no message' => ['errorOccurred', ['name' => 'Error'], '{"name":"Error"}'],
+            'sessionEnd with no message' => ['sessionEnd', ['name' => 'Error'], '{"name":"Error"}'],
+            'errorOccurred with a non-string message' => ['errorOccurred', ['message' => 500], '{"message":500}'],
+            'sessionEnd with a non-string message' => ['sessionEnd', ['message' => 500], '{"message":500}'],
+        ]);
+
+        it('leaves non-object errors unchanged for both error hooks', function (string $hookType, mixed $error) {
+            $mockClient = Mockery::mock(JsonRpcClient::class);
+            $session = new Session('test-session', $mockClient);
+            $receivedInput = null;
+            $hookName = $hookType === 'errorOccurred' ? 'onErrorOccurred' : 'onSessionEnd';
+
+            $session->registerHooks([
+                $hookName => function (array $input) use (&$receivedInput): null {
+                    $receivedInput = $input;
+
+                    return null;
+                },
+            ]);
+
+            $session->handleHooksInvoke($hookType, ['error' => $error]);
+
+            expect($receivedInput)->toBe(['error' => $error]);
+        })->with([
+            'errorOccurred string' => ['errorOccurred', 'Request failed'],
+            'sessionEnd null' => ['sessionEnd', null],
+            'errorOccurred list' => ['errorOccurred', ['first', 'second']],
+            'sessionEnd integer' => ['sessionEnd', 500],
+        ]);
+
+        it('leaves error objects unchanged for other hook types', function () {
+            $mockClient = Mockery::mock(JsonRpcClient::class);
+            $session = new Session('test-session', $mockClient);
+            $receivedInput = null;
+            $input = ['error' => ['name' => 'Error', 'message' => 'Request failed']];
+
+            $session->registerHooks([
+                'onPostToolUseFailure' => function (array $input) use (&$receivedInput): null {
+                    $receivedInput = $input;
+
+                    return null;
+                },
+            ]);
+
+            $session->handleHooksInvoke('postToolUseFailure', $input);
+
+            expect($receivedInput)->toBe($input);
+        });
+    });
+
     it('invokes the sub-agent start hook with typed input and serializes its output', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $session = new Session('parent-session', $mockClient);
