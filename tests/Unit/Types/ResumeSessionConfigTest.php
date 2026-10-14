@@ -27,6 +27,19 @@ describe('ResumeSessionConfig', function () {
             ->and($config->toArray())->toHaveKey('allowTranscriptRecovery', false);
     });
 
+    it('round-trips interactive user configuration while preserving explicit false', function () {
+        $default = new ResumeSessionConfig;
+        $enabled = ResumeSessionConfig::fromArray(['interactiveUser' => true]);
+        $explicitFalse = ResumeSessionConfig::fromArray(['interactiveUser' => false]);
+
+        expect($default->interactiveUser)->toBeNull()
+            ->and($default->toArray())->not->toHaveKey('interactiveUser')
+            ->and($enabled->interactiveUser)->toBeTrue()
+            ->and($enabled->toArray())->toHaveKey('interactiveUser', true)
+            ->and($explicitFalse->interactiveUser)->toBeFalse()
+            ->and($explicitFalse->toArray())->toHaveKey('interactiveUser', false);
+    });
+
     it('supports the GitHub cache store option', function () {
         $default = new ResumeSessionConfig;
         $fromArray = ResumeSessionConfig::fromArray(['enableGitHubCacheStore' => true]);

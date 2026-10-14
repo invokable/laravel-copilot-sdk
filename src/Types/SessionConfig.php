@@ -233,6 +233,8 @@ readonly class SessionConfig implements Arrayable
      *                                             Required when the client `sessionFs` option is set; it is called before the runtime request so
      *                                             the provider can serve `sessionFs.*` callbacks for that session.
      * @param  ?string  $name  Optional local-session name. It must be non-empty, have no leading or trailing whitespace, be at most 100 UTF-16 code units, and contain no control characters or double quotes. Naming a session makes it persistent immediately; cloud sessions reject it.
+     * @param  ?bool  $interactiveUser  Declares that a human drives this session's conversation. Enables user-message analysis telemetry while excluding automated messages.
+     *                                  Defaults to false for SDK sessions; ignored for cloud sessions and when resuming an active session.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -339,6 +341,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $agentDirectories = null,
         public ?array $hookDirectories = null,
         public ?Closure $createSessionFsProvider = null,
+        public ?bool $interactiveUser = null,
     ) {}
 
     /**
@@ -551,6 +554,7 @@ readonly class SessionConfig implements Arrayable
             skillProvider: $data['skillProvider'] ?? null,
             sessionFsProvider: $data['sessionFsProvider'] ?? null,
             name: $data['name'] ?? null,
+            interactiveUser: $data['interactiveUser'] ?? null,
         );
     }
 
@@ -744,6 +748,7 @@ readonly class SessionConfig implements Arrayable
             'sandbox' => $this->sandbox instanceof SandboxConfig ? $this->sandbox->toArray() : $this->sandbox,
             'allowedModels' => $this->allowedModels,
             'name' => $this->name,
+            'interactiveUser' => $this->interactiveUser,
         ], fn ($value) => $value !== null);
     }
 }

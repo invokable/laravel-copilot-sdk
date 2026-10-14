@@ -39,6 +39,10 @@ $config = new SessionConfig(
 
     clientName: 'my-app',
 
+    // 人が会話を行うセッションとして、ユーザーメッセージ分析テレメトリーを有効化（SDKの既定値: false）
+    // 自動メッセージは対象外。cloudセッションおよび実行中セッションの再開時は無視される。
+    interactiveUser: true,
+
     // 推論レベル。対応しているモデルでのみ設定可能。
     reasoningEffort: ReasoningEffort::HIGH,
 

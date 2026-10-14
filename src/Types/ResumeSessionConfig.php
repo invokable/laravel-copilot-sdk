@@ -190,6 +190,8 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?Closure  $createSessionFsProvider  Factory `fn (CopilotSession $session): SessionFsProvider` invoked for each created or resumed session.
      *                                             Required when the client `sessionFs` option is set; it is called before the runtime request so
      *                                             the provider can serve `sessionFs.*` callbacks for that session.
+     * @param  ?bool  $interactiveUser  Declares that a human drives this session's conversation. Enables user-message analysis telemetry while excluding automated messages.
+     *                                  Defaults to false for SDK sessions; ignored for cloud sessions and when resuming an active session.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -293,6 +295,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $agentDirectories = null,
         public ?array $hookDirectories = null,
         public ?Closure $createSessionFsProvider = null,
+        public ?bool $interactiveUser = null,
     ) {}
 
     /**
@@ -500,6 +503,7 @@ readonly class ResumeSessionConfig implements Arrayable
             allowedModels: $data['allowedModels'] ?? null,
             skillProvider: $data['skillProvider'] ?? null,
             sessionFsProvider: $data['sessionFsProvider'] ?? null,
+            interactiveUser: $data['interactiveUser'] ?? null,
         );
     }
 
@@ -677,6 +681,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'diagnostics' => $this->diagnostics,
             'sandbox' => $this->sandbox instanceof SandboxConfig ? $this->sandbox->toArray() : $this->sandbox,
             'allowedModels' => $this->allowedModels,
+            'interactiveUser' => $this->interactiveUser,
         ], fn ($value) => $value !== null);
     }
 }
