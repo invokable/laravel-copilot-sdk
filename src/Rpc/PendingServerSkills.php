@@ -9,6 +9,7 @@ use Revolution\Copilot\Types\Rpc\ServerSkillList;
 use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillDiscoveryPathList;
+use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillsDiscoverRequest;
@@ -94,6 +95,25 @@ class PendingServerSkills
             : SkillPlanInstallRequest::fromArray($params))->toArray();
 
         return $this->client->request('skills.planInstall', $paramsArray);
+    }
+
+    /**
+     * Creates a side-effect-free install plan from a verified materialisation reference.
+     *
+     * The contract must require both `skill-confirmed-installation` and
+     * `skill-reference-installation`.
+     *
+     * @return array<string, mixed>
+     *
+     * @experimental
+     */
+    public function planInstallFromReference(SkillPlanInstallFromReferenceRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof SkillPlanInstallFromReferenceRequest
+            ? $params
+            : SkillPlanInstallFromReferenceRequest::fromArray($params))->toArray();
+
+        return $this->client->request('skills.planInstallFromReference', $paramsArray);
     }
 
     /**
