@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Revolution\Copilot\Enums\CatalogSelectionDecision;
 
 /**
  * Completes a catalog candidate selection interaction.

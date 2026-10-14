@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Revolution\Copilot\Types\Rpc;
+namespace Revolution\Copilot\Enums;
 
 /**
  * Terminal outcome for a catalog selection interaction.

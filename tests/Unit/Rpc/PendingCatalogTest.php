@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\CatalogSelectionDecision;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingCatalog;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
-use Revolution\Copilot\Types\Rpc\CatalogSelectionDecision;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionResult;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionSelected;
