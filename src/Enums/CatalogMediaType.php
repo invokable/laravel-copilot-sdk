@@ -19,4 +19,13 @@ enum CatalogMediaType: string
 
     /** An AI skill card. Representable and searchable, but typed non-installable. */
     case AiSkill = 'application/ai-skill';
+
+    /** An Agent Plugin descriptor. */
+    case GitHubCopilotPlugin = 'application/vnd.github.copilot-plugin';
+
+    /** An Anthropic Claude plugin descriptor, gated by `agent-plugin-formats`. */
+    case AnthropicClaudePluginJson = 'application/vnd.anthropic.claude-plugin+json';
+
+    /** A portable Agent Plugin descriptor, gated by `agent-plugin-formats`. */
+    case AgentPluginJson = 'application/agent-plugin+json';
 }

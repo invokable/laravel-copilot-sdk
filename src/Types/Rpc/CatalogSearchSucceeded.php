@@ -16,7 +16,7 @@ readonly class CatalogSearchSucceeded implements Arrayable
     public string $kind;
 
     /**
-     * @param  CatalogMcpServerCandidate[]|CatalogAiSkillCandidate[]  $candidates
+     * @param  CatalogMcpServerCandidate[]|CatalogAiSkillCandidate[]|CatalogAgentPluginCandidate[]  $candidates
      */
     public function __construct(
         public string $searchId,
@@ -30,9 +30,11 @@ readonly class CatalogSearchSucceeded implements Arrayable
     public static function fromArray(array $data): static
     {
         $candidates = array_map(
-            fn (array $c) => ($c['kind'] ?? '') === 'mcp-server'
-                ? CatalogMcpServerCandidate::fromArray($c)
-                : CatalogAiSkillCandidate::fromArray($c),
+            fn (array $c): CatalogMcpServerCandidate|CatalogAiSkillCandidate|CatalogAgentPluginCandidate => match ($c['kind'] ?? '') {
+                'mcp-server' => CatalogMcpServerCandidate::fromArray($c),
+                'plugin' => CatalogAgentPluginCandidate::fromArray($c),
+                default => CatalogAiSkillCandidate::fromArray($c),
+            },
             $data['candidates'] ?? [],
         );
 

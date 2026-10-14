@@ -449,6 +449,14 @@ $env = Copilot::client()->rpc()->environments()->get(['environmentId' => 'env-id
 Copilot::client()->rpc()->environments()->delete(['environmentId' => 'env-id']);
 ```
 
+### Agent Plugin catalog候補
+
+`catalog.search` で `agent-plugin-discovery` を要求し、検索対象の `kinds` に `plugin` を指定すると Agent Plugin 候補を取得できます。標準形式 `application/vnd.github.copilot-plugin` 以外の `application/vnd.anthropic.claude-plugin+json` と `application/agent-plugin+json` を受け取るには、`agent-plugin-discovery` に加えて `agent-plugin-formats` を要求してください。
+
+`agent-plugin-confirmed-installation` はインストールの可否とレビュー用プランを返す capability で、これも `agent-plugin-discovery` と併せて要求します。許可すると候補に `installability` が含まれ、値は `installable`、`install-data-unavailable`、`feature-disabled`、`not-installable-kind` のいずれかです。`installPlan` は `installability` が `installable` の場合にだけ含まれます。プランは確認用のデータであり、この catalog RPC がインストールを実行することはありません。
+
+プランの `sources` は優先順に `materialization`、`marketplace`、`repository` の候補を含みます。Marketplace には名前とリポジトリ、直接の Repository にはリポジトリと任意のパスが記録されます。利用側で内容を確認してから次の操作を決めてください。
+
 ### Runtime・Host のライフサイクル（experimental）
 
 `host.dispose()` は `hostId` を指定してホストリスナーを破棄します。

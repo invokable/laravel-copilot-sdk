@@ -20,6 +20,12 @@ enum CatalogCapability: string
     /** Understands `application/ai-skill` candidates as discovery-only and typed non-installable. */
     case AiSkillDiscovery = 'ai-skill-discovery';
 
+    /** Understands Agent Plugin catalog candidates. */
+    case AgentPluginDiscovery = 'agent-plugin-discovery';
+
+    /** Understands Agent Plugin formats beyond `application/vnd.github.copilot-plugin`. */
+    case AgentPluginFormats = 'agent-plugin-formats';
+
     /** Understands side-effect-free MCP install-plan requests, results, and plan handles. */
     case McpInstallPlanning = 'mcp-install-planning';
 
@@ -28,4 +34,7 @@ enum CatalogCapability: string
 
     /** Understands versioned candidate trust snapshots. Protocol-3 callers must require this capability before the runtime adds the optional snapshot field. */
     case TrustSnapshot = 'trust-snapshot';
+
+    /** Understands reviewable Agent Plugin installability and install-plan fields. */
+    case AgentPluginConfirmedInstallation = 'agent-plugin-confirmed-installation';
 }
