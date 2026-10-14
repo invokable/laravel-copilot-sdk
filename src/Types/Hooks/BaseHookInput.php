@@ -17,11 +17,17 @@ readonly class BaseHookInput implements Arrayable
      *                             sub-agent lifecycle hooks use the parent session ID, matching invocation session ID.
      * @param  int  $timestamp  Unix timestamp in milliseconds when the hook was triggered
      * @param  string  $cwd  Current working directory
+     * @param  ?string  $agentId  Sub-agent actor ID, when available
+     * @param  ?string  $agentType  Sub-agent type, when available
+     * @param  ?string  $parentAgentId  Immediate parent actor ID, when available
      */
     public function __construct(
         public string $sessionId,
         public int $timestamp,
         public string $cwd,
+        public ?string $agentId = null,
+        public ?string $agentType = null,
+        public ?string $parentAgentId = null,
     ) {}
 
     /**
@@ -33,6 +39,9 @@ readonly class BaseHookInput implements Arrayable
             sessionId: Arr::string($data, 'sessionId', ''),
             timestamp: Arr::integer($data, 'timestamp', 0),
             cwd: Arr::string($data, 'cwd', ''),
+            agentId: $data['agentId'] ?? null,
+            agentType: $data['agentType'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
         );
     }
 
@@ -41,10 +50,13 @@ readonly class BaseHookInput implements Arrayable
      */
     public function toArray(): array
     {
-        return [
+        return array_filter([
             'sessionId' => $this->sessionId,
             'timestamp' => $this->timestamp,
             'cwd' => $this->cwd,
-        ];
+            'agentId' => $this->agentId,
+            'agentType' => $this->agentType,
+            'parentAgentId' => $this->parentAgentId,
+        ], fn ($value) => $value !== null);
     }
 }

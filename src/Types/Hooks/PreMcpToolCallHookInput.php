@@ -23,6 +23,9 @@ readonly class PreMcpToolCallHookInput extends BaseHookInput
      * @param  mixed  $arguments  Arguments to be passed to the tool
      * @param  ?string  $toolCallId  Optional tool call identifier
      * @param  ?array<string, mixed>  $_meta  Optional metadata associated with the tool call
+     * @param  ?string  $agentId  Sub-agent actor ID, when available
+     * @param  ?string  $agentType  Sub-agent type, when available
+     * @param  ?string  $parentAgentId  Immediate parent actor ID, when available
      */
     public function __construct(
         string $sessionId,
@@ -33,10 +36,13 @@ readonly class PreMcpToolCallHookInput extends BaseHookInput
         public mixed $arguments,
         public ?string $toolCallId = null,
         public ?array $_meta = null,
+        ?string $agentId = null,
+        ?string $agentType = null,
+        ?string $parentAgentId = null,
     ) {
         // Note: BaseHookInput expects 'cwd' but this hook uses 'workingDirectory'
         // We pass workingDirectory as cwd to the parent for consistency
-        parent::__construct($sessionId, $timestamp, $workingDirectory);
+        parent::__construct($sessionId, $timestamp, $workingDirectory, $agentId, $agentType, $parentAgentId);
     }
 
     /**
@@ -53,6 +59,9 @@ readonly class PreMcpToolCallHookInput extends BaseHookInput
             arguments: $data['arguments'] ?? null,
             toolCallId: $data['toolCallId'] ?? null,
             _meta: $data['_meta'] ?? null,
+            agentId: $data['agentId'] ?? null,
+            agentType: $data['agentType'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
         );
     }
 
@@ -70,6 +79,9 @@ readonly class PreMcpToolCallHookInput extends BaseHookInput
             'arguments' => $this->arguments,
             'toolCallId' => $this->toolCallId,
             '_meta' => $this->_meta,
+            'agentId' => $this->agentId,
+            'agentType' => $this->agentType,
+            'parentAgentId' => $this->parentAgentId,
         ], fn ($value) => $value !== null);
     }
 }

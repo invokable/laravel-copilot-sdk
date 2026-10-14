@@ -20,9 +20,10 @@ readonly class SubagentStopHookInput extends SubagentStartHookInput
      * @param  ?string  $agentDisplayName  Optional display name
      * @param  ?string  $agentDescription  Optional description
      * @param  ?string  $agentId  Sub-agent instance identifier
-     * @param  string  $agentType  Sub-agent type
+     * @param  ?string  $agentType  Sub-agent type, when available
      * @param  string  $stopReason  Why the sub-agent stopped
      * @param  string  $response  Last assistant message before any hook rewrite
+     * @param  ?string  $parentAgentId  Immediate parent actor ID, when available
      */
     public function __construct(
         string $sessionId,
@@ -32,10 +33,11 @@ readonly class SubagentStopHookInput extends SubagentStartHookInput
         string $agentName,
         ?string $agentDisplayName = null,
         ?string $agentDescription = null,
-        public ?string $agentId = null,
-        public string $agentType = '',
+        ?string $agentId = null,
+        ?string $agentType = null,
         public string $stopReason = 'end_turn',
         public string $response = '',
+        ?string $parentAgentId = null,
     ) {
         parent::__construct(
             $sessionId,
@@ -45,6 +47,9 @@ readonly class SubagentStopHookInput extends SubagentStartHookInput
             $agentName,
             $agentDisplayName,
             $agentDescription,
+            $agentId,
+            $agentType,
+            $parentAgentId,
         );
     }
 
@@ -59,9 +64,10 @@ readonly class SubagentStopHookInput extends SubagentStartHookInput
             agentDisplayName: $data['agentDisplayName'] ?? null,
             agentDescription: $data['agentDescription'] ?? null,
             agentId: $data['agentId'] ?? null,
-            agentType: Arr::string($data, 'agentType', ''),
+            agentType: $data['agentType'] ?? null,
             stopReason: Arr::string($data, 'stopReason', 'end_turn'),
             response: Arr::string($data, 'response', ''),
+            parentAgentId: $data['parentAgentId'] ?? null,
         );
     }
 
@@ -69,8 +75,6 @@ readonly class SubagentStopHookInput extends SubagentStartHookInput
     {
         return array_filter([
             ...parent::toArray(),
-            'agentId' => $this->agentId,
-            'agentType' => $this->agentType,
             'stopReason' => $this->stopReason,
             'response' => $this->response,
         ], fn ($value) => $value !== null);

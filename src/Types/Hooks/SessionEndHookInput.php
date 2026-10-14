@@ -18,6 +18,9 @@ readonly class SessionEndHookInput extends BaseHookInput
      * @param  string  $reason  Reason for ending: "complete", "error", "abort", "timeout", or "user_exit"
      * @param  ?string  $finalMessage  Final message, if any
      * @param  ?string  $error  Error message, if any
+     * @param  ?string  $agentId  Sub-agent actor ID, when available
+     * @param  ?string  $agentType  Sub-agent type, when available
+     * @param  ?string  $parentAgentId  Immediate parent actor ID, when available
      */
     public function __construct(
         string $sessionId,
@@ -26,8 +29,11 @@ readonly class SessionEndHookInput extends BaseHookInput
         public string $reason,
         public ?string $finalMessage = null,
         public ?string $error = null,
+        ?string $agentId = null,
+        ?string $agentType = null,
+        ?string $parentAgentId = null,
     ) {
-        parent::__construct($sessionId, $timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd, $agentId, $agentType, $parentAgentId);
     }
 
     /**
@@ -42,6 +48,9 @@ readonly class SessionEndHookInput extends BaseHookInput
             reason: Arr::string($data, 'reason', 'complete'),
             finalMessage: $data['finalMessage'] ?? null,
             error: $data['error'] ?? null,
+            agentId: $data['agentId'] ?? null,
+            agentType: $data['agentType'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
         );
     }
 

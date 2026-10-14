@@ -15,6 +15,7 @@ describe('SubagentStopHookInput', function () {
             'agentName' => 'reviewer',
             'agentId' => 'agent-1',
             'agentType' => 'general-purpose',
+            'parentAgentId' => 'agent-0',
             'stopReason' => 'end_turn',
             'response' => 'Review complete',
         ]);
@@ -24,10 +25,11 @@ describe('SubagentStopHookInput', function () {
                 'sessionId' => 'parent-session',
                 'timestamp' => 1706600000,
                 'cwd' => '/workspace',
-                'transcriptPath' => '/tmp/agent.jsonl',
-                'agentName' => 'reviewer',
                 'agentId' => 'agent-1',
                 'agentType' => 'general-purpose',
+                'parentAgentId' => 'agent-0',
+                'transcriptPath' => '/tmp/agent.jsonl',
+                'agentName' => 'reviewer',
                 'stopReason' => 'end_turn',
                 'response' => 'Review complete',
             ]);

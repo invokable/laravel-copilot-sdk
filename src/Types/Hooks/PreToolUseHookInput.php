@@ -17,6 +17,9 @@ readonly class PreToolUseHookInput extends BaseHookInput
      * @param  string  $cwd  Current working directory
      * @param  string  $toolName  Name of the tool to be executed
      * @param  mixed  $toolArgs  Arguments to be passed to the tool
+     * @param  ?string  $agentId  Sub-agent actor ID, when available
+     * @param  ?string  $agentType  Sub-agent type, when available
+     * @param  ?string  $parentAgentId  Immediate parent actor ID, when available
      */
     public function __construct(
         string $sessionId,
@@ -24,8 +27,11 @@ readonly class PreToolUseHookInput extends BaseHookInput
         string $cwd,
         public string $toolName,
         public mixed $toolArgs,
+        ?string $agentId = null,
+        ?string $agentType = null,
+        ?string $parentAgentId = null,
     ) {
-        parent::__construct($sessionId, $timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd, $agentId, $agentType, $parentAgentId);
     }
 
     /**
@@ -39,6 +45,9 @@ readonly class PreToolUseHookInput extends BaseHookInput
             cwd: $data['cwd'] ?? '',
             toolName: Arr::string($data, 'toolName', ''),
             toolArgs: $data['toolArgs'] ?? null,
+            agentId: $data['agentId'] ?? null,
+            agentType: $data['agentType'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
         );
     }
 
