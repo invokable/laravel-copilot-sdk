@@ -8,34 +8,32 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\SessionFSErrorCode;
 
 /**
- * Structured filesystem error returned by a SessionFs provider callback.
+ * Describes a filesystem error.
  */
-readonly class SessionFsError implements Arrayable
+readonly class SessionFSError implements Arrayable
 {
+    /**
+     * @param  SessionFSErrorCode  $code  Error classification
+     * @param  ?string  $message  Free-form detail about the error, for logging/diagnostics
+     */
     public function __construct(
-        public SessionFSErrorCode|string $code,
+        public SessionFSErrorCode $code,
         public ?string $message = null,
-        public ?bool $writeChanged = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
-        $code = $data['code'] ?? SessionFSErrorCode::UNKNOWN->value;
-        $code = is_string($code) ? (SessionFSErrorCode::tryFrom($code) ?? $code) : SessionFSErrorCode::UNKNOWN;
-
         return new self(
-            code: $code,
+            code: SessionFSErrorCode::from($data['code']),
             message: $data['message'] ?? null,
-            writeChanged: isset($data['writeChanged']) ? (bool) $data['writeChanged'] : null,
         );
     }
 
     public function toArray(): array
     {
         return array_filter([
-            'code' => $this->code instanceof SessionFSErrorCode ? $this->code->value : $this->code,
+            'code' => $this->code->value,
             'message' => $this->message,
-            'writeChanged' => $this->writeChanged,
-        ], static fn ($value) => $value !== null);
+        ], fn ($v) => $v !== null);
     }
 }
