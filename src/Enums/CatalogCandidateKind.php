@@ -16,4 +16,7 @@ enum CatalogCandidateKind: string
 
     /** An AI skill, which is discoverable but not installable through this surface. */
     case AiSkill = 'ai-skill';
+
+    /** An Agent Plugin, which can include a reviewable install plan. */
+    case Plugin = 'plugin';
 }
