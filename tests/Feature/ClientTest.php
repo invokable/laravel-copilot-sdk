@@ -683,6 +683,36 @@ describe('Client', function () {
             ->and($resumed->id())->toBe('resumed-session');
     });
 
+    it('forwards interactive user configuration when creating and resuming sessions', function () {
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn (array $params) => ($params['interactiveUser'] ?? null) === true))
+            ->once()
+            ->andReturn(['sessionId' => 'created-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.resume', Mockery::on(fn (array $params) => array_key_exists('interactiveUser', $params)
+                && $params['interactiveUser'] === false))
+            ->once()
+            ->andReturn(['sessionId' => 'resumed-session']);
+
+        $client = new Client;
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $created = $client->createSession(new SessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            interactiveUser: true,
+        ));
+        $resumed = $client->resumeSession('resumed-session', new ResumeSessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            interactiveUser: false,
+        ));
+
+        expect($created->id())->toBe('created-session')
+            ->and($resumed->id())->toBe('resumed-session');
+    });
+
     it('preserves session GitHub telemetry forwarding when no client handler is configured', function () {
         $rpc = Mockery::mock(JsonRpcClient::class);
         $rpc->shouldReceive('request')

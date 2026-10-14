@@ -27,6 +27,19 @@ describe('SessionConfig', function () {
             ->and((new SessionConfig(name: 'release-check'))->toArray()['name'])->toBe('release-check');
     });
 
+    it('round-trips interactive user configuration while preserving explicit false', function () {
+        $default = new SessionConfig;
+        $enabled = SessionConfig::fromArray(['interactiveUser' => true]);
+        $explicitFalse = SessionConfig::fromArray(['interactiveUser' => false]);
+
+        expect($default->interactiveUser)->toBeNull()
+            ->and($default->toArray())->not->toHaveKey('interactiveUser')
+            ->and($enabled->interactiveUser)->toBeTrue()
+            ->and($enabled->toArray())->toHaveKey('interactiveUser', true)
+            ->and($explicitFalse->interactiveUser)->toBeFalse()
+            ->and($explicitFalse->toArray())->toHaveKey('interactiveUser', false);
+    });
+
     it('serializes ToolSet tool filters', function () {
         $availableTools = (new ToolSet)->addBuiltIn('read_file');
         $excludedTools = (new ToolSet)->addMcp('github-delete_repository');
