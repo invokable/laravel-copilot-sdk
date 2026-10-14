@@ -21,6 +21,9 @@ readonly class AgentStopHookInput extends BaseHookInput
      * @param  ?string  $stopReason  Why the agent stopped (for example, "end_turn")
      * @param  ?string  $transcriptPath  Path to the on-disk session transcript, when available
      * @param  ?bool  $stopHookActive  True when this stop is a re-entry triggered by a previous agent-stop `block` decision
+     * @param  ?string  $agentId  Sub-agent actor ID, when available
+     * @param  ?string  $agentType  Sub-agent type, when available
+     * @param  ?string  $parentAgentId  Immediate parent actor ID, when available
      */
     public function __construct(
         string $sessionId,
@@ -29,8 +32,11 @@ readonly class AgentStopHookInput extends BaseHookInput
         public ?string $stopReason = null,
         public ?string $transcriptPath = null,
         public ?bool $stopHookActive = null,
+        ?string $agentId = null,
+        ?string $agentType = null,
+        ?string $parentAgentId = null,
     ) {
-        parent::__construct($sessionId, $timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd, $agentId, $agentType, $parentAgentId);
     }
 
     /**
@@ -45,6 +51,9 @@ readonly class AgentStopHookInput extends BaseHookInput
             stopReason: $data['stopReason'] ?? null,
             transcriptPath: $data['transcriptPath'] ?? null,
             stopHookActive: $data['stopHookActive'] ?? null,
+            agentId: $data['agentId'] ?? null,
+            agentType: $data['agentType'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
         );
     }
 

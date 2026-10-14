@@ -199,6 +199,11 @@ Copilot::start(function (CopilotSession $session) {
 | `sessionId` | `string` | 関連するランタイムセッションID。子ツールのフックでは子セッション、サブエージェントの開始/停止フックでは親セッションID |
 | `timestamp` | `int` | フック発火時刻（Unix ms） |
 | `cwd` | `string` | 現在の作業ディレクトリ |
+| `agentId` | `?string` | フックを実行するサブエージェントのアクターID |
+| `agentType` | `?string` | サブエージェントの種類 |
+| `parentAgentId` | `?string` | 直近の親アクターID |
+
+これらのフィールドはサブエージェントがアクターとなるフックで利用できます。ルートエージェントのフックには含まれず、古いランタイムでは情報がない場合にフィールド自体が省略されます。そのため、いずれも `null` になることがあります。
 
 ### `PreToolUseHookInput`
 

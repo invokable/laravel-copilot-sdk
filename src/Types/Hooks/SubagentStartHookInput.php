@@ -19,6 +19,9 @@ readonly class SubagentStartHookInput extends BaseHookInput
      * @param  string  $agentName  Sub-agent name
      * @param  ?string  $agentDisplayName  Optional display name
      * @param  ?string  $agentDescription  Optional description
+     * @param  ?string  $agentId  Sub-agent actor ID, when available
+     * @param  ?string  $agentType  Sub-agent type, when available
+     * @param  ?string  $parentAgentId  Immediate parent actor ID, when available
      */
     public function __construct(
         string $sessionId,
@@ -28,8 +31,11 @@ readonly class SubagentStartHookInput extends BaseHookInput
         public string $agentName,
         public ?string $agentDisplayName = null,
         public ?string $agentDescription = null,
+        ?string $agentId = null,
+        ?string $agentType = null,
+        ?string $parentAgentId = null,
     ) {
-        parent::__construct($sessionId, $timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd, $agentId, $agentType, $parentAgentId);
     }
 
     public static function fromArray(array $data): static
@@ -42,6 +48,9 @@ readonly class SubagentStartHookInput extends BaseHookInput
             agentName: Arr::string($data, 'agentName', ''),
             agentDisplayName: $data['agentDisplayName'] ?? null,
             agentDescription: $data['agentDescription'] ?? null,
+            agentId: $data['agentId'] ?? null,
+            agentType: $data['agentType'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
         );
     }
 

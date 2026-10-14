@@ -17,6 +17,9 @@ readonly class SessionStartHookInput extends BaseHookInput
      * @param  string  $cwd  Current working directory
      * @param  string  $source  Source of the session: "startup", "resume", or "new"
      * @param  ?string  $initialPrompt  Initial prompt, if any
+     * @param  ?string  $agentId  Sub-agent actor ID, when available
+     * @param  ?string  $agentType  Sub-agent type, when available
+     * @param  ?string  $parentAgentId  Immediate parent actor ID, when available
      */
     public function __construct(
         string $sessionId,
@@ -24,8 +27,11 @@ readonly class SessionStartHookInput extends BaseHookInput
         string $cwd,
         public string $source,
         public ?string $initialPrompt = null,
+        ?string $agentId = null,
+        ?string $agentType = null,
+        ?string $parentAgentId = null,
     ) {
-        parent::__construct($sessionId, $timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd, $agentId, $agentType, $parentAgentId);
     }
 
     /**
@@ -39,6 +45,9 @@ readonly class SessionStartHookInput extends BaseHookInput
             cwd: $data['cwd'] ?? '',
             source: Arr::string($data, 'source', 'new'),
             initialPrompt: $data['initialPrompt'] ?? null,
+            agentId: $data['agentId'] ?? null,
+            agentType: $data['agentType'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
         );
     }
 

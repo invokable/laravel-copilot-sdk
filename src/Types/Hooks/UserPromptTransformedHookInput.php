@@ -17,6 +17,9 @@ readonly class UserPromptTransformedHookInput extends BaseHookInput
      * @param  string  $cwd  Current working directory
      * @param  string  $prompt  The user's submitted prompt
      * @param  string  $transformedPrompt  The prompt after runtime context transformation
+     * @param  ?string  $agentId  Sub-agent actor ID, when available
+     * @param  ?string  $agentType  Sub-agent type, when available
+     * @param  ?string  $parentAgentId  Immediate parent actor ID, when available
      */
     public function __construct(
         string $sessionId,
@@ -24,8 +27,11 @@ readonly class UserPromptTransformedHookInput extends BaseHookInput
         string $cwd,
         public string $prompt,
         public string $transformedPrompt,
+        ?string $agentId = null,
+        ?string $agentType = null,
+        ?string $parentAgentId = null,
     ) {
-        parent::__construct($sessionId, $timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd, $agentId, $agentType, $parentAgentId);
     }
 
     /**
@@ -39,6 +45,9 @@ readonly class UserPromptTransformedHookInput extends BaseHookInput
             cwd: $data['cwd'] ?? '',
             prompt: Arr::string($data, 'prompt', ''),
             transformedPrompt: Arr::string($data, 'transformedPrompt', ''),
+            agentId: $data['agentId'] ?? null,
+            agentType: $data['agentType'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
         );
     }
 

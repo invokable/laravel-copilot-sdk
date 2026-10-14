@@ -18,6 +18,9 @@ readonly class ErrorOccurredHookInput extends BaseHookInput
      * @param  string  $error  Error message
      * @param  string  $errorContext  Error context: "model_call", "tool_execution", "system", or "user_input"
      * @param  bool  $recoverable  Whether the error is recoverable
+     * @param  ?string  $agentId  Sub-agent actor ID, when available
+     * @param  ?string  $agentType  Sub-agent type, when available
+     * @param  ?string  $parentAgentId  Immediate parent actor ID, when available
      */
     public function __construct(
         string $sessionId,
@@ -26,8 +29,11 @@ readonly class ErrorOccurredHookInput extends BaseHookInput
         public string $error,
         public string $errorContext,
         public bool $recoverable,
+        ?string $agentId = null,
+        ?string $agentType = null,
+        ?string $parentAgentId = null,
     ) {
-        parent::__construct($sessionId, $timestamp, $cwd);
+        parent::__construct($sessionId, $timestamp, $cwd, $agentId, $agentType, $parentAgentId);
     }
 
     /**
@@ -42,6 +48,9 @@ readonly class ErrorOccurredHookInput extends BaseHookInput
             error: Arr::string($data, 'error', ''),
             errorContext: Arr::string($data, 'errorContext', 'system'),
             recoverable: Arr::boolean($data, 'recoverable', false),
+            agentId: $data['agentId'] ?? null,
+            agentType: $data['agentType'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
         );
     }
 
