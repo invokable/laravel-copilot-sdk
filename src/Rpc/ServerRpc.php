@@ -248,6 +248,14 @@ class ServerRpc
     }
 
     /**
+     * Content-exclusion policy RPC operations.
+     */
+    public function contentExclusion(): PendingServerContentExclusion
+    {
+        return new PendingServerContentExclusion($this->client);
+    }
+
+    /**
      * LLM inference callback provider RPC operations.
      *
      * Allows this client to register as the LLM inference provider and deliver
