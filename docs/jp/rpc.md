@@ -35,6 +35,7 @@ use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Types\Rpc\CatalogMaterializationReference;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 use Revolution\Copilot\Types\Rpc\HooksDiscoverRequest;
@@ -68,6 +69,7 @@ use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillInstallationOperationRequest;
 use Revolution\Copilot\Types\Rpc\SkillInstallationsRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
 use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
@@ -330,6 +332,29 @@ if ($selection['kind'] === 'selected') {
         policySessionId: $sessionId,
     ));
 }
+
+// Agent Finder の materialisation reference からスキルのインストールを計画
+$referenceContract = new CatalogClientContract(3, [
+    'skill-confirmed-installation',
+    'skill-reference-installation',
+]);
+$referencePlan = $skills->planInstallFromReference(new SkillPlanInstallFromReferenceRequest(
+    contract: $referenceContract,
+    reference: new CatalogMaterializationReference(
+        resourceId: '12345',
+        revisionId: '67890',
+        schemaVersion: '1.0.0',
+        descriptorDigest: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        bundleDigest: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    ),
+    policySessionId: $sessionId,
+));
+// 成功時は $referencePlan['kind'] === 'outcome'、
+// $referencePlan['outcome']['kind'] === 'install-planned'。
+// 計画自体は副作用を起こさず、固定のAgent Finder authorityからdescriptorを取得し、
+// descriptorとbundleのdigestを照合する。内容を確認し、既存の確認フローを完了してからapplyInstall()する。
+// invalid-reference、descriptor-not-found、descriptor-withdrawn、digest-mismatch、
+// unsupported-resource は計画結果の拒否理由として返る。
 
 // インストール済みスキルと進行中の操作
 $installations = $skills->installations();

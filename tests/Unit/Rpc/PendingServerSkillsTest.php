@@ -13,6 +13,7 @@ use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillInstallationOperationRequest;
 use Revolution\Copilot\Types\Rpc\SkillInstallationsRequest;
+use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillsConfigSetDisabledSkillsRequest;
@@ -267,6 +268,33 @@ describe('PendingServerSkills', function () {
                 ['contract' => $contractData, 'candidateHandle' => 'candidate-1', 'policySessionId' => 'session-1'],
                 SkillPlanInstallRequest::class,
                 ['kind' => 'planned'],
+            ],
+            [
+                'planInstallFromReference',
+                'skills.planInstallFromReference',
+                [
+                    'contract' => [
+                        'protocolVersion' => 3,
+                        'requiredCapabilities' => ['skill-confirmed-installation', 'skill-reference-installation'],
+                    ],
+                    'reference' => [
+                        'resourceId' => '12345',
+                        'revisionId' => '67890',
+                        'schemaVersion' => '1.0.0',
+                        'descriptorDigest' => 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+                        'bundleDigest' => 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+                    ],
+                    'policySessionId' => 'session-1',
+                ],
+                SkillPlanInstallFromReferenceRequest::class,
+                [
+                    'kind' => 'outcome',
+                    'outcome' => ['kind' => 'install-planned'],
+                    'negotiated' => [
+                        'runtimeProtocolVersion' => 3,
+                        'grantedCapabilities' => ['skill-confirmed-installation', 'skill-reference-installation'],
+                    ],
+                ],
             ],
             [
                 'applyInstall',
