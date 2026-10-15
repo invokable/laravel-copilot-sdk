@@ -214,4 +214,15 @@ return [
     |
     */
     'session_idle_timeout_seconds' => (int) env('COPILOT_SESSION_IDLE_TIMEOUT', 0),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Experimental LLM Request Handler
+    |--------------------------------------------------------------------------
+    |
+    | Intercept outbound HTTP model-layer requests with a CopilotRequestHandler
+    | instance or Closure. WebSocket requests are not supported.
+    |
+    */
+    'request_handler' => null,
 ];

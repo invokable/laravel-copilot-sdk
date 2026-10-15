@@ -19,6 +19,10 @@ readonly class LlmInferenceHTTPRequestStartRequest implements Arrayable
      * @param  string  $requestId  Opaque runtime-minted id, unique per in-flight request.
      * @param  string  $url  Absolute request URL.
      * @param  ?string  $sessionId  Id of the runtime session that triggered this request, when one is in scope.
+     * @param  ?string  $agentId  Stable identity of the agent that issued this request.
+     * @param  ?string  $agentInvocationId  Logical agent invocation identity.
+     * @param  ?string  $parentAgentId  Identity of the parent agent, when this is a subagent request.
+     * @param  ?string  $interactionType  Runtime classification for the interaction.
      * @param  LlmInferenceHttpRequestStartTransport|string|null  $transport  Transport the runtime would otherwise use for this request.
      */
     public function __construct(
@@ -28,6 +32,10 @@ readonly class LlmInferenceHTTPRequestStartRequest implements Arrayable
         public string $url,
         public ?string $sessionId = null,
         public LlmInferenceHttpRequestStartTransport|string|null $transport = null,
+        public ?string $agentId = null,
+        public ?string $agentInvocationId = null,
+        public ?string $parentAgentId = null,
+        public ?string $interactionType = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -39,6 +47,10 @@ readonly class LlmInferenceHTTPRequestStartRequest implements Arrayable
             url: Arr::string($data, 'url'),
             sessionId: $data['sessionId'] ?? null,
             transport: isset($data['transport']) ? LlmInferenceHttpRequestStartTransport::from($data['transport']) : null,
+            agentId: $data['agentId'] ?? null,
+            agentInvocationId: $data['agentInvocationId'] ?? null,
+            parentAgentId: $data['parentAgentId'] ?? null,
+            interactionType: $data['interactionType'] ?? null,
         );
     }
 
@@ -55,6 +67,10 @@ readonly class LlmInferenceHTTPRequestStartRequest implements Arrayable
             'url' => $this->url,
             'sessionId' => $this->sessionId,
             'transport' => $transport,
+            'agentId' => $this->agentId,
+            'agentInvocationId' => $this->agentInvocationId,
+            'parentAgentId' => $this->parentAgentId,
+            'interactionType' => $this->interactionType,
         ], fn ($v) => $v !== null);
     }
 }

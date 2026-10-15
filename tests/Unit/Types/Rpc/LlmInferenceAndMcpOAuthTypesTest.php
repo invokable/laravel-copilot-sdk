@@ -43,11 +43,19 @@ describe('LlmInferenceHTTPRequestStartRequest', function () {
             'url' => 'https://api.example.com/v1/messages',
             'sessionId' => 'sess-abc',
             'transport' => 'websocket',
+            'agentId' => 'agent-1',
+            'agentInvocationId' => 'invocation-1',
+            'parentAgentId' => 'parent-1',
+            'interactionType' => 'chat',
         ]);
 
         expect($request->method)->toBe('POST')
             ->and($request->sessionId)->toBe('sess-abc')
-            ->and($request->transport)->toBe(LlmInferenceHttpRequestStartTransport::Websocket);
+            ->and($request->transport)->toBe(LlmInferenceHttpRequestStartTransport::Websocket)
+            ->and($request->agentId)->toBe('agent-1')
+            ->and($request->agentInvocationId)->toBe('invocation-1')
+            ->and($request->parentAgentId)->toBe('parent-1')
+            ->and($request->interactionType)->toBe('chat');
     });
 
     it('converts to array excluding nulls', function () {

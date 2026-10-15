@@ -11,6 +11,7 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
 use Revolution\Copilot\Concerns\Client\HandlesCanvasProvider;
+use Revolution\Copilot\Concerns\Client\HandlesRequestHandler;
 use Revolution\Copilot\Concerns\Client\HandlesServerRequests;
 use Revolution\Copilot\Concerns\Client\HandlesSessionFs;
 use Revolution\Copilot\Concerns\Client\HandlesSkillProvider;
@@ -33,6 +34,7 @@ use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Support\CanvasHandler;
+use Revolution\Copilot\Support\CopilotRequestHandler;
 use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Support\TraceContext;
 use Revolution\Copilot\Transport\TcpTransport;
@@ -66,6 +68,7 @@ class Client implements CopilotClient
 {
     use Conditionable;
     use HandlesCanvasProvider;
+    use HandlesRequestHandler;
     use HandlesServerRequests;
     use HandlesSessionFs;
     use HandlesSkillProvider;
@@ -131,6 +134,8 @@ class Client implements CopilotClient
      */
     protected ?Closure $extensionLaunchProvider = null;
 
+    protected CopilotRequestHandler|Closure|null $requestHandler = null;
+
     /**
      * Create a new CopilotClient.
      */
@@ -156,6 +161,15 @@ class Client implements CopilotClient
         $this->extensionLaunchProvider = $extensionLaunchProvider === null
             ? null
             : Closure::fromCallable($extensionLaunchProvider);
+        $requestHandler = array_key_exists('requestHandler', $options)
+            ? $options['requestHandler']
+            : ($options['request_handler'] ?? null);
+        if ($requestHandler !== null
+            && ! $requestHandler instanceof CopilotRequestHandler
+            && ! $requestHandler instanceof Closure) {
+            throw new InvalidArgumentException('requestHandler must be a CopilotRequestHandler or Closure.');
+        }
+        $this->requestHandler = $requestHandler;
         $configuredMode = $options['mode'] ?? CopilotClientMode::CopilotCli;
         $this->mode = $configuredMode instanceof CopilotClientMode
             ? $configuredMode
@@ -399,10 +413,16 @@ class Client implements CopilotClient
                 );
             }
 
+            $this->registerRequestHandler();
+
             $this->state = ConnectionState::CONNECTED;
 
             // Verify protocol version
             $this->verifyProtocolVersion();
+
+            if ($this->requestHandler !== null) {
+                $this->rpc()->llmInference()->setProvider();
+            }
 
             if ($this->extensionLaunchProvider !== null) {
                 $this->rpc()->registerExtensionLaunchProvider();
@@ -437,6 +457,7 @@ class Client implements CopilotClient
 
             return $this;
         } catch (Throwable $e) {
+            $this->cancelPendingRequestHandlerExchanges();
             $this->state = ConnectionState::ERROR;
             throw $e;
         }
@@ -465,6 +486,8 @@ class Client implements CopilotClient
     public function stop(): array
     {
         $errors = [];
+
+        $this->cancelPendingRequestHandlerExchanges();
 
         // Destroy all sessions
         foreach ($this->sessions as $session) {
