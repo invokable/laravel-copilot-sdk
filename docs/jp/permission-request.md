@@ -181,11 +181,31 @@ kind: "shell" | "write" | "mcp" | "read" | "url" | "custom-tool" | "memory" | "h
 
 `managedApprovalRequired`が`true`の場合、組織のManaged Settingsによってこのリクエストは自動承認できません。`PermissionHandler::approveAll()`はこの場合`no-result`を返し、Copilot CLI側の標準フローに委ねます。
 
+新しいCLIランタイムでは、`$invocation['promptRequest']`にユーザー向けプロンプトのコンテキストが含まれることがあります。`commands`、`read`、`write`、`url`、`workflow`の標準種類で`managedApprovalRequired`がbooleanとして渡された場合、`PermissionHandler::approveAll()`はこの値を優先します。これにより、元の`$request['managedApprovalRequired']`がポリシー由来のマーカーとして残っていても、プロンプト上で人間の応答が不要なら自動承認できます。
+
+```php
+[
+    'sessionId' => '...',
+    'managedSettingsEnabled' => false,
+    'promptRequest' => [
+        'kind' => 'read',
+        'managedApprovalRequired' => false,
+    ],
+]
+```
+
+`promptRequest`がない古いCLI、未対応の種類、またはコンテキストに有効なboolean値がない場合は、従来どおり`$request['managedApprovalRequired']`を使って判断します。`$request`の生のマーカーは引き続き保持されます。
+
 ### $invocation
 ```php
 [
   "sessionId" => "...",
   "managedSettingsEnabled" => false,
+  // 新しいCLIランタイムでのみ任意に含まれる
+  "promptRequest" => [
+    "kind" => "read",
+    "managedApprovalRequired" => false,
+  ],
 ]
 ```
 

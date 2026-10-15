@@ -11,11 +11,15 @@ describe('UserPromptSubmittedHookOutput', function () {
             modifiedPrompt: 'Modified prompt',
             additionalContext: 'Extra context',
             suppressOutput: true,
+            decision: 'block',
+            reason: 'Prompt rejected by policy.',
         );
 
         expect($output->modifiedPrompt)->toBe('Modified prompt')
             ->and($output->additionalContext)->toBe('Extra context')
-            ->and($output->suppressOutput)->toBeTrue();
+            ->and($output->suppressOutput)->toBeTrue()
+            ->and($output->decision)->toBe('block')
+            ->and($output->reason)->toBe('Prompt rejected by policy.');
     });
 
     it('can be created with minimal fields', function () {
@@ -23,17 +27,23 @@ describe('UserPromptSubmittedHookOutput', function () {
 
         expect($output->modifiedPrompt)->toBeNull()
             ->and($output->additionalContext)->toBeNull()
-            ->and($output->suppressOutput)->toBeNull();
+            ->and($output->suppressOutput)->toBeNull()
+            ->and($output->decision)->toBeNull()
+            ->and($output->reason)->toBeNull();
     });
 
     it('can be created from array', function () {
         $output = UserPromptSubmittedHookOutput::fromArray([
             'modifiedPrompt' => 'Changed prompt',
             'additionalContext' => 'Context info',
+            'decision' => 'block',
+            'reason' => 'Prompt rejected.',
         ]);
 
         expect($output->modifiedPrompt)->toBe('Changed prompt')
-            ->and($output->additionalContext)->toBe('Context info');
+            ->and($output->additionalContext)->toBe('Context info')
+            ->and($output->decision)->toBe('block')
+            ->and($output->reason)->toBe('Prompt rejected.');
     });
 
     it('can convert to array with all fields', function () {
@@ -41,12 +51,16 @@ describe('UserPromptSubmittedHookOutput', function () {
             modifiedPrompt: 'New prompt',
             additionalContext: 'Context',
             suppressOutput: false,
+            decision: 'block',
+            reason: 'Prompt rejected.',
         );
 
         expect($output->toArray())->toBe([
             'modifiedPrompt' => 'New prompt',
             'additionalContext' => 'Context',
             'suppressOutput' => false,
+            'decision' => 'block',
+            'reason' => 'Prompt rejected.',
         ]);
     });
 
