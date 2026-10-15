@@ -38,6 +38,13 @@ describe('PendingSessionAccounts', function () {
             ->and($identities[0]->active)->toBeTrue();
     });
 
+    it('requires a provider when enumerating login identities', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+
+        expect(fn () => (new PendingSessionAccounts($client, 'session-1'))->enumerate('loginAccounts'))
+            ->toThrow(InvalidArgumentException::class, 'A provider is required');
+    });
+
     it('preserves provider enumeration with broker availability', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

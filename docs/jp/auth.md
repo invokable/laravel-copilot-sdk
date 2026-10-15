@@ -131,3 +131,29 @@ if (! $status->isAuthenticated) {
     // 未認証
 }
 ```
+
+## 対話型ログインのアカウント選択
+
+セッションRPCから`loginAccounts`を列挙すると、指定したプロバイダーで再利用できる保存済みIDを取得できます。各項目の`label`は表示用、`active`はそのIDが現在のセッションの有効なアカウントに対応するかを示します。`accountId`はプロバイダーが所有する不透明なIDです。内容を解析・加工せず、そのままログイン開始時に渡してください。
+
+```php
+use Revolution\Copilot\Enums\AuthLoginMode;
+use Revolution\Copilot\Enums\LoginProviderKind;
+use Revolution\Copilot\Types\Rpc\AuthLoginBeginRequest;
+
+$accounts = $session->rpc()->accounts();
+$identities = $accounts->enumerate(
+    'loginAccounts',
+    provider: LoginProviderKind::ENTRA,
+);
+
+if (isset($identities[0])) {
+    $accounts->begin(new AuthLoginBeginRequest(
+        kind: LoginProviderKind::ENTRA,
+        mode: AuthLoginMode::Default,
+        accountId: $identities[0]->accountId,
+    ));
+}
+```
+
+通常のプロバイダー動作で保存済みIDを使う場合は`mode: 'default'`を指定します。プロバイダーのアカウント選択UIを明示的に表示したい場合は`mode: 'selectAccount'`を使い、この場合は`accountId`を渡しません。既存の`begin(LoginProviderKind::ENTRA)`のような呼び出しも引き続き利用できます。
