@@ -284,6 +284,16 @@ class SessionRpc
     }
 
     /**
+     * Session-scoped content-exclusion RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function contentExclusion(): PendingSessionContentExclusion
+    {
+        return new PendingSessionContentExclusion($this->client, $this->sessionId);
+    }
+
+    /**
      * Event log RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.
