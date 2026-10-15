@@ -15,6 +15,8 @@ use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Support\PermissionHandler;
 use Revolution\Copilot\Testing\WithFake;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
+use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\RuntimeConnection;
@@ -228,6 +230,7 @@ class CopilotManager implements Factory
                     'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? null,
                     ...Arr::only($this->config, ['builtin_plugin_directories', 'builtinPluginDirectories']),
                     ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
+                    ...Arr::only($this->config, ['extension_launch_provider', 'extensionLaunchProvider']),
                 ];
             } else {
                 // Stdio mode: start new process
@@ -249,6 +252,7 @@ class CopilotManager implements Factory
                     'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? null,
                     ...Arr::only($this->config, ['builtin_plugin_directories', 'builtinPluginDirectories']),
                     ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
+                    ...Arr::only($this->config, ['extension_launch_provider', 'extensionLaunchProvider']),
                 ];
             }
 
@@ -279,7 +283,7 @@ class CopilotManager implements Factory
     /**
      * Configure the client to use stdio transport with given options.
      *
-     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, mode?: CopilotClientMode|string, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array, builtin_plugin_directories?: list<string>, builtinPluginDirectories?: list<string>, on_github_telemetry?: callable(GitHubTelemetryNotification): void, onGitHubTelemetry?: callable(GitHubTelemetryNotification): void}  $config  Configuration options for stdio transport.
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, mode?: CopilotClientMode|string, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array, builtin_plugin_directories?: list<string>, builtinPluginDirectories?: list<string>, on_github_telemetry?: callable(GitHubTelemetryNotification): void, onGitHubTelemetry?: callable(GitHubTelemetryNotification): void, extension_launch_provider?: callable(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null, extensionLaunchProvider?: callable(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null}  $config  Configuration options for stdio transport.
      */
     public function useStdio(?array $config = null): static
     {
@@ -310,6 +314,8 @@ class CopilotManager implements Factory
             'builtinPluginDirectories',
             'on_github_telemetry',
             'onGitHubTelemetry',
+            'extension_launch_provider',
+            'extensionLaunchProvider',
         ]));
 
         return $this;
@@ -342,6 +348,7 @@ class CopilotManager implements Factory
         $this->client([
             ...$options,
             ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
+            ...Arr::only($this->config, ['extension_launch_provider', 'extensionLaunchProvider']),
         ]);
 
         return $this;

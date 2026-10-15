@@ -46,6 +46,14 @@ class ServerRpc
     }
 
     /**
+     * Register this client as the extension launch provider.
+     */
+    public function registerExtensionLaunchProvider(): void
+    {
+        $this->client->request('registerExtensionLaunchProvider', []);
+    }
+
+    /**
      * Models RPC operations.
      */
     public function models(): PendingServerModels

@@ -78,6 +78,16 @@ describe('ServerRpc', function () {
         expect($rpc->catalog())->toBeInstanceOf(PendingCatalog::class);
     });
 
+    it('registers the extension launch provider', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->with('registerExtensionLaunchProvider', [])
+            ->once()
+            ->andReturn([]);
+
+        (new ServerRpc($client))->registerExtensionLaunchProvider();
+    });
+
     it('exposes new server groups and dispatches their RPC methods', function () {
         $rpc = new ServerRpc(new JsonRpcClient(new StdioTransport(
             fopen('php://memory', 'r'),

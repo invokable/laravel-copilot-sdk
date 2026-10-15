@@ -45,6 +45,8 @@ use Revolution\Copilot\Types\GitHubMcpToolConfig;
 use Revolution\Copilot\Types\NamedProviderConfig;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
+use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
 use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireRequest;
@@ -125,6 +127,11 @@ class Client implements CopilotClient
     protected ?Closure $onGitHubTelemetry = null;
 
     /**
+     * @var Closure(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null
+     */
+    protected ?Closure $extensionLaunchProvider = null;
+
+    /**
      * Create a new CopilotClient.
      */
     public function __construct(protected array $options = [])
@@ -140,6 +147,15 @@ class Client implements CopilotClient
         $this->onGitHubTelemetry = $onGitHubTelemetry === null
             ? null
             : Closure::fromCallable($onGitHubTelemetry);
+        $extensionLaunchProvider = array_key_exists('extensionLaunchProvider', $options)
+            ? $options['extensionLaunchProvider']
+            : ($options['extension_launch_provider'] ?? null);
+        if ($extensionLaunchProvider !== null && ! is_callable($extensionLaunchProvider)) {
+            throw new InvalidArgumentException('extensionLaunchProvider must be callable.');
+        }
+        $this->extensionLaunchProvider = $extensionLaunchProvider === null
+            ? null
+            : Closure::fromCallable($extensionLaunchProvider);
         $configuredMode = $options['mode'] ?? CopilotClientMode::CopilotCli;
         $this->mode = $configuredMode instanceof CopilotClientMode
             ? $configuredMode
@@ -326,6 +342,11 @@ class Client implements CopilotClient
                 fn (array $params) => $this->acquireProviderToken($params),
             );
 
+            $this->rpcClient->setRequestHandler(
+                'extensionLaunchProvider.resolve',
+                fn (array $params) => $this->handleExtensionLaunchProviderResolve($params),
+            );
+
             foreach ([
                 'canvas.open' => 'handleCanvasOpen',
                 'canvas.close' => 'handleCanvasClose',
@@ -382,6 +403,10 @@ class Client implements CopilotClient
 
             // Verify protocol version
             $this->verifyProtocolVersion();
+
+            if ($this->extensionLaunchProvider !== null) {
+                $this->rpc()->registerExtensionLaunchProvider();
+            }
 
             if ($this->builtinPluginDirectories !== []) {
                 try {

@@ -38,6 +38,9 @@ use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogMaterializationReference;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
+use Revolution\Copilot\Types\Rpc\ExtensionLaunchProfile;
+use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
+use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\Rpc\HooksDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\InstructionsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\InstructionsGetDiscoveryPathsRequest;
@@ -229,6 +232,18 @@ Copilot::client()->rpc()->sessionFs()->setProvider(new SessionFsSetProviderReque
     sessionStatePath: '.copilot/sessions',
     conventions: 'posix',
 ));
+
+// 拡張機能の起動方法を解決するクライアントオプション（応答は15秒以内）
+$client = Copilot::client([
+    'extensionLaunchProvider' => fn (ExtensionLaunchProviderResolveRequest $request) => new ExtensionLaunchProviderResolveResult(
+        launch: new ExtensionLaunchProfile(
+            executable: '/usr/bin/node',
+            args: [$request->modulePath],
+        ),
+    ),
+]);
+// 対応する起動方法がない場合はnullを返します。
+// fn (ExtensionLaunchProviderResolveRequest $request) => null
 
 $sessions = Copilot::client()->rpc()->sessions();
 
