@@ -12,9 +12,9 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class ModelBillingTokenPrices implements Arrayable
 {
     /**
-     * @param  ?float  $inputPrice  AI Credits cost per billing batch of input tokens
-     * @param  ?float  $outputPrice  AI Credits cost per billing batch of output tokens
-     * @param  ?float  $cachePrice  AI Credits cost per billing batch of cached tokens
+     * @param  ?float  $inputPrice  Cost per billing batch of input tokens, in the unit reported by models.listTokenPriceUnits
+     * @param  ?float  $outputPrice  Cost per billing batch of output tokens, in the unit reported by models.listTokenPriceUnits
+     * @param  ?float  $cachePrice  Cost per billing batch of cached tokens, in the unit reported by models.listTokenPriceUnits
      * @param  ?int  $batchSize  Number of tokens per standard billing batch
      * @param  ?int  $contextMax  Prompt token budget for the default tier
      * @param  ModelBillingTokenPricesLongContext|null  $longContext  Long context tier pricing

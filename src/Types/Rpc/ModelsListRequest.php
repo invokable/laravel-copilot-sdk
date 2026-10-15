@@ -17,12 +17,14 @@ readonly class ModelsListRequest implements Arrayable
      */
     public function __construct(
         public ?string $gitHubToken = null,
+        public ?string $selectionId = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
             gitHubToken: $data['gitHubToken'] ?? null,
+            selectionId: $data['selectionId'] ?? null,
         );
     }
 
@@ -30,6 +32,7 @@ readonly class ModelsListRequest implements Arrayable
     {
         return array_filter([
             'gitHubToken' => $this->gitHubToken,
+            'selectionId' => $this->selectionId,
         ], fn ($v) => $v !== null);
     }
 }

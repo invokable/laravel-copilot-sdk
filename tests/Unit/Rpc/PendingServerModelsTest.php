@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\TokenPriceUnit;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerModels;
 use Revolution\Copilot\Types\Rpc\BuiltInModelCatalog;
 use Revolution\Copilot\Types\Rpc\ModelList;
 use Revolution\Copilot\Types\Rpc\ModelsListRequest;
+use Revolution\Copilot\Types\Rpc\ModelsListTokenPriceUnitsRequest;
+use Revolution\Copilot\Types\Rpc\ModelTokenPriceUnitList;
 
 describe('PendingServerModels', function () {
     it('calls models.list and returns result', function () {
@@ -74,6 +77,55 @@ describe('PendingServerModels', function () {
         $result = $pending->list(['gitHubToken' => 'ghs_xyz']);
 
         expect($result)->toBeInstanceOf(ModelList::class);
+    });
+
+    it('calls models.listTokenPriceUnits with empty params and returns typed units', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('models.listTokenPriceUnits', [])
+            ->andReturn([
+                'units' => [
+                    ['modelId' => 'gpt-5', 'unit' => 'ai_credits'],
+                    ['modelId' => 'claude-sonnet-4.5', 'unit' => 'nano_aiu'],
+                ],
+            ]);
+
+        $result = (new PendingServerModels($client))->listTokenPriceUnits();
+
+        expect($result)->toBeInstanceOf(ModelTokenPriceUnitList::class)
+            ->and($result->units[0]->modelId)->toBe('gpt-5')
+            ->and($result->units[0]->unit)->toBe(TokenPriceUnit::AiCredits)
+            ->and($result->units[1]->unit)->toBe(TokenPriceUnit::NanoAiu);
+    });
+
+    it('calls models.listTokenPriceUnits with typed account selection params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('models.listTokenPriceUnits', ['selectionId' => 'selection', 'gitHubToken' => 'ghs_token'])
+            ->andReturn(['units' => []]);
+
+        $result = (new PendingServerModels($client))->listTokenPriceUnits(
+            new ModelsListTokenPriceUnitsRequest(selectionId: 'selection', gitHubToken: 'ghs_token'),
+        );
+
+        expect($result)->toBeInstanceOf(ModelTokenPriceUnitList::class);
+    });
+
+    it('calls models.listTokenPriceUnits with array account selection params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('models.listTokenPriceUnits', ['selectionId' => 'selection', 'gitHubToken' => 'ghs_token'])
+            ->andReturn(['units' => []]);
+
+        $result = (new PendingServerModels($client))->listTokenPriceUnits([
+            'selectionId' => 'selection',
+            'gitHubToken' => 'ghs_token',
+        ]);
+
+        expect($result)->toBeInstanceOf(ModelTokenPriceUnitList::class);
     });
 
     it('returns the built-in model catalog', function () {
