@@ -6,8 +6,10 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingShell;
 use Revolution\Copilot\Types\Rpc\ShellExecRequest;
 use Revolution\Copilot\Types\Rpc\ShellExecResult;
+use Revolution\Copilot\Types\Rpc\ShellExecuteUserRequestedRequest;
 use Revolution\Copilot\Types\Rpc\ShellKillRequest;
 use Revolution\Copilot\Types\Rpc\ShellKillResult;
+use Revolution\Copilot\Types\Rpc\UserRequestedShellCommandResult;
 
 describe('PendingShell', function () {
     it('calls session.shell.exec with typed params', function () {
@@ -148,5 +150,60 @@ describe('PendingShell', function () {
         ]);
 
         expect($result)->toBeInstanceOf(ShellExecResult::class);
+    });
+
+    it('executes a user-requested command with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.shell.executeUserRequested', [
+                'requestId' => 'req-123',
+                'command' => 'pwd',
+                'sessionId' => 'test-session-id',
+            ], 30.0)
+            ->andReturn([
+                'toolCallId' => 'tool-123',
+                'success' => true,
+                'output' => '/workspace',
+                'exitCode' => null,
+            ]);
+
+        $result = (new PendingShell($client, 'test-session-id'))->executeUserRequested(
+            new ShellExecuteUserRequestedRequest(requestId: 'req-123', command: 'pwd'),
+        );
+
+        expect($result)->toBeInstanceOf(UserRequestedShellCommandResult::class)
+            ->and($result->toolCallId)->toBe('tool-123')
+            ->and($result->success)->toBeTrue()
+            ->and($result->exitCode)->toBeNull()
+            ->and($result->error)->toBeNull();
+    });
+
+    it('executes a user-requested command with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.shell.executeUserRequested', [
+                'requestId' => 'req-456',
+                'command' => 'missing-command',
+                'sessionId' => 'test-session-id',
+            ], 120.0)
+            ->andReturn([
+                'toolCallId' => 'tool-456',
+                'success' => false,
+                'output' => '',
+                'exitCode' => 127,
+                'error' => 'Command not found',
+            ]);
+
+        $result = (new PendingShell($client, 'test-session-id'))->executeUserRequested([
+            'requestId' => 'req-456',
+            'command' => 'missing-command',
+        ], timeout: 120.0);
+
+        expect($result)->toBeInstanceOf(UserRequestedShellCommandResult::class)
+            ->and($result->success)->toBeFalse()
+            ->and($result->exitCode)->toBe(127)
+            ->and($result->error)->toBe('Command not found');
     });
 });

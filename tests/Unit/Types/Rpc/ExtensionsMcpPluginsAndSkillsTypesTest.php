@@ -25,6 +25,8 @@ use Revolution\Copilot\Types\Rpc\SkillInfo;
 use Revolution\Copilot\Types\Rpc\SkillList;
 use Revolution\Copilot\Types\Rpc\SkillsDisableRequest;
 use Revolution\Copilot\Types\Rpc\SkillsEnableRequest;
+use Revolution\Copilot\Types\Rpc\SkillsGetInvokedResult;
+use Revolution\Copilot\Types\Rpc\SkillsInvokedSkill;
 use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 
@@ -93,6 +95,64 @@ describe('SkillInfo', function () {
     it('implements Arrayable interface', function () {
         $info = new SkillInfo(name: 'a', description: 'b', source: 'c', userInvocable: true, enabled: true);
         expect($info)->toBeInstanceOf(Arrayable::class);
+    });
+});
+
+describe('SkillsInvokedSkill', function () {
+    it('reads and serializes optional invocation details', function () {
+        $skill = SkillsInvokedSkill::fromArray([
+            'name' => 'code-review',
+            'path' => '/skills/code-review/SKILL.md',
+            'content' => 'Review code',
+            'allowedTools' => ['read_file'],
+            'disableModelInvocation' => false,
+            'invokedAtTurn' => 2,
+        ]);
+
+        expect($skill->disableModelInvocation)->toBeFalse()
+            ->and($skill->toArray())->toBe([
+                'name' => 'code-review',
+                'path' => '/skills/code-review/SKILL.md',
+                'content' => 'Review code',
+                'allowedTools' => ['read_file'],
+                'disableModelInvocation' => false,
+                'invokedAtTurn' => 2,
+            ]);
+    });
+
+    it('omits optional invocation details when absent', function () {
+        $skill = SkillsInvokedSkill::fromArray([
+            'name' => 'code-review',
+            'path' => '/skills/code-review/SKILL.md',
+            'content' => 'Review code',
+            'invokedAtTurn' => 2,
+        ]);
+
+        expect($skill->allowedTools)->toBeNull()
+            ->and($skill->disableModelInvocation)->toBeNull()
+            ->and($skill->toArray())->not->toHaveKey('allowedTools')
+            ->and($skill->toArray())->not->toHaveKey('disableModelInvocation');
+    });
+});
+
+describe('SkillsGetInvokedResult', function () {
+    it('converts invoked skills to typed objects and arrays', function () {
+        $result = SkillsGetInvokedResult::fromArray([
+            'skills' => [[
+                'name' => 'code-review',
+                'path' => '/skills/code-review/SKILL.md',
+                'content' => 'Review code',
+                'invokedAtTurn' => 2,
+            ]],
+        ]);
+
+        expect($result->skills[0])->toBeInstanceOf(SkillsInvokedSkill::class)
+            ->and($result->toArray()['skills'][0])->toBe([
+                'name' => 'code-review',
+                'path' => '/skills/code-review/SKILL.md',
+                'content' => 'Review code',
+                'invokedAtTurn' => 2,
+            ]);
     });
 });
 

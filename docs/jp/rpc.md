@@ -798,6 +798,9 @@ $session->rpc()->skills()->list();
 $session->rpc()->skills()->enable(new SkillsEnableRequest(name: 'skill-name'));
 $session->rpc()->skills()->disable(new SkillsDisableRequest(name: 'skill-name'));
 $session->rpc()->skills()->reload();
+$session->rpc()->skills()->ensureLoaded(); // 未読込のスキルを読み込む（再読込はしない）
+$invoked = $session->rpc()->skills()->getInvoked();
+// $invoked->skills - セッション中に呼び出されたスキルの履歴
 
 // mcp (experimental: MCPサーバーの管理)
 $servers = $session->rpc()->mcp()->list();
@@ -1059,6 +1062,15 @@ $session->rpc()->commands()->handlePendingCommand(new CommandsHandlePendingComma
     requestId: '...',
 ));
 
+// commands: スラッシュコマンドを同期実行
+use Revolution\Copilot\Types\Rpc\ExecuteCommandParams;
+
+$result = $session->rpc()->commands()->execute(new ExecuteCommandParams(
+    commandName: 'review',
+    args: 'src/',
+), timeout: 120.0); // CLI 応答の待機時間（秒）。省略時は30秒
+// $result->error - 実行に失敗した場合のエラーメッセージ（成功時は null）
+
 // commands: キューに入ったコマンドへの応答
 $session->rpc()->commands()->respondToQueuedCommand(new CommandsRespondToQueuedCommandRequest(
     requestId: '...',
@@ -1139,7 +1151,15 @@ $session->rpc()->shell()->kill(new ShellKillRequest(
 ));
 
 // ユーザーがリクエストしたシェルコマンドをキャンセル
+use Revolution\Copilot\Types\Rpc\ShellExecuteUserRequestedRequest;
 use Revolution\Copilot\Types\Rpc\ShellCancelUserRequestedRequest;
+
+$execution = $session->rpc()->shell()->executeUserRequested(new ShellExecuteUserRequestedRequest(
+    requestId: 'req-123',
+    command: 'pwd',
+), timeout: 120.0); // CLI 応答の待機時間（秒）。省略時は30秒
+// $execution->toolCallId / success / output / exitCode / error
+// 実行中に別の処理からキャンセルする場合は、同じ requestId を指定する
 
 $cancelled = $session->rpc()->shell()->cancelUserRequested(
     new ShellCancelUserRequestedRequest(requestId: 'req-123')

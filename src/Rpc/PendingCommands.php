@@ -14,6 +14,8 @@ use Revolution\Copilot\Types\Rpc\CommandsRespondToQueuedCommandRequest;
 use Revolution\Copilot\Types\Rpc\CommandsRespondToQueuedCommandResult;
 use Revolution\Copilot\Types\Rpc\EnqueueCommandParams;
 use Revolution\Copilot\Types\Rpc\EnqueueCommandResult;
+use Revolution\Copilot\Types\Rpc\ExecuteCommandParams;
+use Revolution\Copilot\Types\Rpc\ExecuteCommandResult;
 
 /**
  * Pending commands RPC operations for a session.
@@ -37,6 +39,21 @@ class PendingCommands
 
         return EnqueueCommandResult::fromArray(
             $this->client->request('session.commands.enqueue', $paramsArray),
+        );
+    }
+
+    /**
+     * Execute a slash command and return any error.
+     *
+     * @param  float  $timeout  Maximum time in seconds to wait for the CLI response.
+     */
+    public function execute(ExecuteCommandParams|array $params, float $timeout = 30.0): ExecuteCommandResult
+    {
+        $paramsArray = ($params instanceof ExecuteCommandParams ? $params : ExecuteCommandParams::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ExecuteCommandResult::fromArray(
+            $this->client->request('session.commands.execute', $paramsArray, $timeout),
         );
     }
 
