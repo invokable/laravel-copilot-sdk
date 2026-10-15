@@ -18,6 +18,8 @@ use Revolution\Copilot\Types\Rpc\PlanSqlTodosRow;
 use Revolution\Copilot\Types\Rpc\PluginsReloadRequest;
 use Revolution\Copilot\Types\Rpc\ServerInstructionSourceList;
 use Revolution\Copilot\Types\Rpc\ShellCancelUserRequestedRequest;
+use Revolution\Copilot\Types\Rpc\ShellExecuteUserRequestedRequest;
+use Revolution\Copilot\Types\Rpc\UserRequestedShellCommandResult;
 
 describe('McpTools', function () {
     it('can be created from array with all fields', function () {
@@ -393,5 +395,61 @@ describe('CancelUserRequestedShellCommandResult', function () {
         $result = new CancelUserRequestedShellCommandResult(cancelled: true);
 
         expect($result->toArray())->toBe(['cancelled' => true]);
+    });
+});
+
+describe('ShellExecuteUserRequestedRequest', function () {
+    it('converts a user-requested command to an array', function () {
+        $request = ShellExecuteUserRequestedRequest::fromArray([
+            'requestId' => 'req-123',
+            'command' => 'pwd',
+        ]);
+
+        expect($request->toArray())->toBe([
+            'requestId' => 'req-123',
+            'command' => 'pwd',
+        ]);
+    });
+});
+
+describe('UserRequestedShellCommandResult', function () {
+    it('preserves a null exit code and handles a missing error', function () {
+        $result = UserRequestedShellCommandResult::fromArray([
+            'toolCallId' => 'tool-123',
+            'success' => true,
+            'output' => '/workspace',
+            'exitCode' => null,
+        ]);
+
+        expect($result->exitCode)->toBeNull()
+            ->and($result->error)->toBeNull()
+            ->and($result->toArray())->toBe([
+                'toolCallId' => 'tool-123',
+                'success' => true,
+                'output' => '/workspace',
+            ]);
+    });
+
+    it('defaults an omitted exit code to null', function () {
+        $result = UserRequestedShellCommandResult::fromArray([
+            'toolCallId' => 'tool-123',
+            'success' => true,
+            'output' => '/workspace',
+        ]);
+
+        expect($result->exitCode)->toBeNull();
+    });
+
+    it('reads an exit code and error when present', function () {
+        $result = UserRequestedShellCommandResult::fromArray([
+            'toolCallId' => 'tool-456',
+            'success' => false,
+            'output' => '',
+            'exitCode' => 127,
+            'error' => 'Command not found',
+        ]);
+
+        expect($result->exitCode)->toBe(127)
+            ->and($result->error)->toBe('Command not found');
     });
 });

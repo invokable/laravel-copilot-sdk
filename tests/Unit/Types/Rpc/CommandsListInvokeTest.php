@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Revolution\Copilot\Types\Rpc\CommandList;
 use Revolution\Copilot\Types\Rpc\CommandsInvokeRequest;
 use Revolution\Copilot\Types\Rpc\CommandsListRequest;
+use Revolution\Copilot\Types\Rpc\ExecuteCommandParams;
+use Revolution\Copilot\Types\Rpc\ExecuteCommandResult;
 use Revolution\Copilot\Types\Rpc\SlashCommandInfo;
 use Revolution\Copilot\Types\Rpc\SlashCommandInput;
 
@@ -208,5 +210,35 @@ describe('CommandList', function () {
         expect($array)->toHaveKey('commands')
             ->and($array['commands'])->toHaveCount(1)
             ->and($array['commands'][0])->toHaveKey('name', 'help');
+    });
+});
+
+describe('ExecuteCommandParams', function () {
+    it('converts command name and arguments to an array', function () {
+        $params = ExecuteCommandParams::fromArray([
+            'commandName' => 'review',
+            'args' => 'src/',
+        ]);
+
+        expect($params->toArray())->toBe([
+            'commandName' => 'review',
+            'args' => 'src/',
+        ]);
+    });
+});
+
+describe('ExecuteCommandResult', function () {
+    it('reads and serializes an error', function () {
+        $result = ExecuteCommandResult::fromArray(['error' => 'Command failed']);
+
+        expect($result->error)->toBe('Command failed')
+            ->and($result->toArray())->toBe(['error' => 'Command failed']);
+    });
+
+    it('omits an absent error', function () {
+        $result = ExecuteCommandResult::fromArray([]);
+
+        expect($result->error)->toBeNull()
+            ->and($result->toArray())->toBe([]);
     });
 });
