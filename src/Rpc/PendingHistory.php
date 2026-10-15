@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\HistoryAbortManualCompactionResult;
+use Revolution\Copilot\Types\Rpc\HistoryCancelBackgroundCompactionResult;
 use Revolution\Copilot\Types\Rpc\HistoryClearContextRequest;
 use Revolution\Copilot\Types\Rpc\HistoryClearContextResult;
 use Revolution\Copilot\Types\Rpc\HistoryCompactRequest;
@@ -14,6 +16,7 @@ use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindResult;
 use Revolution\Copilot\Types\Rpc\HistoryRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryRewindResult;
+use Revolution\Copilot\Types\Rpc\HistorySummarizeForHandoffResult;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
 
@@ -28,6 +31,30 @@ class PendingHistory
         protected JsonRpcClient $client,
         protected string $sessionId,
     ) {}
+
+    /**
+     * Abort an in-progress manual history compaction.
+     */
+    public function abortManualCompaction(): HistoryAbortManualCompactionResult
+    {
+        return HistoryAbortManualCompactionResult::fromArray(
+            $this->client->request('session.history.abortManualCompaction', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Cancel an in-progress background history compaction.
+     */
+    public function cancelBackgroundCompaction(): HistoryCancelBackgroundCompactionResult
+    {
+        return HistoryCancelBackgroundCompactionResult::fromArray(
+            $this->client->request('session.history.cancelBackgroundCompaction', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
 
     /**
      * Clear the conversation while preserving system/developer messages and seed a fresh prompt.
@@ -58,6 +85,18 @@ class PendingHistory
 
         return HistoryCompactResult::fromArray(
             $this->client->request('session.history.compact', $paramsArray),
+        );
+    }
+
+    /**
+     * Summarize the session history for handing off to another session.
+     */
+    public function summarizeForHandoff(): HistorySummarizeForHandoffResult
+    {
+        return HistorySummarizeForHandoffResult::fromArray(
+            $this->client->request('session.history.summarizeForHandoff', [
+                'sessionId' => $this->sessionId,
+            ]),
         );
     }
 
