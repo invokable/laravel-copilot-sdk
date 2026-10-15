@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\ImageToolModelAvailability;
+use Revolution\Copilot\Enums\ImageToolModelOperation;
 use Revolution\Copilot\Types\ModelInfo;
+use Revolution\Copilot\Types\Rpc\ImageToolModel;
+use Revolution\Copilot\Types\Rpc\ImageToolModelPricing;
 use Revolution\Copilot\Types\Rpc\ModelList;
 use Revolution\Copilot\Types\Rpc\ToolList;
 use Revolution\Copilot\Types\Rpc\ToolsListRequest;
@@ -27,13 +31,20 @@ describe('ModelList', function () {
             ->and($result->models[0]->id)->toBe('gpt-4');
     });
 
-    it('handles empty models list', function () {
+    it('preserves absent and empty image model catalogs distinctly', function () {
         $result = ModelList::fromArray(['models' => []]);
 
-        expect($result->models)->toBe([]);
+        expect($result->models)->toBe([])
+            ->and($result->imageModels)->toBeNull()
+            ->and($result->toArray())->not->toHaveKey('imageModels');
+
+        $withEmptyCatalog = ModelList::fromArray(['models' => [], 'imageModels' => []]);
+
+        expect($withEmptyCatalog->imageModels)->toBe([])
+            ->and($withEmptyCatalog->toArray())->toHaveKey('imageModels', []);
     });
 
-    it('can convert to array', function () {
+    it('parses and serializes image model metadata separately from chat models', function () {
         $result = ModelList::fromArray([
             'models' => [
                 [
@@ -45,12 +56,73 @@ describe('ModelList', function () {
                     ],
                 ],
             ],
+            'imageModels' => [
+                [
+                    'id' => 'gpt-image-1',
+                    'name' => 'GPT Image 1',
+                    'supportedOperations' => ['generate', 'edit'],
+                    'isDefault' => true,
+                    'availability' => 'available',
+                    'pricing' => [
+                        'batchSize' => 1000000,
+                        'textInputPrice' => 0,
+                        'textOutputPrice' => 2.5,
+                        'imageInputPrice' => 0.0,
+                    ],
+                ],
+                [
+                    'id' => 'image-unavailable',
+                    'name' => 'Unavailable Image Model',
+                    'supportedOperations' => ['generate'],
+                    'isDefault' => false,
+                    'availability' => 'unavailable',
+                ],
+            ],
         ]);
 
+        $imageModel = $result->imageModels[0];
+        $unavailableModel = $result->imageModels[1];
         $array = $result->toArray();
 
         expect($array['models'])->toHaveCount(1)
-            ->and($array['models'][0]['id'])->toBe('gpt-4');
+            ->and($result->models[0]->id)->toBe('gpt-4')
+            ->and($imageModel)->toBeInstanceOf(ImageToolModel::class)
+            ->and($imageModel->id)->toBe('gpt-image-1')
+            ->and($imageModel->supportedOperations)->toBe([
+                ImageToolModelOperation::Generate,
+                ImageToolModelOperation::Edit,
+            ])
+            ->and($imageModel->isDefault)->toBeTrue()
+            ->and($imageModel->availability)->toBe(ImageToolModelAvailability::Available)
+            ->and($imageModel->pricing)->toBeInstanceOf(ImageToolModelPricing::class)
+            ->and($imageModel->pricing->textInputPrice)->toBe(0.0)
+            ->and($imageModel->pricing->imageInputPrice)->toBe(0.0)
+            ->and($imageModel->pricing->imageOutputPrice)->toBeNull()
+            ->and($unavailableModel->availability)->toBe(ImageToolModelAvailability::Unavailable)
+            ->and($unavailableModel->isDefault)->toBeFalse()
+            ->and($unavailableModel->pricing)->toBeNull()
+            ->and($array['imageModels'])->toBe([
+                [
+                    'id' => 'gpt-image-1',
+                    'name' => 'GPT Image 1',
+                    'supportedOperations' => ['generate', 'edit'],
+                    'isDefault' => true,
+                    'availability' => 'available',
+                    'pricing' => [
+                        'batchSize' => 1000000,
+                        'textInputPrice' => 0.0,
+                        'textOutputPrice' => 2.5,
+                        'imageInputPrice' => 0.0,
+                    ],
+                ],
+                [
+                    'id' => 'image-unavailable',
+                    'name' => 'Unavailable Image Model',
+                    'supportedOperations' => ['generate'],
+                    'isDefault' => false,
+                    'availability' => 'unavailable',
+                ],
+            ]);
     });
 });
 
