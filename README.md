@@ -18,7 +18,9 @@ This package is Laravel version of [GitHub Copilot SDK](https://github.com/githu
 
 ## Installation
 
-The SDK tracks the official Copilot CLI 1.0.90 protocol. Experimental installation
+The embedded SDK snapshot is current through the official Copilot CLI 1.0.99-1.
+The Laravel package ports capabilities selectively; advancing the snapshot does
+not imply complete protocol or feature parity. Experimental installation
 operations can be wired to an explicit host approval callback with the
 `installation_confirmation_handler` client option. The callback receives an
 `InstallationConfirmationRequest`; return `InstallationDecision::CONFIRM`,

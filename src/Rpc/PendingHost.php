@@ -13,6 +13,8 @@ use Revolution\Copilot\Types\Rpc\HostPublishSessionRequest;
 use Revolution\Copilot\Types\Rpc\HostPublishSessionResult;
 use Revolution\Copilot\Types\Rpc\HostStartRequest;
 use Revolution\Copilot\Types\Rpc\HostStartResult;
+use Revolution\Copilot\Types\Rpc\HostUnpublishSessionRequest;
+use Revolution\Copilot\Types\Rpc\HostUnpublishSessionResult;
 
 /**
  * Pending host-level RPC operations.
@@ -50,6 +52,22 @@ class PendingHost
 
         return HostPublishSessionResult::fromArray(
             $this->client->request('host.publishSession', $paramsArray),
+        );
+    }
+
+    /**
+     * Withdraw an application publication from an owned live host.
+     *
+     * The underlying local session and any ongoing work are preserved.
+     */
+    public function unpublishSession(HostUnpublishSessionRequest|array $params): HostUnpublishSessionResult
+    {
+        $paramsArray = $params instanceof HostUnpublishSessionRequest
+            ? $params->toArray()
+            : HostUnpublishSessionRequest::fromArray($params)->toArray();
+
+        return HostUnpublishSessionResult::fromArray(
+            $this->client->request('host.unpublishSession', $paramsArray),
         );
     }
 

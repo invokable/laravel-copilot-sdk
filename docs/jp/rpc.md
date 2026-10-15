@@ -614,6 +614,16 @@ $result = Copilot::client()->rpc()->contentExclusion()->validatePolicies(
 
 ### Runtime・Host のライフサイクル（experimental）
 
+`host.unpublishSession()` は、所有する稼働中のホストから application publication を撤回します。公開を撤回しても、元のセッション履歴、worktree、実行中の作業は削除・停止されません。すでに公開されていない場合は `unpublished` が `false` になり、application 以外の publication はエラーになります。
+
+```php
+$result = Copilot::client()->rpc()->host()->unpublishSession([
+    'hostId' => 'host-1',
+    'sessionId' => 'session-1',
+]);
+// $result->unpublished
+```
+
 `host.dispose()` は `hostId` を指定してホストリスナーを破棄します。
 
 ```php
