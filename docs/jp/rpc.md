@@ -610,6 +610,8 @@ $result = Copilot::client()->rpc()->contentExclusion()->validatePolicies(
 
 `policiesJson` は未解析のJSON文字列のままCLIに渡されます。JSONの解析またはスキーマ検証に失敗した場合は、CLIからのRPCエラー（`JsonRpcException`）が発生します。
 
+これはポリシー自体を検証するサーバースコープのRPCです。セッションの作業ディレクトリ内のパスを実際の除外ポリシーに照らして確認するには、セッションスコープの `contentExclusion()->checkPaths()` を使います。
+
 ### Runtime・Host のライフサイクル（experimental）
 
 `host.dispose()` は `hostId` を指定してホストリスナーを破棄します。
@@ -646,6 +648,27 @@ Copilot::start(function (CopilotSession $session) {
     dump($response->content());
 });
 ```
+
+### contentExclusion (experimental)
+
+セッションの作業ディレクトリ内にあるローカル絶対パスが、コンテンツ除外ポリシーの対象か確認できます。ファイルの内容を読み込んだり添付したりする前に呼び出してください。
+
+```php
+use Revolution\Copilot\Types\Rpc\ContentExclusionCheckPathsRequest;
+
+$result = $session->rpc()->contentExclusion()->checkPaths(
+    new ContentExclusionCheckPathsRequest(paths: [
+        '/workspace/private.txt',
+        '/workspace/public.txt',
+    ]),
+);
+
+if ($result->isExcluded('/workspace/private.txt')) {
+    // 除外対象、または安全に判定できません。
+}
+```
+
+`checkPaths()` は絶対パスのみを受け付け、パスはセッションの作業ディレクトリ内にある必要があります。`checks` は入力と同じ順序で返り、重複したパスもそのまま保持されます。サポートされないパス、ファイルシステム、またはポリシー評価が利用できない場合は `available: false` と空の `checks` が返ります。この場合、`isExcluded()` は常に `true` を返すため、すべてのパスを除外対象として扱ってください。`available: true` でも結果にないパスは安全側に倒して除外対象と判定します。
 
 ### MCP Apps (experimental)
 

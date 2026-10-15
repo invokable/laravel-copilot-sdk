@@ -23,6 +23,7 @@ use Revolution\Copilot\Rpc\PendingPlugins;
 use Revolution\Copilot\Rpc\PendingQueue;
 use Revolution\Copilot\Rpc\PendingSandbox;
 use Revolution\Copilot\Rpc\PendingSchedule;
+use Revolution\Copilot\Rpc\PendingSessionContentExclusion;
 use Revolution\Copilot\Rpc\PendingSkills;
 use Revolution\Copilot\Rpc\PendingTasks;
 use Revolution\Copilot\Rpc\PendingTools;
@@ -104,6 +105,12 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->metadata())->toBeInstanceOf(PendingMetadata::class);
+    });
+
+    it('returns PendingSessionContentExclusion from contentExclusion()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->contentExclusion())->toBeInstanceOf(PendingSessionContentExclusion::class);
     });
 
     it('returns PendingEventLog from eventLog()', function () {
