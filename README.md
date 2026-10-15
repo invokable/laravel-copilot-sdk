@@ -20,20 +20,11 @@ This package is Laravel version of [GitHub Copilot SDK](https://github.com/githu
 
 The embedded SDK snapshot is current through the official Copilot CLI 1.0.99-1.
 The Laravel package ports capabilities selectively; advancing the snapshot does
-not imply complete protocol or feature parity. Experimental installation
-operations can be wired to an explicit host approval callback with the
-`installation_confirmation_handler` client option. The callback receives an
-`InstallationConfirmationRequest`; return `InstallationDecision::CONFIRM`,
-`DECLINE`, or `CANCEL`. The SDK echoes the request challenge and review
-fingerprint and never infers approval.
+not imply complete protocol or feature parity.
 
 The PHP callback is synchronous; unlike the Node.js SDK it does not currently
 receive a transport cancellation token. Stdio shutdown sends EOF first and
 waits briefly for the runtime to exit naturally before terminating it.
-
-Workflow APIs are the forward-compatible orchestration surface. Factory RPC
-types remain available for compatibility with older runtimes, but new code
-should use `$session->rpc()->workflow()`.
 
 ```shell
 composer require revolution/laravel-copilot-sdk
