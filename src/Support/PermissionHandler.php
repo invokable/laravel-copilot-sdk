@@ -15,9 +15,9 @@ final readonly class PermissionHandler
      * A handler that approves all permission requests.
      *
      * Throws when managed settings are enabled for the session, since managed
-     * policy requires an explicit user decision in that case. When the request
-     * carries `managedApprovalRequired`, returns `no-result` so the runtime's
-     * default (fail-closed) handling takes over instead of auto-approving.
+     * policy requires an explicit user decision in that case. When a supported
+     * prompt context indicates that a human response is required, returns
+     * `no-result`; older runtimes fall back to the raw request marker.
      *
      * @return Closure(array, array): array
      *
@@ -30,7 +30,22 @@ final readonly class PermissionHandler
                 throw new \RuntimeException('approveAll cannot be used when managed settings are enabled.');
             }
 
-            if (($request['managedApprovalRequired'] ?? false) === true) {
+            $promptRequest = $invocation['promptRequest'] ?? null;
+            $promptKind = is_array($promptRequest) ? ($promptRequest['kind'] ?? null) : null;
+            $promptManagedApprovalRequired = is_array($promptRequest)
+                ? ($promptRequest['managedApprovalRequired'] ?? null)
+                : null;
+
+            $managedApprovalRequired = ($request['managedApprovalRequired'] ?? false) === true;
+
+            if (
+                in_array($promptKind, ['commands', 'read', 'write', 'url', 'workflow'], true)
+                && is_bool($promptManagedApprovalRequired)
+            ) {
+                $managedApprovalRequired = $promptManagedApprovalRequired;
+            }
+
+            if ($managedApprovalRequired) {
                 return PermissionDecision::noResult();
             }
 

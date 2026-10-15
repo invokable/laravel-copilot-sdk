@@ -17,6 +17,7 @@ use Revolution\Copilot\Types\Hooks\SubagentStartHookInput;
 use Revolution\Copilot\Types\Hooks\SubagentStartHookOutput;
 use Revolution\Copilot\Types\Hooks\SubagentStopHookInput;
 use Revolution\Copilot\Types\Hooks\SubagentStopHookOutput;
+use Revolution\Copilot\Types\Hooks\UserPromptSubmittedHookOutput;
 use Revolution\Copilot\Types\McpAuthRequest;
 use Revolution\Copilot\Types\McpAuthResult;
 use Revolution\Copilot\Types\McpAuthToken;
@@ -895,6 +896,51 @@ describe('Session', function () {
         expect($receivedInvocation)->toBe([
             'sessionId' => 'test-session',
             'managedSettingsEnabled' => true,
+        ]);
+    });
+
+    it('passes prompt context from permission events to callbacks', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient);
+        $receivedInvocation = null;
+        $session->registerPermissionHandler(function (array $request, array $invocation) use (&$receivedInvocation): array {
+            $receivedInvocation = $invocation;
+
+            return ['kind' => 'no-result'];
+        });
+
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'permission.requested',
+            'data' => [
+                'requestId' => 'request-1',
+                'permissionRequest' => ['kind' => 'read', 'managedApprovalRequired' => true],
+                'promptRequest' => ['kind' => 'read', 'managedApprovalRequired' => false],
+            ],
+        ]));
+
+        expect($receivedInvocation)->toBe([
+            'sessionId' => 'test-session',
+            'managedSettingsEnabled' => false,
+            'promptRequest' => ['kind' => 'read', 'managedApprovalRequired' => false],
+        ]);
+    });
+
+    it('serializes a blocked user prompt hook with its warning reason', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldNotReceive('request');
+        $session = new Session('test-session', $mockClient);
+        $session->registerHooks([
+            'onUserPromptSubmitted' => fn () => new UserPromptSubmittedHookOutput(
+                decision: 'block',
+                reason: 'This prompt is not permitted.',
+            ),
+        ]);
+
+        $result = $session->handleHooksInvoke('userPromptSubmitted', ['prompt' => 'restricted request']);
+
+        expect($result)->toBe([
+            'decision' => 'block',
+            'reason' => 'This prompt is not permitted.',
         ]);
     });
 

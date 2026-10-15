@@ -67,13 +67,14 @@ trait HasPermissionHandler
      *
      * @internal
      */
-    protected function executePermissionAndRespond(string $requestId, array $permissionRequest): void
+    protected function executePermissionAndRespond(string $requestId, array $permissionRequest, ?array $promptRequest = null): void
     {
-        $fiber = new \Fiber(function () use ($requestId, $permissionRequest): void {
+        $fiber = new \Fiber(function () use ($requestId, $permissionRequest, $promptRequest): void {
             try {
                 $handlerResult = ($this->permissionHandler)($permissionRequest, [
                     'sessionId' => $this->sessionId,
                     'managedSettingsEnabled' => $this->managedSettingsEnabled,
+                    ...($promptRequest === null ? [] : ['promptRequest' => $promptRequest]),
                 ]);
 
                 $result = $this->extractDecisionResult($handlerResult);

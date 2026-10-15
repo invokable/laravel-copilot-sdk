@@ -155,6 +155,21 @@ Copilot::start(function (CopilotSession $session) {
 
 `null` を返すとデフォルト動作が継続されます。
 
+`onUserPromptSubmitted`は`decision: 'block'`を返してプロンプトを拒否できます。拒否された場合、モデルターンは開始されず、ユーザーメッセージも記録されません。`reason`を指定すると、その内容が`warningType: "policy_blocked"`の一時的な`session.warning`イベントに含まれます。
+
+```php
+onUserPromptSubmitted: function (UserPromptSubmittedHookInput $input): ?UserPromptSubmittedHookOutput {
+    if (str_contains($input->prompt, 'restricted')) {
+        return new UserPromptSubmittedHookOutput(
+            decision: 'block',
+            reason: 'このプロンプトは許可されていません。',
+        );
+    }
+
+    return null;
+},
+```
+
 ## 代表的なユースケース
 
 ### 1) Permission Control（実行制御）
@@ -251,6 +266,8 @@ Copilot::start(function (CopilotSession $session) {
 | `modifiedPrompt` | `?string` | 改変後プロンプト |
 | `additionalContext` | `?string` | 補足コンテキスト |
 | `suppressOutput` | `?bool` | 応答表示の抑制 |
+| `decision` | `?string` | `block`でプロンプトを拒否し、モデルターンとユーザーメッセージの記録を抑止 |
+| `reason` | `?string` | 拒否理由。`session.warning`イベントに含まれる |
 
 ### `UserPromptTransformedHookInput`
 

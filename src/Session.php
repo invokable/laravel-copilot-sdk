@@ -780,6 +780,7 @@ class Session implements CopilotSession
         } elseif ($event->is(SessionEventType::PERMISSION_REQUESTED)) {
             $requestId = $event->data['requestId'] ?? null;
             $permissionRequest = $event->data['permissionRequest'] ?? [];
+            $promptRequest = $event->data['promptRequest'] ?? null;
             $resolvedByHook = $event->data['resolvedByHook'] ?? false;
 
             if ($resolvedByHook) {
@@ -790,7 +791,11 @@ class Session implements CopilotSession
                 return;
             }
 
-            $this->executePermissionAndRespond($requestId, $permissionRequest);
+            $this->executePermissionAndRespond(
+                $requestId,
+                $permissionRequest,
+                is_array($promptRequest) ? $promptRequest : null,
+            );
         } elseif ($event->is(SessionEventType::COMMAND_EXECUTE)) {
             $requestId = $event->data['requestId'] ?? null;
             $commandName = $event->data['commandName'] ?? null;
