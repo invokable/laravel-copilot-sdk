@@ -26,6 +26,7 @@ use Revolution\Copilot\Types\Rpc\McpPromptsGetRequest;
 use Revolution\Copilot\Types\Rpc\McpPromptsGetResult;
 use Revolution\Copilot\Types\Rpc\McpPromptsListRequest;
 use Revolution\Copilot\Types\Rpc\McpPromptsListResult;
+use Revolution\Copilot\Types\Rpc\McpReloadWithConfigRequest;
 use Revolution\Copilot\Types\Rpc\McpRemoveGitHubResult;
 use Revolution\Copilot\Types\Rpc\McpRestartServerRequest;
 use Revolution\Copilot\Types\Rpc\McpSamplingExecutionResult;
@@ -114,6 +115,23 @@ class PendingMcp
         return $this->client->request('session.mcp.reload', [
             'sessionId' => $this->sessionId,
         ]);
+    }
+
+    /**
+     * Reload MCP server connections with an explicit host-provided configuration.
+     *
+     * @return array<string, mixed>
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function reloadWithConfig(McpReloadWithConfigRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof McpReloadWithConfigRequest
+            ? $params
+            : McpReloadWithConfigRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return $this->client->request('session.mcp.reloadWithConfig', $paramsArray);
     }
 
     /**

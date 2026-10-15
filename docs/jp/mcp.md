@@ -74,6 +74,34 @@ $config = new SessionConfig(
 
 ハンドラーを指定すると、`mcp.oauth_required`イベントの受信登録も自動で行われます。ブラウザーを開けないWebリクエスト、キュー、バッチなどでもホスト側で認証できます。セッション再開時も`ResumeSessionConfig`に同じハンドラーを指定してください。
 
+## MCP OAuthの事前確認（Server RPC）
+
+リモートMCPサーバーがOAuth認証を要求した後、Server RPCでDynamic Client Registration（DCR）に対応しているかを調べられます。`authorizationServerUrl`はメタデータから認可サーバーを発見できた場合に返ります。`supportsDcr`が`false`なら動的登録は利用できません。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\McpOauthCheckDcrSupportRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthIsMicrosoftAuthorizationServerRequest;
+
+$oauth = Copilot::client()->rpc()->mcp()->oauth();
+
+$dcr = $oauth->checkDcrSupport(new McpOauthCheckDcrSupportRequest(
+    serverUrl: 'https://mcp.example.com',
+    resourceMetadataText: $challengeMetadata,
+    sessionId: $session->id(),
+));
+
+$isMicrosoft = $dcr->authorizationServerUrl === null
+    ? false
+    : $oauth->isMicrosoftAuthorizationServer(new McpOauthIsMicrosoftAuthorizationServerRequest(
+        authorizationServerUrl: $dcr->authorizationServerUrl,
+    ))->isMicrosoftAuthorizationServer;
+```
+
+`resourceMetadataText`は`WWW-Authenticate`チャレンジから得た保護リソースメタデータで、省略するとサーバーURLから認可サーバーを探索します。`sessionId`を指定すると、そのローカルセッションの送信先ポリシーとsandbox proxyが適用されます。Microsoft Entra IDはDCRに対応しないため、Microsoftの認可サーバーと判定された場合は、ユーザーにクライアント資格情報を求める代わりに事前登録済みクライアントを使う選択肢があります。
+
+これらはServer RPC（`Copilot::client()->rpc()`）です。セッションRPCの`$session->rpc()->mcp()->oauth()`が提供するログインやOAuth要求の処理とは別の名前空間です。
+
 ## MCPサーバーのステータス
 
 セッション内のMCPサーバーのステータスは以下の値を取ります：
@@ -128,4 +156,19 @@ Copilot::client()->rpc()->mcp()->update(new McpConfigUpdateRequest(
 
 // MCPサーバーを削除
 Copilot::client()->rpc()->mcp()->remove(new McpConfigRemoveRequest(name: 'laravel-boost'));
+```
+
+## MCP再読み込み時の無効化設定
+
+`reloadWithConfig()`で設定を渡す場合、`configuredDisabledServers`は呼び出し側が解決した設定由来の無効化リストです。セッション単位の`disabledServers`やCLIの`cliEnabledServers`とは別に指定してください。設定由来の無効化はCLIによる有効化と明示的なセッション無効化より優先度が低いため、`configuredDisabledServers`を`disabledServers`へまとめないでください。
+
+```php
+$session->rpc()->mcp()->reloadWithConfig([
+    'config' => [
+        'mcpServers' => $mcpServers,
+        'disabledServers' => ['session-disabled'],
+        'cliEnabledServers' => ['cli-enabled'],
+        'configuredDisabledServers' => ['settings-disabled'],
+    ],
+]);
 ```

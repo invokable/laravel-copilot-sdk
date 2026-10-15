@@ -16,6 +16,8 @@ use Revolution\Copilot\Types\Rpc\McpOauthRespondRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthRespondResult;
 use Revolution\Copilot\Types\Rpc\McpPromptsGetRequest;
 use Revolution\Copilot\Types\Rpc\McpPromptsListRequest;
+use Revolution\Copilot\Types\Rpc\McpReloadConfig;
+use Revolution\Copilot\Types\Rpc\McpReloadWithConfigRequest;
 use Revolution\Copilot\Types\Rpc\McpRestartServerRequest;
 use Revolution\Copilot\Types\Rpc\McpServerList;
 use Revolution\Copilot\Types\Rpc\McpSetEnvValueModeParams;
@@ -141,6 +143,35 @@ describe('PendingMcp', function () {
         $result = $pending->reload();
 
         expect($result)->toBe([]);
+    });
+
+    it('keeps configured settings disables distinct from session disables on reload', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.mcp.reloadWithConfig', [
+                'config' => [
+                    'mcpServers' => [],
+                    'disabledServers' => ['session-disabled'],
+                    'cliEnabledServers' => ['cli-enabled'],
+                    'configuredDisabledServers' => ['settings-disabled'],
+                ],
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(['filteredServers' => []]);
+
+        $result = (new PendingMcp($client, 'session-abc'))->reloadWithConfig(
+            new McpReloadWithConfigRequest(
+                config: new McpReloadConfig(
+                    mcpServers: [],
+                    disabledServers: ['session-disabled'],
+                    cliEnabledServers: ['cli-enabled'],
+                    configuredDisabledServers: ['settings-disabled'],
+                ),
+            ),
+        );
+
+        expect($result)->toBe(['filteredServers' => []]);
     });
 
     it('calls session.mcp.moveLoadingToBackground and returns result', function () {
