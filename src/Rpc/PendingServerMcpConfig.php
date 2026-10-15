@@ -46,6 +46,14 @@ class PendingServerMcpConfig
     }
 
     /**
+     * Server-scoped MCP OAuth discovery operations.
+     */
+    public function oauth(): PendingServerMcpOauth
+    {
+        return new PendingServerMcpOauth($this->client);
+    }
+
+    /**
      * MCP installation lifecycle RPC operations.
      *
      * @experimental
