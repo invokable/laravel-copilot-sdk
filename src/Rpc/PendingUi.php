@@ -10,8 +10,13 @@ use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\Rpc\UIElicitationResult;
 use Revolution\Copilot\Types\Rpc\UIEphemeralQueryRequest;
 use Revolution\Copilot\Types\Rpc\UIEphemeralQueryResult;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingAutoModeSwitchRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingElicitationRequest;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingExitPlanModeRequest;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingResult;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingSamplingRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingSessionLimitsExhaustedRequest;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingUserInputRequest;
 
 /**
  * Pending UI RPC operations for a session.
@@ -59,6 +64,58 @@ class PendingUi
 
         return UIElicitationResult::fromArray(
             $this->client->request('session.ui.handlePendingElicitation', $paramsArray),
+        );
+    }
+
+    /**
+     * Respond to a pending user input request from a broadcast event.
+     */
+    public function handlePendingUserInput(UIHandlePendingUserInputRequest|array $params): UIHandlePendingResult
+    {
+        $paramsArray = ($params instanceof UIHandlePendingUserInputRequest ? $params : UIHandlePendingUserInputRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return UIHandlePendingResult::fromArray(
+            $this->client->request('session.ui.handlePendingUserInput', $paramsArray),
+        );
+    }
+
+    /**
+     * Respond to a pending exit plan mode request from a broadcast event.
+     */
+    public function handlePendingExitPlanMode(UIHandlePendingExitPlanModeRequest|array $params): UIHandlePendingResult
+    {
+        $paramsArray = ($params instanceof UIHandlePendingExitPlanModeRequest ? $params : UIHandlePendingExitPlanModeRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return UIHandlePendingResult::fromArray(
+            $this->client->request('session.ui.handlePendingExitPlanMode', $paramsArray),
+        );
+    }
+
+    /**
+     * Respond to a pending auto mode switch request from a broadcast event.
+     */
+    public function handlePendingAutoModeSwitch(UIHandlePendingAutoModeSwitchRequest|array $params): UIHandlePendingResult
+    {
+        $paramsArray = ($params instanceof UIHandlePendingAutoModeSwitchRequest ? $params : UIHandlePendingAutoModeSwitchRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return UIHandlePendingResult::fromArray(
+            $this->client->request('session.ui.handlePendingAutoModeSwitch', $paramsArray),
+        );
+    }
+
+    /**
+     * Respond to a pending sampling request from a broadcast event.
+     */
+    public function handlePendingSampling(UIHandlePendingSamplingRequest|array $params): UIHandlePendingResult
+    {
+        $paramsArray = ($params instanceof UIHandlePendingSamplingRequest ? $params : UIHandlePendingSamplingRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return UIHandlePendingResult::fromArray(
+            $this->client->request('session.ui.handlePendingSampling', $paramsArray),
         );
     }
 

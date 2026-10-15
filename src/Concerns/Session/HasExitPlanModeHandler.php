@@ -8,14 +8,11 @@ use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\ExitPlanModeResult;
-use Throwable;
 
 /**
  * Manages exit-plan-mode request handler registration and execution.
  *
- * When a registered handler exists, incoming `exit_plan_mode.requested` broadcast events
- * are forwarded to the handler. The handler's response determines whether the plan
- * exit is approved.
+ * Handles incoming `exitPlanMode.request` reverse-RPC requests.
  *
  * @internal
  */
@@ -41,43 +38,24 @@ trait HasExitPlanModeHandler
     }
 
     /**
-     * Handle an exit_plan_mode.requested broadcast event.
-     *
-     * Invokes the registered handler and responds via session.handleExitPlanMode RPC.
+     * Handle an exitPlanMode.request reverse-RPC request.
      *
      * @internal
      */
-    protected function handleExitPlanModeRequest(ExitPlanModeRequest $request, string $requestId): void
+    public function handleExitPlanModeRequest(ExitPlanModeRequest $request): ExitPlanModeResult
     {
         if ($this->exitPlanModeHandler === null) {
-            return;
+            return new ExitPlanModeResult(approved: true);
         }
 
-        try {
-            $result = ($this->exitPlanModeHandler)($request);
+        $result = ($this->exitPlanModeHandler)($request);
 
-            $resultArray = match (true) {
-                $result instanceof Arrayable => $result->toArray(),
-                is_array($result) => $result,
-                default => ['approved' => true],
-            };
-
-            $this->client->request('session.handleExitPlanMode', [
-                'sessionId' => $this->sessionId,
-                'requestId' => $requestId,
-                'result' => $resultArray,
-            ]);
-        } catch (Throwable) {
-            // Handler failed — approve by default so the session doesn't hang
-            try {
-                $this->client->request('session.handleExitPlanMode', [
-                    'sessionId' => $this->sessionId,
-                    'requestId' => $requestId,
-                    'result' => ['approved' => true],
-                ]);
-            } catch (Throwable) {
-                // Connection lost — nothing we can do
-            }
+        if ($result instanceof ExitPlanModeResult) {
+            return $result;
         }
+
+        return $result instanceof Arrayable
+            ? ExitPlanModeResult::fromArray($result->toArray())
+            : (is_array($result) ? ExitPlanModeResult::fromArray($result) : new ExitPlanModeResult(approved: true));
     }
 }

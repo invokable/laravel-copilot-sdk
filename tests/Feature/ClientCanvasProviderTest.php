@@ -38,7 +38,7 @@ function startClientWithCanvasHandlers(
     $rpc->shouldReceive('start')->once();
     $rpc->shouldReceive('setNotificationHandler')->once();
     $rpc->shouldReceive('setRequestHandler')
-        ->times(27)
+        ->times(29)
         ->andReturnUsing(function (string $method, Closure $handler) use (&$handlers): void {
             $handlers[$method] = $handler;
         });

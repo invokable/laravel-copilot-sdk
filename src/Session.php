@@ -39,10 +39,8 @@ use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Support\CanvasError;
 use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Support\TraceContext;
-use Revolution\Copilot\Types\AutoModeSwitchRequest;
 use Revolution\Copilot\Types\CanvasDeclaration;
 use Revolution\Copilot\Types\ElicitationContext;
-use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\McpAuthRequest;
 use Revolution\Copilot\Types\Rpc\CanvasAction;
 use Revolution\Copilot\Types\Rpc\CanvasProviderCloseRequest;
@@ -822,30 +820,6 @@ class Session implements CopilotSession
                 );
 
                 $this->handleElicitationRequest($context, $requestId);
-            }
-        } elseif ($event->is(SessionEventType::EXIT_PLAN_MODE_REQUESTED)) {
-            if ($this->exitPlanModeHandler !== null) {
-                $requestId = $event->data['requestId'] ?? null;
-
-                if ($requestId === null) {
-                    return;
-                }
-
-                $request = ExitPlanModeRequest::fromArray($event->data);
-
-                $this->handleExitPlanModeRequest($request, $requestId);
-            }
-        } elseif ($event->is(SessionEventType::AUTO_MODE_SWITCH_REQUESTED)) {
-            if ($this->autoModeSwitchHandler !== null) {
-                $requestId = $event->data['requestId'] ?? null;
-
-                if ($requestId === null) {
-                    return;
-                }
-
-                $request = AutoModeSwitchRequest::fromArray($event->data);
-
-                $this->handleAutoModeSwitchRequest($request, $requestId);
             }
         } elseif ($event->is(SessionEventType::MCP_OAUTH_REQUIRED)) {
             $requestId = $event->data['requestId'] ?? null;

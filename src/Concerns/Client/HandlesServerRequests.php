@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Concerns\Client;
 
 use Revolution\Copilot\Events\Client\ToolCall;
+use Revolution\Copilot\Types\AutoModeSwitchRequest;
+use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\ToolResultObject;
@@ -142,6 +144,63 @@ trait HandlesServerRequests
         $response = $session->handleUserInputRequest($request);
 
         return $response->toArray();
+    }
+
+    /**
+     * Handle exit plan mode requests from the server.
+     */
+    protected function handleExitPlanModeRequest(array $params): array
+    {
+        $sessionId = $params['sessionId'] ?? null;
+        $summary = $params['summary'] ?? null;
+        $actions = $params['actions'] ?? null;
+        $recommendedAction = $params['recommendedAction'] ?? null;
+
+        if (! is_string($sessionId) || $sessionId === ''
+            || ! is_string($summary)
+            || ! is_array($actions)
+            || ! is_string($recommendedAction)) {
+            throw new \InvalidArgumentException('Invalid exit plan mode request payload');
+        }
+
+        $session = $this->sessions[$sessionId] ?? null;
+
+        if ($session === null) {
+            throw new RuntimeException("Session not found: {$sessionId}");
+        }
+
+        $request = new ExitPlanModeRequest(
+            summary: $summary,
+            actions: $actions,
+            recommendedAction: $recommendedAction,
+            planContent: $params['planContent'] ?? null,
+        );
+
+        return $session->handleExitPlanModeRequest($request)->toArray();
+    }
+
+    /**
+     * Handle auto mode switch requests from the server.
+     */
+    protected function handleAutoModeSwitchRequest(array $params): array
+    {
+        $sessionId = $params['sessionId'] ?? null;
+
+        if (! is_string($sessionId) || $sessionId === '') {
+            throw new \InvalidArgumentException('Invalid auto mode switch request payload');
+        }
+
+        $session = $this->sessions[$sessionId] ?? null;
+
+        if ($session === null) {
+            throw new RuntimeException("Session not found: {$sessionId}");
+        }
+
+        $response = $session->handleAutoModeSwitchRequest(
+            AutoModeSwitchRequest::fromArray($params),
+        );
+
+        return ['response' => $response->value];
     }
 
     /**
