@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\PluginApplyInstallRequest;
+use Revolution\Copilot\Types\Rpc\PluginInstallationManagementResult;
+use Revolution\Copilot\Types\Rpc\PluginInstallationResult;
 use Revolution\Copilot\Types\Rpc\PluginInstallResult;
 use Revolution\Copilot\Types\Rpc\PluginList;
+use Revolution\Copilot\Types\Rpc\PluginPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\PluginsDisableRequest;
 use Revolution\Copilot\Types\Rpc\PluginsEnableRequest;
 use Revolution\Copilot\Types\Rpc\PluginsInstallRequest;
@@ -25,6 +29,38 @@ class PendingServerPlugins
     public function __construct(
         protected JsonRpcClient $client,
     ) {}
+
+    /**
+     * Creates a side-effect-free install plan for a selected Agent Plugin candidate.
+     *
+     * @experimental
+     */
+    public function planInstall(PluginPlanInstallRequest|array $params): PluginInstallationManagementResult
+    {
+        $paramsArray = ($params instanceof PluginPlanInstallRequest
+            ? $params
+            : PluginPlanInstallRequest::fromArray($params))->toArray();
+
+        return PluginInstallationManagementResult::fromArray(
+            $this->client->request('plugins.planInstall', $paramsArray),
+        );
+    }
+
+    /**
+     * Applies a previously generated Agent Plugin plan after requesting explicit confirmation.
+     *
+     * @experimental
+     */
+    public function applyInstall(PluginApplyInstallRequest|array $params): PluginInstallationResult
+    {
+        $paramsArray = ($params instanceof PluginApplyInstallRequest
+            ? $params
+            : PluginApplyInstallRequest::fromArray($params))->toArray();
+
+        return PluginInstallationResult::fromArray(
+            $this->client->request('plugins.applyInstall', $paramsArray),
+        );
+    }
 
     /**
      * List plugins installed in user/global state.

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\CatalogPlanInstallFromReferenceRequest;
+use Revolution\Copilot\Types\Rpc\CatalogReferenceInstallationResult;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 
@@ -51,8 +53,8 @@ class PendingCatalog
     /**
      * Resolves a candidate from a previous search for this session.
      *
-     * On a `selected` result, pass its fresh `candidateHandle` to
-     * `PendingServerSkills::planInstall` to continue the skill installation flow.
+     * On a `selected` result, pass its fresh `candidateHandle` to the matching
+     * skill or plugin `planInstall` operation.
      *
      * @return array<string, mixed>
      *
@@ -65,5 +67,23 @@ class PendingCatalog
             : CatalogSelectionRequest::fromArray($params))->toArray();
 
         return $this->client->request('catalog.select', $paramsArray);
+    }
+
+    /**
+     * Plans installation of the resource pinned by a verified materialisation reference.
+     *
+     * The outcome kind identifies whether the reference describes a skill or an Agent Plugin.
+     *
+     * @experimental
+     */
+    public function planInstallFromReference(CatalogPlanInstallFromReferenceRequest|array $params): CatalogReferenceInstallationResult
+    {
+        $paramsArray = ($params instanceof CatalogPlanInstallFromReferenceRequest
+            ? $params
+            : CatalogPlanInstallFromReferenceRequest::fromArray($params))->toArray();
+
+        return CatalogReferenceInstallationResult::fromArray(
+            $this->client->request('catalog.planInstallFromReference', $paramsArray),
+        );
     }
 }
