@@ -838,6 +838,11 @@ $session->rpc()->extensions()->reload();
 
 // compaction → history に名前変更
 $session->rpc()->history()->compact();
+// 手動圧縮を中断する / バックグラウンド圧縮をキャンセルする
+$session->rpc()->history()->abortManualCompaction();
+$session->rpc()->history()->cancelBackgroundCompaction();
+// 別セッションへの引き継ぎ用要約を取得する
+$summary = $session->rpc()->history()->summarizeForHandoff()->summary;
 // 特定のイベント以降の履歴を切り詰める
 $session->rpc()->history()->truncate(new HistoryTruncateRequest(
     eventId: 'evt-123', // このイベントとそれ以降のすべてのイベントが削除される

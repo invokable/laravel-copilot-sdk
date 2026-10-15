@@ -7,6 +7,8 @@ use Revolution\Copilot\Enums\HistoryRewindChangeType;
 use Revolution\Copilot\Enums\HistoryRewindMode;
 use Revolution\Copilot\Enums\HistoryRewindOutcome;
 use Revolution\Copilot\Enums\HistoryRewindUnavailableReason;
+use Revolution\Copilot\Types\Rpc\HistoryAbortManualCompactionResult;
+use Revolution\Copilot\Types\Rpc\HistoryCancelBackgroundCompactionResult;
 use Revolution\Copilot\Types\Rpc\HistoryCompactRequest;
 use Revolution\Copilot\Types\Rpc\HistoryListRewindPointsResult;
 use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindRequest;
@@ -16,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\HistoryRewindPoint;
 use Revolution\Copilot\Types\Rpc\HistoryRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryRewindResult;
 use Revolution\Copilot\Types\Rpc\HistorySkippedFileRestore;
+use Revolution\Copilot\Types\Rpc\HistorySummarizeForHandoffResult;
 
 describe('HistoryCompactRequest', function () {
     it('keeps only provided fields', function () {
@@ -30,6 +33,33 @@ describe('HistoryCompactRequest', function () {
 
     it('supports an empty payload', function () {
         expect(HistoryCompactRequest::fromArray([])->toArray())->toBe([]);
+    });
+});
+
+describe('HistoryAbortManualCompactionResult', function () {
+    it('hydrates and serializes the aborted status', function () {
+        $result = HistoryAbortManualCompactionResult::fromArray(['aborted' => true]);
+
+        expect($result->aborted)->toBeTrue()
+            ->and($result->toArray())->toBe(['aborted' => true]);
+    });
+});
+
+describe('HistoryCancelBackgroundCompactionResult', function () {
+    it('hydrates and serializes the cancelled status', function () {
+        $result = HistoryCancelBackgroundCompactionResult::fromArray(['cancelled' => false]);
+
+        expect($result->cancelled)->toBeFalse()
+            ->and($result->toArray())->toBe(['cancelled' => false]);
+    });
+});
+
+describe('HistorySummarizeForHandoffResult', function () {
+    it('hydrates and serializes the summary', function () {
+        $result = HistorySummarizeForHandoffResult::fromArray(['summary' => 'Current work and decisions']);
+
+        expect($result->summary)->toBe('Current work and decisions')
+            ->and($result->toArray())->toBe(['summary' => 'Current work and decisions']);
     });
 });
 

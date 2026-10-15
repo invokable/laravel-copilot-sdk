@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingHistory;
+use Revolution\Copilot\Types\Rpc\HistoryAbortManualCompactionResult;
+use Revolution\Copilot\Types\Rpc\HistoryCancelBackgroundCompactionResult;
 use Revolution\Copilot\Types\Rpc\HistoryCompactRequest;
 use Revolution\Copilot\Types\Rpc\HistoryCompactResult;
 use Revolution\Copilot\Types\Rpc\HistoryListRewindPointsResult;
@@ -11,10 +13,50 @@ use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindResult;
 use Revolution\Copilot\Types\Rpc\HistoryRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryRewindResult;
+use Revolution\Copilot\Types\Rpc\HistorySummarizeForHandoffResult;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
 
 describe('PendingHistory', function () {
+    it('aborts manual history compaction', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.history.abortManualCompaction', ['sessionId' => 'session-abc'])
+            ->andReturn(['aborted' => true]);
+
+        $result = (new PendingHistory($client, 'session-abc'))->abortManualCompaction();
+
+        expect($result)->toBeInstanceOf(HistoryAbortManualCompactionResult::class)
+            ->and($result->aborted)->toBeTrue();
+    });
+
+    it('cancels background history compaction', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.history.cancelBackgroundCompaction', ['sessionId' => 'session-abc'])
+            ->andReturn(['cancelled' => true]);
+
+        $result = (new PendingHistory($client, 'session-abc'))->cancelBackgroundCompaction();
+
+        expect($result)->toBeInstanceOf(HistoryCancelBackgroundCompactionResult::class)
+            ->and($result->cancelled)->toBeTrue();
+    });
+
+    it('summarizes history for handoff', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.history.summarizeForHandoff', ['sessionId' => 'session-abc'])
+            ->andReturn(['summary' => 'Decisions and current task']);
+
+        $result = (new PendingHistory($client, 'session-abc'))->summarizeForHandoff();
+
+        expect($result)->toBeInstanceOf(HistorySummarizeForHandoffResult::class)
+            ->and($result->summary)->toBe('Decisions and current task');
+    });
+
     it('calls session.history.compact and returns result', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
