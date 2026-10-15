@@ -8,9 +8,51 @@ use Revolution\Copilot\Rpc\PendingUi;
 use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\Rpc\UIElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIEphemeralQueryRequest;
+use Revolution\Copilot\Types\Rpc\UIEphemeralQueryResult;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingElicitationRequest;
 
 describe('PendingUi', function () {
+    it('calls session.ui.ephemeralQuery with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.ui.ephemeralQuery',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'
+                    && $params['question'] === 'What is the answer?'),
+            )
+            ->andReturn(['answer' => '42']);
+
+        $pending = new PendingUi($client, 'session-abc');
+        $result = $pending->ephemeralQuery(new UIEphemeralQueryRequest(
+            question: 'What is the answer?',
+        ));
+
+        expect($result)->toBeInstanceOf(UIEphemeralQueryResult::class)
+            ->and($result->answer)->toBe('42');
+    });
+
+    it('calls session.ui.ephemeralQuery with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.ui.ephemeralQuery',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'
+                    && $params['question'] === 'What is the current context?'),
+            )
+            ->andReturn(['answer' => 'The current conversation context.']);
+
+        $pending = new PendingUi($client, 'session-abc');
+        $result = $pending->ephemeralQuery([
+            'question' => 'What is the current context?',
+        ]);
+
+        expect($result)->toBeInstanceOf(UIEphemeralQueryResult::class)
+            ->and($result->answer)->toBe('The current conversation context.');
+    });
+
     it('calls session.ui.elicitation with typed params', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
