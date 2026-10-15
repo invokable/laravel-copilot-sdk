@@ -92,6 +92,22 @@ class PendingPermissions
     }
 
     /**
+     * Location-scoped permissions RPC operations.
+     */
+    public function locations(): PendingPermissionsLocations
+    {
+        return new PendingPermissionsLocations($this->client, $this->sessionId);
+    }
+
+    /**
+     * Folder trust RPC operations.
+     */
+    public function folderTrust(): PendingPermissionsFolderTrust
+    {
+        return new PendingPermissionsFolderTrust($this->client, $this->sessionId);
+    }
+
+    /**
      * Configure session permission policy fields.
      */
     public function configure(PermissionsConfigureParams|array $params): PermissionsConfigureResult

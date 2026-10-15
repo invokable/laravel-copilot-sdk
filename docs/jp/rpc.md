@@ -888,6 +888,12 @@ $result = $session->rpc()->tools()->updateSubagentSettings(new UpdateSubagentSet
 // $result->settings - 更新後の SubagentSettings
 
 // permissions (プロトコルv3+: permission.requestedイベントへの応答)
+use Revolution\Copilot\Types\Rpc\FolderTrustAddParams;
+use Revolution\Copilot\Types\Rpc\PermissionLocationAddToolApprovalParams;
+use Revolution\Copilot\Types\Rpc\PermissionLocationApplyParams;
+use Revolution\Copilot\Types\Rpc\PermissionLocationResolveParams;
+use Revolution\Copilot\Types\Rpc\PermissionsLocationsAddToolApprovalDetailsCommands;
+
 $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(
     requestId: '...',
     result: PermissionDecision::approveOnce(),
@@ -921,6 +927,23 @@ $session->rpc()->permissions()->paths()->isPathWithinWorkspace(new PermissionPat
 $session->rpc()->permissions()->urls()->setUnrestrictedMode(
     new PermissionUrlsSetUnrestrictedModeParams(enabled: true)
 );
+// 作業ディレクトリの権限ロケーションを解決して、保存済みルールを適用
+$location = $session->rpc()->permissions()->locations()->resolve(
+    new PermissionLocationResolveParams(workingDirectory: '/path/to/repo')
+);
+$session->rpc()->permissions()->locations()->apply(
+    new PermissionLocationApplyParams(workingDirectory: '/path/to/repo')
+);
+// ツール承認を権限ロケーションに永続化
+$session->rpc()->permissions()->locations()->addToolApproval(
+    new PermissionLocationAddToolApprovalParams(
+        approval: new PermissionsLocationsAddToolApprovalDetailsCommands(commandIdentifiers: ['bash']),
+        locationKey: $location->locationKey,
+    )
+);
+// フォルダ信頼状態の確認と追加
+$trusted = $session->rpc()->permissions()->folderTrust()->isTrusted(['path' => '/path/to/repo']);
+$session->rpc()->permissions()->folderTrust()->addTrusted(new FolderTrustAddParams(path: '/path/to/repo'));
 
 // commands: セッションで利用可能なスラッシュコマンド一覧を取得
 use Revolution\Copilot\Types\Rpc\CommandsListRequest;
