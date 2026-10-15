@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Rpc;
 
+use InvalidArgumentException;
 use Revolution\Copilot\Enums\LoginProviderKind;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\AccountStatus;
+use Revolution\Copilot\Types\Rpc\AuthLoginIdentity;
 use Revolution\Copilot\Types\Rpc\AuthLoginAdvanceRequest;
 use Revolution\Copilot\Types\Rpc\AuthLoginBeginRequest;
 use Revolution\Copilot\Types\Rpc\AuthLoginBegun;
@@ -22,16 +24,31 @@ class PendingSessionAccounts
 {
     public function __construct(protected JsonRpcClient $client, protected string $sessionId) {}
 
-    /** @return array<AccountStatus|ProviderDescriptor> */
-    public function enumerate(string $kind = 'accounts', ?bool $brokerAvailable = null): array
+    /** @return array<AccountStatus|AuthLoginIdentity|ProviderDescriptor> */
+    public function enumerate(
+        string $kind = 'accounts',
+        ?bool $brokerAvailable = null,
+        LoginProviderKind|string|null $provider = null,
+    ): array
     {
         $query = ['kind' => $kind];
         if ($kind === 'providers' && $brokerAvailable !== null) {
             $query['brokerAvailable'] = $brokerAvailable;
         }
+        if ($kind === 'loginAccounts') {
+            if ($provider === null) {
+                throw new InvalidArgumentException('A provider is required to enumerate login accounts.');
+            }
+
+            $query['provider'] = $provider instanceof LoginProviderKind ? $provider->value : $provider;
+        }
         $result = $this->client->request('session.accounts.enumerate', ['sessionId' => $this->sessionId, 'query' => $query]);
 
-        return array_map(fn (array $item) => $kind === 'providers' ? ProviderDescriptor::fromArray($item) : AccountStatus::fromArray($item), $result['items'] ?? []);
+        return array_map(fn (array $item) => match ($kind) {
+            'providers' => ProviderDescriptor::fromArray($item),
+            'loginAccounts' => AuthLoginIdentity::fromArray($item),
+            default => AccountStatus::fromArray($item),
+        }, $result['items'] ?? []);
     }
 
     public function get(string $kind): AuthReadValue
