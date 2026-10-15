@@ -26,6 +26,7 @@ Copilot::client()->listModels();
 ### メソッドリスト
 
 ```php
+use Illuminate\Http\Client\Response;
 use Revolution\Copilot\Enums\CatalogCandidateKind;
 use Revolution\Copilot\Enums\CatalogSelectionDecision;
 use Revolution\Copilot\Enums\EventsReadDirection;
@@ -78,6 +79,8 @@ use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
 use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\UIEphemeralQueryRequest;
 use Revolution\Copilot\Types\SessionListFilter;
+use Revolution\Copilot\Support\CopilotRequestContext;
+use Revolution\Copilot\Support\CopilotRequestHandler;
 
 Copilot::client()->rpc()->ping();
 
@@ -226,6 +229,25 @@ Copilot::client()->rpc()->mcp()->discover(new McpDiscoverRequest(
 // 引数なしで実行可能
 $result = Copilot::client()->rpc()->mcp()->discover();
 // $result->servers は DiscoveredMcpServer の配列
+
+// llmInference（experimental: モデル層へのHTTPリクエストをフック）
+$client = Copilot::client([
+    'request_handler' => new class extends CopilotRequestHandler
+    {
+        public function sendRequest(CopilotRequestContext $context, string $method, string $body): Response
+        {
+            $context->url = 'https://proxy.example.com/v1/chat/completions';
+            $context->headers['X-Request-Source'] = ['laravel'];
+
+            return parent::sendRequest($context, $method, $body);
+        }
+    },
+]);
+
+// 起動時にllmInference.setProviderが送信され、httpRequestStart / httpRequestChunkを受け取ります。
+// sendRequestを上書きしないハンドラはLaravel HTTP ClientでHTTP/SSEを透過転送します。
+// Closureを指定する場合はfn (CopilotRequestContext $context, string $method, string $body): Responseの形式でResponseを返します。
+// request_handlerはexperimentalです。WebSocket transportは未対応で、501相当のエラー応答になります。
 
 // sessionFs (セッションファイルシステムプロバイダーの登録)
 Copilot::client()->rpc()->sessionFs()->setProvider(new SessionFsSetProviderRequest(

@@ -478,6 +478,38 @@ describe('CopilotManager', function () {
             ->and($receivedOptions[2]['extension_launch_provider'])->toBe($handler);
     });
 
+    it('forwards request handlers from manager and transport options', function () {
+        $handler = fn () => null;
+        $receivedOptions = [];
+
+        $this->app->bind(Client::class, function ($app, array $parameters) use (&$receivedOptions) {
+            $receivedOptions[] = $parameters['options'];
+
+            $client = Mockery::mock(CopilotClient::class);
+            $client->shouldReceive('start')->once();
+            $client->shouldReceive('stop')->andReturn([]);
+
+            return $client;
+        });
+
+        $manager = new CopilotManager(['request_handler' => $handler]);
+        $manager->client();
+        $manager->useStdio(['requestHandler' => $handler]);
+        $manager->stop();
+
+        $tcpManager = new CopilotManager([
+            'url' => 'tcp://127.0.0.1:12345',
+            'request_handler' => $handler,
+        ]);
+        $tcpManager->client();
+        $tcpManager->stop();
+
+        expect($receivedOptions)->toHaveCount(3)
+            ->and($receivedOptions[0]['request_handler'])->toBe($handler)
+            ->and($receivedOptions[1]['requestHandler'])->toBe($handler)
+            ->and($receivedOptions[2]['request_handler'])->toBe($handler);
+    });
+
     it('forwards client mode through configured stdio and TCP options', function () {
         $receivedOptions = [];
 
