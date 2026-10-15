@@ -8,6 +8,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\BuiltInModelCatalog;
 use Revolution\Copilot\Types\Rpc\ModelList;
 use Revolution\Copilot\Types\Rpc\ModelsListRequest;
+use Revolution\Copilot\Types\Rpc\ModelsListTokenPriceUnitsRequest;
+use Revolution\Copilot\Types\Rpc\ModelTokenPriceUnitList;
 
 /**
  * Pending models RPC operations.
@@ -32,6 +34,22 @@ class PendingServerModels
 
         return ModelList::fromArray(
             $this->client->request('models.list', $paramsArray),
+        );
+    }
+
+    /**
+     * List the billing units used by model token prices.
+     *
+     * @param  ModelsListTokenPriceUnitsRequest|array|null  $params  Optional account selection parameters.
+     */
+    public function listTokenPriceUnits(ModelsListTokenPriceUnitsRequest|array|null $params = null): ModelTokenPriceUnitList
+    {
+        $paramsArray = $params === null
+            ? []
+            : ($params instanceof ModelsListTokenPriceUnitsRequest ? $params : ModelsListTokenPriceUnitsRequest::fromArray($params))->toArray();
+
+        return ModelTokenPriceUnitList::fromArray(
+            $this->client->request('models.listTokenPriceUnits', $paramsArray),
         );
     }
 

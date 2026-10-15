@@ -8,6 +8,8 @@ Clientに紐づくRPCクラス。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Enums\TokenPriceUnit;
+use Revolution\Copilot\Types\Rpc\ModelsListTokenPriceUnitsRequest;
 use Revolution\Copilot\Types\Rpc\ModelList;
 
 // モデルリストの取得
@@ -88,6 +90,16 @@ Copilot::client()->rpc()->ping();
 Copilot::client()->rpc()->models()->list();
 // セッションごとのGitHubトークンで取得
 Copilot::client()->rpc()->models()->list(new ModelsListRequest(gitHubToken: $token));
+// モデルのトークン価格の単位を取得。models.listと同じアカウント選択情報を渡す
+$priceUnits = Copilot::client()->rpc()->models()->listTokenPriceUnits(
+    new ModelsListTokenPriceUnitsRequest(gitHubToken: $token),
+);
+// $priceUnits->units は modelId と TokenPriceUnit|string の unit を持つ
+foreach ($priceUnits->units as $priceUnit) {
+    if ($priceUnit->unit === TokenPriceUnit::NanoAiu) {
+        // nano-AIU を AI Credits に換算する場合は 1,000,000,000 で割る
+    }
+}
 // 組み込みモデルカタログ
 Copilot::client()->rpc()->models()->getBuiltInCatalog();
 
