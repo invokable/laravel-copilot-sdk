@@ -342,6 +342,16 @@ class Client implements CopilotClient
             );
 
             $this->rpcClient->setRequestHandler(
+                'exitPlanMode.request',
+                fn (array $params) => $this->handleExitPlanModeRequest($params),
+            );
+
+            $this->rpcClient->setRequestHandler(
+                'autoModeSwitch.request',
+                fn (array $params) => $this->handleAutoModeSwitchRequest($params),
+            );
+
+            $this->rpcClient->setRequestHandler(
                 'hooks.invoke',
                 fn (array $params) => $this->handleHooksInvoke($params),
             );

@@ -353,7 +353,7 @@ function startClientWithRequestHandler(CopilotRequestHandler|Closure|null $handl
 
             return true;
         })
-        ->times($handler === null ? 27 : 29);
+        ->times($handler === null ? 29 : 31);
     $rpcClient->shouldReceive('request')
         ->andReturnUsing(function (string $method, array $params) use (&$requests): array {
             $requests[] = [$method, $params];

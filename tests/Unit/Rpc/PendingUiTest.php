@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\ElicitationAction;
+use Revolution\Copilot\Enums\UIAutoModeSwitchResponse;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingUi;
 use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
@@ -10,7 +11,14 @@ use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\Rpc\UIElicitationResult;
 use Revolution\Copilot\Types\Rpc\UIEphemeralQueryRequest;
 use Revolution\Copilot\Types\Rpc\UIEphemeralQueryResult;
+use Revolution\Copilot\Types\Rpc\UIExitPlanModeResponse;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingAutoModeSwitchRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingElicitationRequest;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingExitPlanModeRequest;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingResult;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingSamplingRequest;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingUserInputRequest;
+use Revolution\Copilot\Types\Rpc\UIUserInputResponse;
 
 describe('PendingUi', function () {
     it('calls session.ui.ephemeralQuery with typed params', function () {
@@ -162,5 +170,122 @@ describe('PendingUi', function () {
 
         expect($result)->toBeInstanceOf(UIElicitationResult::class)
             ->and($result->success)->toBeFalse();
+    });
+
+    it('calls session.ui.handlePendingUserInput with typed and array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with(
+                'session.ui.handlePendingUserInput',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'
+                    && $params['requestId'] === 'user-123'
+                    && $params['response'] === ['answer' => 'blue', 'wasFreeform' => true]),
+            )
+            ->andReturn(['success' => true], ['success' => false]);
+
+        $pending = new PendingUi($client, 'session-abc');
+        $typedResult = $pending->handlePendingUserInput(new UIHandlePendingUserInputRequest(
+            requestId: 'user-123',
+            response: new UIUserInputResponse(answer: 'blue', wasFreeform: true),
+        ));
+        $arrayResult = $pending->handlePendingUserInput([
+            'requestId' => 'user-123',
+            'response' => ['answer' => 'blue', 'wasFreeform' => true],
+        ]);
+
+        expect($typedResult)->toBeInstanceOf(UIHandlePendingResult::class)
+            ->and($typedResult->success)->toBeTrue()
+            ->and($arrayResult->success)->toBeFalse();
+    });
+
+    it('calls session.ui.handlePendingExitPlanMode with typed and array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with(
+                'session.ui.handlePendingExitPlanMode',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'
+                    && $params['requestId'] === 'plan-123'
+                    && $params['response'] === [
+                        'approved' => true,
+                        'selectedAction' => 'autopilot_fleet',
+                        'feedback' => 'Proceed',
+                    ]),
+            )
+            ->andReturn(['success' => true], ['success' => false]);
+
+        $pending = new PendingUi($client, 'session-abc');
+        $typedResult = $pending->handlePendingExitPlanMode(new UIHandlePendingExitPlanModeRequest(
+            requestId: 'plan-123',
+            response: new UIExitPlanModeResponse(
+                approved: true,
+                selectedAction: 'autopilot_fleet',
+                feedback: 'Proceed',
+            ),
+        ));
+        $arrayResult = $pending->handlePendingExitPlanMode([
+            'requestId' => 'plan-123',
+            'response' => [
+                'approved' => true,
+                'selectedAction' => 'autopilot_fleet',
+                'feedback' => 'Proceed',
+            ],
+        ]);
+
+        expect($typedResult->success)->toBeTrue()
+            ->and($arrayResult->success)->toBeFalse();
+    });
+
+    it('calls session.ui.handlePendingAutoModeSwitch with typed and array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with(
+                'session.ui.handlePendingAutoModeSwitch',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'
+                    && $params['requestId'] === 'auto-123'
+                    && $params['response'] === 'yes_always'),
+            )
+            ->andReturn(['success' => true], ['success' => false]);
+
+        $pending = new PendingUi($client, 'session-abc');
+        $typedResult = $pending->handlePendingAutoModeSwitch(new UIHandlePendingAutoModeSwitchRequest(
+            requestId: 'auto-123',
+            response: UIAutoModeSwitchResponse::YesAlways,
+        ));
+        $arrayResult = $pending->handlePendingAutoModeSwitch([
+            'requestId' => 'auto-123',
+            'response' => 'yes_always',
+        ]);
+
+        expect($typedResult->success)->toBeTrue()
+            ->and($arrayResult->success)->toBeFalse();
+    });
+
+    it('calls session.ui.handlePendingSampling with typed and array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with(
+                'session.ui.handlePendingSampling',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-abc'
+                    && $params['requestId'] === 'sampling-123'
+                    && ($params['response'] ?? null) === ['result' => 'sampled']),
+            )
+            ->andReturn(['success' => true], ['success' => false]);
+
+        $pending = new PendingUi($client, 'session-abc');
+        $typedResult = $pending->handlePendingSampling(new UIHandlePendingSamplingRequest(
+            requestId: 'sampling-123',
+            response: ['result' => 'sampled'],
+        ));
+        $arrayResult = $pending->handlePendingSampling([
+            'requestId' => 'sampling-123',
+            'response' => ['result' => 'sampled'],
+        ]);
+
+        expect($typedResult->success)->toBeTrue()
+            ->and($arrayResult->success)->toBeFalse();
     });
 });

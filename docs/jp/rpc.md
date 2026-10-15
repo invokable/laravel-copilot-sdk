@@ -1083,6 +1083,39 @@ $session->rpc()->ui()->handlePendingElicitation(new UIHandlePendingElicitationRe
     result: ['action' => 'accept', 'content' => ['name' => 'John']],
 ));
 
+// ui: ブロードキャストイベント経由で保留中のリクエストに応答
+use Revolution\Copilot\Enums\UIAutoModeSwitchResponse;
+use Revolution\Copilot\Types\Rpc\UIExitPlanModeResponse;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingAutoModeSwitchRequest;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingExitPlanModeRequest;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingSamplingRequest;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingUserInputRequest;
+use Revolution\Copilot\Types\Rpc\UIUserInputResponse;
+
+$result = $session->rpc()->ui()->handlePendingUserInput(new UIHandlePendingUserInputRequest(
+    requestId: '...',
+    response: new UIUserInputResponse(answer: 'blue', wasFreeform: false),
+));
+
+$result = $session->rpc()->ui()->handlePendingExitPlanMode(new UIHandlePendingExitPlanModeRequest(
+    requestId: '...',
+    response: new UIExitPlanModeResponse(approved: true, selectedAction: 'autopilot_fleet'),
+));
+
+$result = $session->rpc()->ui()->handlePendingAutoModeSwitch(new UIHandlePendingAutoModeSwitchRequest(
+    requestId: '...',
+    response: UIAutoModeSwitchResponse::Yes,
+));
+
+$result = $session->rpc()->ui()->handlePendingSampling(new UIHandlePendingSamplingRequest(
+    requestId: '...',
+    response: ['result' => '...'],
+));
+// 各メソッドは UIHandlePendingResult を返す。$result->success で応答が受理されたか確認できる。
+
+// SessionConfig の onExitPlanModeRequest / onAutoModeSwitchRequest は reverse-RPC で自動応答する。
+// 同じリクエストをイベント経由で手動応答する場合は、両方の経路を重ねて使わないこと。
+
 // log: セッションタイムラインへのメッセージ記録
 $session->rpc()->log()->log(new LogRequest(message: '処理を開始しました'));
 $session->rpc()->log()->log(new LogRequest(message: 'ディスク使用量が多い', level: LogLevel::WARNING));

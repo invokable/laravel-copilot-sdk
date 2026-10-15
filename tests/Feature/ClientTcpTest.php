@@ -41,7 +41,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(27);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -68,7 +68,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(27);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -103,7 +103,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('stop')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(27);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
@@ -133,7 +133,7 @@ describe('Client TCP Mode', function () {
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
-        $mockRpcClient->shouldReceive('setRequestHandler')->times(27);
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['token' => 'secret', 'supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()

@@ -24,6 +24,7 @@ use Revolution\Copilot\Types\CanvasDeclaration;
 use Revolution\Copilot\Support\CanvasError;
 use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Enums\UIAutoModeSwitchResponse;
 
 $config = new SessionConfig(
     // 使用するモデルの指定
@@ -172,17 +173,17 @@ $config = new SessionConfig(
     },
 
     // プランモード終了リクエストのハンドラー
-    // 設定するとエージェントがプランモードを終了する際のリクエストを受け取れる
+    // 設定するとreverse-RPCで応答し、省略時は自動承認される
     onExitPlanModeRequest: function (ExitPlanModeRequest $request) {
         // プラン内容を確認して承認・却下
         return new ExitPlanModeResult(approved: true, selectedAction: $request->recommendedAction);
     },
 
     // 自動モード切替リクエストのハンドラー
-    // レートリミット到達時にautoモードへの切替を許可するか選択できる
+    // レートリミット到達時にautoモードへの切替を許可するか選択できる。省略時は "no"
     onAutoModeSwitchRequest: function (AutoModeSwitchRequest $request) {
-        // "yes", "yes_always", "no" のいずれかを返す
-        return 'yes';
+        // "yes", "yes_always", "no" または UIAutoModeSwitchResponse を返す
+        return UIAutoModeSwitchResponse::Yes;
     },
 
     // セッション内部テレメトリの有効/無効化（デフォルト: null = 有効）
