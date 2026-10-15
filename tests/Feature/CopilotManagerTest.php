@@ -11,6 +11,7 @@ use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
 use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -443,6 +444,38 @@ describe('CopilotManager', function () {
             ->and($receivedOptions[0]['builtin_plugin_directories'])->toBe(['/config/plugins'])
             ->and($receivedOptions[1]['builtinPluginDirectories'])->toBe(['/stdio/plugins'])
             ->and($receivedOptions[2]['builtinPluginDirectories'])->toBe(['/tcp/plugins']);
+    });
+
+    it('forwards extension launch providers from manager and transport options', function () {
+        $handler = fn (ExtensionLaunchProviderResolveRequest $request) => null;
+        $receivedOptions = [];
+
+        $this->app->bind(Client::class, function ($app, array $parameters) use (&$receivedOptions) {
+            $receivedOptions[] = $parameters['options'];
+
+            $client = Mockery::mock(CopilotClient::class);
+            $client->shouldReceive('start')->once();
+            $client->shouldReceive('stop')->andReturn([]);
+
+            return $client;
+        });
+
+        $manager = new CopilotManager(['extensionLaunchProvider' => $handler]);
+        $manager->client();
+        $manager->useStdio(['extension_launch_provider' => $handler]);
+        $manager->stop();
+
+        $tcpManager = new CopilotManager([
+            'url' => 'tcp://127.0.0.1:12345',
+            'extension_launch_provider' => $handler,
+        ]);
+        $tcpManager->client();
+        $tcpManager->stop();
+
+        expect($receivedOptions)->toHaveCount(3)
+            ->and($receivedOptions[0]['extensionLaunchProvider'])->toBe($handler)
+            ->and($receivedOptions[1]['extension_launch_provider'])->toBe($handler)
+            ->and($receivedOptions[2]['extension_launch_provider'])->toBe($handler);
     });
 
     it('forwards client mode through configured stdio and TCP options', function () {

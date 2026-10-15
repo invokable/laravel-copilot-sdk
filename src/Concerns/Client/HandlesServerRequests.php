@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Concerns\Client;
 
 use Revolution\Copilot\Events\Client\ToolCall;
+use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
+use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\ToolResultObject;
 use Revolution\Copilot\Types\UserInputRequest;
 use RuntimeException;
@@ -164,5 +166,33 @@ trait HandlesServerRequests
         $output = $session->handleHooksInvoke($hookType, $input);
 
         return ['output' => $output];
+    }
+
+    /**
+     * Resolve a host-provided extension launch profile.
+     */
+    protected function handleExtensionLaunchProviderResolve(array $params): array
+    {
+        if ($this->extensionLaunchProvider === null) {
+            return [];
+        }
+
+        try {
+            $result = ($this->extensionLaunchProvider)(
+                ExtensionLaunchProviderResolveRequest::fromArray($params),
+            );
+
+            if ($result instanceof ExtensionLaunchProviderResolveResult) {
+                return $result->toArray();
+            }
+
+            if (is_array($result)) {
+                return ExtensionLaunchProviderResolveResult::fromArray($result)->toArray();
+            }
+        } catch (Throwable) {
+            return [];
+        }
+
+        return [];
     }
 }
