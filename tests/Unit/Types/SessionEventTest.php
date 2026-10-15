@@ -122,6 +122,101 @@ describe('SessionEvent', function () {
             'agentId' => null,
         ]);
     });
+
+    it('preserves optional compaction and fusion metadata without normalizing it', function () {
+        $startData = [
+            'compactionAttemptId' => 'attempt-1',
+            'model' => 'gpt-4.1',
+            'switchTargetModel' => 'gpt-5',
+            'targetPromptTokenLimit' => 16384,
+        ];
+        $start = SessionEvent::fromArray([
+            'type' => 'session.compaction_start',
+            'data' => $startData,
+        ]);
+
+        $completeData = [
+            'compactionAttemptId' => 'attempt-1',
+            'failureReason' => 'future_failure_reason',
+            'initialModel' => 'gpt-4.1',
+            'model' => 'gpt-5',
+            'outcome' => 'future_outcome',
+            'outcomeReason' => 'future_outcome_reason',
+            'success' => false,
+            'switchTargetModel' => 'gpt-5',
+            'targetPromptTokenLimit' => 16384,
+            'tokenAccountingBasis' => 'local_full_context_estimate',
+        ];
+        $complete = SessionEvent::fromArray([
+            'type' => 'session.compaction_complete',
+            'data' => $completeData,
+        ]);
+
+        $withoutOptionalMetadata = SessionEvent::fromArray([
+            'type' => 'session.compaction_complete',
+            'data' => ['success' => true],
+        ]);
+
+        $fusionData = ['selectedRuleId' => 'server-rule-1'];
+        $fusion = SessionEvent::fromArray([
+            'type' => 'session.fusion_resolved',
+            'data' => $fusionData,
+        ]);
+
+        expect($start->toArray()['data'])->toBe($startData)
+            ->and($complete->toArray()['data'])->toBe($completeData)
+            ->and($fusion->toArray()['data'])->toBe($fusionData);
+
+        expect($withoutOptionalMetadata->data)
+            ->not->toHaveKey('outcome')
+            ->not->toHaveKey('compactionAttemptId');
+    });
+
+    it('preserves separate tool usage and runtime deduplication metadata', function () {
+        $conversationUsage = [
+            'inputTokens' => 40,
+            'outputTokens' => 12,
+        ];
+        $assistantUsage = SessionEvent::fromArray([
+            'type' => 'assistant.usage',
+            'data' => $conversationUsage,
+        ]);
+
+        $toolUsage = [
+            'model' => 'gpt-5-mini',
+            'requestId' => 'runtime-operation-1',
+            'inputTokens' => 14,
+            'inputTokensDetails' => [
+                'imageTokens' => 5,
+                'textTokens' => 9,
+            ],
+        ];
+        $toolExecution = SessionEvent::fromArray([
+            'type' => 'tool.execution_complete',
+            'data' => [
+                'success' => false,
+                'toolCallId' => 'tool-call-1',
+                'toolUsage' => $toolUsage,
+            ],
+        ]);
+
+        $toolUsageRequestIds = ['runtime-operation-1', 'runtime-operation-2'];
+        foreach (['session.usage_checkpoint', 'session.shutdown'] as $type) {
+            $event = SessionEvent::fromArray([
+                'type' => $type,
+                'data' => ['toolUsageRequestIds' => $toolUsageRequestIds],
+            ]);
+
+            expect($event->toArray()['data'])
+                ->toBe(['toolUsageRequestIds' => $toolUsageRequestIds]);
+        }
+
+        expect($assistantUsage->data)->toBe($conversationUsage)
+            ->and($assistantUsage->data)->not->toHaveKey('toolUsage');
+        expect($toolExecution->data['toolUsage'])->toBe($toolUsage)
+            ->and($toolExecution->data['toolUsage'])->not->toHaveKey('outputTokens')
+            ->not->toHaveKey('totalTokens');
+    });
 });
 
 describe('SessionEvent broadcast', function () {

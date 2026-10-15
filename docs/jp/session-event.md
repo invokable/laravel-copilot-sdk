@@ -226,3 +226,31 @@ if ($event->is(SessionEventType::SESSION_AUTO_TIER_SWITCH_FAILED)) {
 ### `human_response.recorded`
 
 ランタイムが管理する質問やプランレビューへの応答を記録する永続イベントです。`data.requestId` で元の要求に関連付けられ、`data.response` に回答内容が入ります。`data.actor` は応答の出所を示します。
+
+## Copilot CLI 1.0.99 追加メタデータ
+
+### Compactionイベント
+
+`session.compaction_start` と `session.compaction_complete` の `data.compactionAttemptId` は、開始と完了を関連付けるIDです。モデル切り替えを伴う場合は `switchTargetModel`、切り替え先のプロンプトトークン予算が異なる場合は `targetPromptTokenLimit` も含まれます。
+
+完了イベントには `initialModel`、`model`、`outcome`、`outcomeReason`、`failureReason`、`tokenAccountingBasis` などが含まれることがあります。`outcome` や理由は将来追加される値を含む文字列なので、固定のEnumとして扱わず、未知の値もそのまま保持してください。これらのフィールドがない場合は値が提供されていないことを表し、既定値を推測しないでください。
+
+### ツール実行の使用量
+
+`tool.execution_complete` の `data.toolUsage` は、ランタイムが所有するツール操作についてプロバイダーから報告された使用量です。会話モデルの `assistant.usage` とは別の使用量であり、ツール実行が失敗しても報告済みの使用量が含まれることがあります。`toolUsage.model` はツール操作で要求されたモデルで、会話モデルを示すものではありません。
+
+トークン数や課金情報は一部だけ提供されることがあります。フィールドがない場合は利用不可であり、0トークンを意味しません。
+
+```php
+$usage = $event->data['toolUsage'] ?? null;
+$inputTokens = $usage['inputTokens'] ?? null;
+$imageTokens = $usage['inputTokensDetails']['imageTokens'] ?? null;
+```
+
+`inputTokensDetails` と `outputTokensDetails` のモダリティ別トークン数は、それぞれの合計値に含まれる内訳です。合計値に加算しないでください。`toolUsage.requestId` はランタイムによる重複配信・再生の排除用IDであり、上流の課金識別子ではありません。
+
+`session.usage_checkpoint` と `session.shutdown` の `data.toolUsageRequestIds` も、会計スナップショットに含まれたツール操作を識別するランタイム内部の重複排除メタデータです。上流の課金IDとして扱わないでください。
+
+### Fusion解決イベント
+
+`session.fusion_resolved` の `data.selectedRuleId` は、サーバー側のルーティングによりローカルのルールとは異なるワークフローが選ばれた場合に、そのサーバールールを識別します。置き換えがない場合は省略されます。
