@@ -48,6 +48,7 @@ trait HasAutoModeSwitchHandler
             return UIAutoModeSwitchResponse::No;
         }
 
+        /* @var UIAutoModeSwitchResponse|string|null $response */
         $response = ($this->autoModeSwitchHandler)($request);
 
         if ($response === null) {
