@@ -93,6 +93,13 @@ describe('Client reverse requests', function () {
         $session = $client->createSession(new SessionConfig(
             onPermissionRequest: fn () => true,
         ));
+        $nullResponseSession = $client->resumeSession(
+            'null-response-session',
+            new ResumeSessionConfig(
+                onPermissionRequest: fn () => true,
+                onAutoModeSwitchRequest: fn () => null,
+            ),
+        );
         $validExitParams = [
             'sessionId' => $session->id(),
             'summary' => 'A proposed plan',
@@ -103,6 +110,9 @@ describe('Client reverse requests', function () {
         $transport->injectRequest('exit-default', 'exitPlanMode.request', $validExitParams);
         $transport->injectRequest('auto-default', 'autoModeSwitch.request', [
             'sessionId' => $session->id(),
+        ]);
+        $transport->injectRequest('auto-null-response', 'autoModeSwitch.request', [
+            'sessionId' => $nullResponseSession->id(),
         ]);
         $transport->injectRequest('exit-invalid', 'exitPlanMode.request', [
             'sessionId' => $session->id(),
@@ -117,6 +127,7 @@ describe('Client reverse requests', function () {
 
         expect($transport->responseFor('exit-default')['result'])->toBe(['approved' => true])
             ->and($transport->responseFor('auto-default')['result'])->toBe(['response' => 'no'])
+            ->and($transport->responseFor('auto-null-response')['result'])->toBe(['response' => 'no'])
             ->and($transport->responseFor('exit-invalid')['error']['message'])
             ->toBe('Invalid exit plan mode request payload')
             ->and($transport->responseFor('exit-unknown')['error']['message'])

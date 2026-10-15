@@ -50,6 +50,10 @@ trait HasAutoModeSwitchHandler
 
         $response = ($this->autoModeSwitchHandler)($request);
 
+        if ($response === null) {
+            return UIAutoModeSwitchResponse::No;
+        }
+
         if ($response instanceof UIAutoModeSwitchResponse) {
             return $response;
         }
