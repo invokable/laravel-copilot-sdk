@@ -8,6 +8,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\Rpc\UIElicitationResult;
+use Revolution\Copilot\Types\Rpc\UIEphemeralQueryRequest;
+use Revolution\Copilot\Types\Rpc\UIEphemeralQueryResult;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingSessionLimitsExhaustedRequest;
 
@@ -20,6 +22,19 @@ class PendingUi
         protected JsonRpcClient $client,
         protected string $sessionId,
     ) {}
+
+    /**
+     * Query the current conversation context without adding to its history.
+     */
+    public function ephemeralQuery(UIEphemeralQueryRequest|array $params): UIEphemeralQueryResult
+    {
+        $paramsArray = ($params instanceof UIEphemeralQueryRequest ? $params : UIEphemeralQueryRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return UIEphemeralQueryResult::fromArray(
+            $this->client->request('session.ui.ephemeralQuery', $paramsArray),
+        );
+    }
 
     /**
      * Respond to a UI elicitation request.

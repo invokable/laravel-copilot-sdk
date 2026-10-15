@@ -73,6 +73,7 @@ use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
 use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
+use Revolution\Copilot\Types\Rpc\UIEphemeralQueryRequest;
 use Revolution\Copilot\Types\SessionListFilter;
 
 Copilot::client()->rpc()->ping();
@@ -941,6 +942,12 @@ $session->rpc()->ui()->elicitation(new UIElicitationRequest(
     message: 'ユーザーへの質問',
     requestedSchema: ['type' => 'object', 'properties' => [...]],
 ));
+
+// ui: 会話履歴に追加しない一時的な問い合わせ
+$result = $session->rpc()->ui()->ephemeralQuery(new UIEphemeralQueryRequest(
+    question: 'これまでの会話の要点を教えてください。',
+));
+// $result->answer
 
 // ui: 保留中のエリシテーションリクエストへの応答（elicitation.requestedイベント経由）
 $session->rpc()->ui()->handlePendingElicitation(new UIHandlePendingElicitationRequest(
