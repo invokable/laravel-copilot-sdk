@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Enums\LoginProviderKind;
 use Revolution\Copilot\Enums\AuthLoginMode;
+use Revolution\Copilot\Enums\LoginProviderKind;
 use Revolution\Copilot\Types\Rpc\AuthLoginBeginRequest;
 
 describe('AuthLoginBeginRequest', function () {

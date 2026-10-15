@@ -8,11 +8,11 @@ use InvalidArgumentException;
 use Revolution\Copilot\Enums\LoginProviderKind;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\AccountStatus;
-use Revolution\Copilot\Types\Rpc\AuthLoginIdentity;
 use Revolution\Copilot\Types\Rpc\AuthLoginAdvanceRequest;
 use Revolution\Copilot\Types\Rpc\AuthLoginBeginRequest;
 use Revolution\Copilot\Types\Rpc\AuthLoginBegun;
 use Revolution\Copilot\Types\Rpc\AuthLoginCancelRequest;
+use Revolution\Copilot\Types\Rpc\AuthLoginIdentity;
 use Revolution\Copilot\Types\Rpc\AuthLoginStep;
 use Revolution\Copilot\Types\Rpc\AuthReadValue;
 use Revolution\Copilot\Types\Rpc\AuthWrite;
@@ -29,8 +29,7 @@ class PendingSessionAccounts
         string $kind = 'accounts',
         ?bool $brokerAvailable = null,
         LoginProviderKind|string|null $provider = null,
-    ): array
-    {
+    ): array {
         $query = ['kind' => $kind];
         if ($kind === 'providers' && $brokerAvailable !== null) {
             $query['brokerAvailable'] = $brokerAvailable;
