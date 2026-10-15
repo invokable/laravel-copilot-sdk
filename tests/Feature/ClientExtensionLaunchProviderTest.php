@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Closure;
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Enums\ExtensionSource;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;

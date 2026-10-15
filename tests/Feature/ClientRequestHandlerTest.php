@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Closure;
 use GuzzleHttp\Psr7\Response as PsrResponse;
 use GuzzleHttp\Psr7\Stream as PsrStream;
 use Illuminate\Http\Client\Response;

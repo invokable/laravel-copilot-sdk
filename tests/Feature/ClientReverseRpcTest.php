@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Closure;
 use Illuminate\Support\Facades\Facade;
 use Revolt\EventLoop;
 use Revolution\Copilot\Client;
