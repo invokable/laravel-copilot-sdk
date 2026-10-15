@@ -498,6 +498,69 @@ Copilot::client()->rpc()->environments()->delete(['environmentId' => 'env-id']);
 
 プランの `sources` は優先順に `materialization`、`marketplace`、`repository` の候補を含みます。Marketplace には名前とリポジトリ、直接の Repository にはリポジトリと任意のパスが記録されます。利用側で内容を確認してから次の操作を決めてください。
 
+選択済み候補は `plugins.planInstall()` で副作用のない検証付きプランを作成できます。`plugins.applyInstall()` は利用者に明示的な確認を求め、許可された場合にプランを適用します。適用後のプラグインは無効状態で登録されます。
+
+```php
+use Revolution\Copilot\Enums\CatalogReferenceInstallationResultKind;
+use Revolution\Copilot\Enums\PluginInstallationManagementOutcomeKind;
+use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Types\Rpc\PluginApplyInstallRequest;
+use Revolution\Copilot\Types\Rpc\PluginPlanInstallRequest;
+
+$contract = new CatalogClientContract(3, [
+    'agent-plugin-confirmed-installation',
+]);
+$plugins = Copilot::client()->rpc()->plugins();
+
+$planned = $plugins->planInstall(new PluginPlanInstallRequest(
+    candidateHandle: $candidateHandle,
+    contract: $contract,
+    policySessionId: $sessionId,
+));
+
+if ($planned->kind === CatalogReferenceInstallationResultKind::Outcome
+    && $planned->outcome?->kind === PluginInstallationManagementOutcomeKind::InstallPlanned) {
+    $applied = $plugins->applyInstall(new PluginApplyInstallRequest(
+        contract: $contract,
+        planHandle: $planned->outcome->plan->planHandle,
+        policySessionId: $sessionId,
+    ));
+}
+```
+
+Agent Finder の materialisation reference から計画する場合は `catalog.planInstallFromReference()` を使います。結果の `outcome->kind` は `plugin-install-planned`、`skill-install-planned`、`refused` のいずれかです。プラグインの計画は `plugins.applyInstall()` に渡し、スキルの計画は `skills.applyInstall()` に渡してください。
+
+```php
+use Revolution\Copilot\Enums\CatalogCapability;
+use Revolution\Copilot\Enums\CatalogReferenceInstallationOutcomeKind;
+use Revolution\Copilot\Enums\CatalogReferenceInstallationResultKind;
+use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Types\Rpc\CatalogPlanInstallFromReferenceRequest;
+use Revolution\Copilot\Types\Rpc\PluginApplyInstallRequest;
+
+$referenceContract = new CatalogClientContract(3, [
+    CatalogCapability::CatalogReferenceInstallation->value,
+    CatalogCapability::AgentPluginConfirmedInstallation->value,
+]);
+$planned = Copilot::client()->rpc()->catalog()->planInstallFromReference(
+    new CatalogPlanInstallFromReferenceRequest(
+        contract: $referenceContract,
+        policySessionId: $sessionId,
+        reference: $reference,
+    ),
+);
+
+$plugins = Copilot::client()->rpc()->plugins();
+if ($planned->kind === CatalogReferenceInstallationResultKind::Outcome
+    && $planned->outcome?->kind === CatalogReferenceInstallationOutcomeKind::PluginInstallPlanned) {
+    $plugins->applyInstall(new PluginApplyInstallRequest(
+        contract: $referenceContract,
+        planHandle: $planned->outcome->plan->planHandle,
+        policySessionId: $sessionId,
+    ));
+}
+```
+
 ### contentExclusion
 
 セッション作成前に、コンテンツ除外ポリシーのJSONを検証できます。

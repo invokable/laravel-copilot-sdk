@@ -31,4 +31,19 @@ enum CatalogInvalidRequestField: string
 
     /** The requested configuration scope is not one this runtime writes. */
     case Scope = 'scope';
+
+    /** The supplied interaction outcome was not recognized. */
+    case Outcome = 'outcome';
+
+    /** The requested catalog page was invalid. */
+    case Page = 'page';
+
+    /** The policy session was missing or unusable. */
+    case PolicySessionId = 'policySessionId';
+
+    /** The catalog selection reference was missing or unusable. */
+    case SelectionRef = 'selectionRef';
+
+    /** The session identifier was missing or unusable. */
+    case SessionId = 'sessionId';
 }

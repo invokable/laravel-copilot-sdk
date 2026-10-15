@@ -38,6 +38,9 @@ enum CatalogCapability: string
     /** Understands reviewable Agent Plugin installability and install-plan fields. */
     case AgentPluginConfirmedInstallation = 'agent-plugin-confirmed-installation';
 
+    /** Understands installation planning from a verified catalog materialisation reference. */
+    case CatalogReferenceInstallation = 'catalog-reference-installation';
+
     /** Understands reviewable Skill installation plans and outcomes. */
     case SkillConfirmedInstallation = 'skill-confirmed-installation';
 
