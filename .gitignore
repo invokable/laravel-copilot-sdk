@@ -5,3 +5,4 @@ composer.lock
 build/
 /workbench/storage
 workbench/.env
+/.github/aw/sdk-sync-data/
