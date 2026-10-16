@@ -258,7 +258,6 @@ Fix any failures.
 Review your changes and update **only affected** docs in `docs/jp/`:
 - New/changed RPC methods → `docs/jp/rpc.md`
 - New session events → `docs/jp/session-event.md`
-- New client/session methods → `docs/jp/basic-usage.md`
 
 **Do not create new doc files.** Only update existing ones if directly affected.
 
