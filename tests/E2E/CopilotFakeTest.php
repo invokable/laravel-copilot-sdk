@@ -6,8 +6,13 @@ use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\CopilotManager;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\LogLevel;
+use Revolution\Copilot\Enums\ModelCallProviderType;
+use Revolution\Copilot\Enums\ModelCallRequestBodyCompressionFallback;
+use Revolution\Copilot\Enums\ModelCallRequestBodyEncoding;
+use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Exceptions\StrayRequestException;
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\SessionEvent;
 
 beforeEach(function () {
     // Reset the facade before each test
@@ -33,6 +38,46 @@ describe('Copilot::fake()', function () {
         $response = Copilot::run('What is 6 * 7?');
 
         expect((string) $response)->toBe('42');
+    });
+
+    it('preserves model-call telemetry in fake usage and failure responses', function () {
+        $usage = SessionEvent::fromArray([
+            'type' => 'assistant.usage',
+            'data' => [
+                'providerType' => 'local_model',
+                'requestBodyCompressionFallback' => 'retried',
+                'requestBodyCompressionFallbackFrom' => 'gzip',
+                'requestBodyCompressionRejectedStatus' => 415,
+            ],
+        ]);
+        $failure = SessionEvent::fromArray([
+            'type' => 'model.call_failure',
+            'data' => [
+                'providerType' => 'winml',
+                'requestBodyCompressionFallback' => 'disabled',
+                'requestBodyCompressionFallbackFrom' => 'zstd',
+            ],
+        ]);
+        Copilot::fake([
+            '*' => Copilot::sequence()->push($usage)->push($failure),
+        ]);
+
+        $usageResponse = Copilot::run('Usage event');
+        $failureResponse = Copilot::run('Failure event');
+
+        expect($usageResponse?->type)->toBe(SessionEventType::ASSISTANT_USAGE)
+            ->and($usageResponse?->providerType())->toBe(ModelCallProviderType::LOCAL_MODEL)
+            ->and($usageResponse?->requestBodyCompressionFallback())->toBe(ModelCallRequestBodyCompressionFallback::RETRIED)
+            ->and($usageResponse?->requestBodyCompressionFallbackFrom())->toBe(ModelCallRequestBodyEncoding::GZIP)
+            ->and($usageResponse?->requestBodyCompressionRejectedStatus())->toBe(415)
+            ->and($usageResponse?->data)->not->toHaveKey('providerName');
+
+        expect($failureResponse?->type)->toBe(SessionEventType::MODEL_CALL_FAILURE)
+            ->and($failureResponse?->providerType())->toBe(ModelCallProviderType::WINML)
+            ->and($failureResponse?->requestBodyCompressionFallback())->toBe(ModelCallRequestBodyCompressionFallback::DISABLED)
+            ->and($failureResponse?->requestBodyCompressionFallbackFrom())->toBe(ModelCallRequestBodyEncoding::ZSTD)
+            ->and($failureResponse?->requestBodyCompressionRejectedStatus())->toBeNull()
+            ->and($failureResponse?->data)->not->toHaveKey('providerName');
     });
 
     it('records agent mode from run', function () {

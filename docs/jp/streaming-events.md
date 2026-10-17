@@ -113,6 +113,10 @@ API呼び出し単位の使用量情報。
 - `apiCallId` / `providerCallId`（任意）
 - `quotaSnapshots` / `copilotUsage`（任意）
 
+BYOKの場合、`providerType` には `openai` / `azure` / `anthropic` / `local_model` / `winml` / `other` の固定カテゴリが含まれることがあります。呼び出し元が設定したプロバイダー名は含まれません。
+
+圧縮済みリクエストのフォールバック情報として、`requestBodyCompressionFallback`（`retried` / `disabled`）、元のエンコーディングを示す `requestBodyCompressionFallbackFrom`（`gzip` / `zstd`）、圧縮リクエストを拒否したHTTPステータスの `requestBodyCompressionRejectedStatus` が含まれることがあります。拒否ステータスは再試行時のみ含まれます。これらのフィールドは失敗イベント `model.call_failure` にも含まれます。各値は `SessionEvent` の同名アクセサーからEnumまたは整数として取得できます。
+
 ### `assistant.streaming_delta`（ephemeral）
 低レベルな受信進捗。
 
