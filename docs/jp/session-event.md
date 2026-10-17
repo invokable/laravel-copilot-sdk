@@ -205,7 +205,10 @@ Auto tier switching（experimental）に伴い、以下の新しいイベント�
 - `SESSION_COMPLETION_RECEIPT`: `session.completion_receipt` (experimental) - 完了レシートが発行された時
 - `SESSION_MCP_SERVER_REMOVED`: `session.mcp_server_removed` - MCPサーバーが削除された時
 - `SESSION_MCP_SERVER_NEEDS_RECONNECT`: `session.mcp_server_needs_reconnect` - MCPサーバーの再接続が必要な時
+- `SESSION_MCP_SERVER_TOOLS_LOADED`: `session.mcp_server_tools_loaded` - MCPサーバーのツール一覧が利用可能になった時
 - `ASSISTANT_FUSION_PHASE_ACTIVITY`: `assistant.fusion_phase_activity` (experimental) - フュージョンフェーズのアクティビティが発生した時
+
+`session.mcp_server_tools_loaded` は接続ごとに一度発生する一時イベントで、`data.serverName` と `data.toolCount` を含みます。永続化されません。`connected` になっただけではツールの読み込み完了を意味せず、接続状態を離れた後は次のこのイベントまで読み込み中として扱います。キャッシュ済みツールを使う場合は `connected` より先に届くことがあります。
 
 ```php
 if ($event->is(SessionEventType::SESSION_AUTO_TIER_SWITCH_FAILED)) {
