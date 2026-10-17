@@ -182,7 +182,7 @@ src/
 ├── Rpc/                         # Typed RPC layer。公式SDKはapi.schema.jsonからコード生成してるけどLaravelでは生成後の他言語版を参考にする。
 │   ├── ServerRpc.php
 │   ├── SessionRpc.php
-│   └── Pending*.php            # Python版の*Apiと同様の中間クラス
+│   └── Pending*.php            # Python版の*Apiと同様の中間クラス。ServerRpc用はPendingServer*.php、SessionRpc用はPending*.php（Server用と紛らわしい時のみPendingSession*.php） 
 ├── Support/                     # 分類しにくいヘルパークラス
 │   ├── Attachment.php
 │   ├── PermissionHandler.php
@@ -269,6 +269,3 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `tcp-mode.md`(AI): TCPモードの使い方
 - `telemetry.md`(AI): OpenTelemetryの使い方
 - `tools.md`: ツールの使い方
-
-## Debugging
-- パッケージプロジェクトなので`info()`などのログはtestbenchの`vendor/orchestra/testbench-core/laravel/storage/logs/laravel.log`に出力される。
