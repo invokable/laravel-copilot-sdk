@@ -11,12 +11,17 @@ use Revolution\Copilot\Types\Rpc\RemoteControlStopResult;
 use Revolution\Copilot\Types\Rpc\RemoteControlTransferResult;
 use Revolution\Copilot\Types\Rpc\SessionBulkDeleteResult;
 use Revolution\Copilot\Types\Rpc\SessionList;
+use Revolution\Copilot\Types\Rpc\SessionLoadDeferredRepoHooksResult;
 use Revolution\Copilot\Types\Rpc\SessionPruneResult;
 use Revolution\Copilot\Types\Rpc\SessionsBulkDeleteRequest;
 use Revolution\Copilot\Types\Rpc\SessionsCheckInUseRequest;
 use Revolution\Copilot\Types\Rpc\SessionsCheckInUseResult;
+use Revolution\Copilot\Types\Rpc\SessionsCloseRequest;
+use Revolution\Copilot\Types\Rpc\SessionsCloseResult;
 use Revolution\Copilot\Types\Rpc\SessionsCreateWorkspaceRequest;
 use Revolution\Copilot\Types\Rpc\SessionsCreateWorkspaceResult;
+use Revolution\Copilot\Types\Rpc\SessionsEnrichMetadataRequest;
+use Revolution\Copilot\Types\Rpc\SessionsEnrichMetadataResult;
 use Revolution\Copilot\Types\Rpc\SessionsFindByPrefixRequest;
 use Revolution\Copilot\Types\Rpc\SessionsFindByPrefixResult;
 use Revolution\Copilot\Types\Rpc\SessionsFindByTaskIdRequest;
@@ -28,10 +33,19 @@ use Revolution\Copilot\Types\Rpc\SessionsGetLastForContextRequest;
 use Revolution\Copilot\Types\Rpc\SessionsGetLastForContextResult;
 use Revolution\Copilot\Types\Rpc\SessionSizes;
 use Revolution\Copilot\Types\Rpc\SessionsListRequest;
+use Revolution\Copilot\Types\Rpc\SessionsLoadDeferredRepoHooksRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadWorkspaceRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadWorkspaceResult;
 use Revolution\Copilot\Types\Rpc\SessionsPruneOldRequest;
 use Revolution\Copilot\Types\Rpc\SessionsReadPersistedEventsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsReleaseLockRequest;
+use Revolution\Copilot\Types\Rpc\SessionsReleaseLockResult;
+use Revolution\Copilot\Types\Rpc\SessionsReloadPluginHooksRequest;
+use Revolution\Copilot\Types\Rpc\SessionsReloadPluginHooksResult;
+use Revolution\Copilot\Types\Rpc\SessionsSaveRequest;
+use Revolution\Copilot\Types\Rpc\SessionsSaveResult;
+use Revolution\Copilot\Types\Rpc\SessionsSetAdditionalPluginsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsSetAdditionalPluginsResult;
 use Revolution\Copilot\Types\Rpc\SessionsSetRemoteControlSteeringRequest;
 use Revolution\Copilot\Types\Rpc\SessionsStartRemoteControlRequest;
 use Revolution\Copilot\Types\Rpc\SessionsStopRemoteControlRequest;
@@ -166,6 +180,104 @@ class PendingSessions
 
         return SessionPruneResult::fromArray(
             $this->client->request('sessions.pruneOld', $paramsArray),
+        );
+    }
+
+    /**
+     * Close an active session, flushing events and releasing its in-use lock.
+     */
+    public function close(SessionsCloseRequest|array $params): SessionsCloseResult
+    {
+        $paramsArray = ($params instanceof SessionsCloseRequest
+            ? $params
+            : SessionsCloseRequest::fromArray($params))->toArray();
+
+        return SessionsCloseResult::fromArray(
+            $this->client->request('sessions.close', $paramsArray),
+        );
+    }
+
+    /**
+     * Flush a session's pending events to disk.
+     */
+    public function save(SessionsSaveRequest|array $params): SessionsSaveResult
+    {
+        $paramsArray = ($params instanceof SessionsSaveRequest
+            ? $params
+            : SessionsSaveRequest::fromArray($params))->toArray();
+
+        return SessionsSaveResult::fromArray(
+            $this->client->request('sessions.save', $paramsArray),
+        );
+    }
+
+    /**
+     * Release this process's in-use lock for a session.
+     */
+    public function releaseLock(SessionsReleaseLockRequest|array $params): SessionsReleaseLockResult
+    {
+        $paramsArray = ($params instanceof SessionsReleaseLockRequest
+            ? $params
+            : SessionsReleaseLockRequest::fromArray($params))->toArray();
+
+        return SessionsReleaseLockResult::fromArray(
+            $this->client->request('sessions.releaseLock', $paramsArray),
+        );
+    }
+
+    /**
+     * Reload user and plugin hooks, optionally deferring repository hooks.
+     */
+    public function reloadPluginHooks(SessionsReloadPluginHooksRequest|array $params): SessionsReloadPluginHooksResult
+    {
+        $paramsArray = ($params instanceof SessionsReloadPluginHooksRequest
+            ? $params
+            : SessionsReloadPluginHooksRequest::fromArray($params))->toArray();
+
+        return SessionsReloadPluginHooksResult::fromArray(
+            $this->client->request('sessions.reloadPluginHooks', $paramsArray),
+        );
+    }
+
+    /**
+     * Load repository hooks that were deferred until the folder was trusted.
+     */
+    public function loadDeferredRepoHooks(SessionsLoadDeferredRepoHooksRequest|array $params): SessionLoadDeferredRepoHooksResult
+    {
+        $paramsArray = ($params instanceof SessionsLoadDeferredRepoHooksRequest
+            ? $params
+            : SessionsLoadDeferredRepoHooksRequest::fromArray($params))->toArray();
+
+        return SessionLoadDeferredRepoHooksResult::fromArray(
+            $this->client->request('sessions.loadDeferredRepoHooks', $paramsArray),
+        );
+    }
+
+    /**
+     * Replace the session manager's additional installed plugins.
+     */
+    public function setAdditionalPlugins(SessionsSetAdditionalPluginsRequest|array $params): SessionsSetAdditionalPluginsResult
+    {
+        $paramsArray = ($params instanceof SessionsSetAdditionalPluginsRequest
+            ? $params
+            : SessionsSetAdditionalPluginsRequest::fromArray($params))->toArray();
+
+        return SessionsSetAdditionalPluginsResult::fromArray(
+            $this->client->request('sessions.setAdditionalPlugins', $paramsArray),
+        );
+    }
+
+    /**
+     * Backfill missing summary and context fields on local session metadata.
+     */
+    public function enrichMetadata(SessionsEnrichMetadataRequest|array $params): SessionsEnrichMetadataResult
+    {
+        $paramsArray = ($params instanceof SessionsEnrichMetadataRequest
+            ? $params
+            : SessionsEnrichMetadataRequest::fromArray($params))->toArray();
+
+        return SessionsEnrichMetadataResult::fromArray(
+            $this->client->request('sessions.enrichMetadata', $paramsArray),
         );
     }
 
