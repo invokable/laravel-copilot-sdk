@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Rpc\PendingHost;
+use Revolution\Copilot\Rpc\PendingServerHost;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Types\Rpc\HostDisposeRequest;
 use Revolution\Copilot\Types\Rpc\HostDisposeResult;
@@ -36,7 +36,7 @@ it('exposes host catalog and managed permission RPCs with typed results', functi
         ),
     );
 
-    expect($host)->toBeInstanceOf(PendingHost::class)
+    expect($host)->toBeInstanceOf(PendingServerHost::class)
         ->and($host->listSessions(new HostListSessionsRequest('host-1'))->sessions)->toBeEmpty()
         ->and($permissions->failClosed)->toBeTrue();
 });

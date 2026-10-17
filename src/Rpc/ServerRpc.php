@@ -301,9 +301,9 @@ class ServerRpc
      *
      * @experimental
      */
-    public function host(): PendingHost
+    public function host(): PendingServerHost
     {
-        return new PendingHost($this->client);
+        return new PendingServerHost($this->client);
     }
 
     /**

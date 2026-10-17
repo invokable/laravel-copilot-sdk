@@ -21,7 +21,7 @@ use Revolution\Copilot\Types\Rpc\HostUnpublishSessionResult;
  *
  * @experimental This API group may change or be removed.
  */
-class PendingHost
+class PendingServerHost
 {
     public function __construct(
         protected JsonRpcClient $client,
