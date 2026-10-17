@@ -304,6 +304,16 @@ class SessionRpc
     }
 
     /**
+     * Debug log collection RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function debug(): PendingDebug
+    {
+        return new PendingDebug($this->client, $this->sessionId);
+    }
+
+    /**
      * Shell RPC operations.
      *
      * Used to execute and manage shell commands within the session.

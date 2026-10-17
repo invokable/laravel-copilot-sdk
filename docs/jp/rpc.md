@@ -856,6 +856,33 @@ Copilot::start(function (CopilotSession $session) {
 
 `sendMessages()`は複数メッセージを1ターンで実行し、`suspend()`・`shutdown()`でセッションを停止します。`interruptMainTurn()`はメインターン、`cancelAllBackgroundAgents()`はバックグラウンドエージェントを個別に制御します。`remote()`と`visibility()`はリモート公開・共有状態、`sandbox()`はセッションのサンドボックス、`managedSettings()`はセッションスコープの管理設定、`contentExclusion()`はパス判定、`metadata()`はクライアント所有メタデータ、`canvas()`はCanvas連携を扱います。
 
+### debug (experimental)
+
+`debug()->collectLogs()`でセッションのイベントログ、プロセスログ、シェルログを `.tgz` アーカイブまたはディレクトリに収集できます。ログは既定で秘匿情報がリダクションされます。`additionalEntries`でファイルやディレクトリを追加でき、`redaction`には`plain-text`、`events-jsonl`、`none`を指定できます。`none`を指定するとリダクションされないため、追加する内容に注意してください。
+
+```php
+use Revolution\Copilot\Enums\DebugCollectLogsEntryKind;
+use Revolution\Copilot\Enums\DebugCollectLogsRedaction;
+use Revolution\Copilot\Types\Rpc\DebugCollectLogsDestination;
+use Revolution\Copilot\Types\Rpc\DebugCollectLogsEntry;
+use Revolution\Copilot\Types\Rpc\DebugCollectLogsRequest;
+
+$result = $session->rpc()->debug()->collectLogs(new DebugCollectLogsRequest(
+    destination: DebugCollectLogsDestination::archive('/tmp/copilot-debug.tgz', noOverwrite: true),
+    additionalEntries: [
+        new DebugCollectLogsEntry(
+            kind: DebugCollectLogsEntryKind::File,
+            path: '/var/log/my-app.log',
+            bundlePath: 'application/my-app.log',
+            redaction: DebugCollectLogsRedaction::PlainText,
+            required: true,
+        ),
+    ],
+));
+```
+
+`DebugCollectLogsDestination::directory('/tmp/copilot-debug')`を指定するとステージングディレクトリに出力できます。`include`では収集するログや参照パスを個別に指定でき、結果の`entries`と`skippedEntries`から収集内容を確認できます。宛先・追加エントリのパスはCLIサーバー側のパスです。stdioでCLIを起動する標準構成ではアプリと同じホストですが、TCPで別ホストのCLIサーバーに接続している場合、呼び出し側マシンではなくサーバー側のパスを指定してください。
+
 ### contentExclusion (experimental)
 
 セッションの作業ディレクトリ内にあるローカル絶対パスが、コンテンツ除外ポリシーの対象か確認できます。ファイルの内容を読み込んだり添付したりする前に呼び出してください。
