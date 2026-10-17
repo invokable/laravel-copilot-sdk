@@ -16,7 +16,7 @@ use Revolution\Copilot\Rpc\PendingProvider;
 use Revolution\Copilot\Rpc\PendingQueue;
 use Revolution\Copilot\Rpc\PendingServerGit;
 use Revolution\Copilot\Rpc\PendingServerSandboxProxyCa;
-use Revolution\Copilot\Rpc\PendingSessions;
+use Revolution\Copilot\Rpc\PendingServerSessions;
 use Revolution\Copilot\Rpc\PendingUi;
 use Revolution\Copilot\Rpc\PendingWorkflow;
 use Revolution\Copilot\Rpc\PendingWorkflowJournal;
@@ -253,11 +253,11 @@ describe('SessionRpc session-scoped operations', function () {
         $status = (new PendingServerSandboxProxyCa($client))->getStatus(['enabled' => true]);
         $remote = (new PendingServerGit($client))->currentBranchRemote('/repo');
         $ui = (new PendingUi($client, 'session-4'))->handleHumanAskUser(['requestId' => 'ask-1']);
-        $workspace = (new PendingSessions($client))->loadWorkspace([
+        $workspace = (new PendingServerSessions($client))->loadWorkspace([
             'sessionId' => 'session-4',
             'sessionsHome' => '/sessions',
         ]);
-        $sessions = new PendingSessions($client);
+        $sessions = new PendingServerSessions($client);
         $createdWorkspace = $sessions->createWorkspace([
             'sessionId' => 'session-5',
             'convention' => 'copilot',

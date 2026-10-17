@@ -57,7 +57,7 @@ use Revolution\Copilot\Types\Rpc\SessionsUpdateWorkspaceFieldsRequest;
  *
  * @experimental This API group is experimental and may change or be removed.
  */
-class PendingSessions
+class PendingServerSessions
 {
     public function __construct(
         protected JsonRpcClient $client,

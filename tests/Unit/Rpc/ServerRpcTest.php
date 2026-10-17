@@ -18,9 +18,9 @@ use Revolution\Copilot\Rpc\PendingServerPlugins;
 use Revolution\Copilot\Rpc\PendingServerSandbox;
 use Revolution\Copilot\Rpc\PendingServerSandboxProxyCa;
 use Revolution\Copilot\Rpc\PendingServerSessionFs;
+use Revolution\Copilot\Rpc\PendingServerSessions;
 use Revolution\Copilot\Rpc\PendingServerSkills;
 use Revolution\Copilot\Rpc\PendingServerTools;
-use Revolution\Copilot\Rpc\PendingSessions;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Transport\StdioTransport;
 
@@ -61,10 +61,10 @@ describe('ServerRpc', function () {
         expect($rpc->sessionFs())->toBeInstanceOf(PendingServerSessionFs::class);
     });
 
-    it('returns PendingSessions from sessions()', function () {
+    it('returns PendingServerSessions from sessions()', function () {
         $rpc = new ServerRpc(createMockRpcClient());
 
-        expect($rpc->sessions())->toBeInstanceOf(PendingSessions::class);
+        expect($rpc->sessions())->toBeInstanceOf(PendingServerSessions::class);
     });
 
     it('returns PendingServerSkills from skills()', function () {

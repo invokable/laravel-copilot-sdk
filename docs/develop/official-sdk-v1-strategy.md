@@ -191,7 +191,7 @@ Laravel 版には `src/Types/Rpc/SessionFs*.php` と `PendingServerSessionFs::se
 
 [^sessionfs-gap]: `src/Rpc/PendingServerSessionFs.php:25-33`; `tests/Unit/Rpc/PendingServerSessionFsTest.php:10-70`; `tests/Unit/Types/Rpc/SessionFsSqliteTypesTest.php:15-334`; `src/Client.php:140-157`.
 
-[^rpc-gap-summary]: `copilot-sdk/nodejs/src/generated/rpc.ts`; `src/Rpc/SessionRpc.php`; `src/Rpc/ServerRpc.php`; `src/Rpc/PendingModel.php`; `src/Rpc/PendingCommands.php`; `src/Rpc/PendingTasks.php`; `src/Rpc/PendingUi.php`; `src/Rpc/PendingSessions.php`.
+[^rpc-gap-summary]: `copilot-sdk/nodejs/src/generated/rpc.ts`; `src/Rpc/SessionRpc.php`; `src/Rpc/ServerRpc.php`; `src/Rpc/PendingModel.php`; `src/Rpc/PendingCommands.php`; `src/Rpc/PendingTasks.php`; `src/Rpc/PendingUi.php`; `../../src/Rpc/PendingServerSessions.php`.
 
 [^rust-java-tests]: `github/copilot-sdk:test/scenarios/RUST_COVERAGE.md:8-44`; `copilot-sdk/java/src/test/java/com/github/copilot/sdk/HooksTest.java:38-41`.
 

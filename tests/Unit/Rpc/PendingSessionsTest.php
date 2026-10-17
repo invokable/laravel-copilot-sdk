@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\EventsReadDirection;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Rpc\PendingSessions;
+use Revolution\Copilot\Rpc\PendingServerSessions;
 use Revolution\Copilot\Types\Rpc\EventsReadResult;
 use Revolution\Copilot\Types\Rpc\InstalledPlugin;
 use Revolution\Copilot\Types\Rpc\LocalSessionContext;
@@ -45,7 +45,7 @@ use Revolution\Copilot\Types\Rpc\SessionsSetRemoteControlSteeringRequest;
 use Revolution\Copilot\Types\Rpc\SessionsStartRemoteControlRequest;
 use Revolution\Copilot\Types\SessionListFilter;
 
-describe('PendingSessions', function () {
+describe('PendingServerSessions', function () {
     it('calls sessions.fork with typed params', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
@@ -59,7 +59,7 @@ describe('PendingSessions', function () {
                 'sessionId' => 'forked-session-id',
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->fork(new SessionsForkRequest(sessionId: 'source-session'));
 
         expect($result)->toBeInstanceOf(SessionsForkResult::class)
@@ -79,7 +79,7 @@ describe('PendingSessions', function () {
                 'sessionId' => 'forked-session-id',
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->fork(new SessionsForkRequest(
             sessionId: 'source-session',
             toEventId: 'evt-boundary',
@@ -101,7 +101,7 @@ describe('PendingSessions', function () {
                 'sessionId' => 'forked-session-id',
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->fork(['sessionId' => 'source-session']);
 
         expect($result)->toBeInstanceOf(SessionsForkResult::class)
@@ -135,7 +135,7 @@ describe('PendingSessions', function () {
                 ],
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->list(new SessionsListRequest(
             source: 'local',
             metadataLimit: 0,
@@ -165,7 +165,7 @@ describe('PendingSessions', function () {
                 'cursorStatus' => 'ok',
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->readPersistedEvents(new SessionsReadPersistedEventsRequest(
             sessionId: 'session-id',
             cursor: 'next-page',
@@ -193,7 +193,7 @@ describe('PendingSessions', function () {
             ->with('sessions.getLastForContext', [])
             ->andReturn([]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $byTask = $pending->findByTaskId(['taskId' => 'missing-task']);
         $byPrefix = $pending->findByPrefix(['prefix' => 'missing-prefix']);
         $lastForContext = $pending->getLastForContext();
@@ -213,7 +213,7 @@ describe('PendingSessions', function () {
             ->with('sessions.getSizes', [])
             ->andReturn(['sizes' => ['session-id' => 1024]]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->getSizes();
 
         expect($result)->toBeInstanceOf(SessionSizes::class)
@@ -227,7 +227,7 @@ describe('PendingSessions', function () {
             ->with('sessions.checkInUse', ['sessionIds' => ['session-id', 'other-id']])
             ->andReturn(['inUse' => ['session-id']]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->checkInUse(['sessionIds' => ['session-id', 'other-id']]);
 
         expect($result)->toBeInstanceOf(SessionsCheckInUseResult::class)
@@ -241,7 +241,7 @@ describe('PendingSessions', function () {
             ->with('sessions.bulkDelete', ['sessionIds' => ['session-id']])
             ->andReturn(['freedBytes' => ['session-id' => 512]]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->bulkDelete(new SessionsBulkDeleteRequest(sessionIds: ['session-id']));
 
         expect($result)->toBeInstanceOf(SessionBulkDeleteResult::class)
@@ -261,7 +261,7 @@ describe('PendingSessions', function () {
                 'dryRun' => false,
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->pruneOld(new SessionsPruneOldRequest(olderThanDays: 30));
 
         expect($result)->toBeInstanceOf(SessionPruneResult::class)
@@ -295,7 +295,7 @@ describe('PendingSessions', function () {
                 ],
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->startRemoteControl(new SessionsStartRemoteControlRequest(
             sessionId: 'session-remote-control',
             config: new RemoteControlConfig(
@@ -325,7 +325,7 @@ describe('PendingSessions', function () {
                 'stopped' => false,
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->stopRemoteControl();
 
         expect($result)->toBeInstanceOf(RemoteControlStopResult::class)
@@ -346,7 +346,7 @@ describe('PendingSessions', function () {
                 'transferred' => true,
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->transferRemoteControl(['toSessionId' => 'session-target']);
 
         expect($result)->toBeInstanceOf(RemoteControlTransferResult::class)
@@ -367,7 +367,7 @@ describe('PendingSessions', function () {
                 ],
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->setRemoteControlSteering(
             new SessionsSetRemoteControlSteeringRequest(enabled: false),
         );
@@ -389,7 +389,7 @@ describe('PendingSessions', function () {
                 ],
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->getRemoteControlStatus();
 
         expect($result)->toBeInstanceOf(RemoteControlStatusResult::class)
@@ -412,7 +412,7 @@ describe('PendingSessions', function () {
             ->with('sessions.releaseLock', ['sessionId' => 'session-to-unlock'])
             ->andReturn([]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $closed = $pending->close(new SessionsCloseRequest('session-to-close'));
         $saved = $pending->save(new SessionsSaveRequest('session-to-save'));
         $released = $pending->releaseLock(['sessionId' => 'session-to-unlock']);
@@ -441,7 +441,7 @@ describe('PendingSessions', function () {
             ])
             ->andReturn([]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $omitted = $pending->reloadPluginHooks(['sessionId' => 'session-no-deferral']);
         $explicitFalse = $pending->reloadPluginHooks(new SessionsReloadPluginHooksRequest(
             sessionId: 'session-explicit-false',
@@ -464,7 +464,7 @@ describe('PendingSessions', function () {
                 'hookCount' => 3,
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->loadDeferredRepoHooks(
             new SessionsLoadDeferredRepoHooksRequest('trusted-session'),
         );
@@ -485,7 +485,7 @@ describe('PendingSessions', function () {
             ->with('sessions.setAdditionalPlugins', ['plugins' => []])
             ->andReturn([]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->setAdditionalPlugins(['plugins' => []]);
 
         expect($result)->toBeInstanceOf(SessionsSetAdditionalPluginsResult::class)
@@ -511,7 +511,7 @@ describe('PendingSessions', function () {
             ])
             ->andReturn([]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->setAdditionalPlugins(new SessionsSetAdditionalPluginsRequest([
             new InstalledPlugin(
                 name: 'review-tools',
@@ -590,7 +590,7 @@ describe('PendingSessions', function () {
                 ]],
             ]);
 
-        $pending = new PendingSessions($client);
+        $pending = new PendingServerSessions($client);
         $result = $pending->enrichMetadata(new SessionsEnrichMetadataRequest([
             new LocalSessionMetadataValue(
                 sessionId: 'local-session',

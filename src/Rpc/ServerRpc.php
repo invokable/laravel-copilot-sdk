@@ -144,9 +144,9 @@ class ServerRpc
      *
      * @experimental This API group is experimental and may change or be removed.
      */
-    public function sessions(): PendingSessions
+    public function sessions(): PendingServerSessions
     {
-        return new PendingSessions($this->client);
+        return new PendingServerSessions($this->client);
     }
 
     /**
