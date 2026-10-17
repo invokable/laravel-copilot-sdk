@@ -1730,6 +1730,7 @@ $relevant = $proxyCa->checkRelevance(['enabled' => true]);
 $installable = $proxyCa->checkInstallationSupport();
 
 use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionRequest;
+use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestRequest;
 
 // サンドボックス強制状態を取得
 $status = $session->rpc()->sandbox()->getEnforcementStatus();
@@ -1742,6 +1743,32 @@ $credentials = $session->rpc()->sandbox()->getCredentialSuggestions();
 // 保留中のサンドボックスバイパス許可リクエストを承認し、セッション全体でサンドボックスを無効化
 $result = $session->rpc()->sandbox()->disableForSession(new SandboxDisableForSessionRequest(requestId: $requestId));
 // $result->success, $result->enabled
+
+// 保留中のサンドボックスエスカレーション許可リクエストが提示したパス許可（sandboxPathGrant）を
+// 承認し、そのパスをセッションのサンドボックスポリシーに追加して、ブロックされた操作を
+// サンドボックス内で再実行させる
+$result = $session->rpc()->sandbox()->grantPathForRequest(new SandboxGrantPathForRequestRequest(requestId: $requestId));
+// 配列入力も可: ->grantPathForRequest(['requestId' => $requestId])
+// $result->success
+// 対象のリクエストが保留中でなくなっていたり、sandboxPathGrantを伴わなかったり、
+// 現在の管理ポリシー下でグラントが無効な場合は失敗する。
+// 特定のパスのみを許可する最小権限の手段であり、セッション全体を無効化するdisableForSession()より推奨される。
+// このパスは永続化されない（このセッション限りで、次回以降のセッションには引き継がれない）。
+// サンドボックス設定を保存するホストは、必要であれば自身でパスを保存する。
+```
+
+権限ハンドラでは、`$request['sandboxPathGrant']`がある場合に対象の保留中リクエストの`requestId`で呼び出します。このRPC自身が許可リクエストに応答するため、成功した場合は通常の応答を送らないよう`PermissionDecision::noResult()`を返します。
+
+```php
+if (isset($request['sandboxPathGrant'])) {
+    $result = $session->rpc()->sandbox()->grantPathForRequest([
+        'requestId' => $requestId,
+    ]);
+
+    return $result->success
+        ? PermissionDecision::noResult()
+        : PermissionDecision::reject();
+}
 ```
 
 ### metadata (experimental: クライアント所有メタデータ)
