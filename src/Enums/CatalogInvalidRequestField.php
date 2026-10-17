@@ -46,4 +46,13 @@ enum CatalogInvalidRequestField: string
 
     /** The session identifier was missing or unusable. */
     case SessionId = 'sessionId';
+
+    /** The requested categories were invalid. */
+    case Categories = 'categories';
+
+    /** The requested feed was missing or invalid. */
+    case Feed = 'feed';
+
+    /** The requested trust tiers were invalid. */
+    case TrustTiers = 'trustTiers';
 }

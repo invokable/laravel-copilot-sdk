@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\CatalogGetGeneratedFeedRequest;
+use Revolution\Copilot\Types\Rpc\CatalogGetSavedFeedRequest;
 use Revolution\Copilot\Types\Rpc\CatalogPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\CatalogReferenceInstallationResult;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
@@ -35,6 +37,9 @@ class PendingCatalog
      * runtime without it returns the typed search-unavailable result. Public
      * authorities may be searched anonymously, while an authority that requires
      * credentials yields the typed authentication-required result.
+     * Supplying categories requires the catalog-search-categories capability.
+     * Supplying policySessionId requires catalog-search-credential-required and
+     * catalog-search-session-bound, and only binds to an existing attached session.
      *
      * Returns an associative array whose `kind` key identifies the result
      * variant (`succeeded`, `negotiation-refused`, `invalid-request`, etc.).
@@ -48,6 +53,48 @@ class PendingCatalog
             : CatalogSearchRequest::fromArray($params))->toArray();
 
         return $this->client->request('catalog.search', $paramsArray);
+    }
+
+    /**
+     * Retrieves one saved feed with its entries in feed order.
+     *
+     * The contract must require catalog-feeds and
+     * catalog-search-credential-required. When policySessionId is supplied, it
+     * must also require catalog-search-session-bound. The runtime binds only to
+     * an existing attached session and does not retry anonymously.
+     *
+     * @return array<string, mixed>
+     *
+     * @experimental
+     */
+    public function getSavedFeed(CatalogGetSavedFeedRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof CatalogGetSavedFeedRequest
+            ? $params
+            : CatalogGetSavedFeedRequest::fromArray($params))->toArray();
+
+        return $this->client->request('catalog.getSavedFeed', $paramsArray);
+    }
+
+    /**
+     * Retrieves one generated feed with its entries in feed order.
+     *
+     * The contract must require catalog-feeds and
+     * catalog-search-credential-required. When policySessionId is supplied, it
+     * must also require catalog-search-session-bound. The runtime binds only to
+     * an existing attached session and does not retry anonymously.
+     *
+     * @return array<string, mixed>
+     *
+     * @experimental
+     */
+    public function getGeneratedFeed(CatalogGetGeneratedFeedRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof CatalogGetGeneratedFeedRequest
+            ? $params
+            : CatalogGetGeneratedFeedRequest::fromArray($params))->toArray();
+
+        return $this->client->request('catalog.getGeneratedFeed', $paramsArray);
     }
 
     /**

@@ -30,7 +30,9 @@ Copilot::client()->listModels();
 ```php
 use Illuminate\Http\Client\Response;
 use Revolution\Copilot\Enums\CatalogCandidateKind;
+use Revolution\Copilot\Enums\CatalogCapability;
 use Revolution\Copilot\Enums\CatalogSelectionDecision;
+use Revolution\Copilot\Enums\CatalogTrustTier;
 use Revolution\Copilot\Enums\EventsReadDirection;
 use Revolution\Copilot\Enums\McpInstallationSecretStorage;
 use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
@@ -50,6 +52,8 @@ use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Types\Rpc\CatalogGetGeneratedFeedRequest;
+use Revolution\Copilot\Types\Rpc\CatalogGetSavedFeedRequest;
 use Revolution\Copilot\Types\Rpc\CatalogMaterializationReference;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
@@ -425,6 +429,47 @@ $selection = $catalog->select(new CatalogSelectionRequest(
     selectionRef: $search['candidates'][0]['selectionRef'],
     outcome: CatalogSelectionDecision::Selected,
 ));
+
+// category filterにはcatalog-search-categoriesを要求する
+$categoryContract = new CatalogClientContract(3, [
+    CatalogCapability::CatalogSearchCategories->value,
+]);
+$categorySearch = $catalog->search(new CatalogSearchRequest(
+    contract: $categoryContract,
+    query: 'design tools',
+    categories: ['design', 'test'],
+));
+// policySessionIdを指定する場合は、contractでcredential-requiredとsession-boundも要求し、
+// 既存のattached sessionだけにバインドします。sessionを新規作成・再開することはありません。
+
+// 保存済み・生成 catalog feed (credential required)
+$feedContract = new CatalogClientContract(3, [
+    CatalogCapability::CatalogFeeds->value,
+    CatalogCapability::CatalogSearchCredentialRequired->value,
+]);
+$savedFeed = $catalog->getSavedFeed(new CatalogGetSavedFeedRequest(
+    contract: $feedContract,
+    feedId: 'opaque-feed-id',
+    trustTiers: [CatalogTrustTier::T1],
+));
+
+// 既存の attached session にバインドする場合は session-bound capabilityも要求
+$sessionFeedContract = new CatalogClientContract(3, [
+    CatalogCapability::CatalogFeeds->value,
+    CatalogCapability::CatalogSearchCredentialRequired->value,
+    CatalogCapability::CatalogSearchSessionBound->value,
+]);
+$generatedFeed = $catalog->getGeneratedFeed(new CatalogGetGeneratedFeedRequest(
+    contract: $sessionFeedContract,
+    strategy: 'telemetry',
+    key: 'popular',
+    policySessionId: $sessionId,
+    trustTiers: [CatalogTrustTier::T1, CatalogTrustTier::T2],
+));
+// entriesはfeed順を保持。trust tierに合わないものもfilteredとして位置を保ち、
+// 表示できないentryはunavailableとreasonで返ります。
+// feedがない場合はkind=unavailable、reason=feed-not-found。認証・交渉・ポリシー拒否も
+// それぞれの型付き結果として返り、catalog feed RPCはインストールや設定を行いません。
 
 // スキルのインストール計画と適用
 
