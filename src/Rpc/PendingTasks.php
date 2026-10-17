@@ -14,6 +14,8 @@ use Revolution\Copilot\Types\Rpc\TasksGetProgressResult;
 use Revolution\Copilot\Types\Rpc\TasksPromoteCurrentToBackgroundResult;
 use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundRequest;
 use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundResult;
+use Revolution\Copilot\Types\Rpc\TasksReadOutputRequest;
+use Revolution\Copilot\Types\Rpc\TasksReadOutputResult;
 use Revolution\Copilot\Types\Rpc\TasksRefreshResult;
 use Revolution\Copilot\Types\Rpc\TasksRegisterRequest;
 use Revolution\Copilot\Types\Rpc\TasksRegisterResult;
@@ -61,6 +63,21 @@ class PendingTasks
             $this->client->request('session.tasks.list', [
                 'sessionId' => $this->sessionId,
             ]),
+        );
+    }
+
+    /**
+     * Read incremental output from a detached shell task.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function readOutput(TasksReadOutputRequest|array $params): TasksReadOutputResult
+    {
+        $paramsArray = ($params instanceof TasksReadOutputRequest ? $params : TasksReadOutputRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return TasksReadOutputResult::fromArray(
+            $this->client->request('session.tasks.readOutput', $paramsArray),
         );
     }
 

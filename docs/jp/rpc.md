@@ -1508,6 +1508,25 @@ $result = $session->rpc()->tasks()->startAgent(new TasksStartAgentRequest(
 $list = $session->rpc()->tasks()->list();
 // $list->tasks - TaskAgentInfo、TaskShellInfo、TaskClientInfo の配列
 
+// 切り離されたシェルの出力をカーソルで増分読み取り
+use Revolution\Copilot\Types\Rpc\TasksReadOutputRequest;
+
+$cursor = null;
+do {
+    $output = $session->rpc()->tasks()->readOutput(new TasksReadOutputRequest(
+        id: 'shell-1',
+        cursor: $cursor,
+        waitMs: 1000,
+    ));
+    echo $output->text;
+    $cursor = $output->cursor;
+} while ($output->exit === null);
+// $output->exit->status - タスクの終了状態
+// $output->exit->exitCode - プロセスの終了コード（nullable）
+
+// 1 回の読み取りは最大 64 KiB。waitMs は既定値 0、最大 30000ms。
+// stdout と stderr は統合される。カーソルが無効になった場合はカーソルなしで再読み取りする。
+
 // アプリケーション所有のジョブをタスクとして登録
 use Revolution\Copilot\Types\Rpc\TasksRegisterRequest;
 
