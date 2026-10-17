@@ -8,6 +8,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
 use Revolution\Copilot\Types\Rpc\PendingExternalToolRequestList;
+use Revolution\Copilot\Types\Rpc\ToolResultExpanded;
+use Revolution\Copilot\Types\Rpc\ToolsExecuteRequest;
 use Revolution\Copilot\Types\Rpc\ToolsGetCurrentMetadataResult;
 use Revolution\Copilot\Types\Rpc\ToolsSetRequest;
 use Revolution\Copilot\Types\Rpc\ToolsUpdateSubagentSettingsResult;
@@ -74,6 +76,29 @@ class PendingTools
         $paramsArray['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.tools.set', $paramsArray);
+    }
+
+    /**
+     * Execute a tool from the session's currently offered tool set through the native invocation pipeline.
+     *
+     * @experimental
+     */
+    public function execute(ToolsExecuteRequest|array $params): string|ToolResultExpanded
+    {
+        $paramsArray = ($params instanceof ToolsExecuteRequest ? $params : ToolsExecuteRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $result = $this->client->request('session.tools.execute', $paramsArray);
+
+        if (is_string($result)) {
+            return $result;
+        }
+
+        if (is_array($result)) {
+            return ToolResultExpanded::fromArray($result);
+        }
+
+        throw new \UnexpectedValueException('Expected a string or expanded tool result from session.tools.execute.');
     }
 
     /**

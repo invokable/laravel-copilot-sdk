@@ -1224,6 +1224,34 @@ $session->rpc()->history()->truncate(new HistoryTruncateRequest(
 ));
 
 // tools (プロトコルv3+: external_tool.requestedイベントへの応答)
+// 現在セッションに公開されているツールをネイティブの呼び出しパイプラインで実行（experimental）
+use Revolution\Copilot\Types\Rpc\ToolsExecuteRequest;
+
+$result = $session->rpc()->tools()->execute(new ToolsExecuteRequest(
+    name: 'search',
+    arguments: ['query' => 'Laravel'],
+    toolCallId: 'call-123', // 任意。呼び出しとの相関に使用
+));
+
+if (is_string($result)) {
+    // シンプルなテキスト結果
+    echo $result;
+} else {
+    // ToolResultExpanded: textResultForLlm、resultType、newMessages、
+    // mcpMeta、structuredContent、taskCompletionDecision など
+    echo $result->textResultForLlm;
+    // resultType は ToolResultType または未知の値を保持する string
+}
+
+// 配列でも指定可能。toolCallIdは省略でき、sessionIdはこのセッションの値で上書きされる
+$session->rpc()->tools()->execute([
+    'name' => 'search',
+    'arguments' => ['query' => 'Copilot'],
+]);
+// arguments: [] はJSONオブジェクト {} として送信され、scalar/null/空でない配列はJSON値を保つ
+
+// execute() は通常のネイティブツール呼び出しパイプラインを通るため、権限確認を迂回しない。
+// ツールに承認が必要な場合は、通常どおりSessionConfigのonPermissionRequestハンドラーが処理する。
 $session->rpc()->tools()->handlePendingToolCall(new HandlePendingToolCallRequest(
     requestId: '...',
     result: 'ツールの実行結果',
