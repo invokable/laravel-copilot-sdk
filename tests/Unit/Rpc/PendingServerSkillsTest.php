@@ -11,6 +11,7 @@ use Revolution\Copilot\Types\Rpc\ServerSkill;
 use Revolution\Copilot\Types\Rpc\ServerSkillList;
 use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillInstallationManagementResult;
 use Revolution\Copilot\Types\Rpc\SkillInstallationOperationRequest;
 use Revolution\Copilot\Types\Rpc\SkillInstallationsRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
@@ -267,7 +268,10 @@ describe('PendingServerSkills', function () {
                 'skills.planInstall',
                 ['contract' => $contractData, 'candidateHandle' => 'candidate-1', 'policySessionId' => 'session-1'],
                 SkillPlanInstallRequest::class,
-                ['kind' => 'planned'],
+                [
+                    'kind' => 'outcome',
+                    'outcome' => ['kind' => 'install-planned', 'plan' => ['planHandle' => 'plan-1']],
+                ],
             ],
             [
                 'planInstallFromReference',
@@ -289,11 +293,11 @@ describe('PendingServerSkills', function () {
                 SkillPlanInstallFromReferenceRequest::class,
                 [
                     'kind' => 'outcome',
-                    'outcome' => ['kind' => 'install-planned'],
                     'negotiated' => [
                         'runtimeProtocolVersion' => 3,
                         'grantedCapabilities' => ['skill-confirmed-installation', 'skill-reference-installation'],
                     ],
+                    'outcome' => ['kind' => 'install-planned', 'plan' => ['planHandle' => 'plan-1']],
                 ],
             ],
             [
@@ -301,21 +305,27 @@ describe('PendingServerSkills', function () {
                 'skills.applyInstall',
                 ['contract' => $contractData, 'planHandle' => 'plan-1', 'policySessionId' => 'session-1'],
                 SkillApplyInstallRequest::class,
-                ['kind' => 'outcome'],
+                ['kind' => 'network-failure', 'message' => 'Timed out', 'reason' => 'timeout'],
             ],
             [
                 'planUninstall',
                 'skills.planUninstall',
                 ['contract' => $contractData, 'installationId' => 'installation-1', 'policySessionId' => 'session-1'],
                 SkillPlanUninstallRequest::class,
-                ['kind' => 'planned'],
+                [
+                    'kind' => 'outcome',
+                    'outcome' => ['kind' => 'uninstall-planned', 'plan' => ['planHandle' => 'uninstall-plan-1']],
+                ],
             ],
             [
                 'applyUninstall',
                 'skills.applyUninstall',
                 ['contract' => $contractData, 'planHandle' => 'uninstall-plan-1', 'policySessionId' => 'session-1'],
                 SkillApplyUninstallRequest::class,
-                ['kind' => 'outcome'],
+                [
+                    'kind' => 'outcome',
+                    'outcome' => ['kind' => 'refused', 'reason' => 'no-credential'],
+                ],
             ],
         ];
         $client = Mockery::mock(JsonRpcClient::class);
@@ -332,8 +342,13 @@ describe('PendingServerSkills', function () {
         foreach ($cases as [$method, $rpcMethod, $params, $requestClass, $expectedResult]) {
             $typedParams = $requestClass::fromArray($params);
 
-            expect($skills->{$method}($params))->toBe($expectedResult)
-                ->and($skills->{$method}($typedParams))->toBe($expectedResult);
+            $arrayResult = $skills->{$method}($params);
+            $typedResult = $skills->{$method}($typedParams);
+
+            expect($arrayResult)->toBeInstanceOf(SkillInstallationManagementResult::class)
+                ->and($arrayResult->toArray())->toBe($expectedResult)
+                ->and($typedResult)->toBeInstanceOf(SkillInstallationManagementResult::class)
+                ->and($typedResult->toArray())->toBe($expectedResult);
         }
     });
 

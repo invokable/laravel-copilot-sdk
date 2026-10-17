@@ -24,7 +24,7 @@ readonly class CatalogAgentPluginInstallPlan implements Arrayable
      */
     public function __construct(
         public array $sources,
-        public string $pluginName,
+        public ?string $pluginName,
         public array $components,
         public array $canvasIds,
         public array $extensionIds,
@@ -47,7 +47,7 @@ readonly class CatalogAgentPluginInstallPlan implements Arrayable
 
         return new static(
             sources: $sources,
-            pluginName: $data['pluginName'],
+            pluginName: $data['pluginName'] ?? null,
             components: array_map(
                 fn (string $component): CatalogAgentPluginComponent => CatalogAgentPluginComponent::from($component),
                 $data['components'] ?? [],
@@ -68,9 +68,11 @@ readonly class CatalogAgentPluginInstallPlan implements Arrayable
                 fn (CatalogAgentPluginMaterializationSource|CatalogAgentPluginMarketplaceSource|CatalogAgentPluginRepositorySource $source): array => $source->toArray(),
                 $this->sources,
             ),
-            'pluginName' => $this->pluginName,
         ];
 
+        if ($this->pluginName !== null) {
+            $arr['pluginName'] = $this->pluginName;
+        }
         if ($this->version !== null) {
             $arr['version'] = $this->version;
         }

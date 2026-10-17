@@ -9,6 +9,7 @@ use Revolution\Copilot\Enums\CatalogReferenceInstallationFailureReason;
 use Revolution\Copilot\Enums\CatalogReferenceInstallationOutcomeKind;
 use Revolution\Copilot\Enums\CatalogReferenceInstallationResultKind;
 use Revolution\Copilot\Enums\PluginInstallationManagementOutcomeKind;
+use Revolution\Copilot\Enums\PluginInstallationMcpTransport;
 use Revolution\Copilot\Enums\PluginInstallationOutcomeKind;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogMaterializationReference;
@@ -20,6 +21,7 @@ use Revolution\Copilot\Types\Rpc\PluginInstallationManagementOutcome;
 use Revolution\Copilot\Types\Rpc\PluginInstallationManagementResult;
 use Revolution\Copilot\Types\Rpc\PluginInstallationOutcome;
 use Revolution\Copilot\Types\Rpc\PluginInstallationResult;
+use Revolution\Copilot\Types\Rpc\PluginInstallationReview;
 use Revolution\Copilot\Types\Rpc\PluginInstallPlan;
 use Revolution\Copilot\Types\Rpc\PluginPlanInstallRequest;
 
@@ -60,6 +62,10 @@ function verifiedPluginTypesPlanData(): array
             'totalBytes' => 2,
             'description' => 'Example',
             'version' => '1.0.0',
+            'mcpServers' => [
+                ['name' => 'remote', 'transport' => 'remote', 'host' => 'mcp.example.test'],
+                ['name' => 'local', 'transport' => 'local'],
+            ],
         ],
     ];
 }
@@ -146,6 +152,8 @@ describe('verified Agent Plugin installation types', function () {
             ->and($management->outcome->kind)->toBe(PluginInstallationManagementOutcomeKind::InstallPlanned)
             ->and($management->outcome->plan)->toBeInstanceOf(PluginInstallPlan::class)
             ->and($management->outcome->plan->review->files[0]->sizeBytes)->toBe(2)
+            ->and($management->outcome->plan->review->mcpServers[0]->transport)->toBe(PluginInstallationMcpTransport::Remote)
+            ->and($management->outcome->plan->review->mcpServers[1]->host)->toBeNull()
             ->and($management->toArray())->toBe($managementData)
             ->and($pluginResult->outcome)->toBeInstanceOf(PluginInstallationOutcome::class)
             ->and($pluginResult->outcome->kind)->toBe(PluginInstallationOutcomeKind::Declined)
@@ -154,6 +162,16 @@ describe('verified Agent Plugin installation types', function () {
             ->and($referenceResult->outcome->kind)->toBe(CatalogReferenceInstallationOutcomeKind::PluginInstallPlanned)
             ->and($referenceResult->outcome->plan)->toBeInstanceOf(PluginInstallPlan::class)
             ->and($referenceResult->toArray())->toBe($referenceData);
+    });
+
+    it('omits MCP server declarations from a review when none are declared', function () {
+        $data = verifiedPluginTypesPlanData()['review'];
+        unset($data['mcpServers']);
+
+        $review = PluginInstallationReview::fromArray($data);
+
+        expect($review->mcpServers)->toBeEmpty()
+            ->and($review->toArray())->toBe($data);
     });
 
     it('decodes negotiation and installation refusal variants', function () {

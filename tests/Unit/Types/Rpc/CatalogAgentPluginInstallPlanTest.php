@@ -53,3 +53,22 @@ it('omits optional plan version, commit, and repository path', function () {
         ->and($plan->commit)->toBeNull()
         ->and($plan->toArray())->toBe($data);
 });
+
+it('omits the plugin name from a materialisation-only plan', function () {
+    $data = [
+        'sources' => [
+            ['kind' => 'materialization'],
+        ],
+        'components' => [],
+        'canvasIds' => [],
+        'extensionIds' => [],
+        'mcpDependencies' => [],
+        'connectorDependencies' => [],
+    ];
+
+    $plan = CatalogAgentPluginInstallPlan::fromArray($data);
+
+    expect($plan->pluginName)->toBeNull()
+        ->and($plan->sources[0])->toBeInstanceOf(CatalogAgentPluginMaterializationSource::class)
+        ->and($plan->toArray())->toBe($data);
+});

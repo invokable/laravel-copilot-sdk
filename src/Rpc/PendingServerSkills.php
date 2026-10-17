@@ -9,6 +9,7 @@ use Revolution\Copilot\Types\Rpc\ServerSkillList;
 use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillDiscoveryPathList;
+use Revolution\Copilot\Types\Rpc\SkillInstallationManagementResult;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
@@ -84,17 +85,17 @@ class PendingServerSkills
      *
      * Pass the `candidateHandle` from a successful `catalog.select` result.
      *
-     * @return array<string, mixed>
-     *
      * @experimental
      */
-    public function planInstall(SkillPlanInstallRequest|array $params): array
+    public function planInstall(SkillPlanInstallRequest|array $params): SkillInstallationManagementResult
     {
         $paramsArray = ($params instanceof SkillPlanInstallRequest
             ? $params
             : SkillPlanInstallRequest::fromArray($params))->toArray();
 
-        return $this->client->request('skills.planInstall', $paramsArray);
+        return SkillInstallationManagementResult::fromArray(
+            $this->client->request('skills.planInstall', $paramsArray),
+        );
     }
 
     /**
@@ -103,64 +104,64 @@ class PendingServerSkills
      * The contract must require both `skill-confirmed-installation` and
      * `skill-reference-installation`.
      *
-     * @return array<string, mixed>
-     *
      * @experimental
      */
-    public function planInstallFromReference(SkillPlanInstallFromReferenceRequest|array $params): array
+    public function planInstallFromReference(SkillPlanInstallFromReferenceRequest|array $params): SkillInstallationManagementResult
     {
         $paramsArray = ($params instanceof SkillPlanInstallFromReferenceRequest
             ? $params
             : SkillPlanInstallFromReferenceRequest::fromArray($params))->toArray();
 
-        return $this->client->request('skills.planInstallFromReference', $paramsArray);
+        return SkillInstallationManagementResult::fromArray(
+            $this->client->request('skills.planInstallFromReference', $paramsArray),
+        );
     }
 
     /**
      * Applies a previously generated skill installation plan.
      *
-     * @return array<string, mixed>
-     *
      * @experimental
      */
-    public function applyInstall(SkillApplyInstallRequest|array $params): array
+    public function applyInstall(SkillApplyInstallRequest|array $params): SkillInstallationManagementResult
     {
         $paramsArray = ($params instanceof SkillApplyInstallRequest
             ? $params
             : SkillApplyInstallRequest::fromArray($params))->toArray();
 
-        return $this->client->request('skills.applyInstall', $paramsArray);
+        return SkillInstallationManagementResult::fromArray(
+            $this->client->request('skills.applyInstall', $paramsArray),
+        );
     }
 
     /**
      * Creates a side-effect-free removal plan for an owned skill installation.
      *
-     * @return array<string, mixed>
-     *
      * @experimental
      */
-    public function planUninstall(SkillPlanUninstallRequest|array $params): array
+    public function planUninstall(SkillPlanUninstallRequest|array $params): SkillInstallationManagementResult
     {
         $paramsArray = ($params instanceof SkillPlanUninstallRequest
             ? $params
             : SkillPlanUninstallRequest::fromArray($params))->toArray();
 
-        return $this->client->request('skills.planUninstall', $paramsArray);
+        return SkillInstallationManagementResult::fromArray(
+            $this->client->request('skills.planUninstall', $paramsArray),
+        );
     }
 
     /**
      * Applies a previously generated skill removal plan.
      *
-     * @return array<string, mixed>
-     *
      * @experimental
      */
-    public function applyUninstall(SkillApplyUninstallRequest|array $params): array
+    public function applyUninstall(SkillApplyUninstallRequest|array $params): SkillInstallationManagementResult
     {
         $paramsArray = ($params instanceof SkillApplyUninstallRequest
             ? $params
             : SkillApplyUninstallRequest::fromArray($params))->toArray();
 
-        return $this->client->request('skills.applyUninstall', $paramsArray);
+        return SkillInstallationManagementResult::fromArray(
+            $this->client->request('skills.applyUninstall', $paramsArray),
+        );
     }
 }

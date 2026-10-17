@@ -13,5 +13,6 @@ enum CatalogReferenceInstallationResultKind: string
 {
     case InvalidRequest = 'invalid-request';
     case NegotiationRefused = 'negotiation-refused';
+    case NetworkFailure = 'network-failure';
     case Outcome = 'outcome';
 }
