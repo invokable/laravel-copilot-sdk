@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingCatalog;
 use Revolution\Copilot\Rpc\PendingServerAccount;
+use Revolution\Copilot\Rpc\PendingServerAzureMl;
 use Revolution\Copilot\Rpc\PendingServerCommands;
 use Revolution\Copilot\Rpc\PendingServerConnectors;
 use Revolution\Copilot\Rpc\PendingServerGit;
@@ -28,6 +29,12 @@ describe('ServerRpc', function () {
         $rpc = new ServerRpc(createMockRpcClient());
 
         expect($rpc->models())->toBeInstanceOf(PendingServerModels::class);
+    });
+
+    it('returns PendingServerAzureMl from azureMl()', function () {
+        $rpc = new ServerRpc(createMockRpcClient());
+
+        expect($rpc->azureMl())->toBeInstanceOf(PendingServerAzureMl::class);
     });
 
     it('returns PendingTools from tools()', function () {
