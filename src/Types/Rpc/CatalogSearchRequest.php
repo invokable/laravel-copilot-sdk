@@ -19,12 +19,16 @@ readonly class CatalogSearchRequest implements Arrayable
      * @param  string  $query  Free-text search query.
      * @param  int|null  $limit  Maximum number of candidates to return. Defaults to 10 when omitted.
      * @param  CatalogCandidateKind[]|null  $kinds  Restrict results to these candidate kinds.
+     * @param  string[]|null  $categories  Restrict results to resources matching at least one category. Requires catalog-search-categories.
+     * @param  string|null  $policySessionId  Bind authenticated search to an existing attached session.
      */
     public function __construct(
         public CatalogClientContract $contract,
         public string $query,
         public ?int $limit = null,
         public ?array $kinds = null,
+        public ?array $categories = null,
+        public ?string $policySessionId = null,
     ) {}
 
     public static function fromArray(array $data): static
@@ -36,6 +40,8 @@ readonly class CatalogSearchRequest implements Arrayable
             kinds: isset($data['kinds'])
                 ? array_map(fn (string $kind) => CatalogCandidateKind::from($kind), $data['kinds'])
                 : null,
+            categories: $data['categories'] ?? null,
+            policySessionId: $data['policySessionId'] ?? null,
         );
     }
 
@@ -53,6 +59,12 @@ readonly class CatalogSearchRequest implements Arrayable
                 fn (CatalogCandidateKind|string $kind) => $kind instanceof CatalogCandidateKind ? $kind->value : $kind,
                 $this->kinds,
             );
+        }
+        if ($this->categories !== null) {
+            $arr['categories'] = $this->categories;
+        }
+        if ($this->policySessionId !== null) {
+            $arr['policySessionId'] = $this->policySessionId;
         }
 
         return $arr;

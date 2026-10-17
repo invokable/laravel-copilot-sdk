@@ -22,4 +22,7 @@ enum CatalogUnavailableReason: string
 
     /** The surface is disabled by policy on this runtime. */
     case DisabledByPolicy = 'disabled-by-policy';
+
+    /** The requested saved or generated feed is not available. */
+    case FeedNotFound = 'feed-not-found';
 }

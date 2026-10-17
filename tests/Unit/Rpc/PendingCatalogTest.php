@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\CatalogCapability;
 use Revolution\Copilot\Enums\CatalogSelectionDecision;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingCatalog;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Types\Rpc\CatalogGetGeneratedFeedRequest;
+use Revolution\Copilot\Types\Rpc\CatalogGetSavedFeedRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionResult;
@@ -62,6 +65,87 @@ describe('PendingCatalog', function () {
 
         expect($result)->toBeArray()
             ->and($result['kind'])->toBe('unavailable');
+    });
+
+    it('forwards categories only with the negotiated category capability', function () {
+        $params = [
+            'contract' => ['protocolVersion' => 3, 'requiredCapabilities' => ['catalog-search-categories']],
+            'query' => 'design tools',
+            'categories' => ['design', 'test'],
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('catalog.search', $params)
+            ->andReturn(['kind' => 'succeeded', 'candidates' => []]);
+
+        $result = (new PendingCatalog($client))->search(new CatalogSearchRequest(
+            contract: new CatalogClientContract(3, [CatalogCapability::CatalogSearchCategories->value]),
+            query: 'design tools',
+            categories: ['design', 'test'],
+        ));
+
+        expect($result)->toBe(['kind' => 'succeeded', 'candidates' => []]);
+    });
+
+    it('calls saved and generated feed RPCs with fake responses', function () {
+        $contractData = [
+            'protocolVersion' => 3,
+            'requiredCapabilities' => [
+                'catalog-feeds',
+                'catalog-search-credential-required',
+                'catalog-search-session-bound',
+            ],
+        ];
+        $savedParams = [
+            'contract' => $contractData,
+            'feedId' => 'feed-opaque-id',
+            'policySessionId' => 'session-1',
+            'trustTiers' => ['T1'],
+        ];
+        $generatedParams = [
+            'contract' => $contractData,
+            'strategy' => 'telemetry',
+            'key' => 'popular',
+        ];
+        $savedResponse = [
+            'kind' => 'succeeded',
+            'searchId' => 'search-1',
+            'feed' => ['id' => 'feed-opaque-id', 'name' => 'Saved', 'version' => 1],
+            'entries' => [['status' => 'filtered', 'identifier' => 'resource-1']],
+            'negotiated' => ['runtimeProtocolVersion' => 3, 'grantedCapabilities' => ['catalog-feeds']],
+        ];
+        $generatedResponse = [
+            'kind' => 'unavailable',
+            'reason' => 'feed-not-found',
+            'message' => 'Feed is unavailable.',
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('catalog.getSavedFeed', $savedParams)
+            ->andReturn($savedResponse);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('catalog.getGeneratedFeed', $generatedParams)
+            ->andReturn($generatedResponse);
+        $catalog = new PendingCatalog($client);
+
+        $saved = $catalog->getSavedFeed(new CatalogGetSavedFeedRequest(
+            contract: new CatalogClientContract(3, $contractData['requiredCapabilities']),
+            feedId: 'feed-opaque-id',
+            policySessionId: 'session-1',
+            trustTiers: ['T1'],
+        ));
+        $generated = $catalog->getGeneratedFeed(new CatalogGetGeneratedFeedRequest(
+            contract: new CatalogClientContract(3, $contractData['requiredCapabilities']),
+            strategy: 'telemetry',
+            key: 'popular',
+        ));
+
+        expect($saved)->toBe($savedResponse)
+            ->and($saved['entries'][0]['status'])->toBe('filtered')
+            ->and($generated)->toBe($generatedResponse);
     });
 
     it('selects a catalog candidate and forwards its handle to skill planning', function () {

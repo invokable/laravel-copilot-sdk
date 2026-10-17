@@ -46,4 +46,16 @@ enum CatalogCapability: string
 
     /** Understands Skill installation planning from a verified materialisation reference. */
     case SkillReferenceInstallation = 'skill-reference-installation';
+
+    /** Requires an eligible credential before catalog egress and prohibits anonymous retry. */
+    case CatalogSearchCredentialRequired = 'catalog-search-credential-required';
+
+    /** Binds catalog operations to an existing attached session and its authority. */
+    case CatalogSearchSessionBound = 'catalog-search-session-bound';
+
+    /** Understands saved and generated catalog feed retrieval. */
+    case CatalogFeeds = 'catalog-feeds';
+
+    /** Understands the optional categories filter on catalog.search. */
+    case CatalogSearchCategories = 'catalog-search-categories';
 }
