@@ -6,6 +6,36 @@
 
 Clientに紐づくRPCクラス。
 
+### 接続・モデル・ツール・アカウント
+
+`ping()`と`connect()`で接続を確認・開始し、`registerExtensionLaunchProvider()`で拡張機能の起動プロバイダーを登録します。モデル一覧・価格単位・組み込みカタログは`models()`、利用可能なツール一覧は`tools()`から取得できます。`account()`ではクォータ、認証状態、ログインユーザーの一覧、ログイン・ログアウトを扱い、`accounts()`ではMicrosoft Entra IDのトークン取得を行います。
+
+### MCP・コネクター
+
+`mcp()`はMCP設定の一覧・追加・更新・削除、有効化、検出、レジストリ検索、インストール計画と適用を提供します。`connectors()`ではコネクター機能とアカウント、カタログを確認できます。サーバー側でのコネクター操作はアカウント単位の一覧取得・更新が中心です。
+
+### Skills・Plugins・Agents・Instructions・Extensions
+
+各グループから探索や利用可能なパスの取得、設定変更、再読み込みを行えます。`commands()`は組み込みコマンド一覧、`hooks()`はセッション開始前のフック探索を提供します。SkillsとPluginsは有効化・無効化やインストール管理に対応し、Agentsは組み込みエージェント情報も取得できます。Extensionsは永続化された拡張機能を探索・有効化・無効化します。
+
+### カタログとインストール
+
+`catalog()`で候補検索・選択・フィード取得を行い、Skills・Plugins・MCPの各APIでインストール計画の確認、適用、状態照会やキャンセルを行います。計画と適用は別操作です。実際のインストール例は後半の各項目を参照してください。
+
+### セッション・ホスト・実行環境
+
+`sessions()`は永続化済みセッションの検索、イベント読み取り、サイズ確認、削除・整理、forkを扱います。Workspaceの作成・読み込みやリモート制御も利用できます。`host()`はホストの起動、セッション公開・一覧・公開解除、破棄を行い、`runtime()`はランタイムのライフサイクルを扱います。
+
+### Git・環境・サンドボックス・ポリシー
+
+`git()`からブランチや作業ディレクトリ、Git remoteの情報を取得し、`gitHubRepository()`と`gitHubOwners()`からGitHubリポジトリや所有者を探索できます。`environments()`はMission Control環境、`sandbox()`と`sandboxProxyCa()`はサンドボックス対応状況やProxy CA、`contentExclusion()`は除外ポリシーの検証、`managedSettings()`と`userSettings()`は設定を扱います。
+
+### ローカルモデル・HTTP推論・ファイルシステム
+
+`azureMl()`はローカルモデルのカタログ・解決・ダウンロードと、その状態確認・キャンセル・削除を提供します。`llmInference()`はモデル層のHTTPリクエストをクライアント側へ中継する実験的APIです。`sessionFs()`はセッションのファイルシステム／SQLiteコールバックプロバイダーを登録します。
+
+### 基本的な呼び出し例
+
 ```php
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Enums\TokenPriceUnit;
@@ -25,7 +55,9 @@ Copilot::client()->listModels();
 
 元からSDKに含まれてた機能も自動コード生成版で再度追加されています。
 
-### メソッドリスト
+### 機能別の使用例
+
+以下に、上記の機能の代表的な呼び出し例をまとめています。
 
 ```php
 use Illuminate\Http\Client\Response;
@@ -727,6 +759,24 @@ $result = Copilot::client()->rpc()->contentExclusion()->validatePolicies(
 
 これはポリシー自体を検証するサーバースコープのRPCです。セッションの作業ディレクトリ内のパスを実際の除外ポリシーに照らして確認するには、セッションスコープの `contentExclusion()->checkPaths()` を使います。
 
+### managedSettings (experimental: 管理設定)
+
+管理設定の読み取り、ポリシー解決、スキーマ取得、検証、合成プレビュー、キャッシュ破棄を行います。
+
+```php
+$managedSettings = $client->rpc()->managedSettings()->read();
+$effective = $client->rpc()->managedSettings()->resolve([
+    'selectionId' => 'selection-id',
+    'workingDirectory' => '/path/to/project',
+]);
+$schema = $client->rpc()->managedSettings()->schema();
+$validation = $client->rpc()->managedSettings()->validate(['content' => ['permissions' => []]]);
+$preview = $client->rpc()->managedSettings()->compose(['layers' => [
+    ['source' => 'device', 'settings' => ['permissions' => []]],
+]]);
+$client->rpc()->managedSettings()->clearCache();
+```
+
 ### Runtime・Host のライフサイクル（experimental）
 
 `host.unpublishSession()` は、所有する稼働中のホストから application publication を撤回します。公開を撤回しても、元のセッション履歴、worktree、実行中の作業は削除・停止されません。すでに公開されていない場合は `unpublished` が `false` になり、application 以外の publication はエラーになります。
@@ -773,6 +823,38 @@ Copilot::start(function (CopilotSession $session) {
     dump($response->content());
 });
 ```
+
+### モデル・モード・名前・プラン
+
+`model()`で現在のモデル確認や切り替え、reasoning effort・Auto tier・許可モデルの設定を行えます。`mode()`はモード、`name()`はセッション名、`plan()`はプラン本文とSQLite todoの読み書きを扱います。
+
+### ワークスペース・インストラクション・LSP
+
+`workspaces()`はファイルの一覧・読み取り・書き込み・移動・削除やディレクトリ操作を提供します。`instructions()`でインストラクションの取得・再読み込み・探索、`lsp()`で言語サーバー設定の初期化を行えます。
+
+### エージェント・Fleet・バックグラウンドタスク
+
+`agent()`でエージェントの一覧・選択・再読み込み、`fleet()`でFleetを開始します。`tasks()`ではバックグラウンドエージェントやクライアント所有タスクの登録、進捗取得・更新、移行、メッセージ送信、キャンセル、削除を扱います。
+
+### MCP・Plugins・Extensions・Workflow
+
+`mcp()`はサーバーの一覧・起動・停止・再読み込み、ツール・プロンプト・リソース、OAuth、sampling、動的ヘッダーの更新を扱います。`plugins()`と`extensions()`はセッション内の状態を管理し、`customizations()`はカスタマイズの再読み込みを行います。`workflow()`でワークフローを実行・照会し、`diagnostics()`と`connectors()`で診断情報やコネクターを取得できます。
+
+### Tools・Permissions・Commands・UI
+
+`tools()`と`permissions()`はイベントで届いた保留中リクエストへの応答や設定を扱います。`commands()`はコマンド一覧・実行・イベント応答、`ui()`はユーザー入力・elicitation・プラン承認などの要求への応答を提供します。`completions()`は入力候補を取得します。
+
+### Accounts・認証・Providers
+
+`accounts()`は`enumerate()`によるアカウント／プロバイダー／ログインアカウントの列挙、`get()`・`set()`、`begin()`・`advance()`・`cancel()`による対話型ログインを扱います。`gitHubAuth()`はセッションの認証状態と資格情報、`provider()`と`providers()`はモデル接続先やプロバイダーアダプター、`connectors()`はセッションのコネクター接続を扱います。
+
+### 履歴・キュー・ログ・使用量
+
+`history()`は会話の圧縮・中断・引き継ぎ要約・切り詰め、`queue()`は保留項目の挿入・移動・編集・削除・即時送信を提供します。`log()`、`eventLog()`、`usage()`、`quota()`、`limitPrediction()`でログやイベント、使用量と上限情報を扱います。`schedule()`ではスケジュール済みプロンプトを確認・停止できます。
+
+### ライフサイクル・リモート・ホスト連携
+
+`sendMessages()`は複数メッセージを1ターンで実行し、`suspend()`・`shutdown()`でセッションを停止します。`interruptMainTurn()`はメインターン、`cancelAllBackgroundAgents()`はバックグラウンドエージェントを個別に制御します。`remote()`と`visibility()`はリモート公開・共有状態、`sandbox()`はセッションのサンドボックス、`managedSettings()`はセッションスコープの管理設定、`contentExclusion()`はパス判定、`metadata()`はクライアント所有メタデータ、`canvas()`はCanvas連携を扱います。
 
 ### contentExclusion (experimental)
 
@@ -832,7 +914,9 @@ $diagnostics = $apps->diagnose(new MCPAppsDiagnoseRequest(serverName: 'my-server
 
 `readResource()`はHTMLなどのリソースデータを返します。SDKはブラウザー描画やiframe操作を行わないため、取得した内容の描画は呼び出し側アプリケーションの責務です。
 
-### メソッドリスト
+### 機能別の使用例
+
+以下に、上記の機能の代表的な呼び出し例をまとめています。
 
 ```php
 // model
@@ -1559,29 +1643,6 @@ $connected = $session->rpc()->remote()->connectRemoteSession(new ConnectRemoteSe
 
 詳細は [Remote Sessions](./remote-sessions.md) を参照してください.
 
-### managedSettings (experimental: 管理設定)
-
-```php
-$managedSettings = $client->rpc()->managedSettings()->read();
-// $managedSettings->settingsJson - 検証済みのデバイス管理設定
-// $managedSettings->errorMessage - 検出/検証エラー（存在する場合）
-
-// ポリシーの解決、スキーマ取得、検証、合成プレビュー（experimental）
-$effective = $client->rpc()->managedSettings()->resolve([
-    'selectionId' => 'selection-id',
-    'workingDirectory' => '/path/to/project', // organization policy helperの実行コンテキスト
-]);
-// $effective->resolvedにはmodel / autoTier / contextTier / effortLevelなどの解決済み設定が含まれる
-$schema = $client->rpc()->managedSettings()->schema();
-$validation = $client->rpc()->managedSettings()->validate(['content' => ['permissions' => []]]);
-$preview = $client->rpc()->managedSettings()->compose(['layers' => [
-    ['source' => 'device', 'settings' => ['permissions' => []]],
-]]);
-
-// マネージド設定キャッシュを破棄（experimental）
-$client->rpc()->managedSettings()->clearCache();
-```
-
 ### sandbox (experimental: サンドボックス制御)
 
 ```php
@@ -1623,7 +1684,39 @@ $metadata = $session->rpc()->metadata()->updateClientMetadata(new MetadataUpdate
 ));
 ```
 
-## 新しいCLI RPC API
+### Session canvas
+
+Canvas RPC は `$session->rpc()->canvas()` から呼び出します。`list()` は
+`CanvasList` の `canvases`、`listOpen()` は `CanvasListOpenResult` の
+`openCanvases` に一覧を返します。`open()` は `OpenCanvasInstance`、
+action 呼び出しは `CanvasActionInvokeResult` を返します。`close()` の
+戻り値はありません。
+
+```php
+$canvases = $session->rpc()->canvas();
+$available = $canvases->list()->canvases;
+$openInstances = $canvases->listOpen()->openCanvases;
+
+$instance = $canvases->open([
+    'canvasId' => 'editor',
+    'instanceId' => 'editor-1',
+    'input' => ['file' => 'README.md'],
+]);
+
+$result = $canvases->action()->invoke([
+    'instanceId' => $instance->instanceId,
+    'actionName' => 'format',
+    'input' => ['style' => 'compact'],
+]);
+
+$canvases->close(['instanceId' => $instance->instanceId]);
+```
+
+Canvas provider の reverse-RPC (`canvas.open` / `canvas.close` /
+`canvas.action.invoke`) は `SessionConfig` / `ResumeSessionConfig` の
+`canvasHandler` で処理します。Canvas の描画はホスト UI の責務です。
+
+### workflow
 
 Copilot CLI 1.0.89 系で追加されたワークフロー、コネクター、診断などの実験的RPC APIも、`SessionRpc`から利用できます。これらの可変プロトコルpayloadはJSON互換の配列で渡し、レスポンスも配列として返します。各呼び出しには現在の`sessionId`が自動で追加されます。
 
@@ -1649,7 +1742,7 @@ $session->rpc()->shutdown(['detachSessionEndHooks' => true]);
 
 `workflow()`はCLIが提供する低レベルRPCを呼び出します。Node.js SDKのようにPHPクロージャーをワークフローとして登録・実行する高レベルAPIは、この同期では追加していません。これらの新しいRPCグループはCLIのバージョンに依存し、実験的であるため、対応するCLIでのみ利用してください。
 
-## SessionFS コールバック型
+### SessionFS コールバック型
 
 セッションスコープのファイルシステム操作のためのコールバック型（Request/Result）が定義されています。これらはCopilot CLIがクライアントにコールバックする際のリクエスト/レスポンスの型です。
 
@@ -1668,13 +1761,13 @@ $session->rpc()->shutdown(['detachSessionEndHooks' => true]);
 
 `SessionFsStatResult` / `SessionFsReaddirResult` / `SessionFsReaddirWithTypesResult` は失敗時に使う任意の `error`（`SessionFsError`）を持ちます。
 
-### SessionFsハンドラー
+#### SessionFsハンドラー
 
 Clientは`sessionFs.readFile` / `readFileBytes` / `writeFile` / `writeFileBytes` に加えて、`appendFile`、`exists`、`stat`、`mkdir`、`readdir`、`readdirWithTypes`、`rm`、`rename`、`sqliteQuery`、`sqliteTransaction`、`sqliteExists` の各リクエストを`Session`のプロバイダーへ振り分けます。ファイル操作の失敗は `ENOENT`（`ENOENT`または errno 2）/ `UNKNOWN` の`error`として返します。`exists`は例外時に`false`、`stat`は失敗時にゼロ値＋`error`を返します。プロバイダーが対応していない操作は`UNKNOWN`エラー（SQLite系はJSON-RPCエラー）になります。`sqliteQuery`/`sqliteExists`の例外はJSON-RPCエラー、`sqliteTransaction`の失敗は結果の`error`（`errorClass`付き）として返します。
 
 プロバイダー側のインターフェース（`SessionFsFilesystemProvider`、`SessionFsSqliteCapableProvider`、`SessionFsSqliteProvider`、`SessionFsSqliteTransactionProvider`）は、従来の`SessionFsProvider`（2メソッド）を壊さないよう別インターフェースとして追加されています。
 
-### SQLite コールバック型
+#### SQLite コールバック型
 
 | 型クラス | 用途 |
 |---|---|
@@ -1717,44 +1810,3 @@ $session->rpc()->mode()->set(['mode' => 'plan']);
 ## Testing
 
 `Copilot::fake()`でのモックは使えないので`Copilot::expects('client')`や`Copilot::expects('start')`でモックしてください。
-## Session accounts (CLI 1.0.90+)
-
-The session RPC exposes the experimental `session.accounts.*` family through
-`$session->rpc()->accounts()`: enumerate accounts/providers, read account data,
-switch or log out accounts, and run the begin/advance/cancel interactive login
-flow. The Laravel SDK preserves the wire discriminators and returns typed
-`AccountStatus`, `ProviderDescriptor`, and `AuthLoginStep` values where useful.
-The server-scoped OneAuth bridge is available as
-`$client->rpc()->accounts()->acquireEntraToken(...)`.
-
-## Session canvas
-
-Canvas RPC は `$session->rpc()->canvas()` から呼び出します。`list()` は
-`CanvasList` の `canvases`、`listOpen()` は `CanvasListOpenResult` の
-`openCanvases` に一覧を返します。`open()` は `OpenCanvasInstance`、
-action 呼び出しは `CanvasActionInvokeResult` を返します。`close()` の
-戻り値はありません。
-
-```php
-$canvases = $session->rpc()->canvas();
-$available = $canvases->list()->canvases;
-$openInstances = $canvases->listOpen()->openCanvases;
-
-$instance = $canvases->open([
-    'canvasId' => 'editor',
-    'instanceId' => 'editor-1',
-    'input' => ['file' => 'README.md'],
-]);
-
-$result = $canvases->action()->invoke([
-    'instanceId' => $instance->instanceId,
-    'actionName' => 'format',
-    'input' => ['style' => 'compact'],
-]);
-
-$canvases->close(['instanceId' => $instance->instanceId]);
-```
-
-Canvas provider の reverse-RPC (`canvas.open` / `canvas.close` /
-`canvas.action.invoke`) は `SessionConfig` / `ResumeSessionConfig` の
-`canvasHandler` で処理します。Canvas の描画はホスト UI の責務です。
