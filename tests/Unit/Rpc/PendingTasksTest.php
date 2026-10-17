@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\TaskClientActiveStatus;
 use Revolution\Copilot\Enums\TaskClientUpdateKind;
+use Revolution\Copilot\Enums\TaskStatus;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingTasks;
+use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\TaskAgentInfo;
 use Revolution\Copilot\Types\Rpc\TaskClientInfo;
 use Revolution\Copilot\Types\Rpc\TaskClientProgress;
@@ -15,9 +17,12 @@ use Revolution\Copilot\Types\Rpc\TasksCancelRequest;
 use Revolution\Copilot\Types\Rpc\TasksCancelResult;
 use Revolution\Copilot\Types\Rpc\TasksGetCurrentPromotableResult;
 use Revolution\Copilot\Types\Rpc\TasksGetProgressResult;
+use Revolution\Copilot\Types\Rpc\TaskShellOutputExit;
 use Revolution\Copilot\Types\Rpc\TasksPromoteCurrentToBackgroundResult;
 use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundRequest;
 use Revolution\Copilot\Types\Rpc\TasksPromoteToBackgroundResult;
+use Revolution\Copilot\Types\Rpc\TasksReadOutputRequest;
+use Revolution\Copilot\Types\Rpc\TasksReadOutputResult;
 use Revolution\Copilot\Types\Rpc\TasksRefreshResult;
 use Revolution\Copilot\Types\Rpc\TasksRegisterRequest;
 use Revolution\Copilot\Types\Rpc\TasksRegisterResult;
@@ -195,6 +200,72 @@ describe('PendingTasks', function () {
 
         expect($result)->toBeInstanceOf(TasksGetProgressResult::class)
             ->and($result->progress)->toBeInstanceOf(TaskClientProgress::class);
+    });
+
+    it('reads incremental shell output and decodes exit information', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.tasks.readOutput', [
+                'id' => 'shell-1',
+                'cursor' => 'cursor-1',
+                'waitMs' => 1000,
+                'sessionId' => 'sess-1',
+            ])
+            ->andReturn([
+                'text' => "first line\n",
+                'cursor' => 'cursor-2',
+                'exit' => [
+                    'status' => 'completed',
+                    'exitCode' => 0,
+                ],
+            ]);
+
+        $result = (new SessionRpc($client, 'sess-1'))->tasks()->readOutput(new TasksReadOutputRequest(
+            id: 'shell-1',
+            cursor: 'cursor-1',
+            waitMs: 1000,
+        ));
+
+        expect($result)->toBeInstanceOf(TasksReadOutputResult::class)
+            ->and($result->text)->toBe("first line\n")
+            ->and($result->cursor)->toBe('cursor-2')
+            ->and($result->exit)->toBeInstanceOf(TaskShellOutputExit::class)
+            ->and($result->exit->status)->toBe(TaskStatus::Completed)
+            ->and($result->exit->exitCode)->toBe(0)
+            ->and($result->toArray())->toBe([
+                'text' => "first line\n",
+                'cursor' => 'cursor-2',
+                'exit' => [
+                    'status' => 'completed',
+                    'exitCode' => 0,
+                ],
+            ]);
+    });
+
+    it('reads shell output from array params without optional fields or exit information', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.tasks.readOutput', [
+                'id' => 'shell-1',
+                'sessionId' => 'sess-1',
+            ])
+            ->andReturn([
+                'text' => 'still running',
+                'cursor' => 'cursor-1',
+            ]);
+
+        $result = (new PendingTasks($client, 'sess-1'))->readOutput(['id' => 'shell-1']);
+
+        expect($result)->toBeInstanceOf(TasksReadOutputResult::class)
+            ->and($result->text)->toBe('still running')
+            ->and($result->cursor)->toBe('cursor-1')
+            ->and($result->exit)->toBeNull()
+            ->and($result->toArray())->toBe([
+                'text' => 'still running',
+                'cursor' => 'cursor-1',
+            ]);
     });
 
     it('refreshes task metadata', function () {
