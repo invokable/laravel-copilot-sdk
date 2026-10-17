@@ -6,6 +6,9 @@ use Revolution\Copilot\Enums\EventsReadDirection;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingSessions;
 use Revolution\Copilot\Types\Rpc\EventsReadResult;
+use Revolution\Copilot\Types\Rpc\InstalledPlugin;
+use Revolution\Copilot\Types\Rpc\LocalSessionContext;
+use Revolution\Copilot\Types\Rpc\LocalSessionMetadataValue;
 use Revolution\Copilot\Types\Rpc\RemoteControlConfig;
 use Revolution\Copilot\Types\Rpc\RemoteControlConfigExistingMcSession;
 use Revolution\Copilot\Types\Rpc\RemoteControlStatusResult;
@@ -13,9 +16,14 @@ use Revolution\Copilot\Types\Rpc\RemoteControlStopResult;
 use Revolution\Copilot\Types\Rpc\RemoteControlTransferResult;
 use Revolution\Copilot\Types\Rpc\SessionBulkDeleteResult;
 use Revolution\Copilot\Types\Rpc\SessionList;
+use Revolution\Copilot\Types\Rpc\SessionLoadDeferredRepoHooksResult;
 use Revolution\Copilot\Types\Rpc\SessionPruneResult;
 use Revolution\Copilot\Types\Rpc\SessionsBulkDeleteRequest;
 use Revolution\Copilot\Types\Rpc\SessionsCheckInUseResult;
+use Revolution\Copilot\Types\Rpc\SessionsCloseRequest;
+use Revolution\Copilot\Types\Rpc\SessionsCloseResult;
+use Revolution\Copilot\Types\Rpc\SessionsEnrichMetadataRequest;
+use Revolution\Copilot\Types\Rpc\SessionsEnrichMetadataResult;
 use Revolution\Copilot\Types\Rpc\SessionsFindByPrefixResult;
 use Revolution\Copilot\Types\Rpc\SessionsFindByTaskIdResult;
 use Revolution\Copilot\Types\Rpc\SessionsForkRequest;
@@ -23,8 +31,16 @@ use Revolution\Copilot\Types\Rpc\SessionsForkResult;
 use Revolution\Copilot\Types\Rpc\SessionsGetLastForContextResult;
 use Revolution\Copilot\Types\Rpc\SessionSizes;
 use Revolution\Copilot\Types\Rpc\SessionsListRequest;
+use Revolution\Copilot\Types\Rpc\SessionsLoadDeferredRepoHooksRequest;
 use Revolution\Copilot\Types\Rpc\SessionsPruneOldRequest;
 use Revolution\Copilot\Types\Rpc\SessionsReadPersistedEventsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsReleaseLockResult;
+use Revolution\Copilot\Types\Rpc\SessionsReloadPluginHooksRequest;
+use Revolution\Copilot\Types\Rpc\SessionsReloadPluginHooksResult;
+use Revolution\Copilot\Types\Rpc\SessionsSaveRequest;
+use Revolution\Copilot\Types\Rpc\SessionsSaveResult;
+use Revolution\Copilot\Types\Rpc\SessionsSetAdditionalPluginsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsSetAdditionalPluginsResult;
 use Revolution\Copilot\Types\Rpc\SessionsSetRemoteControlSteeringRequest;
 use Revolution\Copilot\Types\Rpc\SessionsStartRemoteControlRequest;
 use Revolution\Copilot\Types\SessionListFilter;
@@ -379,5 +395,223 @@ describe('PendingSessions', function () {
         expect($result)->toBeInstanceOf(RemoteControlStatusResult::class)
             ->and($result->status->state)->toBe('error')
             ->and($result->status->error)->toBe('Remote export failed');
+    });
+
+    it('closes, saves, and releases locks for persisted sessions with empty results', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.close', ['sessionId' => 'session-to-close'])
+            ->andReturn([]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.save', ['sessionId' => 'session-to-save'])
+            ->andReturn([]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.releaseLock', ['sessionId' => 'session-to-unlock'])
+            ->andReturn([]);
+
+        $pending = new PendingSessions($client);
+        $closed = $pending->close(new SessionsCloseRequest('session-to-close'));
+        $saved = $pending->save(new SessionsSaveRequest('session-to-save'));
+        $released = $pending->releaseLock(['sessionId' => 'session-to-unlock']);
+
+        expect($closed)->toBeInstanceOf(SessionsCloseResult::class)
+            ->and($closed->toArray())->toBe([])
+            ->and($saved)->toBeInstanceOf(SessionsSaveResult::class)
+            ->and($saved->toArray())->toBe([])
+            ->and($released)->toBeInstanceOf(SessionsReleaseLockResult::class)
+            ->and($released->toArray())->toBe([]);
+    });
+
+    it('omits an unspecified repository-hook deferral flag and preserves false', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.reloadPluginHooks', [
+                'sessionId' => 'session-no-deferral',
+            ])
+            ->andReturn([]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.reloadPluginHooks', [
+                'sessionId' => 'session-explicit-false',
+                'deferRepoHooks' => false,
+            ])
+            ->andReturn([]);
+
+        $pending = new PendingSessions($client);
+        $omitted = $pending->reloadPluginHooks(['sessionId' => 'session-no-deferral']);
+        $explicitFalse = $pending->reloadPluginHooks(new SessionsReloadPluginHooksRequest(
+            sessionId: 'session-explicit-false',
+            deferRepoHooks: false,
+        ));
+
+        expect($omitted)->toBeInstanceOf(SessionsReloadPluginHooksResult::class)
+            ->and($omitted->toArray())->toBe([])
+            ->and($explicitFalse)->toBeInstanceOf(SessionsReloadPluginHooksResult::class)
+            ->and($explicitFalse->toArray())->toBe([]);
+    });
+
+    it('loads deferred repository hooks into a typed result', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.loadDeferredRepoHooks', ['sessionId' => 'trusted-session'])
+            ->andReturn([
+                'startupPrompts' => ['Review repository instructions'],
+                'hookCount' => 3,
+            ]);
+
+        $pending = new PendingSessions($client);
+        $result = $pending->loadDeferredRepoHooks(
+            new SessionsLoadDeferredRepoHooksRequest('trusted-session'),
+        );
+
+        expect($result)->toBeInstanceOf(SessionLoadDeferredRepoHooksResult::class)
+            ->and($result->startupPrompts)->toBe(['Review repository instructions'])
+            ->and($result->hookCount)->toBe(3);
+
+        expect(fn () => SessionLoadDeferredRepoHooksResult::fromArray([
+            'startupPrompts' => [],
+        ]))->toThrow(InvalidArgumentException::class);
+    });
+
+    it('sends an empty plugin list to clear additional plugins', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.setAdditionalPlugins', ['plugins' => []])
+            ->andReturn([]);
+
+        $pending = new PendingSessions($client);
+        $result = $pending->setAdditionalPlugins(['plugins' => []]);
+
+        expect($result)->toBeInstanceOf(SessionsSetAdditionalPluginsResult::class)
+            ->and($result->toArray())->toBe([]);
+    });
+
+    it('replaces additional plugins using the upstream snake-case keys', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.setAdditionalPlugins', [
+                'plugins' => [[
+                    'name' => 'review-tools',
+                    'marketplace' => 'team',
+                    'version' => '1.2.0',
+                    'installed_at' => '2026-10-17T09:00:00Z',
+                    'enabled' => false,
+                    'cache_path' => '/cache/review-tools',
+                    'source' => ['repository' => 'org/review-tools'],
+                    'source_sha' => 'abc123',
+                    'installed_from' => '/marketplaces/team',
+                ]],
+            ])
+            ->andReturn([]);
+
+        $pending = new PendingSessions($client);
+        $result = $pending->setAdditionalPlugins(new SessionsSetAdditionalPluginsRequest([
+            new InstalledPlugin(
+                name: 'review-tools',
+                marketplace: 'team',
+                version: '1.2.0',
+                installedAt: '2026-10-17T09:00:00Z',
+                enabled: false,
+                cachePath: '/cache/review-tools',
+                source: ['repository' => 'org/review-tools'],
+                sourceSha: 'abc123',
+                installedFrom: '/marketplaces/team',
+            ),
+        ]));
+
+        expect($result)->toBeInstanceOf(SessionsSetAdditionalPluginsResult::class)
+            ->and($result->toArray())->toBe([])
+            ->and(InstalledPlugin::fromArray([
+                'name' => 'minimal',
+                'marketplace' => 'direct',
+                'installed_at' => '2026-10-17T09:00:00Z',
+                'enabled' => false,
+                'cache_path' => '/cache/minimal',
+            ])->toArray())->toBe([
+                'name' => 'minimal',
+                'marketplace' => 'direct',
+                'installed_at' => '2026-10-17T09:00:00Z',
+                'enabled' => false,
+                'cache_path' => '/cache/minimal',
+            ]);
+
+        expect(InstalledPlugin::fromArray([
+            'name' => 'uncached',
+            'marketplace' => '',
+            'installed_at' => '2026-10-17T09:00:00Z',
+            'enabled' => true,
+        ])->toArray())->toBe([
+            'name' => 'uncached',
+            'marketplace' => '',
+            'installed_at' => '2026-10-17T09:00:00Z',
+            'enabled' => true,
+        ]);
+    });
+
+    it('enriches session metadata and decodes typed local metadata records', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.enrichMetadata', [
+                'sessions' => [[
+                    'sessionId' => 'local-session',
+                    'startTime' => '2026-10-16T09:00:00Z',
+                    'modifiedTime' => '2026-10-17T09:00:00Z',
+                    'isRemote' => false,
+                    'isDetached' => false,
+                    'context' => [
+                        'cwd' => '/workspace',
+                        'hostType' => 'github',
+                    ],
+                ]],
+            ])
+            ->andReturn([
+                'sessions' => [[
+                    'sessionId' => 'local-session',
+                    'startTime' => '2026-10-16T09:00:00Z',
+                    'modifiedTime' => '2026-10-17T09:00:00Z',
+                    'summary' => 'Implemented session RPCs',
+                    'name' => 'RPC work',
+                    'clientName' => 'laravel',
+                    'isRemote' => false,
+                    'isDetached' => false,
+                    'context' => [
+                        'cwd' => '/workspace',
+                        'hostType' => 'github',
+                    ],
+                    'mcTaskId' => 'task-123',
+                ]],
+            ]);
+
+        $pending = new PendingSessions($client);
+        $result = $pending->enrichMetadata(new SessionsEnrichMetadataRequest([
+            new LocalSessionMetadataValue(
+                sessionId: 'local-session',
+                startTime: '2026-10-16T09:00:00Z',
+                modifiedTime: '2026-10-17T09:00:00Z',
+                isRemote: false,
+                isDetached: false,
+                context: new LocalSessionContext(
+                    cwd: '/workspace',
+                    hostType: 'github',
+                ),
+            ),
+        ]));
+
+        expect($result)->toBeInstanceOf(SessionsEnrichMetadataResult::class)
+            ->and($result->sessions[0])->toBeInstanceOf(LocalSessionMetadataValue::class)
+            ->and($result->sessions[0]->summary)->toBe('Implemented session RPCs')
+            ->and($result->sessions[0]->isRemote)->toBeFalse()
+            ->and($result->sessions[0]->isDetached)->toBeFalse()
+            ->and($result->sessions[0]->context)->toBeInstanceOf(LocalSessionContext::class)
+            ->and($result->sessions[0]->context->hostType)->toBe('github')
+            ->and($result->sessions[0]->mcTaskId)->toBe('task-123');
     });
 });

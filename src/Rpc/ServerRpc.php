@@ -140,7 +140,7 @@ class ServerRpc
     }
 
     /**
-     * Sessions RPC operations (fork).
+     * Session lifecycle and management RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.
      */

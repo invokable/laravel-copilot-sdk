@@ -397,6 +397,41 @@ $sizes = $sessions->getSizes(); // $sizes->sizes は session ID => byte 数
 $inUse = $sessions->checkInUse(['sessionIds' => ['session-id']]);
 $deleted = $sessions->bulkDelete(['sessionIds' => ['session-id']]);
 
+// アクティブなセッションを閉じる（履歴は削除しない）
+$sessions->close(['sessionId' => 'session-id']);
+
+// 保留中イベントをディスクへ保存
+$sessions->save(['sessionId' => 'session-id']);
+
+// このプロセスが保持するセッションのin-use lockを明示的に解放
+$sessions->releaseLock(['sessionId' => 'session-id']);
+
+// reloadPluginHooksはuser/plugin hooksを再読み込みする。
+// folder trustの確認前はrepo hooksを遅延させ、信頼確認後に続けてロードする。
+$sessions->reloadPluginHooks([
+    'sessionId' => 'session-id',
+    'deferRepoHooks' => true,
+]);
+$loadedHooks = $sessions->loadDeferredRepoHooks(['sessionId' => 'session-id']);
+// $loadedHooks->startupPrompts と $loadedHooks->hookCount
+
+// Manager-wideの追加plugin設定を置換（空配列でクリア）
+$sessions->setAdditionalPlugins(['plugins' => []]);
+
+// local session metadata の summary / context を補完
+$enriched = $sessions->enrichMetadata([
+    'sessions' => [[
+        'sessionId' => 'session-id',
+        'startTime' => '2026-10-17T09:00:00Z',
+        'modifiedTime' => '2026-10-17T09:00:00Z',
+        'isRemote' => false,
+    ]],
+]);
+
+// close() はshutdown・イベント保存・ロック解放を行ってactive sessionを破棄しますが、
+// persisted historyは削除しません。$session->disconnect() はsession.detachでこのSDKとの
+// 接続とPHP側のin-memory resourcesを解放します。永続データの削除にはbulkDelete()を使います。
+
 // セッションを開かず、cursor を使って永続化済みイベントをページング
 $cursor = null;
 do {
