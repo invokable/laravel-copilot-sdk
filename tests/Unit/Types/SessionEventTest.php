@@ -5,6 +5,9 @@ declare(strict_types=1);
 use Illuminate\Broadcasting\AnonymousEvent;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Support\Facades\Broadcast;
+use Revolution\Copilot\Enums\ModelCallProviderType;
+use Revolution\Copilot\Enums\ModelCallRequestBodyCompressionFallback;
+use Revolution\Copilot\Enums\ModelCallRequestBodyEncoding;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Types\SessionEvent;
 
@@ -216,6 +219,47 @@ describe('SessionEvent', function () {
         expect($toolExecution->data['toolUsage'])->toBe($toolUsage)
             ->and($toolExecution->data['toolUsage'])->not->toHaveKey('outputTokens')
             ->not->toHaveKey('totalTokens');
+    });
+
+    it('provides typed access to model-call telemetry metadata', function () {
+        $event = SessionEvent::fromArray([
+            'type' => 'assistant.usage',
+            'data' => [
+                'providerType' => 'azure',
+                'requestBodyCompressionFallback' => 'retried',
+                'requestBodyCompressionFallbackFrom' => 'zstd',
+                'requestBodyCompressionRejectedStatus' => 415,
+            ],
+        ]);
+
+        expect($event->providerType())->toBe(ModelCallProviderType::AZURE)
+            ->and($event->requestBodyCompressionFallback())->toBe(ModelCallRequestBodyCompressionFallback::RETRIED)
+            ->and($event->requestBodyCompressionFallbackFrom())->toBe(ModelCallRequestBodyEncoding::ZSTD)
+            ->and($event->requestBodyCompressionRejectedStatus())->toBe(415)
+            ->and($event->toArray()['data'])->toBe([
+                'providerType' => 'azure',
+                'requestBodyCompressionFallback' => 'retried',
+                'requestBodyCompressionFallbackFrom' => 'zstd',
+                'requestBodyCompressionRejectedStatus' => 415,
+            ]);
+    });
+
+    it('returns null for absent or unsupported model-call telemetry metadata', function () {
+        $event = SessionEvent::fromArray([
+            'type' => 'model.call_failure',
+            'data' => [
+                'providerType' => 'future-provider-type',
+                'requestBodyCompressionFallback' => 1,
+                'requestBodyCompressionFallbackFrom' => 'br',
+                'requestBodyCompressionRejectedStatus' => '415',
+            ],
+        ]);
+
+        expect($event->providerType())->toBeNull()
+            ->and($event->requestBodyCompressionFallback())->toBeNull()
+            ->and($event->requestBodyCompressionFallbackFrom())->toBeNull()
+            ->and($event->requestBodyCompressionRejectedStatus())->toBeNull()
+            ->and(SessionEvent::fromArray(['type' => 'assistant.usage'])->providerType())->toBeNull();
     });
 });
 

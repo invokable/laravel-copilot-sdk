@@ -13,6 +13,9 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Dumpable;
 use Illuminate\Support\Traits\InteractsWithData;
 use Illuminate\Support\Traits\Tappable;
+use Revolution\Copilot\Enums\ModelCallProviderType;
+use Revolution\Copilot\Enums\ModelCallRequestBodyCompressionFallback;
+use Revolution\Copilot\Enums\ModelCallRequestBodyEncoding;
 use Revolution\Copilot\Enums\SessionEventType;
 use Throwable;
 
@@ -204,6 +207,34 @@ readonly class SessionEvent implements Arrayable, Jsonable
     public function activeWorkflowSummary(?string $default = null): ?string
     {
         return $this->data('activeWorkflowSummary', $default);
+    }
+
+    public function providerType(): ?ModelCallProviderType
+    {
+        $providerType = $this->data['providerType'] ?? null;
+
+        return is_string($providerType) ? ModelCallProviderType::tryFrom($providerType) : null;
+    }
+
+    public function requestBodyCompressionFallback(): ?ModelCallRequestBodyCompressionFallback
+    {
+        $fallback = $this->data['requestBodyCompressionFallback'] ?? null;
+
+        return is_string($fallback) ? ModelCallRequestBodyCompressionFallback::tryFrom($fallback) : null;
+    }
+
+    public function requestBodyCompressionFallbackFrom(): ?ModelCallRequestBodyEncoding
+    {
+        $encoding = $this->data['requestBodyCompressionFallbackFrom'] ?? null;
+
+        return is_string($encoding) ? ModelCallRequestBodyEncoding::tryFrom($encoding) : null;
+    }
+
+    public function requestBodyCompressionRejectedStatus(): ?int
+    {
+        $status = $this->data['requestBodyCompressionRejectedStatus'] ?? null;
+
+        return is_int($status) ? $status : null;
     }
 
     /**
