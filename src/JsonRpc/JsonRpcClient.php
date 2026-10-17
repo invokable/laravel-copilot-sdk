@@ -112,7 +112,7 @@ class JsonRpcClient
      *
      * @throws JsonRpcException
      */
-    public function request(string $method, array $params = [], float $timeout = 30.0): mixed
+    public function request(string $method, array $params = [], ?float $timeout = 30.0): mixed
     {
         if (! Copilot::isAllowedMethod($method)) {
             throw new StrayRequestException($method);
@@ -213,7 +213,7 @@ class JsonRpcClient
      *
      * @throws JsonRpcException
      */
-    protected function waitForResponse(string $requestId, float $timeout): mixed
+    protected function waitForResponse(string $requestId, ?float $timeout): mixed
     {
         $suspension = EventLoop::getSuspension();
 
@@ -224,14 +224,18 @@ class JsonRpcClient
         ];
 
         $timeoutError = false;
-        $timeoutId = EventLoop::delay($timeout, function () use ($requestId, &$timeoutError): void {
-            $timeoutError = true;
-            $this->resumePendingRequest($requestId);
-        });
+        $timeoutId = $timeout === null
+            ? null
+            : EventLoop::delay($timeout, function () use ($requestId, &$timeoutError): void {
+                $timeoutError = true;
+                $this->resumePendingRequest($requestId);
+            });
 
         $suspension->suspend();
 
-        EventLoop::cancel($timeoutId);
+        if ($timeoutId !== null) {
+            EventLoop::cancel($timeoutId);
+        }
 
         $pending = $this->pendingRequests[$requestId] ?? null;
         unset($this->pendingRequests[$requestId]);

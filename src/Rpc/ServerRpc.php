@@ -62,6 +62,16 @@ class ServerRpc
     }
 
     /**
+     * Experimental Azure ML local-model lifecycle RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function azureMl(): PendingServerAzureMl
+    {
+        return new PendingServerAzureMl($this->client);
+    }
+
+    /**
      * Server-scoped slash command RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.

@@ -127,6 +127,25 @@ describe('JsonRpcClient', function () {
             ->toThrow(JsonRpcException::class, 'Timeout 0.2s waiting for response');
     });
 
+    it('waits for a response without applying a timeout when null is passed', function () {
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
+        $transport->shouldReceive('start')->once();
+        $transport->shouldReceive('send')->once()->andReturnUsing(function ($message) use ($simulateReceive) {
+            if (preg_match('/\{.*\}/s', $message, $matches)) {
+                $request = json_decode($matches[0], true);
+                $response = JsonRpcMessage::response($request['id'], ['status' => 'ok']);
+                $simulateReceive($response->toJson());
+            }
+        });
+
+        $client = new JsonRpcClient($transport);
+        $client->start();
+
+        $result = $client->request('azureMl.download', [], null);
+
+        expect($result)->toBe(['status' => 'ok']);
+    });
+
     it('notify sends message without waiting for response', function () {
         $transport = Mockery::mock(Transport::class);
 
