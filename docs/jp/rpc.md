@@ -34,6 +34,8 @@ use Revolution\Copilot\Enums\CatalogSelectionDecision;
 use Revolution\Copilot\Enums\EventsReadDirection;
 use Revolution\Copilot\Enums\McpInstallationSecretStorage;
 use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
+use Revolution\Copilot\Enums\SkillInstallationManagementOutcomeKind;
+use Revolution\Copilot\Enums\SkillInstallationManagementResultKind;
 use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
@@ -370,17 +372,20 @@ $selection = $catalog->select(new CatalogSelectionRequest(
 
 $skills = Copilot::client()->rpc()->skills();
 if ($selection['kind'] === 'selected') {
-    $plan = $skills->planInstall(new SkillPlanInstallRequest(
+    $planned = $skills->planInstall(new SkillPlanInstallRequest(
         contract: $contract,
         candidateHandle: $selection['candidateHandle'],
         policySessionId: $sessionId,
     ));
-    // applyInstall() は installations.confirm による確認後に適用する
-    $result = $skills->applyInstall(new SkillApplyInstallRequest(
-        contract: $contract,
-        planHandle: $plan['planHandle'],
-        policySessionId: $sessionId,
-    ));
+    if ($planned->kind === SkillInstallationManagementResultKind::Outcome
+        && $planned->outcome?->kind === SkillInstallationManagementOutcomeKind::InstallPlanned) {
+        // applyInstall() は installations.confirm による確認後に適用する
+        $result = $skills->applyInstall(new SkillApplyInstallRequest(
+            contract: $contract,
+            planHandle: $planned->outcome->plan['planHandle'],
+            policySessionId: $sessionId,
+        ));
+    }
 }
 
 // Agent Finder の materialisation reference からスキルのインストールを計画
@@ -399,12 +404,15 @@ $referencePlan = $skills->planInstallFromReference(new SkillPlanInstallFromRefer
     ),
     policySessionId: $sessionId,
 ));
-// 成功時は $referencePlan['kind'] === 'outcome'、
-// $referencePlan['outcome']['kind'] === 'install-planned'。
+// 成功時は $referencePlan->kind === SkillInstallationManagementResultKind::Outcome、
+// $referencePlan->outcome->kind === SkillInstallationManagementOutcomeKind::InstallPlanned。
 // 計画自体は副作用を起こさず、固定のAgent Finder authorityからdescriptorを取得し、
 // descriptorとbundleのdigestを照合する。内容を確認し、既存の確認フローを完了してからapplyInstall()する。
 // invalid-reference、descriptor-not-found、descriptor-withdrawn、digest-mismatch、
 // unsupported-resource は計画結果の拒否理由として返る。
+// GitHubの拒否理由 source-rate-limited、no-credential、credential-rejected は
+// SkillInstallationFailureReason で区別され、retryAfterSecondsはsource-rate-limitedの場合だけ返る。
+// network-failureのmessageはURL、検索クエリ、ハンドル、secretを含まない安全な説明です。
 
 // インストール済みスキルと進行中の操作
 $installations = $skills->installations();
@@ -530,9 +538,13 @@ Copilot::client()->rpc()->environments()->delete(['environmentId' => 'env-id']);
 
 `agent-plugin-confirmed-installation` はインストールの可否とレビュー用プランを返す capability で、これも `agent-plugin-discovery` と併せて要求します。許可すると候補に `installability` が含まれ、値は `installable`、`install-data-unavailable`、`feature-disabled`、`not-installable-kind` のいずれかです。`installPlan` は `installability` が `installable` の場合にだけ含まれます。プランは確認用のデータであり、この catalog RPC がインストールを実行することはありません。
 
-プランの `sources` は優先順に `materialization`、`marketplace`、`repository` の候補を含みます。Marketplace には名前とリポジトリ、直接の Repository にはリポジトリと任意のパスが記録されます。利用側で内容を確認してから次の操作を決めてください。
+プランの `sources` は優先順に `materialization`、`marketplace`、`repository` の候補を含みます。Marketplace には名前とリポジトリ、直接の Repository にはリポジトリと任意のパスが記録されます。materializationだけのプランでは `pluginName` が省略され、`components` は空です。名前や実際に導入される内容は `plugins.planInstall()` が返すレビューで確認してください。
 
 選択済み候補は `plugins.planInstall()` で副作用のない検証付きプランを作成できます。`plugins.applyInstall()` は利用者に明示的な確認を求め、許可された場合にプランを適用します。適用後のプラグインは無効状態で登録されます。
+
+レビューの `mcpServers` は検証済みファイルが宣言するサーバー名、transport、リモートの場合のhostを示します。これは安全性の保証ではないため、利用者が内容を確認してから明示的な確認を行ってください。インストール済みプラグインの `description` はmanifest由来です。`verifiedSource` はGitHubリポジトリと固定commitを示し、commitに固定された直接インストールでのみ存在します。`iconUrl` は外部の未信頼コンテンツなので、取得時に認証情報やGitHub資格情報を送らないでください。資格情報そのものは拒否理由として返されません。
+
+インストール結果の `network-failure` では、`CatalogNetworkFailureReason`、HTTP `statusCode`、任意の `retryAfterSeconds` と安全に表示できる `message` を確認できます。
 
 ```php
 use Revolution\Copilot\Enums\CatalogReferenceInstallationResultKind;

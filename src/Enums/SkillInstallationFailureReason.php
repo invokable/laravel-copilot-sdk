@@ -33,6 +33,9 @@ enum SkillInstallationFailureReason: string
     case InvalidSkill = 'invalid-skill';
     case PayloadUnavailable = 'payload-unavailable';
     case PayloadMismatch = 'payload-mismatch';
+    case SourceRateLimited = 'source-rate-limited';
+    case NoCredential = 'no-credential';
+    case CredentialRejected = 'credential-rejected';
     case SourceChanged = 'source-changed';
     case LifecycleUnavailable = 'lifecycle-unavailable';
     case RecoveryRequired = 'recovery-required';

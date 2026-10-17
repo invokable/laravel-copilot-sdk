@@ -23,11 +23,25 @@ describe('plugin, sandbox, and shutdown types', function () {
             'enabled' => true,
             'source' => 'builtin',
             'directSourceId' => 'stable-id',
+            'description' => 'A reviewed plugin.',
+            'verifiedSource' => [
+                'repository' => 'owner/repo',
+                'revision' => '0123456789abcdef0123456789abcdef01234567',
+            ],
+            'iconUrl' => 'https://raw.githubusercontent.com/owner/repo/0123456789/icon.png',
         ]);
 
         expect($plugin->source)->toBe('builtin')
             ->and($plugin->directSourceId)->toBe('stable-id')
-            ->and($plugin->toArray()['source'])->toBe('builtin');
+            ->and($plugin->description)->toBe('A reviewed plugin.')
+            ->and($plugin->verifiedSource->repository)->toBe('owner/repo')
+            ->and($plugin->verifiedSource->revision)->toBe('0123456789abcdef0123456789abcdef01234567')
+            ->and($plugin->iconUrl)->toBe('https://raw.githubusercontent.com/owner/repo/0123456789/icon.png')
+            ->and($plugin->toArray()['source'])->toBe('builtin')
+            ->and($plugin->toArray()['verifiedSource'])->toBe([
+                'repository' => 'owner/repo',
+                'revision' => '0123456789abcdef0123456789abcdef01234567',
+            ]);
     });
 
     it('round trips managed MCP server and sandbox policy configuration', function () {

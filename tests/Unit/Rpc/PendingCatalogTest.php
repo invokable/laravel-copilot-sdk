@@ -79,6 +79,13 @@ describe('PendingCatalog', function () {
             'candidateHandle' => 'candidate-1',
             'policySessionId' => 'session-1',
         ];
+        $planResult = [
+            'kind' => 'outcome',
+            'outcome' => [
+                'kind' => 'install-planned',
+                'plan' => ['planHandle' => 'plan-1'],
+            ],
+        ];
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->twice()
@@ -87,7 +94,7 @@ describe('PendingCatalog', function () {
         $client->shouldReceive('request')
             ->once()
             ->with('skills.planInstall', $planParams)
-            ->andReturn(['kind' => 'planned', 'planHandle' => 'plan-1']);
+            ->andReturn($planResult);
 
         $rpc = new ServerRpc($client);
         $selection = $rpc->catalog()->select(new CatalogSelectionRequest(
@@ -105,7 +112,9 @@ describe('PendingCatalog', function () {
 
         expect($selection)->toBe($selected)
             ->and($invalidSelection)->toBe($invalid)
-            ->and($plan)->toBe(['kind' => 'planned', 'planHandle' => 'plan-1']);
+            ->and($plan->kind->value)->toBe('outcome')
+            ->and($plan->outcome->kind->value)->toBe('install-planned')
+            ->and($plan->outcome->plan)->toBe(['planHandle' => 'plan-1']);
     });
 
     it('round-trips catalog selection request and result types', function () {

@@ -16,6 +16,7 @@ readonly class PluginInstallationReview implements Arrayable
 {
     /**
      * @param  PluginInstallationFileReview[]  $files
+     * @param  PluginInstallationMcpServerReview[]  $mcpServers
      */
     public function __construct(
         public PluginInstallationReviewAction $action,
@@ -30,6 +31,7 @@ readonly class PluginInstallationReview implements Arrayable
         public int $totalBytes,
         public ?string $description = null,
         public ?string $version = null,
+        public array $mcpServers = [],
     ) {}
 
     public static function fromArray(array $data): static
@@ -50,6 +52,10 @@ readonly class PluginInstallationReview implements Arrayable
             totalBytes: $data['totalBytes'],
             description: $data['description'] ?? null,
             version: $data['version'] ?? null,
+            mcpServers: array_map(
+                fn (array $server): PluginInstallationMcpServerReview => PluginInstallationMcpServerReview::fromArray($server),
+                $data['mcpServers'] ?? [],
+            ),
         );
     }
 
@@ -76,6 +82,12 @@ readonly class PluginInstallationReview implements Arrayable
         }
         if ($this->version !== null) {
             $data['version'] = $this->version;
+        }
+        if ($this->mcpServers !== []) {
+            $data['mcpServers'] = array_map(
+                fn (PluginInstallationMcpServerReview $server): array => $server->toArray(),
+                $this->mcpServers,
+            );
         }
 
         return $data;
