@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Rpc\PendingCatalog;
 use Revolution\Copilot\Rpc\PendingServerAccount;
 use Revolution\Copilot\Rpc\PendingServerAzureMl;
+use Revolution\Copilot\Rpc\PendingServerCatalog;
 use Revolution\Copilot\Rpc\PendingServerCommands;
 use Revolution\Copilot\Rpc\PendingServerConnectors;
 use Revolution\Copilot\Rpc\PendingServerGit;
@@ -79,10 +79,10 @@ describe('ServerRpc', function () {
         expect($rpc->plugins())->toBeInstanceOf(PendingServerPlugins::class);
     });
 
-    it('returns PendingCatalog from catalog()', function () {
+    it('returns PendingServerCatalog from catalog()', function () {
         $rpc = new ServerRpc(createMockRpcClient());
 
-        expect($rpc->catalog())->toBeInstanceOf(PendingCatalog::class);
+        expect($rpc->catalog())->toBeInstanceOf(PendingServerCatalog::class);
     });
 
     it('registers the extension launch provider', function () {

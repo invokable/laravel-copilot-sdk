@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\CatalogCapability;
 use Revolution\Copilot\Enums\CatalogSelectionDecision;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Rpc\PendingCatalog;
+use Revolution\Copilot\Rpc\PendingServerCatalog;
 use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogGetGeneratedFeedRequest;
@@ -15,7 +15,7 @@ use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionResult;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionSelected;
 
-describe('PendingCatalog', function () {
+describe('PendingServerCatalog', function () {
     it('calls catalog.search with typed params and returns raw array', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
@@ -29,7 +29,7 @@ describe('PendingCatalog', function () {
             )
             ->andReturn(['kind' => 'succeeded', 'searchId' => 'sid1', 'candidates' => [], 'truncated' => false, 'negotiated' => ['runtimeProtocolVersion' => 1, 'grantedCapabilities' => []]]);
 
-        $pending = new PendingCatalog($client);
+        $pending = new PendingServerCatalog($client);
         $result = $pending->search(new CatalogSearchRequest(
             contract: new CatalogClientContract(1, ['mcp-server-card']),
             query: 'github',
@@ -55,7 +55,7 @@ describe('PendingCatalog', function () {
             )
             ->andReturn(['kind' => 'unavailable', 'reason' => 'search-unavailable', 'message' => 'Search is not available.']);
 
-        $pending = new PendingCatalog($client);
+        $pending = new PendingServerCatalog($client);
         $result = $pending->search([
             'contract' => ['protocolVersion' => 2, 'requiredCapabilities' => []],
             'query' => 'stripe',
@@ -79,7 +79,7 @@ describe('PendingCatalog', function () {
             ->with('catalog.search', $params)
             ->andReturn(['kind' => 'succeeded', 'candidates' => []]);
 
-        $result = (new PendingCatalog($client))->search(new CatalogSearchRequest(
+        $result = (new PendingServerCatalog($client))->search(new CatalogSearchRequest(
             contract: new CatalogClientContract(3, [CatalogCapability::CatalogSearchCategories->value]),
             query: 'design tools',
             categories: ['design', 'test'],
@@ -129,7 +129,7 @@ describe('PendingCatalog', function () {
             ->once()
             ->with('catalog.getGeneratedFeed', $generatedParams)
             ->andReturn($generatedResponse);
-        $catalog = new PendingCatalog($client);
+        $catalog = new PendingServerCatalog($client);
 
         $saved = $catalog->getSavedFeed(new CatalogGetSavedFeedRequest(
             contract: new CatalogClientContract(3, $contractData['requiredCapabilities']),

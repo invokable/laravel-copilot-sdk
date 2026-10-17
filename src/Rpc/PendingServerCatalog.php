@@ -23,7 +23,7 @@ use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
  *
  * @experimental This API group is experimental and may change or be removed.
  */
-class PendingCatalog
+class PendingServerCatalog
 {
     public function __construct(
         protected JsonRpcClient $client,

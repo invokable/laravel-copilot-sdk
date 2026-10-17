@@ -291,9 +291,9 @@ class ServerRpc
      *
      * @experimental
      */
-    public function catalog(): PendingCatalog
+    public function catalog(): PendingServerCatalog
     {
-        return new PendingCatalog($this->client);
+        return new PendingServerCatalog($this->client);
     }
 
     /**

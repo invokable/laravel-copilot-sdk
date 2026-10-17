@@ -7,7 +7,7 @@ use Revolution\Copilot\Enums\CatalogReferenceInstallationResultKind;
 use Revolution\Copilot\Enums\PluginInstallationManagementOutcomeKind;
 use Revolution\Copilot\Enums\PluginInstallationOutcomeKind;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Rpc\PendingCatalog;
+use Revolution\Copilot\Rpc\PendingServerCatalog;
 use Revolution\Copilot\Rpc\PendingServerPlugins;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogMaterializationReference;
@@ -190,7 +190,7 @@ describe('verified Agent Plugin installation planning RPCs', function () {
                     ],
                 ],
             );
-        $catalog = new PendingCatalog($client);
+        $catalog = new PendingServerCatalog($client);
 
         $pluginResult = $catalog->planInstallFromReference(
             new CatalogPlanInstallFromReferenceRequest($contract, 'session-1', $reference),
