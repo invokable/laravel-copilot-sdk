@@ -6,6 +6,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingSandbox;
 use Revolution\Copilot\Types\Rpc\SandboxCredentialSuggestionsResult;
 use Revolution\Copilot\Types\Rpc\SandboxEnforcementStatus;
+use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestRequest;
+use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestResult;
 
 describe('PendingSandbox', function () {
     it('returns sandbox enforcement status', function () {
@@ -43,5 +45,45 @@ describe('PendingSandbox', function () {
             ->and($result->suggestions)->toHaveCount(1)
             ->and($result->suggestions[0]->name)->toBe('API_TOKEN')
             ->and($result->suggestions[0]->suggestedInjectHosts)->toBe(['api.example.com']);
+    });
+
+    it('grants the sandbox path for a pending request with a typed request object', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.sandbox.grantPathForRequest', [
+                'requestId' => 'req-1',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn([
+                'success' => true,
+            ]);
+
+        $result = (new PendingSandbox($client, 'session-abc'))->grantPathForRequest(
+            new SandboxGrantPathForRequestRequest(requestId: 'req-1'),
+        );
+
+        expect($result)->toBeInstanceOf(SandboxGrantPathForRequestResult::class)
+            ->and($result->success)->toBeTrue();
+    });
+
+    it('grants the sandbox path for a pending request with array input', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.sandbox.grantPathForRequest', [
+                'requestId' => 'req-2',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn([
+                'success' => false,
+            ]);
+
+        $result = (new PendingSandbox($client, 'session-abc'))->grantPathForRequest([
+            'requestId' => 'req-2',
+        ]);
+
+        expect($result)->toBeInstanceOf(SandboxGrantPathForRequestResult::class)
+            ->and($result->success)->toBeFalse();
     });
 });

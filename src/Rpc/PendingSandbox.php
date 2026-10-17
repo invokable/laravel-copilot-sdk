@@ -9,6 +9,8 @@ use Revolution\Copilot\Types\Rpc\SandboxCredentialSuggestionsResult;
 use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionRequest;
 use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionResult;
 use Revolution\Copilot\Types\Rpc\SandboxEnforcementStatus;
+use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestRequest;
+use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestResult;
 
 /**
  * Pending sandbox RPC operations for a session.
@@ -59,6 +61,27 @@ class PendingSandbox
 
         return SandboxDisableForSessionResult::fromArray(
             $this->client->request('session.sandbox.disableForSession', $paramsArray),
+        );
+    }
+
+    /**
+     * Accept the sandbox path grant offered on an active sandbox escalation permission
+     * request, adding the path to the session's sandbox policy and approving the request
+     * so the blocked operation re-runs inside the sandbox instead of outside it.
+     *
+     * Prefer this minimum-privilege grant over disableForSession() when only a specific
+     * path needs to be allowed. This does not persist the path; the grant applies only to
+     * the current session and is not saved for future sessions.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function grantPathForRequest(SandboxGrantPathForRequestRequest|array $params): SandboxGrantPathForRequestResult
+    {
+        $paramsArray = ($params instanceof SandboxGrantPathForRequestRequest ? $params : SandboxGrantPathForRequestRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SandboxGrantPathForRequestResult::fromArray(
+            $this->client->request('session.sandbox.grantPathForRequest', $paramsArray),
         );
     }
 }
