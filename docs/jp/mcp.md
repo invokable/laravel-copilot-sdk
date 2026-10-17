@@ -115,6 +115,8 @@ $isMicrosoft = $dcr->authorizationServerUrl === null
 | `disabled` | 無効化済み |
 | `not_configured` | 未設定 |
 
+`$session->rpc()->mcp()->listConfigured()` の各サーバーには、実行時に観測できた状態が `live` として含まれることがあります。`McpConfiguredServerState` の `toolsLoaded` は現在の接続でツール一覧が読み込まれたかを表す任意のboolです。未報告の場合は省略されるため、`false`（未読み込み）と区別してください。`live` がある場合は `McpConfiguredServerState::fromArray($server['live'])` で型付き状態として扱えます。接続後もツール読み込み中かどうかは [`session.mcp_server_tools_loaded`](./session-event.md) イベントで確認できます。
+
 ## MCPサーバー設定の管理（Server RPC）
 
 セッションとは別に、サーバーレベルでMCPサーバーの設定を管理できます。

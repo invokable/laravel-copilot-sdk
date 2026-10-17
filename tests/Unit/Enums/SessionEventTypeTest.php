@@ -37,6 +37,7 @@ describe('SessionEventType', function () {
         expect(SessionEventType::SESSION_EXTENSIONS_LOADED->value)->toBe('session.extensions_loaded')
             ->and(SessionEventType::SESSION_MCP_SERVERS_LOADED->value)->toBe('session.mcp_servers_loaded')
             ->and(SessionEventType::SESSION_MCP_SERVER_STATUS_CHANGED->value)->toBe('session.mcp_server_status_changed')
+            ->and(SessionEventType::SESSION_MCP_SERVER_TOOLS_LOADED->value)->toBe('session.mcp_server_tools_loaded')
             ->and(SessionEventType::SESSION_SKILLS_LOADED->value)->toBe('session.skills_loaded');
     });
 
@@ -44,6 +45,7 @@ describe('SessionEventType', function () {
         expect(SessionEventType::from('session.extensions_loaded'))->toBe(SessionEventType::SESSION_EXTENSIONS_LOADED)
             ->and(SessionEventType::from('session.mcp_servers_loaded'))->toBe(SessionEventType::SESSION_MCP_SERVERS_LOADED)
             ->and(SessionEventType::from('session.mcp_server_status_changed'))->toBe(SessionEventType::SESSION_MCP_SERVER_STATUS_CHANGED)
+            ->and(SessionEventType::from('session.mcp_server_tools_loaded'))->toBe(SessionEventType::SESSION_MCP_SERVER_TOOLS_LOADED)
             ->and(SessionEventType::from('session.skills_loaded'))->toBe(SessionEventType::SESSION_SKILLS_LOADED);
     });
 

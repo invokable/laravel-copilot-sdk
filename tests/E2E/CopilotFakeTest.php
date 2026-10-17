@@ -30,6 +30,24 @@ describe('Copilot::fake()', function () {
             ->and($response->content())->toBe('Hello World');
     });
 
+    it('returns transient MCP server tools-loaded events from fake responses', function () {
+        $event = SessionEvent::fromArray([
+            'type' => 'session.mcp_server_tools_loaded',
+            'data' => [
+                'serverName' => 'github',
+                'toolCount' => 4,
+            ],
+            'ephemeral' => true,
+        ]);
+        Copilot::fake(['*' => $event]);
+
+        $response = Copilot::run('List available MCP tools');
+
+        expect($response?->type)->toBe(SessionEventType::SESSION_MCP_SERVER_TOOLS_LOADED)
+            ->and($response?->data)->toBe(['serverName' => 'github', 'toolCount' => 4])
+            ->and($response?->ephemeral)->toBeTrue();
+    });
+
     it('can be faked with array responses', function () {
         Copilot::fake([
             '*' => '42',

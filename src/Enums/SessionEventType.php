@@ -46,6 +46,7 @@ enum SessionEventType: string
     case SESSION_EXTENSIONS_LOADED = 'session.extensions_loaded';
     case SESSION_MCP_SERVERS_LOADED = 'session.mcp_servers_loaded';
     case SESSION_MCP_SERVER_STATUS_CHANGED = 'session.mcp_server_status_changed';
+    case SESSION_MCP_SERVER_TOOLS_LOADED = 'session.mcp_server_tools_loaded';
     case SESSION_SKILLS_LOADED = 'session.skills_loaded';
     case SESSION_TASK_COMPLETE = 'session.task_complete';
     case SESSION_REMOTE_STEERABLE_CHANGED = 'session.remote_steerable_changed';
