@@ -348,123 +348,6 @@ It powers a significant portion of the web!
 
 ---
 
-## Session-scoped skill and filesystem providers
-
-For skills loaded from an application-owned source, configure callbacks on
-`SessionConfig`. The callbacks belong to that session and are not serialized to
-the Copilot runtime. Cloud sessions do not support custom skill providers.
-
-```php
-use Revolution\Copilot\Types\SessionConfig;
-use Revolution\Copilot\Types\SkillProviderCallOptions;
-use Revolution\Copilot\Support\PermissionHandler;
-
-$config = new SessionConfig(
-    onPermissionRequest: PermissionHandler::approveAll(),
-    skillProvider: [
-        'listSkills' => fn (SkillProviderCallOptions $options) => [
-            ['name' => 'deployment', 'description' => 'Safe application deployments'],
-        ],
-        'readSkill' => fn (string $name, SkillProviderCallOptions $options) =>
-            $name === 'deployment' ? '# Deployment checklist' : null,
-    ],
-);
-```
-
-`SkillProviderCallOptions::$signal` exposes the callback's cancellation token.
-Providers can implement `Revolution\Copilot\Contracts\SkillProvider` instead of
-using the callback array. Re-supply the callbacks in `ResumeSessionConfig` when
-resuming; provider objects and closures are not persisted. Cancellation is
-cooperative: callbacks should observe the signal and cancel pending work
-themselves; the SDK cannot preempt synchronous blocking PHP code.
-
-Session filesystem callbacks use the same session-scoped configuration. Text
-callbacks are `readFile(path)` and `writeFile(path, content, mode)`. To support
-binary files, provide both `readFileBytes(path)` and
-`writeFileBytes(path, bytes, mode)`; those callbacks receive and return the
-original bytes while the SDK handles base64 encoding on the JSON-RPC wire.
-Alternatively, implement `SessionFsBinaryProvider`. Keep filesystem access
-scoped to the paths your application intends to expose.
-
-```php
-use Illuminate\Support\Facades\Storage;
-use Revolution\Copilot\Support\PermissionHandler;
-use Revolution\Copilot\Types\SessionConfig;
-
-$config = new SessionConfig(
-    onPermissionRequest: PermissionHandler::approveAll(),
-    sessionFsProvider: [
-        'readFile' => fn (string $path) => Storage::disk('local')->get($path),
-        'writeFile' => fn (string $path, string $content, ?int $mode = null) =>
-            Storage::disk('local')->put($path, $content),
-        'readFileBytes' => fn (string $path) => Storage::disk('local')->get($path),
-        'writeFileBytes' => fn (string $path, string $bytes, ?int $mode = null) =>
-            Storage::disk('local')->put($path, $bytes),
-    ],
-);
-```
-
-### Delegating all session state with `sessionFs`
-
-`sessionFsProvider` above only serves reads and writes. To move the whole
-Copilot CLI session state (session-state files and the per-session SQLite
-database) into your own storage, set the client option `sessionFs` (alias
-`session_fs`, an array or `Revolution\Copilot\Types\SessionFsConfig`) and give
-every session a `createSessionFsProvider` factory. `Client::start()` then sends
-`sessionFs.setProvider` once with `initialCwd`, `sessionStatePath`,
-`conventions` (`posix` or `windows`) and the optional `capabilities`
-(`sqlite`, `binary`). Missing fields or an invalid `conventions` throw an
-`InvalidArgumentException`, and a failing `setProvider` request fails startup.
-
-```php
-use Revolution\Copilot\Client;
-use Revolution\Copilot\Contracts\CopilotSession;
-use Revolution\Copilot\Support\PermissionHandler;
-use Revolution\Copilot\Types\SessionConfig;
-
-$client = new Client([
-    'sessionFs' => [
-        'initialCwd' => '/workspace',
-        'sessionStatePath' => '/session-state',
-        'conventions' => 'posix',
-        'capabilities' => ['sqlite' => true],
-    ],
-]);
-$client->start();
-
-$session = $client->createSession(new SessionConfig(
-    onPermissionRequest: PermissionHandler::approveAll(),
-    createSessionFsProvider: fn (CopilotSession $session) => new S3SessionFsProvider($session->id()),
-));
-```
-
-With `CopilotManager`/the facade, set `session_fs` in `config/copilot.php`.
-
-The factory runs for both `createSession()` and `resumeSession()` before the
-runtime request is sent, and is required whenever the client has `sessionFs`.
-The provider it returns may be an array of callables or an object. Existing
-two-method providers keep working: the extra operations are exposed through
-separate optional interfaces, and calling an operation the provider does not
-support returns an `UNKNOWN` error (SQLite calls fail as JSON-RPC errors).
-
-| Interface | Adds |
-|---|---|
-| `SessionFsProvider` | `readFile`, `writeFile` |
-| `SessionFsBinaryProvider` | `readFileBytes`, `writeFileBytes` (required by `capabilities.binary`) |
-| `SessionFsFilesystemProvider` | `appendFile`, `exists`, `stat`, `mkdir`, `readdir`, `readdirWithTypes`, `rm`, `rename` |
-| `SessionFsSqliteCapableProvider` | `sqlite()` returning a `SessionFsSqliteProvider` (`query`, `exists`); required by `capabilities.sqlite` |
-| `SessionFsSqliteTransactionProvider` | `transaction()` on the SQLite provider |
-
-Providers signal failures by throwing: an exception whose `code` is `ENOENT`
-(or errno `2`) becomes `ENOENT`, anything else `UNKNOWN`. `exists()` returns
-`false` on any exception, and `stat()` failures return zero values plus the
-error. Throw `SessionFsSqliteTransactionFailure` from `transaction()` to report
-an `errorClass` (`busyOrLocked`, `fatal`, `postCommitAmbiguous`); other
-exceptions are reported as `fatal`. Array providers use the same method names as
-keys, with SQLite under `sqlite => ['query' => ..., 'exists' => ..., 'transaction' => ...]`.
-
----
-
 ## How Tools Work
 
 When you define a tool, you're telling Copilot:
@@ -538,6 +421,122 @@ $config = new SessionConfig(
 ```
 
 For more fine-grained control, use `mode: 'customize'` to override individual sections of the system prompt while preserving the rest.
+
+
+### Session-scoped skill and filesystem providers
+
+For skills loaded from an application-owned source, configure callbacks on
+`SessionConfig`. The callbacks belong to that session and are not serialized to
+the Copilot runtime. Cloud sessions do not support custom skill providers.
+
+```php
+use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\SkillProviderCallOptions;
+use Revolution\Copilot\Support\PermissionHandler;
+
+$config = new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveAll(),
+    skillProvider: [
+        'listSkills' => fn (SkillProviderCallOptions $options) => [
+            ['name' => 'deployment', 'description' => 'Safe application deployments'],
+        ],
+        'readSkill' => fn (string $name, SkillProviderCallOptions $options) =>
+            $name === 'deployment' ? '# Deployment checklist' : null,
+    ],
+);
+```
+
+`SkillProviderCallOptions::$signal` exposes the callback's cancellation token.
+Providers can implement `Revolution\Copilot\Contracts\SkillProvider` instead of
+using the callback array. Re-supply the callbacks in `ResumeSessionConfig` when
+resuming; provider objects and closures are not persisted. Cancellation is
+cooperative: callbacks should observe the signal and cancel pending work
+themselves; the SDK cannot preempt synchronous blocking PHP code.
+
+Session filesystem callbacks use the same session-scoped configuration. Text
+callbacks are `readFile(path)` and `writeFile(path, content, mode)`. To support
+binary files, provide both `readFileBytes(path)` and
+`writeFileBytes(path, bytes, mode)`; those callbacks receive and return the
+original bytes while the SDK handles base64 encoding on the JSON-RPC wire.
+Alternatively, implement `SessionFsBinaryProvider`. Keep filesystem access
+scoped to the paths your application intends to expose.
+
+```php
+use Illuminate\Support\Facades\Storage;
+use Revolution\Copilot\Support\PermissionHandler;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveAll(),
+    sessionFsProvider: [
+        'readFile' => fn (string $path) => Storage::disk('local')->get($path),
+        'writeFile' => fn (string $path, string $content, ?int $mode = null) =>
+            Storage::disk('local')->put($path, $content),
+        'readFileBytes' => fn (string $path) => Storage::disk('local')->get($path),
+        'writeFileBytes' => fn (string $path, string $bytes, ?int $mode = null) =>
+            Storage::disk('local')->put($path, $bytes),
+    ],
+);
+```
+
+#### Delegating all session state with `sessionFs`
+
+`sessionFsProvider` above only serves reads and writes. To move the whole
+Copilot CLI session state (session-state files and the per-session SQLite
+database) into your own storage, set the client option `sessionFs` (alias
+`session_fs`, an array or `Revolution\Copilot\Types\SessionFsConfig`) and give
+every session a `createSessionFsProvider` factory. `Client::start()` then sends
+`sessionFs.setProvider` once with `initialCwd`, `sessionStatePath`,
+`conventions` (`posix` or `windows`) and the optional `capabilities`
+(`sqlite`, `binary`). Missing fields or an invalid `conventions` throw an
+`InvalidArgumentException`, and a failing `setProvider` request fails startup.
+
+```php
+use Revolution\Copilot\Client;
+use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Support\PermissionHandler;
+use Revolution\Copilot\Types\SessionConfig;
+
+$client = new Client([
+    'sessionFs' => [
+        'initialCwd' => '/workspace',
+        'sessionStatePath' => '/session-state',
+        'conventions' => 'posix',
+        'capabilities' => ['sqlite' => true],
+    ],
+]);
+$client->start();
+
+$session = $client->createSession(new SessionConfig(
+    onPermissionRequest: PermissionHandler::approveAll(),
+    createSessionFsProvider: fn (CopilotSession $session) => new S3SessionFsProvider($session->id()),
+));
+```
+
+With `CopilotManager`/the facade, set `session_fs` in `config/copilot.php`.
+
+The factory runs for both `createSession()` and `resumeSession()` before the
+runtime request is sent, and is required whenever the client has `sessionFs`.
+The provider it returns may be an array of callables or an object. Existing
+two-method providers keep working: the extra operations are exposed through
+separate optional interfaces, and calling an operation the provider does not
+support returns an `UNKNOWN` error (SQLite calls fail as JSON-RPC errors).
+
+| Interface | Adds |
+|---|---|
+| `SessionFsProvider` | `readFile`, `writeFile` |
+| `SessionFsBinaryProvider` | `readFileBytes`, `writeFileBytes` (required by `capabilities.binary`) |
+| `SessionFsFilesystemProvider` | `appendFile`, `exists`, `stat`, `mkdir`, `readdir`, `readdirWithTypes`, `rm`, `rename` |
+| `SessionFsSqliteCapableProvider` | `sqlite()` returning a `SessionFsSqliteProvider` (`query`, `exists`); required by `capabilities.sqlite` |
+| `SessionFsSqliteTransactionProvider` | `transaction()` on the SQLite provider |
+
+Providers signal failures by throwing: an exception whose `code` is `ENOENT`
+(or errno `2`) becomes `ENOENT`, anything else `UNKNOWN`. `exists()` returns
+`false` on any exception, and `stat()` failures return zero values plus the
+error. Throw `SessionFsSqliteTransactionFailure` from `transaction()` to report
+an `errorClass` (`busyOrLocked`, `fatal`, `postCommitAmbiguous`); other
+exceptions are reported as `fatal`. Array providers use the same method names as
+keys, with SQLite under `sqlite => ['query' => ..., 'exists' => ..., 'transaction' => ...]`.
 
 ---
 
