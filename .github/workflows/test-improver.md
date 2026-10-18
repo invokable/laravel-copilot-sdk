@@ -38,6 +38,7 @@ engine:
 checkout:
   - path: .
     submodules: recursive
+    fetch-depth: 0
 
 tools:
   github:
