@@ -422,7 +422,6 @@ $config = new SessionConfig(
 
 For more fine-grained control, use `mode: 'customize'` to override individual sections of the system prompt while preserving the rest.
 
-
 ### Session-scoped skill and filesystem providers
 
 For skills loaded from an application-owned source, configure callbacks on
