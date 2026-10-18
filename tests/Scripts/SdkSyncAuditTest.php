@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Symfony\Component\Process\Process;
 
-require_once dirname(__DIR__, 3).'/.github/scripts/check-sdk-sync.php';
+require_once dirname(__DIR__, 2).'/.github/scripts/check-sdk-sync.php';
 
 function withSdkSyncFixture(Closure $test): void
 {
@@ -373,7 +373,7 @@ describe('SDK sync structural audit', function () {
 
     it('emits JSON on success and a nonzero exit with no report on failure', function () {
         withSdkSyncFixture(function (SdkSyncAudit $audit, Closure $write, string $root): void {
-            $script = dirname(__DIR__, 3).'/.github/scripts/check-sdk-sync.php';
+            $script = dirname(__DIR__, 2).'/.github/scripts/check-sdk-sync.php';
             $success = new Process([PHP_BINARY, $script, $root]);
             $success->run();
 
