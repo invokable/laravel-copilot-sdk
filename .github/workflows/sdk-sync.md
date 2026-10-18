@@ -266,8 +266,7 @@ Fix any failures.
 Review your changes and update **only affected** docs in `docs/jp/`:
 - New/changed RPC methods → `docs/jp/rpc.md`
 - New session events → `docs/jp/session-event.md`
-
-**Do not create new doc files.** Only update existing ones if directly affected.
+- If it’s an important feature, create a new Japanese-language document.
 
 ## Step 9: Create Pull Request
 
