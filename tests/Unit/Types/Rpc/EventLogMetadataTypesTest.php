@@ -78,7 +78,7 @@ describe('Event log types', function () {
     });
 });
 
-describe('Metadata types', function () {
+describe('Session metadata and context types', function () {
     it('converts SessionMetadataSnapshot to and from array', function () {
         $snapshot = SessionMetadataSnapshot::fromArray([
             'sessionId' => 'session-1',
