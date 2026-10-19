@@ -498,7 +498,7 @@ describe('Client', function () {
             ->with('session.create', Mockery::on(fn ($params) => ($params['askUserVariant'] ?? null) === 'elicitation'
                 && ($params['capi'] ?? null) === ['autoTier' => 'balance']
                 && ($params['toolSearch'] ?? null) === ['enabled' => true, 'deferThreshold' => 12]
-                && ($params['imageGeneration'] ?? null) === ['enabled' => true]
+                && ($params['imageGeneration'] ?? null) === ['enabled' => true, 'watermark' => true]
                 && ($params['canvasProvider'] ?? null) === ['id' => 'host-canvas']
                 && ($params['providers'] ?? null) === [['name' => 'openai', 'baseUrl' => 'https://api.example.com']]
                 && ($params['models'] ?? null) === [['id' => 'gpt-custom', 'provider' => 'openai']]
@@ -533,7 +533,7 @@ describe('Client', function () {
             askUserVariant: 'elicitation',
             capi: ['autoTier' => 'balance'],
             toolSearch: new ToolSearchConfig(enabled: true, deferThreshold: 12),
-            imageGeneration: new ImageGenerationConfig(enabled: true),
+            imageGeneration: new ImageGenerationConfig(enabled: true, watermark: true),
             canvasProvider: new CanvasProviderIdentity(id: 'host-canvas'),
             providers: [new NamedProviderConfig(name: 'openai', baseUrl: 'https://api.example.com')],
             models: [new ProviderModelConfig(id: 'gpt-custom', provider: 'openai')],
@@ -1514,7 +1514,7 @@ describe('Client', function () {
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $mockRpcClient->shouldReceive('request')
             ->with('session.resume', Mockery::on(fn ($params) => ($params['toolSearch'] ?? null) === ['enabled' => true, 'deferThreshold' => 6]
-                && ($params['imageGeneration'] ?? null) === ['enabled' => true]
+                && ($params['imageGeneration'] ?? null) === ['enabled' => true, 'watermark' => true]
                 && ($params['canvasProvider'] ?? null) === ['id' => 'resume-object-host']
                 && ($params['providers'] ?? null) === [['name' => 'provider', 'baseUrl' => 'https://api.example.com']]
                 && ($params['models'] ?? null) === [['id' => 'custom-model', 'provider' => 'provider']]
@@ -1562,7 +1562,7 @@ describe('Client', function () {
             coauthorEnabled: false,
             manageScheduleEnabled: true,
             toolSearch: new ToolSearchConfig(enabled: true, deferThreshold: 6),
-            imageGeneration: new ImageGenerationConfig(enabled: true),
+            imageGeneration: new ImageGenerationConfig(enabled: true, watermark: true),
             canvasProvider: new CanvasProviderIdentity(id: 'resume-object-host'),
             providers: [new NamedProviderConfig(name: 'provider', baseUrl: 'https://api.example.com')],
             models: [new ProviderModelConfig(id: 'custom-model', provider: 'provider')],

@@ -10,24 +10,26 @@ describe('ImageGenerationConfig', function () {
         $config = new ImageGenerationConfig;
 
         expect($config->enabled)->toBeNull()
+            ->and($config->watermark)->toBeNull()
             ->and($config->toArray())->toBe([]);
     });
 
     it('can be created from array', function () {
-        $config = ImageGenerationConfig::fromArray(['enabled' => true]);
+        $config = ImageGenerationConfig::fromArray(['enabled' => true, 'watermark' => false]);
 
         expect($config->enabled)->toBeTrue()
+            ->and($config->watermark)->toBeFalse()
             ->and($config)->toBeInstanceOf(Arrayable::class);
     });
 
-    it('keeps an explicit false when converting to array', function () {
-        $config = new ImageGenerationConfig(enabled: false);
+    it('keeps explicit false values when converting to array', function () {
+        $config = new ImageGenerationConfig(enabled: false, watermark: false);
 
-        expect($config->toArray())->toBe(['enabled' => false]);
+        expect($config->toArray())->toBe(['enabled' => false, 'watermark' => false]);
     });
 
     it('round trips through array', function () {
-        $data = ['enabled' => true];
+        $data = ['enabled' => true, 'watermark' => true];
 
         expect(ImageGenerationConfig::fromArray($data)->toArray())->toBe($data);
     });

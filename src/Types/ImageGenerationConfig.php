@@ -17,9 +17,13 @@ readonly class ImageGenerationConfig implements Arrayable
 {
     /**
      * @param  ?bool  $enabled  Opt in to image generation through an authorized Copilot image model. False disables it.
+     * @param  ?bool  $watermark  Request a visible "Made with AI" label. When omitted, the user's watermark
+     *                            preference applies (default false). Re-supply after a cold resume. This does
+     *                            not enable image generation or enforce enterprise policy.
      */
     public function __construct(
         public ?bool $enabled = null,
+        public ?bool $watermark = null,
     ) {}
 
     /**
@@ -29,6 +33,7 @@ readonly class ImageGenerationConfig implements Arrayable
     {
         return new self(
             enabled: isset($data['enabled']) ? (bool) $data['enabled'] : null,
+            watermark: isset($data['watermark']) ? (bool) $data['watermark'] : null,
         );
     }
 
@@ -39,6 +44,7 @@ readonly class ImageGenerationConfig implements Arrayable
     {
         return array_filter([
             'enabled' => $this->enabled,
+            'watermark' => $this->watermark,
         ], fn ($v) => $v !== null);
     }
 }
