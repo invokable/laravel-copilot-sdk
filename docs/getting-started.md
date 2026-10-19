@@ -367,6 +367,24 @@ Copilot decides when to call your tool based on the user's question. When it doe
 
 Now that you've got the basics, here are more powerful features to explore:
 
+### Request an image-generation watermark
+
+Image generation must be opted into per session. The experimental `watermark` option requests a visible "Made with AI" label for generated or edited images:
+
+```php
+use Revolution\Copilot\Types\ImageGenerationConfig;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    imageGeneration: new ImageGenerationConfig(
+        enabled: true,
+        watermark: true,
+    ),
+);
+```
+
+`watermark` overrides the user's preference for this session. If omitted, the preference applies (defaulting to false). Re-supply the option after a cold resume. It does not enable image generation or enforce enterprise policy.
+
 ### Connect to MCP Servers
 
 MCP (Model Context Protocol) servers provide pre-built tools. Connect to GitHub's MCP server to give Copilot access to repositories, issues, and pull requests:

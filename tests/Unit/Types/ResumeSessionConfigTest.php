@@ -97,7 +97,7 @@ describe('ResumeSessionConfig', function () {
             'enableCitations' => false,
             'excludedBuiltinAgents' => ['explainer'],
             'sessionLimits' => ['maxAiCredits' => 25.0],
-            'imageGeneration' => ['enabled' => true],
+            'imageGeneration' => ['enabled' => true, 'watermark' => false],
         ]);
 
         expect($config->toolSearch)->toBeInstanceOf(ToolSearchConfig::class)
@@ -114,7 +114,7 @@ describe('ResumeSessionConfig', function () {
                 'enableCitations' => false,
                 'excludedBuiltinAgents' => ['explainer'],
                 'sessionLimits' => ['maxAiCredits' => 25],
-                'imageGeneration' => ['enabled' => true],
+                'imageGeneration' => ['enabled' => true, 'watermark' => false],
             ]);
     });
 

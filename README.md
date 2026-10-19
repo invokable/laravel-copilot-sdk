@@ -18,7 +18,7 @@ This package is Laravel version of [GitHub Copilot SDK](https://github.com/githu
 
 ## Installation
 
-The embedded SDK snapshot is current through the official Copilot CLI 1.0.99-1.
+The embedded SDK snapshot is current through the official Copilot CLI 1.0.101-0.
 The Laravel package ports capabilities selectively; advancing the snapshot does
 not imply complete protocol or feature parity.
 
