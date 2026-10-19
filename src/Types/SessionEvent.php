@@ -237,6 +237,28 @@ readonly class SessionEvent implements Arrayable, Jsonable
         return is_int($status) ? $status : null;
     }
 
+    public function customToolCallCount(): ?int
+    {
+        return $this->integerData('customToolCallCount');
+    }
+
+    public function orphanToolCallCount(): ?int
+    {
+        return $this->integerData('orphanToolCallCount');
+    }
+
+    public function unmatchedToolResultCount(): ?int
+    {
+        return $this->integerData('unmatchedToolResultCount');
+    }
+
+    private function integerData(string $key): ?int
+    {
+        $value = $this->data[$key] ?? null;
+
+        return is_int($value) ? $value : null;
+    }
+
     /**
      * Get the error message from error data.
      */
