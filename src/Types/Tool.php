@@ -24,6 +24,7 @@ readonly class Tool implements Arrayable
      * @param  ?string  $defer  Controls whether the tool may be deferred (loaded lazily via tool search) rather than always pre-loaded. When `"auto"`, the tool can be deferred and surfaced through tool search. When `"never"`, the tool is always pre-loaded. Optional; defaults to `"auto"`.
      * @param  ?array  $metadata  Opaque, host-defined metadata associated with the tool definition. Keys are namespaced and are not part of the stable public API.
      * @param  bool  $isTerminal  Whether a successful call ends the current agent turn.
+     * @param  ToolNamespace|array|null  $namespace  Experimental grouping for model tool discovery.
      */
     public function __construct(
         public string $name,
@@ -35,6 +36,7 @@ readonly class Tool implements Arrayable
         public ?string $defer = 'auto',
         public ?array $metadata = null,
         public bool $isTerminal = false,
+        public ToolNamespace|array|null $namespace = null,
     ) {}
 
     /**
@@ -50,6 +52,7 @@ readonly class Tool implements Arrayable
         ?string $defer = 'auto',
         ?array $metadata = null,
         bool $isTerminal = false,
+        ToolNamespace|array|null $namespace = null,
     ): array {
         return new self(
             name: $name,
@@ -61,13 +64,14 @@ readonly class Tool implements Arrayable
             defer: $defer,
             metadata: $metadata,
             isTerminal: $isTerminal,
+            namespace: $namespace,
         )->toArray();
     }
 
     /**
      * Create from array.
      *
-     * @param  array{name: string, description?: string, parameters?: array, handler?: callable, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string, metadata?: array, isTerminal?: bool}  $data
+     * @param  array{name: string, description?: string, parameters?: array, handler?: callable, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string, metadata?: array, isTerminal?: bool, namespace?: ToolNamespace|array}  $data
      */
     public static function fromArray(array $data): self
     {
@@ -81,13 +85,16 @@ readonly class Tool implements Arrayable
             defer: $data['defer'] ?? 'auto',
             metadata: $data['metadata'] ?? null,
             isTerminal: Arr::boolean($data, 'isTerminal', false),
+            namespace: isset($data['namespace'])
+                ? ($data['namespace'] instanceof ToolNamespace ? $data['namespace'] : ToolNamespace::fromArray($data['namespace']))
+                : null,
         );
     }
 
     /**
      * Convert to array.
      *
-     * @return array{name: string, description: string|null, parameters: array|null, handler: Closure|null, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string, metadata?: array, isTerminal?: bool}
+     * @return array{name: string, description: string|null, parameters: array|null, handler: Closure|null, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string, metadata?: array, isTerminal?: bool, namespace?: array}
      */
     public function toArray(): array
     {
@@ -116,6 +123,12 @@ readonly class Tool implements Arrayable
 
         if ($this->isTerminal) {
             $array['isTerminal'] = true;
+        }
+
+        if ($this->namespace !== null) {
+            $array['namespace'] = $this->namespace instanceof ToolNamespace
+                ? $this->namespace->toArray()
+                : $this->namespace;
         }
 
         return $array;

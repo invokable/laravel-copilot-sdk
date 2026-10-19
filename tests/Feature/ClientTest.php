@@ -32,6 +32,7 @@ use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\SessionHooks;
+use Revolution\Copilot\Types\Tool;
 use Revolution\Copilot\Types\ToolSearchConfig;
 
 beforeEach(function () {
@@ -494,6 +495,12 @@ describe('Client', function () {
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $tool = Tool::define(
+            name: 'lookup_fruit',
+            description: 'Looks up fruit.',
+            parameters: null,
+            namespace: ['name' => 'fruit', 'description' => 'Fruit lookups'],
+        );
         $mockRpcClient->shouldReceive('request')
             ->with('session.create', Mockery::on(fn ($params) => ($params['askUserVariant'] ?? null) === 'elicitation'
                 && ($params['capi'] ?? null) === ['autoTier' => 'balance']
@@ -507,6 +514,12 @@ describe('Client', function () {
                 && ($params['expAssignments'] ?? null) === ['assignment' => 'treatment']
                 && ($params['refreshCustomInstructions'] ?? null) === true
                 && ($params['diagnostics'] ?? null) === ['sources' => ['mcp' => ['level' => 'debug']]]
+                && ($params['tools'] ?? null) === [[
+                    'name' => 'lookup_fruit',
+                    'description' => 'Looks up fruit.',
+                    'defer' => 'auto',
+                    'namespace' => ['name' => 'fruit', 'description' => 'Fruit lookups'],
+                ]]
                 && ($params['name'] ?? null) === 'startup-check'
                 && ! array_key_exists('requestMcpApps', $params)
                 && ! array_key_exists('enableMcpApps', $params)))
@@ -517,7 +530,7 @@ describe('Client', function () {
         $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
         $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
         $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
-        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerTools')->once()->with([$tool]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once();
         $mockSession->shouldReceive('registerPermissionHandler')->once();
@@ -544,6 +557,7 @@ describe('Client', function () {
             diagnostics: ['sources' => ['mcp' => ['level' => 'debug']]],
             enableMcpApps: false,
             name: 'startup-check',
+            tools: [$tool],
         ));
 
         expect($session)->toBe($mockSession);
@@ -1512,6 +1526,12 @@ describe('Client', function () {
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $tool = Tool::define(
+            name: 'lookup_fruit',
+            description: 'Looks up fruit.',
+            parameters: null,
+            namespace: ['name' => 'fruit', 'description' => 'Fruit lookups'],
+        );
         $mockRpcClient->shouldReceive('request')
             ->with('session.resume', Mockery::on(fn ($params) => ($params['toolSearch'] ?? null) === ['enabled' => true, 'deferThreshold' => 6]
                 && ($params['imageGeneration'] ?? null) === ['enabled' => true, 'watermark' => true]
@@ -1522,6 +1542,12 @@ describe('Client', function () {
                 && ($params['featureFlags'] ?? null) === ['object-feature' => true]
                 && ($params['expAssignments'] ?? null) === ['assignment' => 'treatment']
                 && ($params['diagnostics'] ?? null) === ['sources' => ['mcp' => ['level' => 'debug']]]
+                && ($params['tools'] ?? null) === [[
+                    'name' => 'lookup_fruit',
+                    'description' => 'Looks up fruit.',
+                    'defer' => 'auto',
+                    'namespace' => ['name' => 'fruit', 'description' => 'Fruit lookups'],
+                ]]
                 && ($params['enableCitations'] ?? null) === true
                 && ($params['excludedBuiltinAgents'] ?? null) === ['explainer']
                 && ($params['sessionLimits'] ?? null) === ['maxAiCredits' => 5.0]
@@ -1544,7 +1570,7 @@ describe('Client', function () {
         $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
         $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
         $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
-        $mockSession->shouldReceive('registerTools')->once()->with([]);
+        $mockSession->shouldReceive('registerTools')->once()->with([$tool]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once();
         $mockSession->shouldReceive('registerPermissionHandler')->once();
@@ -1573,6 +1599,7 @@ describe('Client', function () {
             enableCitations: true,
             excludedBuiltinAgents: ['explainer'],
             sessionLimits: new SessionLimitsConfig(maxAiCredits: 5),
+            tools: [$tool],
         ));
 
         expect($session)->toBe($mockSession);
