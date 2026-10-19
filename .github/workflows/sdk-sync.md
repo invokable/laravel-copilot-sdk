@@ -124,7 +124,7 @@ safe-outputs:
         signed-commits: false
     create-issue:
         labels: [ sdk-sync, copilot ]
-        max: 5
+        max: 10
 
 network:
     allowed:
