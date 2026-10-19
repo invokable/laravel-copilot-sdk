@@ -323,6 +323,7 @@ class Session implements CopilotSession
             'defer' => $tool['defer'] ?? null,
             'metadata' => $tool['metadata'] ?? null,
             'isTerminal' => $tool['isTerminal'] ?? null,
+            'namespace' => $tool['namespace'] ?? null,
         ], static fn ($value) => $value !== null), $normalized);
 
         $this->rpc()->tools()->set(['tools' => $definitions]);

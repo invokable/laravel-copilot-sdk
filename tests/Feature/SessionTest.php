@@ -42,6 +42,7 @@ describe('Session', function () {
                     'description' => 'Search',
                     'parameters' => [],
                     'defer' => 'auto',
+                    'namespace' => ['name' => 'fruit'],
                 ]],
                 'sessionId' => 'session-1',
             ])
@@ -49,9 +50,16 @@ describe('Session', function () {
 
         $session = new Session('session-1', $client);
         $session->registerTools([['name' => 'search', 'handler' => $originalHandler]]);
-        $session->setTools([['name' => 'search', 'description' => 'Search', 'defer' => 'auto', 'handler' => $replacementHandler]]);
+        $session->setTools([[
+            'name' => 'search',
+            'description' => 'Search',
+            'defer' => 'auto',
+            'namespace' => ['name' => 'fruit'],
+            'handler' => $replacementHandler,
+        ]]);
 
-        expect($session->getToolHandler('search'))->toBe($replacementHandler);
+        expect($session->getToolHandler('search'))->toBe($replacementHandler)
+            ->and($session->getToolHandler('fruit/search'))->toBeNull();
     });
 
     it('keeps current tool handlers when the runtime rejects a replacement', function () {

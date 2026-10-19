@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\Tool;
+use Revolution\Copilot\Types\ToolNamespace;
 
 describe('Tool', function () {
     it('can be created from array', function () {
@@ -100,7 +101,8 @@ describe('Tool', function () {
             ->and($array['description'])->toBeNull()
             ->and($array)->toHaveKey('parameters')
             ->and($array['parameters'])->toBeNull()
-            ->and($array)->not->toHaveKey('overridesBuiltInTool');
+            ->and($array)->not->toHaveKey('overridesBuiltInTool')
+            ->and($array)->not->toHaveKey('namespace');
     });
 
     it('includes overridesBuiltInTool in toArray when true', function () {
@@ -226,5 +228,18 @@ describe('Tool', function () {
 
         expect($toolArray['name'])->toBe('read_only_tool')
             ->and($toolArray['handler'])->toBeNull();
+    });
+
+    it('serializes an optional tool namespace without changing the tool name', function () {
+        $tool = Tool::define(
+            name: 'lookup_fruit',
+            description: 'Looks up fruit.',
+            parameters: null,
+            namespace: new ToolNamespace('fruit', 'Fruit lookups'),
+        );
+
+        expect($tool['name'])->toBe('lookup_fruit')
+            ->and($tool['namespace'])->toBe(['name' => 'fruit', 'description' => 'Fruit lookups'])
+            ->and(Tool::fromArray($tool)->namespace)->toBeInstanceOf(ToolNamespace::class);
     });
 });

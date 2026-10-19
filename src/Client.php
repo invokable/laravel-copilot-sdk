@@ -629,6 +629,7 @@ class Client implements CopilotClient
             'defer' => $tool['defer'] ?? null,
             'metadata' => $tool['metadata'] ?? null,
             'isTerminal' => $tool['isTerminal'] ?? null,
+            'namespace' => $tool['namespace'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
         $commands = $config['commands'] ?? [];
@@ -921,6 +922,7 @@ class Client implements CopilotClient
             'defer' => $tool['defer'] ?? null,
             'metadata' => $tool['metadata'] ?? null,
             'isTerminal' => $tool['isTerminal'] ?? null,
+            'namespace' => $tool['namespace'] ?? null,
         ], fn ($v) => $v !== null), $tools);
 
         $commands = $config['commands'] ?? [];

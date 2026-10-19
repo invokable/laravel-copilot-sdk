@@ -104,6 +104,22 @@ Tool::define(
 
 `isTerminal: true` を指定すると、ツールが成功した時点で現在のエージェントターンを終了します。
 
+## 名前空間によるツールのグループ化 (experimental)
+
+`namespace` を指定すると、関連するツールをモデルのツール検索でグループ化できます。対応するモデルとプロバイダーで、遅延ロード対象のツールをまとめて提示します。それ以外の環境や常時ロードされるツールでは、従来どおり個別のツールとして扱われます。
+
+```php
+Tool::define(
+    name: 'lookup_fruit',
+    description: 'Looks up a fruit.',
+    parameters: $parameters,
+    handler: fn (array $params) => $facts[$params['name']] ?? 'Not found',
+    namespace: ['name' => 'fruit', 'description' => 'Fruit lookups'],
+);
+```
+
+`name` は1〜64文字のASCII英数字、アンダースコア、ハイフンで指定します。`description` は省略できます。名前空間はツール名を変更しないため、ハンドラーは引き続き `lookup_fruit` で呼び出されます。実験的な機能で、無効な名前空間は警告され、名前空間なしで扱われます。
+
 ## $invocation
 
 ツールハンドラの第2引数 `$invocation` には以下のフィールドが渡されます。
