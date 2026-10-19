@@ -17,6 +17,7 @@ use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
+use SensitiveParameter;
 
 /**
  * Configuration for resuming a session.
@@ -301,7 +302,7 @@ readonly class ResumeSessionConfig implements Arrayable
     /**
      * Create from array data.
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(#[SensitiveParameter] array $data): self
     {
         $systemMessage = null;
         if (isset($data['systemMessage'])) {

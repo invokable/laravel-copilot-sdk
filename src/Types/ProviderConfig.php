@@ -7,6 +7,8 @@ namespace Revolution\Copilot\Types;
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
+use InvalidArgumentException;
+use SensitiveParameter;
 
 /**
  * Configuration for a custom API provider.
@@ -40,6 +42,14 @@ readonly class ProviderConfig implements Arrayable
      *                                 triggers conversation compaction before this limit is exceeded.
      * @param  ?int  $maxOutputTokens  Overrides the resolved model's default max output tokens.
      * @param  (callable(array{providerName: string, sessionId: string}): string)|null  $bearerTokenProvider  Callback used to acquire bearer tokens on demand.
+     *                                                                                                        Takes precedence over apiKey, apiKeyCommand, and bearerToken.
+     * @param  ?string  $apiKeyCommand  Command run by the Copilot runtime (not by this package) before each provider
+     *                                  request to obtain a fresh API key. A failing command fails the turn before any
+     *                                  model request is sent. Must be a non-blank string; the command and its output
+     *                                  are treated as secrets and never included in exception messages. Does not run
+     *                                  when bearerTokenProvider is set.
+     *
+     * @throws InvalidArgumentException When apiKeyCommand is an empty or blank string.
      */
     public function __construct(
         public string $baseUrl,
@@ -57,17 +67,39 @@ readonly class ProviderConfig implements Arrayable
         public ?int $maxOutputTokens = null,
         public ?string $modelProvider = null,
         ?callable $bearerTokenProvider = null,
+        #[SensitiveParameter]
+        public ?string $apiKeyCommand = null,
     ) {
+        self::assertValidApiKeyCommand($apiKeyCommand);
+
         $this->bearerTokenProvider = $bearerTokenProvider === null
             ? null
             : Closure::fromCallable($bearerTokenProvider);
     }
 
     /**
+     * Validate a provider apiKeyCommand value without ever echoing it.
+     *
+     * @throws InvalidArgumentException When the value is not null and not a non-blank string.
+     */
+    public static function assertValidApiKeyCommand(#[SensitiveParameter] mixed $command): void
+    {
+        if ($command === null) {
+            return;
+        }
+
+        if (! is_string($command) || trim($command) === '') {
+            throw new InvalidArgumentException('provider.apiKeyCommand must be a non-empty string.');
+        }
+    }
+
+    /**
      * Create from array data.
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(#[SensitiveParameter] array $data): self
     {
+        self::assertValidApiKeyCommand($data['apiKeyCommand'] ?? null);
+
         return new self(
             baseUrl: Arr::string($data, 'baseUrl', ''),
             type: $data['type'] ?? null,
@@ -84,6 +116,7 @@ readonly class ProviderConfig implements Arrayable
             maxPromptTokens: $data['maxPromptTokens'] ?? $data['maxInputTokens'] ?? null,
             maxOutputTokens: $data['maxOutputTokens'] ?? null,
             modelProvider: $data['modelProvider'] ?? null,
+            apiKeyCommand: $data['apiKeyCommand'] ?? null,
         );
     }
 
@@ -98,6 +131,7 @@ readonly class ProviderConfig implements Arrayable
             'wireApi' => $this->wireApi,
             'transport' => $this->transport,
             'apiKey' => $this->apiKey,
+            'apiKeyCommand' => $this->apiKeyCommand,
             'bearerToken' => $this->bearerToken,
             'hasBearerTokenProvider' => $this->hasBearerTokenProvider,
             'azure' => $this->azure,

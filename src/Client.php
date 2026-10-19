@@ -59,6 +59,7 @@ use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\SessionFsConfig;
 use Revolution\Copilot\Types\TranscriptRecovery;
 use RuntimeException;
+use SensitiveParameter;
 use Throwable;
 
 /**
@@ -568,7 +569,7 @@ class Client implements CopilotClient
      *
      * @throws JsonRpcException
      */
-    public function createSession(SessionConfig|array $config): CopilotSession
+    public function createSession(#[SensitiveParameter] SessionConfig|array $config): CopilotSession
     {
         $this->ensureConnected();
 
@@ -697,7 +698,7 @@ class Client implements CopilotClient
                 'availableTools' => $config['availableTools'] ?? null,
                 'excludedTools' => $config['excludedTools'] ?? null,
                 'toolFilterPrecedence' => 'excluded',
-                'provider' => $config['provider'] ?? null,
+                'provider' => $this->normalizeArrayableValue($config['provider'] ?? null),
                 'toolSearch' => $this->normalizeArrayableValue($config['toolSearch'] ?? null),
                 'providers' => $this->normalizeArrayableValue($config['providers'] ?? null),
                 'models' => $this->normalizeArrayableValue($config['models'] ?? null),
@@ -867,7 +868,7 @@ class Client implements CopilotClient
      *
      * @throws JsonRpcException
      */
-    public function resumeSession(string $sessionId, ResumeSessionConfig|array $config): CopilotSession
+    public function resumeSession(string $sessionId, #[SensitiveParameter] ResumeSessionConfig|array $config): CopilotSession
     {
         $this->ensureConnected();
 
@@ -977,7 +978,7 @@ class Client implements CopilotClient
                 'availableTools' => $config['availableTools'] ?? null,
                 'excludedTools' => $config['excludedTools'] ?? null,
                 'toolFilterPrecedence' => 'excluded',
-                'provider' => $config['provider'] ?? null,
+                'provider' => $this->normalizeArrayableValue($config['provider'] ?? null),
                 'toolSearch' => $this->normalizeArrayableValue($config['toolSearch'] ?? null),
                 'providers' => $this->normalizeArrayableValue($config['providers'] ?? null),
                 'models' => $this->normalizeArrayableValue($config['models'] ?? null),
@@ -1173,10 +1174,15 @@ class Client implements CopilotClient
     /**
      * @return array{array, array<string, callable(array{providerName: string, sessionId: string}): string>}
      */
-    private function extractBearerTokenProviders(array $config): array
+    private function extractBearerTokenProviders(#[SensitiveParameter] array $config): array
     {
         $providers = [];
         $provider = $config['provider'] ?? null;
+
+        if (is_array($provider)) {
+            ProviderConfig::assertValidApiKeyCommand($provider['apiKeyCommand'] ?? null);
+        }
+
         $providerConfig = $provider instanceof ProviderConfig ? $provider->toArray() : $provider;
         $bearerTokenProvider = $provider instanceof ProviderConfig
             ? $provider->bearerTokenProvider

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Log;
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Exceptions\JsonRpcException;
@@ -148,6 +149,60 @@ describe('session provider lifecycle', function () {
             'sessionId' => 'session-1',
             'providerName' => 'default',
         ]))->toThrow(RuntimeException::class, 'No bearer-token provider registered for provider "default"');
+    });
+
+    it('sends provider apiKeyCommand on create and resume without logging it', function () {
+        Log::spy();
+        $command = 'credential-helper --profile sdk';
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $handlers = [];
+        $requests = [];
+        $client = startClientWithProviderTokenHandler($rpc, $handlers, $requests);
+
+        $client->createSession(new SessionConfig(
+            sessionId: 'session-1',
+            onPermissionRequest: PermissionHandler::approveAll(),
+            provider: new ProviderConfig(baseUrl: 'https://api.example.com', apiKeyCommand: $command),
+        ));
+        $client->resumeSession('session-2', [
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+            'provider' => ['baseUrl' => 'https://api.example.com', 'apiKeyCommand' => $command],
+        ]);
+
+        $wire = fn (string $method): array => json_decode(json_encode($requests[$method][0]['provider']), true);
+
+        expect($wire('session.create'))->toBe([
+            'baseUrl' => 'https://api.example.com',
+            'apiKeyCommand' => $command,
+        ])
+            ->and($wire('session.resume'))->toBe([
+                'baseUrl' => 'https://api.example.com',
+                'apiKeyCommand' => $command,
+            ]);
+
+        Log::shouldNotHaveReceived('emergency');
+        Log::shouldNotHaveReceived('alert');
+        Log::shouldNotHaveReceived('critical');
+        Log::shouldNotHaveReceived('error');
+        Log::shouldNotHaveReceived('warning');
+        Log::shouldNotHaveReceived('notice');
+        Log::shouldNotHaveReceived('info');
+        Log::shouldNotHaveReceived('debug');
+        Log::shouldNotHaveReceived('log');
+    });
+
+    it('rejects invalid array provider apiKeyCommand before sending a request', function () {
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $handlers = [];
+        $requests = [];
+        $client = startClientWithProviderTokenHandler($rpc, $handlers, $requests);
+
+        expect(fn () => $client->createSession([
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+            'provider' => ['baseUrl' => 'https://api.example.com', 'apiKeyCommand' => ' '],
+        ]))->toThrow(InvalidArgumentException::class, 'provider.apiKeyCommand must be a non-empty string.');
+
+        expect($requests)->not->toHaveKey('session.create');
     });
 
     it('routes named provider token requests to their callback', function () {
