@@ -261,6 +261,53 @@ describe('SessionEvent', function () {
             ->and($event->requestBodyCompressionRejectedStatus())->toBeNull()
             ->and(SessionEvent::fromArray(['type' => 'assistant.usage'])->providerType())->toBeNull();
     });
+
+    it('provides typed access to model request-shaping counts and preserves failure fingerprints', function () {
+        $usageData = [
+            'customToolCallCount' => 2,
+            'orphanToolCallCount' => 1,
+            'unmatchedToolResultCount' => 3,
+        ];
+        $usage = SessionEvent::fromArray([
+            'type' => 'assistant.usage',
+            'data' => $usageData,
+        ]);
+
+        $fingerprint = [
+            'customToolCallCount' => 2,
+            'imagePartCount' => 1,
+            'messageCount' => 4,
+            'namelessToolCallCount' => 0,
+            'orphanToolCallCount' => 1,
+            'toolCallCount' => 2,
+            'toolResultMessageCount' => 1,
+            'unmatchedToolResultCount' => 3,
+        ];
+        $failure = SessionEvent::fromArray([
+            'type' => 'model.call_failure',
+            'data' => ['requestFingerprint' => $fingerprint],
+        ]);
+
+        expect($usage->customToolCallCount())->toBe(2)
+            ->and($usage->orphanToolCallCount())->toBe(1)
+            ->and($usage->unmatchedToolResultCount())->toBe(3)
+            ->and($usage->toArray()['data'])->toBe($usageData)
+            ->and($failure->toArray()['data']['requestFingerprint'])->toBe($fingerprint);
+    });
+
+    it('returns null for absent or non-integer model request-shaping counts', function () {
+        $event = SessionEvent::fromArray([
+            'type' => 'assistant.usage',
+            'data' => [
+                'customToolCallCount' => '2',
+                'orphanToolCallCount' => 1.5,
+            ],
+        ]);
+
+        expect($event->customToolCallCount())->toBeNull()
+            ->and($event->orphanToolCallCount())->toBeNull()
+            ->and($event->unmatchedToolResultCount())->toBeNull();
+    });
 });
 
 describe('SessionEvent broadcast', function () {

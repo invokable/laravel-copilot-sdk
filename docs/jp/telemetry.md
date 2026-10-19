@@ -2,6 +2,22 @@
 
 Copilot CLIにはOpenTelemetryによるトレース機能が組み込まれています。SDK側で設定するだけで、CLIプロセスのトレースデータを収集できます。
 
+## モデル呼び出しテレメトリー
+
+CLIの`assistant.usage`イベントでは、リクエスト整形前のツール呼び出しに関する件数を取得できます。
+
+```php
+use Revolution\Copilot\Enums\SessionEventType;
+
+if ($event->type === SessionEventType::ASSISTANT_USAGE) {
+    $customCalls = $event->customToolCallCount();
+    $orphanCalls = $event->orphanToolCallCount();
+    $unmatchedResults = $event->unmatchedToolResultCount();
+}
+```
+
+`model.call_failure`イベントの`data['requestFingerprint']`には、メッセージ数や画像・ツール呼び出し数など、失敗したリクエストの内容を含まない構造情報が含まれる場合があります。`errorCode`や`errorType`はサーバー由来の値で、制限付きテレメトリー向けです。SDKはイベントデータをそのまま保持するため、これらの値や`errorMessage`を未承認のログや外部サービスに転送しないでください。
+
 ## GitHub telemetry event の受信
 
 OpenTelemetryとは別に、クライアントオプション`onGitHubTelemetry`（または`on_github_telemetry`）でGitHub telemetry eventを受信できます。ハンドラーを指定すると、接続時とセッション作成・再開時に転送が有効になります。セッション設定で`enableGitHubTelemetryForwarding: false`を指定しても、クライアントハンドラーがある場合は転送が優先されます。
