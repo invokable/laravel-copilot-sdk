@@ -132,6 +132,16 @@ class ServerRpc
     }
 
     /**
+     * Host-generated secret redaction RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function secrets(): PendingServerSecrets
+    {
+        return new PendingServerSecrets($this->client);
+    }
+
+    /**
      * SessionFs RPC operations.
      */
     public function sessionFs(): PendingServerSessionFs

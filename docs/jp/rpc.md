@@ -10,9 +10,26 @@ Clientに紐づくRPCクラス。
 
 `ping()`と`connect()`で接続を確認・開始し、`registerExtensionLaunchProvider()`で拡張機能の起動プロバイダーを登録します。モデル一覧・価格単位・組み込みカタログは`models()`、利用可能なツール一覧は`tools()`から取得できます。`account()`ではクォータ、認証状態、ログインユーザーの一覧、ログイン・ログアウトを扱い、`accounts()`ではMicrosoft Entra IDのトークン取得を行います。
 
-### MCP・コネクター
+### MCP・コネクター・Secrets
 
-`mcp()`はMCP設定の一覧・追加・更新・削除、有効化、検出、レジストリ検索、インストール計画と適用を提供します。`connectors()`ではコネクター機能とアカウント、カタログを確認できます。サーバー側でのコネクター操作はアカウント単位の一覧取得・更新が中心です。
+`mcp()`はMCP設定の一覧・追加・更新・削除、有効化、検出、レジストリ検索、インストール計画と適用を提供します。`connectors()`ではコネクター機能とアカウント、カタログを確認できます。サーバー側でのコネクター操作はアカウント単位の一覧取得・更新が中心です。実験的な`secrets()->addFilterValues()`は、ホストが生成した動的シークレットをCLIのredaction filterに登録し、session logsやexportsでマスクします。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\SecretsAddFilterValuesRequest;
+
+$result = Copilot::client()->rpc()->secrets()->addFilterValues(
+    new SecretsAddFilterValuesRequest(values: [$accessToken]),
+);
+// $result->ok
+
+// 配列でも指定できます
+Copilot::client()->rpc()->secrets()->addFilterValues([
+    'values' => [$accessToken],
+]);
+```
+
+このRPCはOAuthトークンを取得するものではなく、値はSDK内で永続化・追加ログ出力されません。ホスト側で取得した値を明示的に登録してください。
 
 ### Skills・Plugins・Agents・Instructions・Extensions
 
