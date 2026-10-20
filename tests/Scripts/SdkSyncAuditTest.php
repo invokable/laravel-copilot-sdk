@@ -40,6 +40,9 @@ function withSdkSyncFixture(Closure $test): void
             gitHubToken?: string;
             enableRemoteSessions?: boolean;
             logLevel?: string;
+            clientInfo?: object;
+            onGetTraceContext?: string;
+            onListModels?: string;
         }
         export interface SessionHooks {
             onPreToolUse?: () => void;
@@ -191,9 +194,18 @@ function withSdkSyncFixture(Closure $test): void
                 data_get($options, 'cwd');
                 data_get($options, 'github_token');
                 data_get($options, 'remote');
+                $this->rpcClient->request('session.options.update', []);
             }
         }
         PHP);
+    $write('src/Session.php', <<<'PHP'
+        <?php
+        class Session {
+            public function send() { return $this->client->request('session.send', []); }
+            public function abort() { return $this->client->request('session.abort', []); }
+        }
+        PHP);
+    $write('src/Concerns/Session/Handlers.php', '<?php trait Handlers {}');
     $write('src/Concerns/Client/Options.php', <<<'PHP'
         <?php
         trait Options {
@@ -280,6 +292,65 @@ describe('SDK sync structural audit', function () {
         });
     });
 
+    it('recognizes RPC methods implemented by client and session entry points', function () {
+        withSdkSyncFixture(function (SdkSyncAudit $audit, Closure $write, string $root): void {
+            $typescriptPath = 'copilot-sdk/nodejs/src/generated/rpc.ts';
+            $typescript = file_get_contents($root.'/'.$typescriptPath);
+            $write($typescriptPath, str_replace(
+                'suspend: async () => connection.sendRequest("session.suspend", { sessionId }),',
+                <<<'TS'
+                    suspend: async () => connection.sendRequest("session.suspend", { sessionId }),
+                    send: async () => connection.sendRequest("session.send", { sessionId }),
+                    abort: async () => connection.sendRequest("session.abort", { sessionId }),
+                    updateOptions: async () => connection.sendRequest("session.options.update", { sessionId }),
+                    disablePlugin: async () => connection.sendRequest("session.plugins.disable", { sessionId }),
+                    updatePlugin: async () => connection.sendRequest("session.plugins.update", { sessionId }),
+                    TS,
+                $typescript,
+            ));
+
+            $pythonPath = 'copilot-sdk/python/copilot/generated/rpc.py';
+            $python = file_get_contents($root.'/'.$pythonPath);
+            $write($pythonPath, str_replace(
+                'return await self._client.request("session.suspend", {})',
+                <<<'PY'
+                    return await self._client.request("session.suspend", {})
+                        async def send(self):
+                            return await self._client.request("session.send", {})
+                        async def abort(self):
+                            return await self._client.request("session.abort", {})
+                        async def update_options(self):
+                            return await self._client.request("session.options.update", {})
+                        async def disable_plugin(self):
+                            return await self._client.request("session.plugins.disable", {})
+                        async def update_plugin(self):
+                            return await self._client.request("session.plugins.update", {})
+                    PY,
+                $python,
+            ));
+
+            $sessionRpcPath = 'src/Rpc/SessionRpc.php';
+            $sessionRpc = file_get_contents($root.'/'.$sessionRpcPath);
+            $write($sessionRpcPath, str_replace(
+                'public function model()',
+                'public function plugins() { return new PendingPlugins($this->client); }'.PHP_EOL.'    public function model()',
+                $sessionRpc,
+            ));
+            $write('src/Rpc/PendingPlugins.php', <<<'PHP'
+                <?php
+                class PendingPlugins {
+                    public function disable() { $this->notify('session.plugins.disable', []); }
+                    public function update() { $this->request('session.plugins.update', []); }
+                }
+                PHP);
+
+            $methods = $audit->report()['rpc_methods']['SessionRpc'];
+
+            expect($methods['missing'])->toBe([]);
+            expect($methods['local_only'])->toBe([]);
+        });
+    });
+
     it('checks hook declarations and valid dispatch keys independently', function () {
         withSdkSyncFixture(function (SdkSyncAudit $audit, Closure $write): void {
             $write('src/Concerns/Session/HasHooks.php', '<?php trait HasHooks { public function invoke() { return ["wrongName" => $this->hooks->onPreToolUse]; } }');
@@ -325,6 +396,20 @@ describe('SDK sync structural audit', function () {
             expect($audit->report()['client_options']['missing'])->toBe([
                 ['name' => 'logLevel', 'accepted_names' => ['logLevel', 'log_level'], 'missing_in' => ['CopilotManager::client']],
             ]);
+        });
+    });
+
+    it('excludes options implemented through dedicated APIs or the handshake', function () {
+        withSdkSyncFixture(function (SdkSyncAudit $audit): void {
+            $report = $audit->report();
+
+            expect($report['client_option_exclusions'])->toBe([
+                'clientInfo' => 'Forwarded in the client handshake payload',
+                'onGetTraceContext' => 'Provided by the TraceContext provider',
+                'onListModels' => 'Provided by Client::listModelsUsing()',
+            ]);
+            expect(array_column($report['client_options']['missing'], 'name'))
+                ->not->toContain('clientInfo', 'onGetTraceContext', 'onListModels');
         });
     });
 

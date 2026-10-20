@@ -16,6 +16,12 @@ const SDK_SYNC_CLIENT_OPTION_ALIASES = [
     'baseDirectory' => ['baseDirectory', 'base_directory', 'copilot_home'],
 ];
 
+const SDK_SYNC_CLIENT_OPTION_EXCLUSIONS = [
+    'clientInfo' => 'Forwarded in the client handshake payload',
+    'onGetTraceContext' => 'Provided by the TraceContext provider',
+    'onListModels' => 'Provided by Client::listModelsUsing()',
+];
+
 /**
  * Structural candidates only: the workflow must verify semantics before filing tasks.
  * Runs without Composer, Laravel bootstrapping, or loading the inspected PHP classes.
@@ -34,6 +40,7 @@ final class SdkSyncAudit
             'schema_version' => 1,
             'scope' => 'Current upstream snapshot vs Laravel; names only, not RPC type contents or signatures.',
             'rpc_type_exclusions' => SDK_SYNC_RPC_TYPE_EXCLUSIONS,
+            'client_option_exclusions' => SDK_SYNC_CLIENT_OPTION_EXCLUSIONS,
             'missing_rpc_types' => $this->rpcTypes($typescript, $python, $this->enumTypes($typescript, $python)),
             'missing_enums' => $this->missingEnums($this->enumTypes($typescript, $python)),
             'rpc_methods' => $this->rpcMethods($typescript, $python),
@@ -365,7 +372,7 @@ final class SdkSyncAudit
         return $methods;
     }
 
-    private function phpRpcMethods(string $root): array
+    private function phpRpcMethods(string $root, array $upstreamMethods): array
     {
         $queue = [$root];
         $visited = [];
@@ -380,8 +387,25 @@ final class SdkSyncAudit
 
             $visited[$name] = true;
             $code = $this->phpCode("src/Rpc/$name.php");
-            $methods = array_merge($methods, $this->names($code, '/->request\(\s*[\'"]([^\'"]+)[\'"]/'));
+            $methods = array_merge($methods, $this->names($code, '/->(?:request|notify)\(\s*[\'"]([^\'"]+)[\'"]/'));
             $queue = array_merge($queue, $this->names($code, '/\bnew\s+(Pending\w+)\s*\(/'));
+        }
+
+        $entryPoints = [
+            'src/Client.php',
+            'src/Session.php',
+            ...$this->files('src/Concerns/Client', 'php'),
+            ...$this->files('src/Concerns/Session', 'php'),
+        ];
+
+        foreach ($entryPoints as $path) {
+            $methods = array_merge(
+                $methods,
+                array_values(array_intersect(
+                    $this->names($this->phpCode($path), '/->(?:request|notify)\(\s*[\'"]([^\'"]+)[\'"]/'),
+                    $upstreamMethods,
+                )),
+            );
         }
 
         $methods = array_values(array_unique($methods));
@@ -407,7 +431,7 @@ final class SdkSyncAudit
             sort($upstream);
             $result[$root] = [
                 'local_root' => "src/Rpc/$root.php",
-                ...$this->difference($upstream, $this->phpRpcMethods($root)),
+                ...$this->difference($upstream, $this->phpRpcMethods($root, $upstream)),
                 'language_differences' => $this->difference($javascriptMethods, $pythonMethods),
             ];
         }
@@ -439,6 +463,10 @@ final class SdkSyncAudit
         $knownKeys = [];
 
         foreach ($this->interfaceProperties($types, 'CopilotClientOptions') as $name) {
+            if (isset(SDK_SYNC_CLIENT_OPTION_EXCLUSIONS[$name])) {
+                continue;
+            }
+
             $snake = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $name));
             $aliases = SDK_SYNC_CLIENT_OPTION_ALIASES[$name] ?? array_values(array_unique([$name, $snake]));
             $knownKeys = [...$knownKeys, ...$aliases];
