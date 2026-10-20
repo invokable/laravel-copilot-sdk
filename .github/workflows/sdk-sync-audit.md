@@ -17,9 +17,9 @@ engine:
         goal: cost
         mode: auto
         allowed-models:
-            - gpt-6.1-sol
+            #- gpt-6.1-sol
             - gpt-6-luna
-            - claude-sonnet-5.5
+            #- claude-sonnet-5.5
             - claude-haiku-5.5
 
 skills:
