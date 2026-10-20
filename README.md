@@ -24,7 +24,12 @@ not imply complete protocol or feature parity.
 
 The PHP callback is synchronous; unlike the Node.js SDK it does not currently
 receive a transport cancellation token. Stdio shutdown sends EOF first and
-waits briefly for the runtime to exit naturally before terminating it.
+waits briefly for the runtime to exit naturally before terminating it. If the
+stdio startup handshake times out, the exception includes recent process stderr
+output (up to 8 KiB). TCP mode only closes the client connection and never shuts
+down the external runtime. If the CLI rejects a JSON-RPC frame without a
+correlatable request ID, all currently pending requests fail with a sanitized
+`JsonRpcException`; the connection remains open.
 
 ```shell
 composer require revolution/laravel-copilot-sdk

@@ -180,7 +180,7 @@ trait HandlesSessionFs
     }
 
     /**
-     * Send `sessionFs.setProvider` exactly once during start(). A failure stops the connection.
+     * Send `sessionFs.setProvider` exactly once during start().
      *
      * @throws Throwable
      */
@@ -190,17 +190,7 @@ trait HandlesSessionFs
             return;
         }
 
-        try {
-            $this->rpc()->sessionFs()->setProvider($this->sessionFsConfig->toSetProviderRequest());
-        } catch (Throwable $e) {
-            try {
-                $this->stop();
-            } catch (Throwable) {
-                // The original startup failure is the useful one.
-            }
-
-            throw $e;
-        }
+        $this->rpc()->sessionFs()->setProvider($this->sessionFsConfig->toSetProviderRequest());
     }
 
     /**

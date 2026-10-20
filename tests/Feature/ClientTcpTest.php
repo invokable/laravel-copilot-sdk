@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Protocol;
@@ -123,6 +124,69 @@ describe('Client TCP Mode', function () {
         $errors = $client->stop();
 
         expect($errors)->toBe([])
+            ->and($client->getState())->toBe(ConnectionState::DISCONNECTED);
+    });
+
+    it('closes the TCP connection after a failed handshake without shutting down the server', function () {
+        $mockTransport = Mockery::mock(TcpTransport::class, Transport::class);
+        $mockTransport->shouldReceive('start')->once();
+        $mockTransport->shouldReceive('stop')->once();
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('stop')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andThrow(new JsonRpcException(-32000, 'Connection failed'));
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->never();
+
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client(['cli_url' => 'tcp://127.0.0.1:12345']);
+        $reflection = new ReflectionClass($client);
+        $transportProperty = $reflection->getProperty('transport');
+        $transportProperty->setValue($client, $mockTransport);
+
+        expect(fn () => $client->start())
+            ->toThrow(JsonRpcException::class, 'Connection failed');
+        expect($client->getState())->toBe(ConnectionState::ERROR);
+    });
+
+    it('returns TCP transport cleanup errors without shutting down the server', function () {
+        $mockTransport = Mockery::mock(TcpTransport::class, Transport::class);
+        $mockTransport->shouldReceive('start')->once();
+        $mockTransport->shouldReceive('stop')->once()->andThrow(new RuntimeException('TCP close failed'));
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('stop')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andReturn(['protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->never();
+
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client(['cli_url' => 'tcp://127.0.0.1:12345']);
+        $reflection = new ReflectionClass($client);
+        $transportProperty = $reflection->getProperty('transport');
+        $transportProperty->setValue($client, $mockTransport);
+
+        $client->start();
+        $errors = $client->stop();
+
+        expect($errors)->toHaveCount(1)
+            ->and($errors[0]->getMessage())->toBe('TCP close failed')
             ->and($client->getState())->toBe(ConnectionState::DISCONNECTED);
     });
 

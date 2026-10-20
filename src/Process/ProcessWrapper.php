@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Process;
 
+use Closure;
+
 /**
  * A simple wrapper for a raw proc_open process resource.
  */
@@ -41,11 +43,19 @@ class ProcessWrapper
     }
 
     /** Wait for a naturally exiting process without sending a signal. */
-    public function waitForExit(float $timeout = 5): bool
+    public function waitForExit(float $timeout = 5, ?Closure $onPoll = null): bool
     {
         $deadline = microtime(true) + $timeout;
         while ($this->isRunning() && microtime(true) < $deadline) {
+            if ($onPoll !== null) {
+                $onPoll();
+            }
+
             usleep(100000);
+        }
+
+        if ($onPoll !== null) {
+            $onPoll();
         }
 
         return ! $this->isRunning();
@@ -54,7 +64,7 @@ class ProcessWrapper
     /**
      * Stop the process.
      */
-    public function stop(float $timeout = 10, ?int $signal = null): ?int
+    public function stop(float $timeout = 10, ?int $signal = null, ?Closure $onPoll = null): ?int
     {
         if (! is_resource($this->rawProcess)) {
             return null;
@@ -66,6 +76,10 @@ class ProcessWrapper
         $status = proc_get_status($this->rawProcess);
 
         while ($status['running'] && $waited < $timeout * 10) {
+            if ($onPoll !== null) {
+                $onPoll();
+            }
+
             usleep(100000); // 100ms
             $status = proc_get_status($this->rawProcess);
             $waited++;
@@ -73,6 +87,10 @@ class ProcessWrapper
 
         if ($status['running']) {
             proc_terminate($this->rawProcess, 9); // SIGKILL
+        }
+
+        if ($onPoll !== null) {
+            $onPoll();
         }
 
         $exitCode = proc_close($this->rawProcess);

@@ -1006,6 +1006,32 @@ describe('Session', function () {
             ->toThrow(SessionErrorException::class, 'Session error: Test error');
     });
 
+    it('keeps a standalone session attached after a prompt completes', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', Mockery::any())
+            ->once()
+            ->andReturn(['messageId' => 'msg-123']);
+        $mockClient->shouldReceive('request')
+            ->with('session.detach', ['sessionId' => 'test-session'])
+            ->once()
+            ->andReturn(['success' => true]);
+
+        $session = new Session('test-session', $mockClient);
+        EventLoop::delay(0.02, function () use ($session): void {
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'assistant.message',
+                'data' => ['content' => 'Completed response'],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
+        });
+
+        $response = $session->sendAndWait('Hello', timeout: 0.2);
+        $session->disconnect();
+
+        expect($response?->content())->toBe('Completed response');
+    });
+
     it('sendAndWait returns event with exception on timeout', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')

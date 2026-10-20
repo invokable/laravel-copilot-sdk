@@ -440,26 +440,9 @@ class Client implements CopilotClient
             }
 
             if ($this->builtinPluginDirectories !== []) {
-                try {
-                    $this->rpc()->plugins()->builtin()->set([
-                        'paths' => $this->builtinPluginDirectories,
-                    ]);
-                } catch (Throwable $e) {
-                    try {
-                        $this->stop();
-                    } catch (Throwable) {
-                        try {
-                            if ($this->tcpMode) {
-                                $this->transport?->stop();
-                            } else {
-                                $this->processManager?->stop();
-                            }
-                        } catch (Throwable) {
-                        }
-                    }
-
-                    throw $e;
-                }
+                $this->rpc()->plugins()->builtin()->set([
+                    'paths' => $this->builtinPluginDirectories,
+                ]);
             }
 
             $this->registerSessionFsWithRuntime();
@@ -469,7 +452,20 @@ class Client implements CopilotClient
             return $this;
         } catch (Throwable $e) {
             $this->cancelPendingRequestHandlerExchanges();
+
+            try {
+                $this->stop();
+            } catch (Throwable) {
+            }
+
             $this->state = ConnectionState::ERROR;
+
+            if (! $this->tcpMode && $e instanceof JsonRpcException && str_contains($e->getMessage(), 'Timeout')) {
+                $stderr = $this->processManager?->getStderrOutput() ?? '';
+
+                throw $e->withDiagnostic('stderr: '.($stderr !== '' ? $stderr : '(empty)'));
+            }
+
             throw $e;
         }
     }
@@ -526,15 +522,22 @@ class Client implements CopilotClient
 
         // Stop JSON-RPC client
         if ($this->rpcClient !== null) {
-            $this->rpcClient->stop();
-            $this->rpcClient = null;
+            try {
+                $this->rpcClient->stop();
+                $this->rpcClient = null;
+            } catch (Throwable $e) {
+                $errors[] = $e;
+            }
         }
 
-        // Stop transport/process
-        if ($this->tcpMode) {
-            $this->transport?->stop();
-        } else {
-            $this->processManager?->stop();
+        try {
+            if ($this->tcpMode) {
+                $this->transport?->stop();
+            } else {
+                $this->processManager?->stop();
+            }
+        } catch (Throwable $e) {
+            $errors[] = $e;
         }
 
         $this->state = ConnectionState::DISCONNECTED;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Process;
 
 use InvalidArgumentException;
+use Revolt\EventLoop;
 use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Events\Process\ProcessStarted;
 use Revolution\Copilot\Transport\StdioTransport;
@@ -17,6 +18,8 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 class ProcessManager
 {
+    private const STDERR_BUFFER_LIMIT = 8192;
+
     /**
      * The running process wrapper.
      */
@@ -35,6 +38,17 @@ class ProcessManager
      * @var resource|null
      */
     protected mixed $stdout = null;
+
+    /**
+     * Process stderr stream (pipe).
+     *
+     * @var resource|null
+     */
+    protected mixed $stderr = null;
+
+    protected ?string $stderrCallbackId = null;
+
+    protected string $stderrBuffer = '';
 
     protected CopilotClientMode $mode = CopilotClientMode::CopilotCli;
 
@@ -82,6 +96,10 @@ class ProcessManager
      */
     public function stop(): void
     {
+        $drainStderr = function (): void {
+            $this->captureStderr();
+        };
+
         // EOF lets the runtime flush host telemetry and exit naturally.
         if (is_resource($this->stdin)) {
             fclose($this->stdin);
@@ -89,8 +107,10 @@ class ProcessManager
         }
 
         if ($this->process !== null) {
-            $this->process->waitForExit(5);
+            $this->process->waitForExit(5, $drainStderr);
         }
+
+        $this->captureStderr();
 
         if (is_resource($this->stdout)) {
             fclose($this->stdout);
@@ -99,8 +119,16 @@ class ProcessManager
 
         // Stop the process
         if ($this->process !== null) {
-            $this->process->stop(5);
+            $this->process->stop(5, onPoll: $drainStderr);
             $this->process = null;
+        }
+
+        $this->captureStderr();
+        $this->stopStderrMonitoring();
+
+        if (is_resource($this->stderr)) {
+            fclose($this->stderr);
+            $this->stderr = null;
         }
     }
 
@@ -110,6 +138,16 @@ class ProcessManager
     public function isRunning(): bool
     {
         return $this->process?->isRunning() ?? false;
+    }
+
+    /**
+     * Get the most recent process stderr output.
+     */
+    public function getStderrOutput(): string
+    {
+        $this->captureStderr();
+
+        return trim($this->stderrBuffer);
     }
 
     /**
@@ -251,16 +289,42 @@ class ProcessManager
             fclose($pipes[1]);
             proc_close($rawProcess);
 
+            $stderr = trim(substr($stderr, -self::STDERR_BUFFER_LIMIT));
+
             throw new RuntimeException("CLI server failed to start: {$stderr}");
         }
 
-        // Close stderr pipe (we don't use it)
-        fclose($pipes[2]);
+        $this->stderr = $pipes[2];
+        stream_set_blocking($this->stderr, false);
+        $this->stderrCallbackId = EventLoop::onReadable($this->stderr, fn () => $this->captureStderr());
 
         // Create a wrapper for status checking
         $this->process = new ProcessWrapper($rawProcess);
 
         ProcessStarted::dispatch($this);
+    }
+
+    protected function captureStderr(): void
+    {
+        if (! is_resource($this->stderr)) {
+            return;
+        }
+
+        while (($chunk = fread($this->stderr, 8192)) !== false && $chunk !== '') {
+            $this->stderrBuffer = substr($this->stderrBuffer.$chunk, -self::STDERR_BUFFER_LIMIT);
+        }
+
+        if (feof($this->stderr)) {
+            $this->stopStderrMonitoring();
+        }
+    }
+
+    protected function stopStderrMonitoring(): void
+    {
+        if ($this->stderrCallbackId !== null) {
+            EventLoop::cancel($this->stderrCallbackId);
+            $this->stderrCallbackId = null;
+        }
     }
 
     /**

@@ -155,6 +155,8 @@ Copilot::start(function (CopilotSession $session) {
 
 `null` を返すとデフォルト動作が継続されます。
 
+単独セッションは、プロンプトへの応答が完了しても終了しません。`onSessionEnd` はプロンプトごとではなく、セッションが切断・破棄されるときに実行されます。
+
 `onUserPromptSubmitted`は`decision: 'block'`を返してプロンプトを拒否できます。拒否された場合、モデルターンは開始されず、ユーザーメッセージも記録されません。`reason`を指定すると、その内容が`warningType: "policy_blocked"`の一時的な`session.warning`イベントに含まれます。
 
 ```php

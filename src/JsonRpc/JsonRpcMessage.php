@@ -12,20 +12,25 @@ use Illuminate\Contracts\Support\Jsonable;
  */
 readonly class JsonRpcMessage implements Arrayable, Jsonable
 {
+    public bool $hasId;
+
     public function __construct(
         public string|int|null $id = null,
         public ?string $method = null,
         public array $params = [],
         public mixed $result = null,
         public ?array $error = null,
-    ) {}
+        ?bool $hasId = null,
+    ) {
+        $this->hasId = $hasId ?? $id !== null;
+    }
 
     /**
      * Create a request message.
      */
     public static function request(string|int $id, string $method, array $params = []): self
     {
-        return new self(id: $id, method: $method, params: $params);
+        return new self(id: $id, method: $method, params: $params, hasId: true);
     }
 
     /**
@@ -41,7 +46,7 @@ readonly class JsonRpcMessage implements Arrayable, Jsonable
      */
     public static function response(string|int $id, mixed $result): self
     {
-        return new self(id: $id, result: $result);
+        return new self(id: $id, result: $result, hasId: true);
     }
 
     /**
@@ -53,7 +58,7 @@ readonly class JsonRpcMessage implements Arrayable, Jsonable
             'code' => $code,
             'message' => $message,
             'data' => $data,
-        ]);
+        ], hasId: true);
     }
 
     /**
@@ -61,8 +66,7 @@ readonly class JsonRpcMessage implements Arrayable, Jsonable
      */
     public static function fromArray(array $data): self
     {
-        // JSON-RPC 2.0 allows id to be string, number, or null
-        // Preserve the original type for proper response matching
+        // JSON-RPC 2.0 allows an explicit null id in an uncorrelated error response.
         $id = $data['id'] ?? null;
 
         return new self(
@@ -71,6 +75,7 @@ readonly class JsonRpcMessage implements Arrayable, Jsonable
             params: $data['params'] ?? [],
             result: $data['result'] ?? null,
             error: $data['error'] ?? null,
+            hasId: array_key_exists('id', $data),
         );
     }
 
@@ -79,7 +84,7 @@ readonly class JsonRpcMessage implements Arrayable, Jsonable
      */
     public function isRequest(): bool
     {
-        return $this->id !== null && $this->method !== null;
+        return $this->hasId && $this->id !== null && $this->method !== null;
     }
 
     /**
@@ -87,7 +92,7 @@ readonly class JsonRpcMessage implements Arrayable, Jsonable
      */
     public function isNotification(): bool
     {
-        return $this->id === null && $this->method !== null;
+        return ! $this->hasId && $this->method !== null;
     }
 
     /**
@@ -95,7 +100,7 @@ readonly class JsonRpcMessage implements Arrayable, Jsonable
      */
     public function isResponse(): bool
     {
-        return $this->id !== null && $this->method === null;
+        return $this->hasId && $this->method === null;
     }
 
     /**
@@ -113,7 +118,7 @@ readonly class JsonRpcMessage implements Arrayable, Jsonable
     {
         $data = ['jsonrpc' => '2.0'];
 
-        if ($this->id !== null) {
+        if ($this->hasId) {
             $data['id'] = $this->id;
         }
 
