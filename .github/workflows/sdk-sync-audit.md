@@ -38,15 +38,6 @@ checkout:
       fetch-depth: 0
 
 steps:
-    - name: Update official SDK snapshot
-      run: |
-          set -euo pipefail
-          mkdir -p /tmp/gh-aw/sdk-sync-audit
-          git -C copilot-sdk rev-parse HEAD > /tmp/gh-aw/sdk-sync-audit/pinned-commit.txt
-          git submodule update --remote --merge
-          git -C copilot-sdk rev-parse HEAD > /tmp/gh-aw/sdk-sync-audit/upstream-commit.txt
-          git rev-parse HEAD > /tmp/gh-aw/sdk-sync-audit/laravel-commit.txt
-
     - name: Set up PHP
       uses: shivammathur/setup-php@2.40.0
       with:
@@ -57,6 +48,7 @@ steps:
     - name: Detect structural SDK sync gaps
       run: |
           set -euo pipefail
+          mkdir -p /tmp/gh-aw/sdk-sync-audit
           php .github/scripts/check-sdk-sync.php > /tmp/gh-aw/sdk-sync-audit/candidates.json
           jq '{
             missing_rpc_type_count: (.missing_rpc_types | length),
@@ -111,7 +103,7 @@ network:
 
 # SDK Sync Audit
 
-This is an **audit only**. Read and apply the SDK Sync Issue Creation skill before assessing candidates. Create up to five separate issues for verified, novel, feasible implementation gaps, and publish one audit report discussion; do not implement changes, edit files, commit, update the submodule again, or create PRs or comments.
+This is an **audit only**. Read and apply the SDK Sync Issue Creation skill before assessing candidates. Create up to five separate issues for verified, novel, feasible implementation gaps, and publish one audit report discussion; do not implement changes, edit files, commit, update the submodule, or create PRs or comments.
 
 ## Previous audit report
 
@@ -119,7 +111,7 @@ At the beginning of the audit, before reading the prepared evidence or examining
 
 ## Prepared evidence
 
-Read `/tmp/gh-aw/sdk-sync-audit/summary.json`, then selectively query relevant entries from `/tmp/gh-aw/sdk-sync-audit/candidates.json` with `jq`. Do not load the full RPC type inventory. Use `pinned-commit.txt`, `upstream-commit.txt`, and `laravel-commit.txt` to identify the snapshots compared; this is a current-state audit, not only changes since the pinned commit.
+Read `/tmp/gh-aw/sdk-sync-audit/summary.json`, then selectively query relevant entries from `/tmp/gh-aw/sdk-sync-audit/candidates.json` with `jq`. Do not load the full RPC type inventory. This is a current-state audit of the checked-out official SDK submodule against the Laravel implementation; do not update the submodule as part of the audit.
 
 The candidate report detects structural differences in RPC type names, enum names, public RPC method names, configuration options, and hooks. It checks file existence rather than fields inside existing RPC types. Treat candidates as leads, not proof: verify each against the relevant upstream source and complete Laravel entry point before creating an issue.
 
