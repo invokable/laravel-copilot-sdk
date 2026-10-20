@@ -343,6 +343,7 @@ readonly class SessionConfig implements Arrayable
         public ?Closure $createSessionFsProvider = null,
         public ?bool $interactiveUser = null,
         public WorkingDirectoryTrust|string|null $trustWorkingDirectory = null,
+        public SandboxConfig|array|null $sandboxConfig = null,
     ) {}
 
     /**
@@ -548,6 +549,9 @@ readonly class SessionConfig implements Arrayable
             sandbox: isset($data['sandbox'])
                 ? ($data['sandbox'] instanceof SandboxConfig ? $data['sandbox'] : SandboxConfig::fromArray($data['sandbox']))
                 : null,
+            sandboxConfig: isset($data['sandboxConfig'])
+                ? ($data['sandboxConfig'] instanceof SandboxConfig ? $data['sandboxConfig'] : SandboxConfig::fromArray($data['sandboxConfig']))
+                : null,
             allowedModels: $data['allowedModels'] ?? null,
             skillProvider: $data['skillProvider'] ?? null,
             sessionFsProvider: $data['sessionFsProvider'] ?? null,
@@ -625,6 +629,8 @@ readonly class SessionConfig implements Arrayable
         $sessionLimits = $this->sessionLimits instanceof SessionLimitsConfig
             ? $this->sessionLimits->toArray()
             : $this->sessionLimits;
+
+        $sandboxConfig = $this->sandboxConfig ?? $this->sandbox;
 
         $expAssignments = $this->expAssignments instanceof CopilotExpAssignmentResponse
             ? $this->expAssignments->toArray()
@@ -750,7 +756,7 @@ readonly class SessionConfig implements Arrayable
                 ),
             'refreshCustomInstructions' => $this->refreshCustomInstructions,
             'diagnostics' => $this->diagnostics,
-            'sandbox' => $this->sandbox instanceof SandboxConfig ? $this->sandbox->toArray() : $this->sandbox,
+            'sandboxConfig' => $sandboxConfig instanceof SandboxConfig ? $sandboxConfig->toArray() : $sandboxConfig,
             'allowedModels' => $this->allowedModels,
             'name' => $this->name,
             'interactiveUser' => $this->interactiveUser,

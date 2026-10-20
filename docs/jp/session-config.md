@@ -490,7 +490,7 @@ MCP診断を有効にするには`diagnostics`を指定します。`debug`や`tr
 ```php
 $config = new SessionConfig(
     diagnostics: ['sources' => ['mcp' => ['level' => 'debug']]],
-    sandbox: [
+    sandboxConfig: [
         'enabled' => true,
         'userPolicy' => [
             'filesystem' => ['readwritePaths' => [storage_path('app/workspace')]],
@@ -503,7 +503,7 @@ $config = new SessionConfig(
 );
 ```
 
-`sandbox`は`SandboxConfig`、`SandboxConfigUserPolicyFilesystem`、`SandboxConfigUserPolicyNetwork`で型指定もできます。ネットワークの許可/拒否ルールはCLIのサンドボックス機能とバージョンに依存します。`managedMcpServers`では安定したキーごとに`ManagedMcpServerConfig`を渡せます。
+現在の設定名は`sandboxConfig`です。既存コードとの互換性のため`sandbox`もエイリアスとして受け付け、両方を指定した場合は、nullでない`sandboxConfig`を優先します。`SandboxConfig`、`SandboxConfigAuth`、`SandboxCredentialsConfig`、`SandboxMaskedEnvVar`、`SandboxConfigUserPolicyExperimental`、`SandboxConfigUserPolicyExperimentalSeatbelt`などの型指定もできます。ネットワークの許可/拒否ルールはCLIのサンドボックス機能とバージョンに依存します。`managedMcpServers`では安定したキーごとに`ManagedMcpServerConfig`を渡せます。
 
 ```php
 use Revolution\Copilot\Types\Rpc\ManagedMcpServerConfig;
@@ -519,7 +519,7 @@ $config = new SessionConfig(
             tools: ['search'],
         ),
     ],
-    sandbox: new SandboxConfig(
+    sandboxConfig: new SandboxConfig(
         enabled: true,
         userPolicy: new SandboxConfigUserPolicy(
             network: new SandboxConfigUserPolicyNetwork(
@@ -527,5 +527,24 @@ $config = new SessionConfig(
             ),
         ),
     ),
+);
+```
+
+資格情報マスキングは環境変数名と許可するHTTPSホストを指定します。実際の資格情報値は設定に含めません。
+
+```php
+$config = new SessionConfig(
+    sandboxConfig: [
+        'enabled' => true,
+        'auth' => ['git' => true, 'gh' => true],
+        'credentials' => [
+            'envVars' => [
+                'APP_CREDENTIAL' => ['injectHosts' => ['registry.example.com']],
+            ],
+        ],
+        'userPolicy' => [
+            'experimental' => ['seatbelt' => ['keychainAccess' => true]],
+        ],
+    ],
 );
 ```

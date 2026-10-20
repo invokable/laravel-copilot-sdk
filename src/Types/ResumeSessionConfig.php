@@ -294,6 +294,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $hookDirectories = null,
         public ?Closure $createSessionFsProvider = null,
         public ?bool $interactiveUser = null,
+        public SandboxConfig|array|null $sandboxConfig = null,
     ) {}
 
     /**
@@ -495,6 +496,9 @@ readonly class ResumeSessionConfig implements Arrayable
             sandbox: isset($data['sandbox'])
                 ? ($data['sandbox'] instanceof SandboxConfig ? $data['sandbox'] : SandboxConfig::fromArray($data['sandbox']))
                 : null,
+            sandboxConfig: isset($data['sandboxConfig'])
+                ? ($data['sandboxConfig'] instanceof SandboxConfig ? $data['sandboxConfig'] : SandboxConfig::fromArray($data['sandboxConfig']))
+                : null,
             allowedModels: $data['allowedModels'] ?? null,
             skillProvider: $data['skillProvider'] ?? null,
             sessionFsProvider: $data['sessionFsProvider'] ?? null,
@@ -566,6 +570,8 @@ readonly class ResumeSessionConfig implements Arrayable
         $canvasProvider = $this->canvasProvider instanceof CanvasProviderIdentity
             ? $this->canvasProvider->toArray()
             : $this->canvasProvider;
+
+        $sandboxConfig = $this->sandboxConfig ?? $this->sandbox;
 
         return array_filter([
             'clientName' => $this->clientName,
@@ -673,7 +679,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'askUserVariant' => $this->askUserVariant instanceof AskUserVariant ? $this->askUserVariant->value : $this->askUserVariant,
             'authClientIdMetadataUrl' => $this->authClientIdMetadataUrl,
             'diagnostics' => $this->diagnostics,
-            'sandbox' => $this->sandbox instanceof SandboxConfig ? $this->sandbox->toArray() : $this->sandbox,
+            'sandboxConfig' => $sandboxConfig instanceof SandboxConfig ? $sandboxConfig->toArray() : $sandboxConfig,
             'allowedModels' => $this->allowedModels,
             'interactiveUser' => $this->interactiveUser,
         ], fn ($value) => $value !== null);

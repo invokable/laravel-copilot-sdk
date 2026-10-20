@@ -23,13 +23,16 @@ readonly class SandboxConfig implements Arrayable
         public ?bool $allowBypass = null,
         public ?bool $managedMcpRoutingLocked = null,
         public ?bool $managedLspRoutingLocked = null,
-        public ?array $auth = null,
+        public SandboxConfigAuth|array|null $auth = null,
+        public SandboxCredentialsConfig|array|null $credentials = null,
         public ?bool $allowDevToolAccess = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         $userPolicy = $data['userPolicy'] ?? null;
+        $auth = $data['auth'] ?? null;
+        $credentials = $data['credentials'] ?? null;
 
         return new self(
             enabled: Arr::boolean($data, 'enabled'),
@@ -42,7 +45,12 @@ readonly class SandboxConfig implements Arrayable
             allowBypass: $data['allowBypass'] ?? null,
             managedMcpRoutingLocked: $data['managedMcpRoutingLocked'] ?? null,
             managedLspRoutingLocked: $data['managedLspRoutingLocked'] ?? null,
-            auth: $data['auth'] ?? null,
+            auth: $auth !== null && ! $auth instanceof SandboxConfigAuth
+                ? SandboxConfigAuth::fromArray($auth)
+                : $auth,
+            credentials: $credentials !== null && ! $credentials instanceof SandboxCredentialsConfig
+                ? SandboxCredentialsConfig::fromArray($credentials)
+                : $credentials,
             allowDevToolAccess: $data['allowDevToolAccess'] ?? null,
         );
     }
@@ -60,7 +68,12 @@ readonly class SandboxConfig implements Arrayable
             'allowBypass' => $this->allowBypass,
             'managedMcpRoutingLocked' => $this->managedMcpRoutingLocked,
             'managedLspRoutingLocked' => $this->managedLspRoutingLocked,
-            'auth' => $this->auth,
+            'auth' => $this->auth instanceof SandboxConfigAuth
+                ? $this->auth->toArray()
+                : $this->auth,
+            'credentials' => $this->credentials instanceof SandboxCredentialsConfig
+                ? $this->credentials->toArray()
+                : $this->credentials,
             'allowDevToolAccess' => $this->allowDevToolAccess,
         ], fn ($value) => $value !== null);
     }

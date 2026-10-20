@@ -17,7 +17,7 @@ readonly class SandboxConfigUserPolicy implements Arrayable
         public SandboxConfigUserPolicyFilesystem|array|null $filesystem = null,
         public SandboxConfigUserPolicyNetwork|array|null $network = null,
         public SandboxConfigUserPolicySeatbelt|array|null $seatbelt = null,
-        public ?array $experimental = null,
+        public SandboxConfigUserPolicyExperimental|array|null $experimental = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -25,6 +25,7 @@ readonly class SandboxConfigUserPolicy implements Arrayable
         $filesystem = $data['filesystem'] ?? null;
         $network = $data['network'] ?? null;
         $seatbelt = $data['seatbelt'] ?? null;
+        $experimental = $data['experimental'] ?? null;
 
         return new self(
             filesystem: $filesystem !== null && ! $filesystem instanceof SandboxConfigUserPolicyFilesystem
@@ -36,7 +37,9 @@ readonly class SandboxConfigUserPolicy implements Arrayable
             seatbelt: $seatbelt !== null && ! $seatbelt instanceof SandboxConfigUserPolicySeatbelt
                 ? SandboxConfigUserPolicySeatbelt::fromArray($seatbelt)
                 : $seatbelt,
-            experimental: $data['experimental'] ?? null,
+            experimental: $experimental !== null && ! $experimental instanceof SandboxConfigUserPolicyExperimental
+                ? SandboxConfigUserPolicyExperimental::fromArray($experimental)
+                : $experimental,
         );
     }
 
@@ -52,7 +55,9 @@ readonly class SandboxConfigUserPolicy implements Arrayable
             'seatbelt' => $this->seatbelt instanceof SandboxConfigUserPolicySeatbelt
                 ? $this->seatbelt->toArray()
                 : $this->seatbelt,
-            'experimental' => $this->experimental,
+            'experimental' => $this->experimental instanceof SandboxConfigUserPolicyExperimental
+                ? $this->experimental->toArray()
+                : $this->experimental,
         ], fn ($value) => $value !== null);
     }
 }
