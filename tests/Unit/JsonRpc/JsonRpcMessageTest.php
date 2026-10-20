@@ -72,6 +72,20 @@ describe('JsonRpcMessage', function () {
                 ->and($message->result)->toBe(['success' => true]);
         });
 
+        it('distinguishes an uncorrelated error from a notification', function () {
+            $message = JsonRpcMessage::fromArray([
+                'jsonrpc' => '2.0',
+                'id' => null,
+                'error' => ['code' => -32700, 'message' => 'Invalid JSON'],
+            ]);
+
+            expect($message->hasId)->toBeTrue()
+                ->and($message->isError())->toBeTrue()
+                ->and($message->isResponse())->toBeTrue()
+                ->and($message->isNotification())->toBeFalse()
+                ->and($message->toArray())->toHaveKey('id', null);
+        });
+
         it('can parse request from array', function () {
             $data = [
                 'jsonrpc' => '2.0',

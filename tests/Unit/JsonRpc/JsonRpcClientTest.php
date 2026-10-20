@@ -115,6 +115,77 @@ describe('JsonRpcClient', function () {
             ->toThrow(JsonRpcException::class, 'Invalid Request');
     });
 
+    it('fails all pending requests on an uncorrelated error and keeps the connection usable', function () {
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
+        $transport->shouldReceive('start')->once();
+
+        $sendCount = 0;
+        $transport->shouldReceive('send')->times(3)->andReturnUsing(function (string $message) use (&$sendCount, $simulateReceive) {
+            $sendCount++;
+
+            if ($sendCount === 3 && preg_match('/\{.*\}/s', $message, $matches)) {
+                $request = json_decode($matches[0], true);
+                $simulateReceive(JsonRpcMessage::response($request['id'], ['status' => 'ok'])->toJson());
+            }
+        });
+
+        $client = new JsonRpcClient($transport);
+        $client->start();
+
+        $errors = [];
+        foreach (range(1, 2) as $_) {
+            $fiber = new Fiber(function () use ($client, &$errors): void {
+                try {
+                    $client->request('pending.method', [], timeout: null);
+                } catch (JsonRpcException $exception) {
+                    $errors[] = $exception;
+                }
+            });
+            $fiber->start();
+        }
+
+        $simulateReceive(json_encode([
+            'jsonrpc' => '2.0',
+            'id' => null,
+            'error' => [
+                'code' => -32700,
+                'message' => 'Unexpected value "private content" in `sensitive value` '.str_repeat('x', 250),
+            ],
+        ], JSON_THROW_ON_ERROR));
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
+
+        expect($errors)->toHaveCount(2)
+            ->and($client->isRunning())->toBeTrue();
+
+        foreach ($errors as $error) {
+            expect($error->code)->toBe(-32700)
+                ->and($error->getMessage())->toContain('The CLI rejected a frame it could not identify')
+                ->and($error->getMessage())->toContain('"…"')
+                ->and($error->getMessage())->toContain('`…`')
+                ->and($error->getMessage())->not->toContain('private content')
+                ->and($error->getMessage())->not->toContain('sensitive value')
+                ->and(str_ends_with($error->getMessage(), '…'))->toBeTrue();
+        }
+
+        expect($client->request('recovery.method'))->toBe(['status' => 'ok']);
+    });
+
+    it('rejects requests that exceed the peer JSON nesting limit before sending', function () {
+        $transport = Mockery::mock(Transport::class);
+        $transport->shouldReceive('send')->never();
+
+        $value = 'deep';
+        for ($level = 0; $level < 126; $level++) {
+            $value = [$value];
+        }
+
+        $client = new JsonRpcClient($transport);
+
+        expect(fn () => $client->request('deep.method', ['payload' => $value]))
+            ->toThrow(JsonRpcException::class, 'was not sent');
+    });
+
     it('request throws JsonRpcException on timeout', function () {
         ['transport' => $transport] = createMockTransport();
         $transport->shouldReceive('start')->once();
@@ -213,6 +284,33 @@ describe('JsonRpcClient', function () {
         expect($sentResponses)->toHaveCount(1)
             ->and($sentResponses[0])->toContain('"id":"server-req-1"')
             ->and($sentResponses[0])->toContain('"result"');
+    });
+
+    it('answers with an error instead of sending an excessively nested response', function () {
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
+        $transport->shouldReceive('start')->once();
+
+        $sentResponses = [];
+        $transport->shouldReceive('send')->andReturnUsing(function (string $message) use (&$sentResponses): void {
+            $sentResponses[] = $message;
+        });
+
+        $value = (object) ['value' => 'deep'];
+        for ($level = 0; $level < 127; $level++) {
+            $value = (object) ['nested' => $value];
+        }
+
+        $client = new JsonRpcClient($transport);
+        $client->setRequestHandler('client.deep', fn () => $value);
+        $client->start();
+        $simulateReceive(JsonRpcMessage::request('server-req-1', 'client.deep')->toJson());
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
+
+        $response = json_decode(substr($sentResponses[0], strpos($sentResponses[0], "\r\n\r\n") + 4), true);
+
+        expect($response['error']['code'])->toBe(-32603)
+            ->and($response['error']['message'])->toContain('maximum JSON nesting depth');
     });
 
     it('returns JSON-RPC cancellation when an inbound request token is cancelled', function () {

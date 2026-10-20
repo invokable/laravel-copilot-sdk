@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolt\EventLoop;
 use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Process\ProcessManager;
 
@@ -91,6 +92,50 @@ describe('ProcessManager Auth Options', function () {
 
         expect($tokenProperty->getValue($manager))->toBe('gho_test_token')
             ->and($userProperty->getValue($manager))->toBeTrue();
+    });
+});
+
+describe('ProcessManager process diagnostics', function () {
+    it('retains only the latest 8 KiB of stderr output after the process stops', function () {
+        $manager = new ProcessManager(
+            cliPath: PHP_BINARY,
+            cliArgs: [
+                '-r',
+                'fwrite(STDERR, str_repeat("x", 9000)."runtime diagnostic\n"); while (! feof(STDIN)) { usleep(1000); }',
+                '--',
+            ],
+        );
+
+        try {
+            $manager->start();
+            EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+            EventLoop::run();
+        } finally {
+            $manager->stop();
+        }
+
+        $stderrOutput = $manager->getStderrOutput();
+
+        expect(strlen($stderrOutput) <= 8192)->toBeTrue()
+            ->and(str_ends_with($stderrOutput, 'runtime diagnostic'))->toBeTrue();
+    });
+
+    it('continues draining stderr while waiting for process shutdown', function () {
+        $manager = new ProcessManager(
+            cliPath: PHP_BINARY,
+            cliArgs: [
+                '-r',
+                'while (fread(STDIN, 1) !== "") {} fwrite(STDERR, str_repeat("x", 1000000)."shutdown diagnostic");',
+                '--',
+            ],
+        );
+
+        $manager->start();
+        $manager->stop();
+        $stderrOutput = $manager->getStderrOutput();
+
+        expect(strlen($stderrOutput) <= 8192)->toBeTrue()
+            ->and(str_ends_with($stderrOutput, 'shutdown diagnostic'))->toBeTrue();
     });
 });
 

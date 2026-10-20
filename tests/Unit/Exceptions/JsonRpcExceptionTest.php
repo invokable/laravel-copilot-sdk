@@ -19,6 +19,15 @@ describe('JsonRpcException', function () {
         expect($e->data)->toBe(['field' => 'sessionId']);
     });
 
+    it('adds diagnostics while preserving the original exception', function () {
+        $original = new JsonRpcException(-32000, 'Timeout waiting for response');
+        $withDiagnostic = $original->withDiagnostic('stderr: runtime stopped');
+
+        expect($withDiagnostic)->toBeInstanceOf(JsonRpcException::class)
+            ->and($withDiagnostic->getMessage())->toContain('stderr: runtime stopped')
+            ->and($withDiagnostic->getPrevious())->toBe($original);
+    });
+
     it('is an instance of Exception', function () {
         $e = new JsonRpcException(0, 'error');
 

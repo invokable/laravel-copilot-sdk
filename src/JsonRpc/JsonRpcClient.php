@@ -7,6 +7,7 @@ namespace Revolution\Copilot\JsonRpc;
 use Closure;
 use Fiber;
 use Illuminate\Support\Str;
+use JsonSerializable;
 use Revolt\EventLoop;
 use Revolt\EventLoop\Suspension;
 use Revolution\Copilot\Contracts\Transport;
@@ -25,6 +26,8 @@ use Revolution\Copilot\Support\CancellationToken;
  */
 class JsonRpcClient
 {
+    private const PEER_MAX_NESTING = 127;
+
     /**
      * Pending requests waiting for responses.
      *
@@ -121,6 +124,13 @@ class JsonRpcClient
         $requestId = Str::uuid()->toString();
         $message = JsonRpcMessage::request($requestId, $method, $params);
 
+        if ($this->nestsTooDeepForPeer($message->toArray())) {
+            throw new JsonRpcException(
+                -32000,
+                "{$method} request was not sent: it exceeds the maximum JSON nesting depth of ".self::PEER_MAX_NESTING.'.',
+            );
+        }
+
         $this->sendMessage($message);
 
         return $this->waitForResponse($requestId, $timeout);
@@ -132,6 +142,14 @@ class JsonRpcClient
     public function notify(string $method, array $params = []): void
     {
         $message = JsonRpcMessage::notification($method, $params);
+
+        if ($this->nestsTooDeepForPeer($message->toArray())) {
+            throw new JsonRpcException(
+                -32000,
+                "{$method} notification was not sent: it exceeds the maximum JSON nesting depth of ".self::PEER_MAX_NESTING.'.',
+            );
+        }
+
         $this->sendMessage($message);
     }
 
@@ -196,6 +214,15 @@ class JsonRpcClient
     protected function sendResponse(string|int $id, mixed $result): void
     {
         $message = JsonRpcMessage::response($id, $result);
+
+        if ($this->nestsTooDeepForPeer($message->toArray())) {
+            $message = JsonRpcMessage::errorResponse(
+                $id,
+                -32603,
+                'Response exceeds the maximum JSON nesting depth accepted by the CLI.',
+            );
+        }
+
         $this->sendMessage($message);
     }
 
@@ -205,7 +232,121 @@ class JsonRpcClient
     protected function sendErrorResponse(string|int $id, int $code, string $errorMessage, mixed $data = null): void
     {
         $message = JsonRpcMessage::errorResponse($id, $code, $errorMessage, $data);
+
+        if ($this->nestsTooDeepForPeer($message->toArray())) {
+            $message = JsonRpcMessage::errorResponse(
+                $id,
+                -32603,
+                'Response exceeds the maximum JSON nesting depth accepted by the CLI.',
+            );
+        }
+
         $this->sendMessage($message);
+    }
+
+    /**
+     * Fail all outstanding calls when the peer rejects a frame without a correlatable request ID.
+     */
+    protected function handleUncorrelatedError(JsonRpcMessage $message): void
+    {
+        $error = $message->error ?? [];
+        $code = is_int($error['code'] ?? null) ? $error['code'] : -32603;
+        $peerMessage = is_string($error['message'] ?? null)
+            ? $this->sanitizePeerErrorMessage($error['message'])
+            : 'Unknown error';
+        $failureMessage = 'The CLI rejected a frame it could not identify: '.$peerMessage;
+
+        foreach (array_keys($this->pendingRequests) as $requestId) {
+            if (! isset($this->pendingRequests[$requestId])) {
+                continue;
+            }
+
+            $this->pendingRequests[$requestId]['error'] = [
+                'code' => $code,
+                'message' => $failureMessage,
+                'data' => null,
+            ];
+            $this->resumePendingRequest($requestId);
+        }
+    }
+
+    /**
+     * Remove quoted peer values and bound error text before exposing it.
+     */
+    protected function sanitizePeerErrorMessage(string $message): string
+    {
+        $sanitized = '';
+        $quote = null;
+        $escaped = false;
+        $offset = 0;
+        $length = strlen($message);
+
+        while ($offset < $length && $offset < 8192) {
+            if (preg_match('/\\G./us', $message, $matches, 0, $offset) !== 1) {
+                break;
+            }
+
+            $character = $matches[0];
+            $offset += strlen($character);
+
+            if ($quote !== null) {
+                if ($escaped) {
+                    $escaped = false;
+                } elseif ($character === '\\') {
+                    $escaped = true;
+                } elseif ($character === $quote) {
+                    $quote = null;
+                }
+
+                continue;
+            }
+
+            if ($character === '"' || $character === '`') {
+                $quote = $character;
+                $sanitized .= $character.'…'.$character;
+
+                continue;
+            }
+
+            $sanitized .= $character;
+        }
+
+        if ($offset < $length) {
+            $sanitized .= '…';
+        }
+
+        preg_match('/^.{0,200}/us', $sanitized, $matches);
+        $bounded = $matches[0] ?? '';
+
+        return strlen($bounded) < strlen($sanitized) ? $bounded.'…' : $bounded;
+    }
+
+    /**
+     * Check the depth of the encoded JSON structure without recursing past the peer limit.
+     */
+    protected function nestsTooDeepForPeer(mixed $value, int $remaining = self::PEER_MAX_NESTING): bool
+    {
+        if ($value instanceof JsonSerializable) {
+            $value = $value->jsonSerialize();
+        } elseif (is_object($value)) {
+            $value = get_object_vars($value);
+        }
+
+        if (! is_array($value)) {
+            return false;
+        }
+
+        if ($remaining === 0) {
+            return true;
+        }
+
+        foreach ($value as $child) {
+            if ($this->nestsTooDeepForPeer($child, $remaining - 1)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -273,7 +414,9 @@ class JsonRpcClient
     {
         MessageReceived::dispatch($message);
 
-        if ($message->isResponse()) {
+        if ($message->hasId && $message->id === null && $message->isError()) {
+            $this->handleUncorrelatedError($message);
+        } elseif ($message->isResponse()) {
             $this->handleResponse($message);
         } elseif ($message->isNotification()) {
             $this->handleNotification($message);

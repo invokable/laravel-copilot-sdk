@@ -166,6 +166,10 @@ describe('Client', function () {
             ->with('plugins.builtin.set', ['paths' => ['/opt/copilot/plugins']])
             ->once()
             ->andThrow(new RuntimeException('plugin registration failed'));
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->once()
+            ->andReturn([]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -295,6 +299,45 @@ describe('Client', function () {
         fclose($stdout);
     });
 
+    it('includes recent process output when the startup handshake times out', function () {
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->once()->andReturn(Mockery::mock(StdioTransport::class));
+        $mockProcessManager->shouldReceive('getStderrOutput')->once()->andReturn('CLI startup diagnostic');
+        $mockProcessManager->shouldReceive('stop')->once();
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andThrow(new JsonRpcException(-32000, 'Timeout 30s waiting for response'));
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->once()
+            ->andReturn([]);
+        $mockRpcClient->shouldReceive('stop')->once();
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client;
+        $startupException = null;
+
+        try {
+            $client->start();
+        } catch (JsonRpcException $exception) {
+            $startupException = $exception;
+        }
+
+        expect($startupException)->toBeInstanceOf(JsonRpcException::class)
+            ->and($startupException->getMessage())->toContain('stderr: CLI startup diagnostic')
+            ->and($startupException->getPrevious())->toBeInstanceOf(JsonRpcException::class)
+            ->and($client->getState())->toBe(ConnectionState::ERROR);
+    });
+
     it('start method is idempotent when already connected', function () {
         $stdin = fopen('php://memory', 'r+');
         $stdout = fopen('php://memory', 'r+');
@@ -335,16 +378,22 @@ describe('Client', function () {
 
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('stop')->once();
         $mockProcessManager->shouldReceive('getStdioTransport')->andReturn($mockStdioTransport);
 
         $mockRpcClient = Mockery::mock(JsonRpcClient::class);
         $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('stop')->once();
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
         $mockRpcClient->shouldReceive('request')
             ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => 1]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->once()
+            ->andReturn([]);
 
         $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
@@ -474,6 +523,38 @@ describe('Client', function () {
 
         fclose($stdin);
         fclose($stdout);
+    });
+
+    it('returns JSON-RPC cleanup errors and still stops the process', function () {
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('stop')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn(Mockery::mock(StdioTransport::class));
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('stop')->once()->andThrow(new RuntimeException('JSON-RPC stop failed'));
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andReturn(['protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->once()
+            ->andReturn([]);
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client;
+        $client->start();
+        $errors = $client->stop();
+
+        expect($errors)->toHaveCount(1)
+            ->and($errors[0]->getMessage())->toBe('JSON-RPC stop failed')
+            ->and($client->getState())->toBe(ConnectionState::DISCONNECTED);
     });
 
     it('createSession creates and returns session', function () {
