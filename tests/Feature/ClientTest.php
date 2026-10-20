@@ -29,6 +29,7 @@ use Revolution\Copilot\Types\ProviderModelConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
+use Revolution\Copilot\Types\Rpc\SandboxConfig;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionEvent;
@@ -879,6 +880,81 @@ describe('Client', function () {
         expect($payloads[1])->toHaveKey('trustWorkingDirectory', 'user');
         expect($payloads[2])->toHaveKey('trustWorkingDirectory', 'user');
         expect($payloads[3])->not->toHaveKey('trustWorkingDirectory');
+    });
+
+    it('forwards sandbox configuration when creating and resuming sessions', function () {
+        $createPayloads = [];
+        $createdSessionNumber = 0;
+        $resumePayloads = [];
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.create', Mockery::on(function (array $params) use (&$createPayloads): bool {
+                $createPayloads[] = $params;
+
+                return true;
+            }))
+            ->times(4)
+            ->andReturnUsing(function () use (&$createdSessionNumber): array {
+                $createdSessionNumber++;
+
+                return ['sessionId' => "created-session-{$createdSessionNumber}"];
+            });
+        $rpc->shouldReceive('request')
+            ->with('session.resume', Mockery::on(function (array $params) use (&$resumePayloads): bool {
+                $resumePayloads[] = $params;
+
+                return true;
+            }))
+            ->times(4)
+            ->andReturnUsing(fn (string $method, array $params): array => ['sessionId' => $params['sessionId']]);
+
+        $client = new Client;
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $client->createSession(new SessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            sandboxConfig: new SandboxConfig(enabled: true, sandboxMcpServers: false),
+        ));
+        $client->createSession([
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+            'sandboxConfig' => ['enabled' => true, 'allowBypass' => false],
+            'sandbox' => ['enabled' => false],
+        ]);
+        $client->createSession(new SessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            sandbox: new SandboxConfig(enabled: true, allowBypass: true),
+        ));
+        $client->createSession(new SessionConfig(onPermissionRequest: PermissionHandler::approveAll()));
+
+        $client->resumeSession('resumed-session-1', new ResumeSessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            sandboxConfig: new SandboxConfig(enabled: true, sandboxMcpServers: false),
+        ));
+        $client->resumeSession('resumed-session-2', [
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+            'sandbox' => ['enabled' => false, 'sandboxMcpServers' => false],
+        ]);
+        $client->resumeSession('resumed-session-3', [
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+            'sandboxConfig' => ['enabled' => true, 'allowBypass' => false],
+            'sandbox' => ['enabled' => false],
+        ]);
+        $client->resumeSession('resumed-session-4', new ResumeSessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+        ));
+
+        expect($createPayloads[0]['sandboxConfig'])->toBe(['enabled' => true, 'sandboxMcpServers' => false])
+            ->and($createPayloads[1]['sandboxConfig'])->toBe(['enabled' => true, 'allowBypass' => false])
+            ->and($createPayloads[2]['sandboxConfig'])->toBe(['enabled' => true, 'allowBypass' => true])
+            ->and($createPayloads[3])->not->toHaveKey('sandboxConfig')
+            ->and($createPayloads[2])->not->toHaveKey('sandbox')
+            ->and($resumePayloads[0]['sandboxConfig'])->toBe(['enabled' => true, 'sandboxMcpServers' => false])
+            ->and($resumePayloads[1]['sandboxConfig'])->toBe(['enabled' => false, 'sandboxMcpServers' => false])
+            ->and($resumePayloads[2]['sandboxConfig'])->toBe(['enabled' => true, 'allowBypass' => false])
+            ->and($resumePayloads[3])->not->toHaveKey('sandboxConfig')
+            ->and($resumePayloads[1])->not->toHaveKey('sandbox');
     });
 
     it('dispatches GitHub telemetry notifications as typed values', function () {

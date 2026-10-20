@@ -138,10 +138,24 @@ describe('SessionConfig', function () {
             'url' => 'https://example.test/mcp',
             'tools' => ['search'],
         ])
-            ->and($config->toArray()['sandbox']['userPolicy']['network']['allowedHosts'])
+            ->and($config->toArray()['sandboxConfig']['userPolicy']['network']['allowedHosts'])
             ->toBe(['docs.example.test'])
-            ->and($config->toArray()['sandbox']['userPolicy']['network']['blockedHosts'])
+            ->and($config->toArray()['sandboxConfig']['userPolicy']['network']['blockedHosts'])
             ->toBe(['unsafe.example.test']);
+    });
+
+    it('prefers sandboxConfig to the legacy sandbox alias', function () {
+        $sandboxConfig = ['enabled' => true, 'sandboxMcpServers' => false];
+        $legacySandbox = ['enabled' => false];
+        $config = SessionConfig::fromArray([
+            'sandboxConfig' => $sandboxConfig,
+            'sandbox' => $legacySandbox,
+        ]);
+
+        expect($config->sandboxConfig)->toBeInstanceOf(SandboxConfig::class)
+            ->and($config->sandbox)->toBeInstanceOf(SandboxConfig::class)
+            ->and($config->toArray()['sandboxConfig'])->toBe($sandboxConfig)
+            ->and($config->toArray())->not->toHaveKey('sandbox');
     });
 
     it('can be created from array with all fields', function () {

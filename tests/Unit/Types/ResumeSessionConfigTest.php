@@ -113,15 +113,27 @@ describe('ResumeSessionConfig', function () {
     });
 
     it('serializes sandbox configuration when resuming', function () {
+        $sandboxConfig = [
+            'enabled' => true,
+            'sandboxMcpServers' => false,
+        ];
+        $legacySandbox = [
+            'enabled' => false,
+        ];
         $config = ResumeSessionConfig::fromArray([
+            'sandboxConfig' => $sandboxConfig,
+            'sandbox' => $legacySandbox,
+        ]);
+        $legacyConfig = ResumeSessionConfig::fromArray([
             'sandbox' => ['enabled' => true, 'sandboxMcpServers' => false],
         ]);
 
-        expect($config->sandbox)->toBeInstanceOf(SandboxConfig::class)
-            ->and($config->toArray()['sandbox'])->toBe([
-                'enabled' => true,
-                'sandboxMcpServers' => false,
-            ]);
+        expect($config->sandboxConfig)->toBeInstanceOf(SandboxConfig::class)
+            ->and($config->sandbox)->toBeInstanceOf(SandboxConfig::class)
+            ->and($config->toArray()['sandboxConfig'])->toBe($sandboxConfig)
+            ->and($config->toArray())->not->toHaveKey('sandbox')
+            ->and($legacyConfig->sandbox)->toBeInstanceOf(SandboxConfig::class)
+            ->and($legacyConfig->toArray()['sandboxConfig'])->toBe($sandboxConfig);
     });
 
     it('can be created from array with all fields', function () {
