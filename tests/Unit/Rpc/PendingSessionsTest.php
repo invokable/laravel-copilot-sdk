@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\EventsReadDirection;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerSessions;
+use Revolution\Copilot\Types\Rpc\ConnectRemoteSessionParams;
 use Revolution\Copilot\Types\Rpc\EventsReadResult;
 use Revolution\Copilot\Types\Rpc\InstalledPlugin;
 use Revolution\Copilot\Types\Rpc\LocalSessionContext;
@@ -14,6 +15,7 @@ use Revolution\Copilot\Types\Rpc\RemoteControlConfigExistingMcSession;
 use Revolution\Copilot\Types\Rpc\RemoteControlStatusResult;
 use Revolution\Copilot\Types\Rpc\RemoteControlStopResult;
 use Revolution\Copilot\Types\Rpc\RemoteControlTransferResult;
+use Revolution\Copilot\Types\Rpc\RemoteSessionConnectionResult;
 use Revolution\Copilot\Types\Rpc\SessionBulkDeleteResult;
 use Revolution\Copilot\Types\Rpc\SessionList;
 use Revolution\Copilot\Types\Rpc\SessionLoadDeferredRepoHooksResult;
@@ -46,6 +48,55 @@ use Revolution\Copilot\Types\Rpc\SessionsStartRemoteControlRequest;
 use Revolution\Copilot\Types\SessionListFilter;
 
 describe('PendingServerSessions', function () {
+    it('connects to a remote session with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.connect', ['sessionId' => 'remote-session'])
+            ->andReturn([
+                'metadata' => [
+                    'kind' => 'coding-agent',
+                    'modifiedTime' => '2024-01-01T00:00:00Z',
+                    'repository' => ['branch' => 'main', 'name' => 'repo', 'owner' => 'org'],
+                    'sessionId' => 'remote-session',
+                    'startTime' => '2024-01-01T00:00:00Z',
+                ],
+                'sessionId' => 'sdk-session',
+            ]);
+
+        $result = (new PendingServerSessions($client))->connect(
+            new ConnectRemoteSessionParams(sessionId: 'remote-session'),
+        );
+
+        expect($result)->toBeInstanceOf(RemoteSessionConnectionResult::class)
+            ->and($result->sessionId)->toBe('sdk-session')
+            ->and($result->metadata->sessionId)->toBe('remote-session')
+            ->and($result->metadata->repository->name)->toBe('repo');
+    });
+
+    it('connects to a remote session with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.connect', ['sessionId' => 'remote-session'])
+            ->andReturn([
+                'metadata' => [
+                    'kind' => 'coding-agent',
+                    'modifiedTime' => '2024-01-01T00:00:00Z',
+                    'repository' => ['branch' => 'main', 'name' => 'repo', 'owner' => 'org'],
+                    'sessionId' => 'remote-session',
+                    'startTime' => '2024-01-01T00:00:00Z',
+                ],
+                'sessionId' => 'sdk-session',
+            ]);
+
+        $result = (new PendingServerSessions($client))->connect(['sessionId' => 'remote-session']);
+
+        expect($result)->toBeInstanceOf(RemoteSessionConnectionResult::class)
+            ->and($result->sessionId)->toBe('sdk-session')
+            ->and($result->metadata->sessionId)->toBe('remote-session');
+    });
+
     it('calls sessions.fork with typed params', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

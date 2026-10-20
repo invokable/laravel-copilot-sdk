@@ -63,6 +63,26 @@ Copilot::start(function (CopilotSession $session): void {
 });
 ```
 
+## 既存のリモートセッションにサーバースコープで接続
+
+CLIサーバーから既存のリモートセッションに接続する場合は、`$client->rpc()->sessions()->connect()`を使います。接続先のリモート`sessionId`を渡すと、SDK側の`sessionId`とリモートセッションのmetadataを含む結果が返ります。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\ConnectRemoteSessionParams;
+
+$client = Copilot::useTcp(url: 'tcp://127.0.0.1:12345')->client();
+
+$connected = $client->rpc()->sessions()->connect(
+    new ConnectRemoteSessionParams(sessionId: 'remote-session-id'),
+);
+
+echo $connected->sessionId;
+// $connected->metadata - ConnectedRemoteSessionMetadata オブジェクト
+```
+
+これはセッションスコープの`$session->rpc()->remote()->connectRemoteSession()`とは別のRPCです。後者は既存セッションに紐づく`session.remote.connectRemoteSession`を呼び出します。
+
 ## ランタイム全体の Remote Control（TCP モード）
 
 `remote: true`はCLIプロセスの起動時に使う設定で、stdioモードに限られます。TCPモードで既存のCLIサーバーに接続する場合、この設定は無視されます。
