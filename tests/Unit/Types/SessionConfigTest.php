@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Enums\WorkingDirectoryTrust;
 use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\MemoryConfiguration;
@@ -19,6 +20,22 @@ use Revolution\Copilot\Types\SessionHooks;
 use Revolution\Copilot\Types\SystemMessageConfig;
 
 describe('SessionConfig', function () {
+    it('serializes working directory trust scopes and omits an unset scope', function () {
+        foreach ([
+            [WorkingDirectoryTrust::Session, 'session'],
+            [WorkingDirectoryTrust::User, 'user'],
+        ] as [$scope, $value]) {
+            $config = new SessionConfig(trustWorkingDirectory: $scope);
+            $fromArray = SessionConfig::fromArray(['trustWorkingDirectory' => $value]);
+
+            expect($config->toArray())->toHaveKey('trustWorkingDirectory', $value);
+            expect($fromArray->trustWorkingDirectory)->toBe($scope);
+            expect($fromArray->toArray())->toHaveKey('trustWorkingDirectory', $value);
+        }
+
+        expect((new SessionConfig)->toArray())->not->toHaveKey('trustWorkingDirectory');
+    });
+
     it('round-trips a session name', function () {
         $config = SessionConfig::fromArray(['name' => 'issue-triage']);
 

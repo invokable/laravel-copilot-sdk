@@ -24,6 +24,7 @@ use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Enums\CopilotClientMode;
 use Revolution\Copilot\Enums\RuntimeConnectionKind;
 use Revolution\Copilot\Enums\TaskKind;
+use Revolution\Copilot\Enums\WorkingDirectoryTrust;
 use Revolution\Copilot\Events\Client\ClientStarted;
 use Revolution\Copilot\Events\Client\PingPong;
 use Revolution\Copilot\Events\Session\CreateSession;
@@ -724,6 +725,9 @@ class Client implements CopilotClient
                 'requestAutoModeSwitch' => isset($config['onAutoModeSwitchRequest']),
                 'hooks' => $hasHooks,
                 'workingDirectory' => $config['workingDirectory'] ?? null,
+                'trustWorkingDirectory' => ($config['trustWorkingDirectory'] ?? null) instanceof WorkingDirectoryTrust
+                    ? $config['trustWorkingDirectory']->value
+                    : ($config['trustWorkingDirectory'] ?? null),
                 'additionalDirectories' => $config['additionalDirectories'] ?? null,
                 'streaming' => $config['streaming'] ?? null,
                 'includeSubAgentStreamingEvents' => $config['includeSubAgentStreamingEvents'] ?? null,

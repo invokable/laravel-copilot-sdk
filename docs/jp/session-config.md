@@ -25,6 +25,7 @@ use Revolution\Copilot\Support\CanvasError;
 use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\UIAutoModeSwitchResponse;
+use Revolution\Copilot\Enums\WorkingDirectoryTrust;
 
 $config = new SessionConfig(
     // 使用するモデルの指定
@@ -197,6 +198,9 @@ $config = new SessionConfig(
     // ワーキングディレクトリ
     workingDirectory: '',
 
+    // ディレクトリの信頼範囲。user は後続セッションにも永続する
+    trustWorkingDirectory: WorkingDirectoryTrust::Session,
+
     // ストリーミングを有効化
     streaming: true,
 
@@ -341,6 +345,8 @@ $config = new SessionConfig(
 
 $response = Copilot::run('...', config: $config);
 ```
+
+`trustWorkingDirectory`には`WorkingDirectoryTrust::Session`または`WorkingDirectoryTrust::User`を指定できます。`Session`は現在のセッションだけ、`User`は後続セッションにも適用される永続的な信頼設定です。省略時は信頼状態を変更しません。この設定は新規セッション作成時のみ利用でき、再開時の`ResumeSessionConfig`には指定できません。
 
 `skillDirectories`、`agentDirectories`、`hookDirectories`、`instructionDirectories` は、それぞれスキル・カスタムエージェント・ファイルフック・カスタム指示の**検出専用ルート**です。これらを指定しても、エージェントに一般的なファイルアクセス権限は付与されません。通常のファイルアクセス先を追加する場合は `additionalDirectories` を使います。
 
