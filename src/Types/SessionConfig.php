@@ -12,6 +12,7 @@ use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Enums\Verbosity;
+use Revolution\Copilot\Enums\WorkingDirectoryTrust;
 use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\Rpc\ManagedMcpServerConfig;
@@ -105,6 +106,7 @@ readonly class SessionConfig implements Arrayable
      * @param  SessionHooks|array|null  $hooks  Hook handlers for intercepting session lifecycle events.
      *                                          When provided, enables hooks callback allowing custom logic at various points.
      * @param  ?string  $workingDirectory  Working directory for the session. Tool operations will be relative to this directory.
+     * @param  WorkingDirectoryTrust|string|null  $trustWorkingDirectory  Trust scope for the working directory. The "user" scope persists for later sessions; omission leaves trust unchanged.
      * @param  ?array  $additionalDirectories  Additional directories the agent may access beyond the working directory.
      *                                         Relative paths are resolved against the session's working directory.
      *                                         Re-supply these directories when resuming a session.
@@ -340,6 +342,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $hookDirectories = null,
         public ?Closure $createSessionFsProvider = null,
         public ?bool $interactiveUser = null,
+        public WorkingDirectoryTrust|string|null $trustWorkingDirectory = null,
     ) {}
 
     /**
@@ -550,6 +553,11 @@ readonly class SessionConfig implements Arrayable
             sessionFsProvider: $data['sessionFsProvider'] ?? null,
             name: $data['name'] ?? null,
             interactiveUser: $data['interactiveUser'] ?? null,
+            trustWorkingDirectory: isset($data['trustWorkingDirectory'])
+                ? (is_string($data['trustWorkingDirectory'])
+                    ? (WorkingDirectoryTrust::tryFrom($data['trustWorkingDirectory']) ?? $data['trustWorkingDirectory'])
+                    : $data['trustWorkingDirectory'])
+                : null,
         );
     }
 
@@ -677,6 +685,9 @@ readonly class SessionConfig implements Arrayable
             'gitHubToken' => $this->gitHubToken,
             'remoteSession' => $remoteSession,
             'cloud' => $cloud,
+            'trustWorkingDirectory' => $this->trustWorkingDirectory instanceof WorkingDirectoryTrust
+                ? $this->trustWorkingDirectory->value
+                : $this->trustWorkingDirectory,
             'canvases' => $this->canvases === null
                 ? null
                 : array_map(

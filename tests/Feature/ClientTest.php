@@ -7,6 +7,7 @@ use Revolution\Copilot\Client;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Enums\InstallationDecision;
+use Revolution\Copilot\Enums\WorkingDirectoryTrust;
 use Revolution\Copilot\Events\Session\ResumeSession;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Facades\Copilot;
@@ -832,6 +833,52 @@ describe('Client', function () {
             onPermissionRequest: PermissionHandler::approveAll(),
             enableGitHubTelemetryForwarding: false,
         ));
+    });
+
+    it('forwards working directory trust scopes and omits the scope by default', function () {
+        $payloads = [];
+        $sessionNumber = 0;
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.create', Mockery::on(function (array $params) use (&$payloads): bool {
+                $payloads[] = $params;
+
+                return true;
+            }))
+            ->times(4)
+            ->andReturnUsing(function () use (&$sessionNumber): array {
+                $sessionNumber++;
+
+                return ['sessionId' => "trust-session-{$sessionNumber}"];
+            });
+
+        $client = new Client;
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        foreach ([
+            new SessionConfig(
+                onPermissionRequest: PermissionHandler::approveAll(),
+                trustWorkingDirectory: WorkingDirectoryTrust::Session,
+            ),
+            new SessionConfig(
+                onPermissionRequest: PermissionHandler::approveAll(),
+                trustWorkingDirectory: WorkingDirectoryTrust::User,
+            ),
+            [
+                'onPermissionRequest' => PermissionHandler::approveAll(),
+                'trustWorkingDirectory' => WorkingDirectoryTrust::User,
+            ],
+            new SessionConfig(onPermissionRequest: PermissionHandler::approveAll()),
+        ] as $config) {
+            $client->createSession($config);
+        }
+
+        expect($payloads[0])->toHaveKey('trustWorkingDirectory', 'session');
+        expect($payloads[1])->toHaveKey('trustWorkingDirectory', 'user');
+        expect($payloads[2])->toHaveKey('trustWorkingDirectory', 'user');
+        expect($payloads[3])->not->toHaveKey('trustWorkingDirectory');
     });
 
     it('dispatches GitHub telemetry notifications as typed values', function () {
