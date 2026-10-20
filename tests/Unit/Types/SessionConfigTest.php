@@ -638,18 +638,10 @@ describe('SessionConfig', function () {
         expect($config->enableCitations)->toBeTrue();
     });
 
-    it('supports the GitHub cache store option', function () {
-        $default = new SessionConfig;
-        $config = new SessionConfig(enableGitHubCacheStore: true);
-        $fromArray = SessionConfig::fromArray(['enableGitHubCacheStore' => true]);
+    it('ignores the removed GitHub cache store setting', function () {
+        $config = SessionConfig::fromArray(['enableGitHubCacheStore' => true]);
 
-        expect($default->enableGitHubCacheStore)->toBeNull()
-            ->and($default->toArray())->not->toHaveKey('enableGitHubCacheStore')
-            ->and($config->toArray()['enableGitHubCacheStore'])->toBeTrue()
-            ->and($fromArray->enableGitHubCacheStore)->toBeTrue()
-            ->and($fromArray->toArray()['enableGitHubCacheStore'])->toBeTrue()
-            ->and(SessionConfig::fromArray(['enableGitHubCacheStore' => false])->toArray())
-            ->toHaveKey('enableGitHubCacheStore', false);
+        expect($config->toArray())->not->toHaveKey('enableGitHubCacheStore');
     });
 
     it('accepts excludedBuiltinAgents parameter', function () {

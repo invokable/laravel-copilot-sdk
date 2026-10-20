@@ -450,7 +450,7 @@ $response = Copilot::run(
 );
 ```
 
-empty モードではセッションテレメトリー、永続 MCP OAuth token storage、embedding retrieval/cache、instruction discovery、file hooks、host git operations、session store、GitHub cache store、skills、memory、experimental mode が安全側の既定値になります。明示したセッション設定はこれらの既定値より優先されます。`enableGitHubCacheStore: true`を指定すると読み取り専用のGitHub cache storeを要求しますが、`github_sql`ツールが登録されるのはCLIの`GITHUB_CACHE_STORE` feature flagが有効な場合のみです。`systemMessage`の`replace`はそのまま利用でき、それ以外のモードでは`environment_context`セクションを除去します。CLI プロセスでは`COPILOT_DISABLE_KEYTAR=1`を設定します。
+empty モードではセッションテレメトリー、永続 MCP OAuth token storage、embedding retrieval/cache、instruction discovery、file hooks、host git operations、session store、skills、memory、experimental mode が安全側の既定値になります。明示したセッション設定はこれらの既定値より優先されます。snapshot 1.0.101-0 では GitHub cache は empty モードの既定値でも SDK のセッション設定でもありません。セッション作成・再開のリクエストから `enableGitHubCacheStore` は削除されました。別の `connect` ハンドシェイクでは引き続き `supportedTaskKinds` を通知し、設定時にはテレメトリー、クライアント情報、接続トークンも送信しますが、GitHub cache の有効化設定は送信しません。配列設定に残った旧キーは無視されるため、型付き `SessionConfig` / `ResumeSessionConfig` では指定できません。この動作は stdio と TCP の両方で同じです。アップストリームでは内部の `SessionCapability` 列挙型から `github-cache-store` が削除され、`session.options.update` の `sessionCapabilities` リストでも指定できなくなりました。本 SDK には対応する列挙型や、そのリストを送る create/resume・post-create update の項目はありません。別の `SessionCapabilities` 型は CLI が報告する UI の elicitation/canvas 対応を表し、この列挙型やリストとは別のものです。`systemMessage`の`replace`はそのまま利用でき、それ以外のモードでは`environment_context`セクションを除去します。CLI プロセスでは`COPILOT_DISABLE_KEYTAR=1`を設定します。
 
 `AskUserVariant::ELICITATION`は`onElicitationRequest`ハンドラーと組み合わせて使用します。デフォルトのvariantは引き続き`legacy`です。
 

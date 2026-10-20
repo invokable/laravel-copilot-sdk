@@ -40,16 +40,10 @@ describe('ResumeSessionConfig', function () {
             ->and($explicitFalse->toArray())->toHaveKey('interactiveUser', false);
     });
 
-    it('supports the GitHub cache store option', function () {
-        $default = new ResumeSessionConfig;
-        $fromArray = ResumeSessionConfig::fromArray(['enableGitHubCacheStore' => true]);
-        $explicitFalse = ResumeSessionConfig::fromArray(['enableGitHubCacheStore' => false]);
+    it('ignores the removed GitHub cache store setting', function () {
+        $config = ResumeSessionConfig::fromArray(['enableGitHubCacheStore' => true]);
 
-        expect($default->enableGitHubCacheStore)->toBeNull()
-            ->and($default->toArray())->not->toHaveKey('enableGitHubCacheStore')
-            ->and($fromArray->enableGitHubCacheStore)->toBeTrue()
-            ->and($fromArray->toArray())->toHaveKey('enableGitHubCacheStore', true)
-            ->and($explicitFalse->toArray())->toHaveKey('enableGitHubCacheStore', false);
+        expect($config->toArray())->not->toHaveKey('enableGitHubCacheStore');
     });
 
     it('serializes ToolSet tool filters', function () {

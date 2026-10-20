@@ -106,7 +106,6 @@ describe('empty client mode', function () {
             'enableFileHooks' => false,
             'enableHostGitOperations' => false,
             'enableSessionStore' => false,
-            'enableGitHubCacheStore' => false,
             'enableSkills' => false,
             'memory' => ['enabled' => false],
             'customAgentsLocalOnly' => true,
@@ -143,7 +142,6 @@ describe('empty client mode', function () {
             'enableFileHooks' => true,
             'enableHostGitOperations' => true,
             'enableSessionStore' => true,
-            'enableGitHubCacheStore' => true,
             'enableSkills' => true,
             'memory' => ['enabled' => true],
             'customAgentsLocalOnly' => false,
@@ -164,7 +162,8 @@ describe('empty client mode', function () {
             'includedBuiltinSkills' => ['review'],
         ];
         $client = ($this->createEmptyModeClient)(
-            fn (array $params) => matchesEmptyModePayload($params, $expectedPayload),
+            fn (array $params) => matchesEmptyModePayload($params, $expectedPayload)
+                && ! array_key_exists('enableGitHubCacheStore', $params),
             $patch,
         );
 
@@ -179,6 +178,7 @@ describe('empty client mode', function () {
             'enableHostGitOperations' => true,
             'enableSessionStore' => true,
             'enableGitHubCacheStore' => true,
+            'sessionCapabilities' => ['github-cache-store'],
             'enableSkills' => true,
             'memory' => ['enabled' => true],
             'customAgentsLocalOnly' => false,
@@ -190,6 +190,34 @@ describe('empty client mode', function () {
             'includedBuiltinSkills' => ['review'],
             'onPermissionRequest' => PermissionHandler::approveAll(),
         ]);
+    });
+
+    it('does not send the removed session capability list in create or option updates', function () {
+        $expectedPayload = [
+            'availableTools' => ['builtin:ask_user'],
+        ];
+        $patch = [
+            'sessionId' => 'empty-mode-session',
+            'skipCustomInstructions' => true,
+            'customAgentsLocalOnly' => true,
+            'coauthorEnabled' => false,
+            'manageScheduleEnabled' => false,
+            'installedPlugins' => [],
+            'includedBuiltinSkills' => [],
+        ];
+        $client = ($this->createEmptyModeClient)(
+            fn (array $params) => matchesEmptyModePayload($params, $expectedPayload)
+                && ! array_key_exists('sessionCapabilities', $params),
+            $patch,
+        );
+
+        $session = $client->createSession([
+            'availableTools' => ['builtin:ask_user'],
+            'sessionCapabilities' => ['github-cache-store'],
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+        ]);
+
+        expect($session)->toBeInstanceOf(Session::class);
     });
 
     it('applies the same defaults and post-create patch when resuming sessions', function () {
@@ -208,7 +236,6 @@ describe('empty client mode', function () {
             'enableFileHooks' => false,
             'enableHostGitOperations' => false,
             'enableSessionStore' => false,
-            'enableGitHubCacheStore' => false,
             'enableSkills' => false,
             'memory' => ['enabled' => false],
             'customAgentsLocalOnly' => true,
@@ -240,10 +267,9 @@ describe('empty client mode', function () {
         expect($session)->toBeInstanceOf(Session::class);
     });
 
-    it('forwards explicit GitHub cache store configuration when resuming sessions', function () {
+    it('does not send the removed GitHub cache store setting when resuming sessions', function () {
         $expectedPayload = [
             'availableTools' => ['builtin:ask_user'],
-            'enableGitHubCacheStore' => true,
         ];
         $patch = [
             'sessionId' => 'empty-mode-session',
@@ -255,18 +281,19 @@ describe('empty client mode', function () {
             'includedBuiltinSkills' => [],
         ];
         $client = ($this->createEmptyModeClient)(
-            fn (array $params) => matchesEmptyModePayload($params, $expectedPayload),
+            fn (array $params) => matchesEmptyModePayload($params, $expectedPayload)
+                && ! array_key_exists('enableGitHubCacheStore', $params),
             $patch,
             'session.resume',
         );
 
         $session = $client->resumeSession(
             'empty-mode-session',
-            new ResumeSessionConfig(
-                availableTools: (new ToolSet)->addBuiltIn('ask_user'),
-                enableGitHubCacheStore: true,
-                onPermissionRequest: PermissionHandler::approveAll(),
-            ),
+            [
+                'availableTools' => ['builtin:ask_user'],
+                'enableGitHubCacheStore' => true,
+                'onPermissionRequest' => PermissionHandler::approveAll(),
+            ],
         );
 
         expect($session)->toBeInstanceOf(Session::class);
