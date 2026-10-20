@@ -123,6 +123,64 @@ describe('ProviderConfig', function () {
             ->and($config->toArray())->not->toHaveKey('bearerTokenProvider');
     });
 
+    it('round-trips apiKeyCommand and omits it when absent', function () {
+        $command = 'credential-helper --profile sdk';
+        $config = ProviderConfig::fromArray([
+            'baseUrl' => 'https://models.example.test',
+            'apiKeyCommand' => $command,
+        ]);
+
+        expect($config->apiKeyCommand)->toBe($command)
+            ->and($config->toArray())->toBe([
+                'baseUrl' => 'https://models.example.test',
+                'apiKeyCommand' => $command,
+            ])
+            ->and(ProviderConfig::fromArray($config->toArray())->apiKeyCommand)->toBe($command)
+            ->and((new ProviderConfig(baseUrl: 'https://models.example.test'))->toArray())
+            ->not->toHaveKey('apiKeyCommand');
+    });
+
+    it('keeps apiKeyCommand alongside other credentials and the bearer token callback', function () {
+        $config = new ProviderConfig(
+            baseUrl: 'https://models.example.test',
+            apiKey: 'static-key',
+            bearerTokenProvider: fn (): string => 'token',
+            apiKeyCommand: 'credential-helper',
+        );
+
+        expect($config->toArray())->toMatchArray([
+            'apiKey' => 'static-key',
+            'apiKeyCommand' => 'credential-helper',
+        ]);
+    });
+
+    it('rejects empty or blank apiKeyCommand strings', function (string $invalid) {
+        $message = 'provider.apiKeyCommand must be a non-empty string.';
+
+        expect(fn () => new ProviderConfig(baseUrl: 'https://models.example.test', apiKeyCommand: $invalid))
+            ->toThrow(InvalidArgumentException::class, $message)
+            ->and(fn () => ProviderConfig::fromArray(['baseUrl' => 'https://models.example.test', 'apiKeyCommand' => $invalid]))
+            ->toThrow(InvalidArgumentException::class, $message);
+    })->with(['empty' => [''], 'blank' => ["  \t "]]);
+
+    it('rejects non-string apiKeyCommand values from arrays', function (mixed $invalid) {
+        expect(fn () => ProviderConfig::fromArray(['baseUrl' => 'https://models.example.test', 'apiKeyCommand' => $invalid]))
+            ->toThrow(InvalidArgumentException::class, 'provider.apiKeyCommand must be a non-empty string.');
+    })->with(['array' => [['credential-helper']], 'int' => [123], 'bool' => [false]]);
+
+    it('uses a stable error message that never includes the command', function () {
+        $secret = 'echo super-secret-token';
+
+        expect(fn () => ProviderConfig::fromArray(['baseUrl' => 'x', 'apiKeyCommand' => ['not-a-string', $secret]]))
+            ->toThrow(InvalidArgumentException::class, 'provider.apiKeyCommand must be a non-empty string.');
+
+        try {
+            ProviderConfig::fromArray(['baseUrl' => 'x', 'apiKeyCommand' => '   ']);
+        } catch (InvalidArgumentException $e) {
+            expect($e->getMessage())->toBe('provider.apiKeyCommand must be a non-empty string.');
+        }
+    });
+
     it('implements Arrayable interface', function () {
         $config = new ProviderConfig(baseUrl: 'https://example.com');
 

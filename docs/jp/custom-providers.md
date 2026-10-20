@@ -12,6 +12,7 @@
 | `type`           | `string\|null` | プロバイダータイプ。`openai`（デフォルト）、`azure`、`anthropic`                |
 | `wireApi`        | `string\|null` | APIフォーマット（openai/azureのみ）。`completions`（デフォルト）または`responses` |
 | `apiKey`         | `string\|null` | APIキー。Ollamaなどのローカルプロバイダーでは不要                                |
+| `apiKeyCommand`  | `string\|null` | 各プロバイダーリクエストの前にCopilotランタイムが実行し、最新のAPIキーを取得するコマンド。コマンド失敗時はモデルリクエスト前にターンが失敗します。`bearerTokenProvider`を指定した場合は実行されません |
 | `bearerToken`    | `string\|null` | Bearer Token認証用。`apiKey`より優先される                              |
 | `bearerTokenProvider` | `callable\|null` | 各プロバイダーリクエストでBearerトークンを取得するコールバック。シリアライズされません |
 | `azure`          | `array\|null`  | Azure固有のオプション。`['apiVersion' => '2024-10-21']`など             |
@@ -129,6 +130,33 @@ $response = Copilot::run(
 ```
 
 トークンの取得・キャッシュ・更新はコールバック側で行ってください。ランタイムは各プロバイダーリクエストでコールバックを呼び出します。
+
+## APIキーコマンド
+
+ローテーションされるAPIキーを使う場合は、`apiKeyCommand`で各プロバイダーリクエストの前にコマンドを実行して最新のキーを取得できます。コマンドはこのパッケージではなくCopilotランタイムが実行します。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\ProviderConfig;
+use Revolution\Copilot\Types\SessionConfig;
+
+$response = Copilot::run(
+    prompt: 'Hello!',
+    config: new SessionConfig(
+        model: 'gpt-4',
+        provider: new ProviderConfig(
+            baseUrl: 'https://my-api.example.com/v1',
+            apiKeyCommand: config('services.my_api.key_command'),
+        ),
+    ),
+);
+```
+
+- `apiKeyCommand`は`null`または空白でない文字列である必要があります。空文字列・空白のみはリクエスト送信前に`InvalidArgumentException`、配列形式で文字列以外を指定した場合も`InvalidArgumentException`になります。`ProviderConfig`コンストラクターに文字列以外を渡すと、PHPの型チェックにより`TypeError`が発生します。例外メッセージにコマンドは含まれません。
+- コマンドの失敗はランタイム側でターンの失敗として扱われ、モデルへのリクエストは送信されません。
+- `bearerTokenProvider`を指定するとそちらが優先され、`apiKeyCommand`は実行されません。
+- コマンド文字列は資格情報と同様に機密として扱い、ログや例外メッセージに出力しないでください。このパッケージもコマンドやその出力をログに記録しません。
+- `apiKeyCommand`は`ProviderConfig`のみで利用できます（`NamedProviderConfig`では未対応）。
 
 ## 重要な注意点
 
