@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\ConnectRemoteSessionParams;
 use Revolution\Copilot\Types\Rpc\EventsReadResult;
 use Revolution\Copilot\Types\Rpc\RemoteControlStatusResult;
 use Revolution\Copilot\Types\Rpc\RemoteControlStopResult;
 use Revolution\Copilot\Types\Rpc\RemoteControlTransferResult;
+use Revolution\Copilot\Types\Rpc\RemoteSessionConnectionResult;
 use Revolution\Copilot\Types\Rpc\SessionBulkDeleteResult;
 use Revolution\Copilot\Types\Rpc\SessionList;
 use Revolution\Copilot\Types\Rpc\SessionLoadDeferredRepoHooksResult;
@@ -348,6 +350,22 @@ class PendingServerSessions
             : SessionsUpdateWorkspaceFieldsRequest::fromArray($params))->toArray();
 
         return $this->client->request('sessions.updateWorkspaceFields', $paramsArray);
+    }
+
+    /**
+     * Connect to an existing remote session from the server scope.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function connect(ConnectRemoteSessionParams|array $params): RemoteSessionConnectionResult
+    {
+        $paramsArray = ($params instanceof ConnectRemoteSessionParams
+            ? $params
+            : ConnectRemoteSessionParams::fromArray($params))->toArray();
+
+        return RemoteSessionConnectionResult::fromArray(
+            $this->client->request('sessions.connect', $paramsArray),
+        );
     }
 
     /**
