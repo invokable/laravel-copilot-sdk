@@ -75,6 +75,22 @@ $session = Copilot::client()->createSession(new SessionConfig(
 
 `gitHubToken`と`gitHubTokenProvider`は同時に指定できません。
 
+## ホスト生成シークレットのマスキング
+
+MCP OAuthなどでホスト側が動的に取得したトークンを、Copilot CLIのredaction filterに登録できます。登録した値はsession logsやexportsでマスクされます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+$accessToken = $oauthProvider->getAccessToken();
+
+Copilot::client()->rpc()->secrets()->addFilterValues([
+    'values' => [$accessToken],
+]);
+```
+
+これは`onMcpAuthRequest`によるトークン取得・受け渡しとは別の操作です。トークンを取得した後に明示的に呼び出してください。SDKは値を永続化したり、このRPCのために別途ログ出力したりしません。
+
 ## 環境変数
 
 環境変数でトークンを渡す場合は、CLIが自動的に検出します。優先順位は上から順です。
