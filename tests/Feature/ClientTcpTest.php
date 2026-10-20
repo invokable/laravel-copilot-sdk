@@ -9,6 +9,7 @@ use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Protocol;
+use Revolution\Copilot\Session;
 use Revolution\Copilot\Transport\TcpTransport;
 use Revolution\Copilot\Types\RuntimeConnection;
 
@@ -215,6 +216,47 @@ describe('Client TCP Mode', function () {
         $client->start();
 
         expect($client->getState())->toBe(ConnectionState::CONNECTED);
+    });
+
+    it('does not send the removed GitHub cache setting over TCP for create and resume', function () {
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn (array $params) => ! array_key_exists('enableGitHubCacheStore', $params)))
+            ->once()
+            ->andReturn(['sessionId' => 'created-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.resume', Mockery::on(fn (array $params) => ! array_key_exists('enableGitHubCacheStore', $params)))
+            ->once()
+            ->andReturn(['sessionId' => 'resumed-session']);
+
+        $session = Mockery::mock(Session::class);
+        $session->shouldReceive('registerTools')->twice()->with([]);
+        $session->shouldReceive('registerCommands')->twice()->with([]);
+        $session->shouldReceive('registerPermissionHandler')->twice();
+        $session->shouldReceive('setWorkspacePath')->twice()->with(null);
+        $session->shouldReceive('setCapabilities')->twice()->with(null);
+        $session->shouldReceive('registerSkillProvider')->twice()->with(null);
+        $session->shouldReceive('registerSessionFsProvider')->twice()->with(null);
+        $this->app->bind(Session::class, fn () => $session);
+
+        $client = new Client(['cli_url' => 'tcp://127.0.0.1:12345']);
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $permissionHandler = static fn () => ['kind' => 'approve-once'];
+        $created = $client->createSession([
+            'onPermissionRequest' => $permissionHandler,
+            'enableGitHubCacheStore' => true,
+        ]);
+        $resumed = $client->resumeSession('resumed-session', [
+            'onPermissionRequest' => $permissionHandler,
+            'enableGitHubCacheStore' => true,
+        ]);
+
+        expect($client->isTcpMode())->toBeTrue()
+            ->and($created)->toBe($session)
+            ->and($resumed)->toBe($session);
     });
 
     it('throws when github_token is used with cli_url', function () {

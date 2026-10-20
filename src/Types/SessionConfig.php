@@ -6,7 +6,6 @@ namespace Revolution\Copilot\Types;
 
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Arr;
 use Revolution\Copilot\Contracts\SessionFsProvider;
 use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Enums\AskUserVariant;
@@ -193,7 +192,6 @@ readonly class SessionConfig implements Arrayable
      * @param  ?bool  $enableFileHooks  When true, enables repository-origin file hooks. Does not control explicit `hookDirectories` or callback hooks.
      * @param  ?bool  $enableHostGitOperations  When true, enables git operations on the host filesystem.
      * @param  ?bool  $enableSessionStore  When true, enables the cross-session store for search and retrieval.
-     * @param  ?bool  $enableGitHubCacheStore  When true, requests the read-only GitHub cache store. The CLI registers `github_sql` only when its `GITHUB_CACHE_STORE` feature flag is enabled.
      * @param  ?bool  $enableSkills  When true, enables skill loading.
      * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of `prompt`.
      * @param  ?array  $excludedBuiltinAgents  Names of built-in agents to exclude from the session. Excluded built-in
@@ -307,7 +305,6 @@ readonly class SessionConfig implements Arrayable
         public ?bool $enableFileHooks = null,
         public ?bool $enableHostGitOperations = null,
         public ?bool $enableSessionStore = null,
-        public ?bool $enableGitHubCacheStore = null,
         public ?bool $enableSkills = null,
         public ?string $displayPrompt = null,
         public ?bool $enableCitations = null,
@@ -512,9 +509,6 @@ readonly class SessionConfig implements Arrayable
             enableFileHooks: $data['enableFileHooks'] ?? null,
             enableHostGitOperations: $data['enableHostGitOperations'] ?? null,
             enableSessionStore: $data['enableSessionStore'] ?? null,
-            enableGitHubCacheStore: isset($data['enableGitHubCacheStore'])
-                ? Arr::boolean($data, 'enableGitHubCacheStore')
-                : null,
             enableSkills: $data['enableSkills'] ?? null,
             displayPrompt: $data['displayPrompt'] ?? null,
             enableCitations: $data['enableCitations'] ?? null,
@@ -710,7 +704,6 @@ readonly class SessionConfig implements Arrayable
             'enableFileHooks' => $this->enableFileHooks,
             'enableHostGitOperations' => $this->enableHostGitOperations,
             'enableSessionStore' => $this->enableSessionStore,
-            'enableGitHubCacheStore' => $this->enableGitHubCacheStore,
             'enableSkills' => $this->enableSkills,
             'displayPrompt' => $this->displayPrompt,
             'enableCitations' => $this->enableCitations,
