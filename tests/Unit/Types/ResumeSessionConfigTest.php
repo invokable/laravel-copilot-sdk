@@ -14,6 +14,7 @@ use Revolution\Copilot\Types\LargeToolOutputConfig;
 use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\AutopilotOptions;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
 use Revolution\Copilot\Types\SessionHooks;
@@ -39,6 +40,24 @@ describe('ResumeSessionConfig', function () {
             ->and($enabled->toArray())->toHaveKey('interactiveUser', true)
             ->and($explicitFalse->interactiveUser)->toBeFalse()
             ->and($explicitFalse->toArray())->toHaveKey('interactiveUser', false);
+    });
+
+    it('round-trips autopilot configuration while preserving false and zero', function () {
+        $options = ['continuationEnabled' => false, 'maxContinues' => 0];
+        $config = ResumeSessionConfig::fromArray(['autopilot' => $options]);
+        $typedConfig = new ResumeSessionConfig(autopilot: new AutopilotOptions(
+            continuationEnabled: false,
+            maxContinues: 0,
+        ));
+
+        expect($config->autopilot)->toBeInstanceOf(AutopilotOptions::class)
+            ->and($config->toArray())->toHaveKey('autopilot', $options)
+            ->and($typedConfig->toArray())->toHaveKey('autopilot', $options)
+            ->and((new ResumeSessionConfig(autopilot: ['maxContinues' => null]))->toArray())
+            ->not->toHaveKey('autopilot')
+            ->and((new ResumeSessionConfig(autopilot: new AutopilotOptions))->toArray())
+            ->not->toHaveKey('autopilot')
+            ->and((new ResumeSessionConfig)->toArray())->not->toHaveKey('autopilot');
     });
 
     it('ignores the removed GitHub cache store setting', function () {

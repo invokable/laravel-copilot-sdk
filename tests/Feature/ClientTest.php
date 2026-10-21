@@ -27,6 +27,7 @@ use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\NamedProviderConfig;
 use Revolution\Copilot\Types\ProviderModelConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\AutopilotOptions;
 use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
@@ -808,6 +809,78 @@ describe('Client', function () {
 
         expect($created->id())->toBe('created-session')
             ->and($resumed->id())->toBe('resumed-session');
+    });
+
+    it('forwards autopilot configuration through create resume and options update requests', function () {
+        $autopilot = ['continuationEnabled' => false, 'maxContinues' => 0];
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn (array $params) => ($params['autopilot'] ?? null) === $autopilot))
+            ->once()
+            ->andReturn(['sessionId' => 'created-autopilot-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.options.update', [
+                'sessionId' => 'created-autopilot-session',
+                'autopilot' => $autopilot,
+            ])
+            ->once()
+            ->andReturn(['success' => true]);
+        $rpc->shouldReceive('request')
+            ->with('session.resume', Mockery::on(fn (array $params) => ($params['autopilot'] ?? null) === $autopilot))
+            ->once()
+            ->andReturn(['sessionId' => 'resumed-autopilot-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.options.update', [
+                'sessionId' => 'resumed-autopilot-session',
+                'autopilot' => $autopilot,
+            ])
+            ->once()
+            ->andReturn(['success' => true]);
+
+        $client = new Client;
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $created = $client->createSession(new SessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            autopilot: new AutopilotOptions(continuationEnabled: false, maxContinues: 0),
+        ));
+        $resumed = $client->resumeSession('resumed-autopilot-session', [
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+            'autopilot' => $autopilot,
+        ]);
+
+        expect($created->id())->toBe('created-autopilot-session')
+            ->and($resumed->id())->toBe('resumed-autopilot-session');
+    });
+
+    it('omits autopilot when creating and resuming sessions without it', function () {
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn (array $params) => ! array_key_exists('autopilot', $params)))
+            ->once()
+            ->andReturn(['sessionId' => 'created-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.resume', Mockery::on(fn (array $params) => ! array_key_exists('autopilot', $params)))
+            ->once()
+            ->andReturn(['sessionId' => 'resumed-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.options.update', Mockery::any())
+            ->never();
+
+        $client = new Client;
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $client->createSession(new SessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+        ));
+        $client->resumeSession('resumed-session', [
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+            'autopilot' => ['continuationEnabled' => null, 'maxContinues' => null],
+        ]);
     });
 
     it('preserves session GitHub telemetry forwarding when no client handler is configured', function () {

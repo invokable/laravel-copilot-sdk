@@ -13,6 +13,7 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Support\ToolSet;
+use Revolution\Copilot\Types\Rpc\AutopilotOptions;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
 use Revolution\Copilot\Types\Rpc\SessionLimitsConfig;
@@ -191,6 +192,7 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                             the provider can serve `sessionFs.*` callbacks for that session.
      * @param  ?bool  $interactiveUser  Declares that a human drives this session's conversation. Enables user-message analysis telemetry while excluding automated messages.
      *                                  Defaults to false for SDK sessions; ignored for cloud sessions and when resuming an active session.
+     * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -295,6 +297,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?Closure $createSessionFsProvider = null,
         public ?bool $interactiveUser = null,
         public SandboxConfig|array|null $sandboxConfig = null,
+        public AutopilotOptions|array|null $autopilot = null,
     ) {}
 
     /**
@@ -377,6 +380,13 @@ readonly class ResumeSessionConfig implements Arrayable
             $sessionLimits = $data['sessionLimits'] instanceof SessionLimitsConfig
                 ? $data['sessionLimits']
                 : SessionLimitsConfig::fromArray($data['sessionLimits']);
+        }
+
+        $autopilot = null;
+        if (isset($data['autopilot'])) {
+            $autopilot = $data['autopilot'] instanceof AutopilotOptions
+                ? $data['autopilot']
+                : AutopilotOptions::fromArray($data['autopilot']);
         }
 
         $canvasProvider = null;
@@ -471,6 +481,7 @@ readonly class ResumeSessionConfig implements Arrayable
             enableCitations: $data['enableCitations'] ?? null,
             excludedBuiltinAgents: $data['excludedBuiltinAgents'] ?? null,
             sessionLimits: $sessionLimits,
+            autopilot: $autopilot,
             featureFlags: $data['featureFlags'] ?? null,
             expAssignments: isset($data['expAssignments'])
                 ? ($data['expAssignments'] instanceof CopilotExpAssignmentResponse ? $data['expAssignments'] : CopilotExpAssignmentResponse::fromArray($data['expAssignments']))
@@ -567,6 +578,13 @@ readonly class ResumeSessionConfig implements Arrayable
             ? $this->sessionLimits->toArray()
             : $this->sessionLimits;
 
+        $autopilot = $this->autopilot instanceof AutopilotOptions
+            ? $this->autopilot->toArray()
+            : (is_array($this->autopilot)
+                ? array_filter($this->autopilot, fn ($value) => $value !== null)
+                : null);
+        $autopilot = $autopilot === [] ? null : $autopilot;
+
         $canvasProvider = $this->canvasProvider instanceof CanvasProviderIdentity
             ? $this->canvasProvider->toArray()
             : $this->canvasProvider;
@@ -662,6 +680,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'enableCitations' => $this->enableCitations,
             'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
             'sessionLimits' => $sessionLimits,
+            'autopilot' => $autopilot,
             'featureFlags' => $this->featureFlags,
             'expAssignments' => $expAssignments,
             'enableManagedSettings' => $this->enableManagedSettings,
