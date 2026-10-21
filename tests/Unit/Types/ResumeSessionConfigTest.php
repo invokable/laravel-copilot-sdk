@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
+use Revolution\Copilot\Enums\MemoryMode;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\CanvasProviderIdentity;
@@ -87,7 +88,7 @@ describe('ResumeSessionConfig', function () {
             'canvasProvider' => ['id' => 'resume-host'],
             'providers' => [['name' => 'openai', 'baseUrl' => 'https://api.example.com']],
             'models' => [['id' => 'custom-model', 'provider' => 'openai']],
-            'memory' => ['enabled' => true],
+            'memory' => ['enabled' => true, 'mode' => 'user-prompt'],
             'enableCitations' => false,
             'excludedBuiltinAgents' => ['explainer'],
             'sessionLimits' => ['maxAiCredits' => 25.0],
@@ -97,6 +98,7 @@ describe('ResumeSessionConfig', function () {
         expect($config->toolSearch)->toBeInstanceOf(ToolSearchConfig::class)
             ->and($config->canvasProvider)->toBeInstanceOf(CanvasProviderIdentity::class)
             ->and($config->memory)->toBeInstanceOf(MemoryConfiguration::class)
+            ->and($config->memory->mode)->toBe(MemoryMode::UserPrompt)
             ->and($config->sessionLimits)->toBeInstanceOf(SessionLimitsConfig::class)
             ->and($config->imageGeneration)->toBeInstanceOf(ImageGenerationConfig::class)
             ->and($config->toArray())->toMatchArray([
@@ -104,7 +106,7 @@ describe('ResumeSessionConfig', function () {
                 'canvasProvider' => ['id' => 'resume-host'],
                 'providers' => [['name' => 'openai', 'baseUrl' => 'https://api.example.com']],
                 'models' => [['id' => 'custom-model', 'provider' => 'openai']],
-                'memory' => ['enabled' => true],
+                'memory' => ['enabled' => true, 'mode' => 'user-prompt'],
                 'enableCitations' => false,
                 'excludedBuiltinAgents' => ['explainer'],
                 'sessionLimits' => ['maxAiCredits' => 25],
