@@ -717,7 +717,7 @@ class Client implements CopilotClient
                 'refreshCustomInstructions' => $config['refreshCustomInstructions'] ?? null,
                 'diagnostics' => $config['diagnostics'] ?? null,
                 'sandboxConfig' => $this->normalizeArrayableValue($config['sandboxConfig'] ?? $config['sandbox'] ?? null),
-                'autopilot' => $this->normalizeArrayableValue($config['autopilot'] ?? null),
+                'autopilot' => $this->normalizeAutopilotOptions($config['autopilot'] ?? null),
                 'capi' => $this->normalizeCapiSessionOptions($config['capi'] ?? null),
                 'requestPermission' => isset($config['onPermissionRequest']),
                 'requestUserInput' => isset($config['onUserInputRequest']),
@@ -1001,7 +1001,7 @@ class Client implements CopilotClient
                 'expAssignments' => $this->normalizeArrayableValue($config['expAssignments'] ?? null),
                 'diagnostics' => $config['diagnostics'] ?? null,
                 'sandboxConfig' => $this->normalizeArrayableValue($config['sandboxConfig'] ?? $config['sandbox'] ?? null),
-                'autopilot' => $this->normalizeArrayableValue($config['autopilot'] ?? null),
+                'autopilot' => $this->normalizeAutopilotOptions($config['autopilot'] ?? null),
                 'capi' => $this->normalizeCapiSessionOptions($config['capi'] ?? null),
                 'requestPermission' => isset($config['onPermissionRequest']),
                 'requestUserInput' => isset($config['onUserInputRequest']),
@@ -1169,6 +1169,21 @@ class Client implements CopilotClient
         }
 
         return $config instanceof CapiSessionOptions ? $config->toArray() : $config;
+    }
+
+    /**
+     * Normalize autopilot options while omitting unset values.
+     */
+    private function normalizeAutopilotOptions(AutopilotOptions|array|null $options): ?array
+    {
+        if ($options === null) {
+            return null;
+        }
+
+        $options = $options instanceof AutopilotOptions ? $options->toArray() : $options;
+        $options = array_filter($options, fn ($value) => $value !== null);
+
+        return $options === [] ? null : $options;
     }
 
     private function normalizeArrayableValue(mixed $value): mixed
@@ -1422,7 +1437,7 @@ class Client implements CopilotClient
                 $this->mode === CopilotClientMode::Empty ? false : null
             ),
             'suppressCustomAgentPrompt' => $config['suppressCustomAgentPrompt'] ?? null,
-            'autopilot' => $this->normalizeArrayableValue($config['autopilot'] ?? null),
+            'autopilot' => $this->normalizeAutopilotOptions($config['autopilot'] ?? null),
             'installedPlugins' => $this->mode === CopilotClientMode::Empty ? [] : null,
             'includedBuiltinSkills' => $this->mode === CopilotClientMode::Empty
                 ? ($config['includedBuiltinSkills'] ?? [])

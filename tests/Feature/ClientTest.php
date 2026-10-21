@@ -877,9 +877,10 @@ describe('Client', function () {
         $client->createSession(new SessionConfig(
             onPermissionRequest: PermissionHandler::approveAll(),
         ));
-        $client->resumeSession('resumed-session', new ResumeSessionConfig(
-            onPermissionRequest: PermissionHandler::approveAll(),
-        ));
+        $client->resumeSession('resumed-session', [
+            'onPermissionRequest' => PermissionHandler::approveAll(),
+            'autopilot' => ['continuationEnabled' => null, 'maxContinues' => null],
+        ]);
     });
 
     it('preserves session GitHub telemetry forwarding when no client handler is configured', function () {

@@ -208,7 +208,6 @@ readonly class SessionConfig implements Arrayable
      *
      *                                                         @experimental
      *
-     * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
      * @param  ?array  $featureFlags  Feature-flag values resolved by the host for this session. Re-supply them when resuming after a runtime restart.
      * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
      *                                                                   path as CLI-fetched assignments. Applies to both session creation and resume.
@@ -238,6 +237,7 @@ readonly class SessionConfig implements Arrayable
      * @param  ?string  $name  Optional local-session name. It must be non-empty, have no leading or trailing whitespace, be at most 100 UTF-16 code units, and contain no control characters or double quotes. Naming a session makes it persistent immediately; cloud sessions reject it.
      * @param  ?bool  $interactiveUser  Declares that a human drives this session's conversation. Enables user-message analysis telemetry while excluding automated messages.
      *                                  Defaults to false for SDK sessions; ignored for cloud sessions and when resuming an active session.
+     * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -315,7 +315,6 @@ readonly class SessionConfig implements Arrayable
         public ?array $excludedBuiltinAgents = null,
         public ?array $includedBuiltinAgents = null,
         public SessionLimitsConfig|array|null $sessionLimits = null,
-        public AutopilotOptions|array|null $autopilot = null,
         public ?array $featureFlags = null,
         public CopilotExpAssignmentResponse|array|null $expAssignments = null,
         public Verbosity|string|null $verbosity = null,
@@ -347,6 +346,7 @@ readonly class SessionConfig implements Arrayable
         public ?bool $interactiveUser = null,
         public WorkingDirectoryTrust|string|null $trustWorkingDirectory = null,
         public SandboxConfig|array|null $sandboxConfig = null,
+        public AutopilotOptions|array|null $autopilot = null,
     ) {}
 
     /**
@@ -641,6 +641,13 @@ readonly class SessionConfig implements Arrayable
             ? $this->sessionLimits->toArray()
             : $this->sessionLimits;
 
+        $autopilot = $this->autopilot instanceof AutopilotOptions
+            ? $this->autopilot->toArray()
+            : (is_array($this->autopilot)
+                ? array_filter($this->autopilot, fn ($value) => $value !== null)
+                : null);
+        $autopilot = $autopilot === [] ? null : $autopilot;
+
         $sandboxConfig = $this->sandboxConfig ?? $this->sandbox;
 
         $expAssignments = $this->expAssignments instanceof CopilotExpAssignmentResponse
@@ -738,9 +745,7 @@ readonly class SessionConfig implements Arrayable
             'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
             'includedBuiltinAgents' => $this->includedBuiltinAgents,
             'sessionLimits' => $sessionLimits,
-            'autopilot' => $this->autopilot instanceof AutopilotOptions
-                ? $this->autopilot->toArray()
-                : $this->autopilot,
+            'autopilot' => $autopilot,
             'featureFlags' => $this->featureFlags,
             'expAssignments' => $expAssignments,
             'verbosity' => $verbosity,

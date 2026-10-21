@@ -11,8 +11,13 @@ describe('AutopilotOptions', function () {
             'continuationEnabled' => false,
             'maxContinues' => 0,
         ]);
+        $unsetOptions = AutopilotOptions::fromArray([
+            'continuationEnabled' => null,
+            'maxContinues' => null,
+        ]);
 
         expect($default->toArray())->toBe([])
+            ->and($unsetOptions->toArray())->toBe([])
             ->and($options->continuationEnabled)->toBeFalse()
             ->and($options->maxContinues)->toBe(0)
             ->and($options->toArray())->toBe([

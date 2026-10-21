@@ -170,7 +170,6 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?bool  $enableCitations  Experimental: enable native model citations, normalized onto the `assistant.message` event.
      * @param  ?array  $excludedBuiltinAgents  Names of built-in agents to exclude from the session.
      * @param  SessionLimitsConfig|array|null  $sessionLimits  Limits applied to this session's current accounting window.
-     * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
      * @param  ?array  $featureFlags  Feature-flag values resolved by the host for this session. Re-supply them when resuming after a runtime restart.
      * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
      *                                                                   path as CLI-fetched assignments. Applies to both session creation and resume. @internal
@@ -193,6 +192,7 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                             the provider can serve `sessionFs.*` callbacks for that session.
      * @param  ?bool  $interactiveUser  Declares that a human drives this session's conversation. Enables user-message analysis telemetry while excluding automated messages.
      *                                  Defaults to false for SDK sessions; ignored for cloud sessions and when resuming an active session.
+     * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -291,13 +291,13 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?bool $enableCitations = null,
         public ?array $excludedBuiltinAgents = null,
         public SessionLimitsConfig|array|null $sessionLimits = null,
-        public AutopilotOptions|array|null $autopilot = null,
         public CanvasProviderIdentity|array|null $canvasProvider = null,
         public ?array $agentDirectories = null,
         public ?array $hookDirectories = null,
         public ?Closure $createSessionFsProvider = null,
         public ?bool $interactiveUser = null,
         public SandboxConfig|array|null $sandboxConfig = null,
+        public AutopilotOptions|array|null $autopilot = null,
     ) {}
 
     /**
@@ -578,6 +578,13 @@ readonly class ResumeSessionConfig implements Arrayable
             ? $this->sessionLimits->toArray()
             : $this->sessionLimits;
 
+        $autopilot = $this->autopilot instanceof AutopilotOptions
+            ? $this->autopilot->toArray()
+            : (is_array($this->autopilot)
+                ? array_filter($this->autopilot, fn ($value) => $value !== null)
+                : null);
+        $autopilot = $autopilot === [] ? null : $autopilot;
+
         $canvasProvider = $this->canvasProvider instanceof CanvasProviderIdentity
             ? $this->canvasProvider->toArray()
             : $this->canvasProvider;
@@ -673,9 +680,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'enableCitations' => $this->enableCitations,
             'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
             'sessionLimits' => $sessionLimits,
-            'autopilot' => $this->autopilot instanceof AutopilotOptions
-                ? $this->autopilot->toArray()
-                : $this->autopilot,
+            'autopilot' => $autopilot,
             'featureFlags' => $this->featureFlags,
             'expAssignments' => $expAssignments,
             'enableManagedSettings' => $this->enableManagedSettings,

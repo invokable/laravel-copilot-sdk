@@ -70,6 +70,10 @@ describe('SessionConfig', function () {
         expect($config->autopilot)->toBeInstanceOf(AutopilotOptions::class)
             ->and($config->toArray())->toHaveKey('autopilot', $options)
             ->and($typedConfig->toArray())->toHaveKey('autopilot', $options)
+            ->and((new SessionConfig(autopilot: ['continuationEnabled' => null]))->toArray())
+            ->not->toHaveKey('autopilot')
+            ->and((new SessionConfig(autopilot: new AutopilotOptions))->toArray())
+            ->not->toHaveKey('autopilot')
             ->and((new SessionConfig)->toArray())->not->toHaveKey('autopilot');
     });
 

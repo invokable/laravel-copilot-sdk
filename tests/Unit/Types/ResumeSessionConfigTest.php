@@ -53,6 +53,10 @@ describe('ResumeSessionConfig', function () {
         expect($config->autopilot)->toBeInstanceOf(AutopilotOptions::class)
             ->and($config->toArray())->toHaveKey('autopilot', $options)
             ->and($typedConfig->toArray())->toHaveKey('autopilot', $options)
+            ->and((new ResumeSessionConfig(autopilot: ['maxContinues' => null]))->toArray())
+            ->not->toHaveKey('autopilot')
+            ->and((new ResumeSessionConfig(autopilot: new AutopilotOptions))->toArray())
+            ->not->toHaveKey('autopilot')
             ->and((new ResumeSessionConfig)->toArray())->not->toHaveKey('autopilot');
     });
 
