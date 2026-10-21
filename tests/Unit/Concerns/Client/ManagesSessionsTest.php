@@ -9,7 +9,6 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\SessionLifecycleEvent;
 use Revolution\Copilot\Types\SessionListFilter;
 use Revolution\Copilot\Types\SessionMetadata;
-use RuntimeException;
 
 function createConnectedManagesSessionsClient(JsonRpcClient $rpcClient): Client
 {
