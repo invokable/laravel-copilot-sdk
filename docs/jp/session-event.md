@@ -37,6 +37,10 @@ if ($response->is(SessionEventType::HOOK_START)) {
 echo $response->type()// 'assistant.message'
 ```
 
+## `session.autopilot_stopped`
+
+Autopilotが特定のリクエストの継続を停止した時に発生します。`$event->data['requestId']`で対象のメッセージID、`$event->data['reason']`で停止理由を確認できます。セッション全体がidleになったことを意味するイベントではありません。
+
 ## failed() / successful()
 
 `SESSION_ERROR`イベントタイプの場合にfailedになります。successfulは反対です。  
