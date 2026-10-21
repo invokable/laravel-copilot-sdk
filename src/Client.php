@@ -48,6 +48,7 @@ use Revolution\Copilot\Types\GitHubMcpToolConfig;
 use Revolution\Copilot\Types\NamedProviderConfig;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\AutopilotOptions;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
@@ -570,7 +571,7 @@ class Client implements CopilotClient
      *
      * Custom-agent declarative hooks are forwarded with their agent definition; top-level hooks are session callbacks.
      *
-     * @param  SessionConfig|array{session_id?: string, name?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array, interactiveUser?: bool, sandboxConfig?: SandboxConfig|array, sandbox?: SandboxConfig|array}  $config
+     * @param  SessionConfig|array{session_id?: string, name?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array, interactiveUser?: bool, autopilot?: AutopilotOptions|array, sandboxConfig?: SandboxConfig|array, sandbox?: SandboxConfig|array}  $config
      *
      * @throws JsonRpcException
      */
@@ -716,6 +717,7 @@ class Client implements CopilotClient
                 'refreshCustomInstructions' => $config['refreshCustomInstructions'] ?? null,
                 'diagnostics' => $config['diagnostics'] ?? null,
                 'sandboxConfig' => $this->normalizeArrayableValue($config['sandboxConfig'] ?? $config['sandbox'] ?? null),
+                'autopilot' => $this->normalizeArrayableValue($config['autopilot'] ?? null),
                 'capi' => $this->normalizeCapiSessionOptions($config['capi'] ?? null),
                 'requestPermission' => isset($config['onPermissionRequest']),
                 'requestUserInput' => isset($config['onUserInputRequest']),
@@ -873,7 +875,7 @@ class Client implements CopilotClient
     /**
      * Resume an existing session.
      *
-     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array, interactiveUser?: bool, sandboxConfig?: SandboxConfig|array, sandbox?: SandboxConfig|array}  $config
+     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array, interactiveUser?: bool, autopilot?: AutopilotOptions|array, sandboxConfig?: SandboxConfig|array, sandbox?: SandboxConfig|array}  $config
      *
      * @throws JsonRpcException
      */
@@ -999,6 +1001,7 @@ class Client implements CopilotClient
                 'expAssignments' => $this->normalizeArrayableValue($config['expAssignments'] ?? null),
                 'diagnostics' => $config['diagnostics'] ?? null,
                 'sandboxConfig' => $this->normalizeArrayableValue($config['sandboxConfig'] ?? $config['sandbox'] ?? null),
+                'autopilot' => $this->normalizeArrayableValue($config['autopilot'] ?? null),
                 'capi' => $this->normalizeCapiSessionOptions($config['capi'] ?? null),
                 'requestPermission' => isset($config['onPermissionRequest']),
                 'requestUserInput' => isset($config['onUserInputRequest']),
@@ -1419,6 +1422,7 @@ class Client implements CopilotClient
                 $this->mode === CopilotClientMode::Empty ? false : null
             ),
             'suppressCustomAgentPrompt' => $config['suppressCustomAgentPrompt'] ?? null,
+            'autopilot' => $this->normalizeArrayableValue($config['autopilot'] ?? null),
             'installedPlugins' => $this->mode === CopilotClientMode::Empty ? [] : null,
             'includedBuiltinSkills' => $this->mode === CopilotClientMode::Empty
                 ? ($config['includedBuiltinSkills'] ?? [])

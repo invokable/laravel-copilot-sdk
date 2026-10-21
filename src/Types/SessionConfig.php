@@ -15,6 +15,7 @@ use Revolution\Copilot\Enums\Verbosity;
 use Revolution\Copilot\Enums\WorkingDirectoryTrust;
 use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Support\ToolSet;
+use Revolution\Copilot\Types\Rpc\AutopilotOptions;
 use Revolution\Copilot\Types\Rpc\ManagedMcpServerConfig;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
@@ -207,6 +208,7 @@ readonly class SessionConfig implements Arrayable
      *
      *                                                         @experimental
      *
+     * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
      * @param  ?array  $featureFlags  Feature-flag values resolved by the host for this session. Re-supply them when resuming after a runtime restart.
      * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
      *                                                                   path as CLI-fetched assignments. Applies to both session creation and resume.
@@ -313,6 +315,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $excludedBuiltinAgents = null,
         public ?array $includedBuiltinAgents = null,
         public SessionLimitsConfig|array|null $sessionLimits = null,
+        public AutopilotOptions|array|null $autopilot = null,
         public ?array $featureFlags = null,
         public CopilotExpAssignmentResponse|array|null $expAssignments = null,
         public Verbosity|string|null $verbosity = null,
@@ -435,6 +438,13 @@ readonly class SessionConfig implements Arrayable
                 : SessionLimitsConfig::fromArray($data['sessionLimits']);
         }
 
+        $autopilot = null;
+        if (isset($data['autopilot'])) {
+            $autopilot = $data['autopilot'] instanceof AutopilotOptions
+                ? $data['autopilot']
+                : AutopilotOptions::fromArray($data['autopilot']);
+        }
+
         return new self(
             sessionId: $data['sessionId'] ?? null,
             clientName: $data['clientName'] ?? null,
@@ -519,6 +529,7 @@ readonly class SessionConfig implements Arrayable
             excludedBuiltinAgents: $data['excludedBuiltinAgents'] ?? null,
             includedBuiltinAgents: $data['includedBuiltinAgents'] ?? null,
             sessionLimits: $sessionLimits,
+            autopilot: $autopilot,
             featureFlags: $data['featureFlags'] ?? null,
             expAssignments: isset($data['expAssignments'])
                 ? ($data['expAssignments'] instanceof CopilotExpAssignmentResponse ? $data['expAssignments'] : CopilotExpAssignmentResponse::fromArray($data['expAssignments']))
@@ -727,6 +738,9 @@ readonly class SessionConfig implements Arrayable
             'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
             'includedBuiltinAgents' => $this->includedBuiltinAgents,
             'sessionLimits' => $sessionLimits,
+            'autopilot' => $this->autopilot instanceof AutopilotOptions
+                ? $this->autopilot->toArray()
+                : $this->autopilot,
             'featureFlags' => $this->featureFlags,
             'expAssignments' => $expAssignments,
             'verbosity' => $verbosity,

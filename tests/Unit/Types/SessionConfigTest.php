@@ -11,6 +11,7 @@ use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ProviderConfig;
+use Revolution\Copilot\Types\Rpc\AutopilotOptions;
 use Revolution\Copilot\Types\Rpc\ManagedMcpServerConfig;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
 use Revolution\Copilot\Types\Rpc\SandboxConfigUserPolicy;
@@ -56,6 +57,20 @@ describe('SessionConfig', function () {
             ->and($enabled->toArray())->toHaveKey('interactiveUser', true)
             ->and($explicitFalse->interactiveUser)->toBeFalse()
             ->and($explicitFalse->toArray())->toHaveKey('interactiveUser', false);
+    });
+
+    it('round-trips autopilot configuration while preserving false and zero', function () {
+        $options = ['continuationEnabled' => false, 'maxContinues' => 0];
+        $config = SessionConfig::fromArray(['autopilot' => $options]);
+        $typedConfig = new SessionConfig(autopilot: new AutopilotOptions(
+            continuationEnabled: false,
+            maxContinues: 0,
+        ));
+
+        expect($config->autopilot)->toBeInstanceOf(AutopilotOptions::class)
+            ->and($config->toArray())->toHaveKey('autopilot', $options)
+            ->and($typedConfig->toArray())->toHaveKey('autopilot', $options)
+            ->and((new SessionConfig)->toArray())->not->toHaveKey('autopilot');
     });
 
     it('serializes ToolSet tool filters', function () {

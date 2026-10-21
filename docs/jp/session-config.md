@@ -436,6 +436,31 @@ $config = new SessionConfig(
 );
 ```
 
+## Autopilot の自動継続設定
+
+`autopilot`でAutopilotモード中の自動継続ポリシーを設定できます。セッションモード自体は変更しません。新規SDKセッションでは、省略時に自動継続が有効になり、`maxContinues`は5です。`0`を指定すると通常の自動継続を無効にできます。
+
+```php
+use Revolution\Copilot\Types\Rpc\AutopilotOptions;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(
+    autopilot: new AutopilotOptions(
+        continuationEnabled: true,
+        maxContinues: 3,
+    ),
+);
+```
+
+配列でも指定できます。再開時も`ResumeSessionConfig`または配列で同じ`autopilot`キーを使用します。warm resumeでは省略した項目の現在値が保持されますが、runtime再起動後のcold resumeでは設定を再指定してください。
+
+```php
+$config = new SessionConfig(autopilot: [
+    'continuationEnabled' => false,
+    'maxContinues' => 0,
+]);
+```
+
 ## マルチテナント向け empty モード
 
 クライアント設定の`mode`を`empty`にすると、Copilot CLI のホスト環境やセッション間状態に依存する機能を既定で無効にします。省略時は従来どおり`copilot-cli`です。empty モードでは永続化先として`base_directory`、`session_fs`、または外部サーバーの`url`のいずれかを指定してください。
