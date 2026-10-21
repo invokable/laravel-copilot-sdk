@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
+use Revolution\Copilot\Enums\MemoryMode;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\WorkingDirectoryTrust;
 use Revolution\Copilot\Support\ToolSet;
@@ -603,20 +604,22 @@ describe('SessionConfig', function () {
     });
 
     it('accepts memory as MemoryConfiguration', function () {
-        $memory = new MemoryConfiguration(enabled: true);
+        $memory = new MemoryConfiguration(enabled: true, mode: MemoryMode::UserPrompt);
         $config = new SessionConfig(memory: $memory);
 
         expect($config->memory)->toBeInstanceOf(MemoryConfiguration::class)
-            ->and($config->memory->enabled)->toBeTrue();
+            ->and($config->memory->enabled)->toBeTrue()
+            ->and($config->memory->mode)->toBe(MemoryMode::UserPrompt);
     });
 
     it('accepts memory as array and deserializes to MemoryConfiguration', function () {
         $config = SessionConfig::fromArray([
-            'memory' => ['enabled' => true],
+            'memory' => ['enabled' => true, 'mode' => 'user-prompt'],
         ]);
 
         expect($config->memory)->toBeInstanceOf(MemoryConfiguration::class)
-            ->and($config->memory->enabled)->toBeTrue();
+            ->and($config->memory->enabled)->toBeTrue()
+            ->and($config->memory->mode)->toBe(MemoryMode::UserPrompt);
     });
 
     it('includes providers and models in toArray', function () {
@@ -629,11 +632,14 @@ describe('SessionConfig', function () {
             ->and($config->toArray())->toHaveKey('models');
     });
 
-    it('includes memory in toArray as array', function () {
-        $memory = new MemoryConfiguration(enabled: false);
+    it('includes memory mode in toArray', function () {
+        $memory = new MemoryConfiguration(enabled: false, mode: MemoryMode::SystemPrompt);
         $config = new SessionConfig(memory: $memory);
 
-        expect($config->toArray()['memory'])->toBeArray();
+        expect($config->toArray()['memory'])->toBe([
+            'enabled' => false,
+            'mode' => 'system-prompt',
+        ]);
     });
 
     it('excludes providers/models/memory from toArray when null', function () {

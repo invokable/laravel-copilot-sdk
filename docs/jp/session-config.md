@@ -8,6 +8,7 @@
 ```php
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\SystemMessageConfig;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\UserInputRequest;
@@ -23,6 +24,7 @@ use Revolution\Copilot\Types\Rpc\CanvasProviderOpenResult;
 use Revolution\Copilot\Types\CanvasDeclaration;
 use Revolution\Copilot\Support\CanvasError;
 use Revolution\Copilot\Support\CanvasHandler;
+use Revolution\Copilot\Enums\MemoryMode;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\UIAutoModeSwitchResponse;
 use Revolution\Copilot\Enums\WorkingDirectoryTrust;
@@ -120,11 +122,14 @@ $config = new SessionConfig(
 
     // メモリ設定 (experimental)
     // セッション間でのメモリ機能を制御する。
-    memory: new \Revolution\Copilot\Types\MemoryConfiguration(
+    memory: new MemoryConfiguration(
         enabled: true,
+        // modeを省略するとsystem-prompt（システムプロンプトへの注入）を使用する。
+        // user-promptを指定すると生成されるユーザーメッセージへ注入する。
+        // mode: MemoryMode::UserPrompt,
     ),
     // 配列での指定も可能
-    // memory: ['enabled' => true],
+    // memory: ['enabled' => true, 'mode' => 'user-prompt'],
 
     // これらのBYOK・メモリ設定は、作成時と再開時のRPCペイロードに送信される。
     // 再開時はResumeSessionConfigまたは同じキーを持つ配列で指定する。
