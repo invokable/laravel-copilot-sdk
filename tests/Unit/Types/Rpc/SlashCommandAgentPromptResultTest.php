@@ -13,13 +13,15 @@ describe('SlashCommandAgentPromptResult', function () {
             'mode' => 'agent',
             'notice' => 'Please note this change',
             'runtimeSettingsChanged' => true,
+            'reservationToken' => 'opaque-token',
         ]);
 
         expect($result->displayPrompt)->toBe('Display text')
             ->and($result->prompt)->toBe('Actual prompt')
             ->and($result->mode)->toBe('agent')
             ->and($result->notice)->toBe('Please note this change')
-            ->and($result->runtimeSettingsChanged)->toBeTrue();
+            ->and($result->runtimeSettingsChanged)->toBeTrue()
+            ->and($result->reservationToken)->toBe('opaque-token');
     });
 
     it('can be created from array with minimal fields', function () {
@@ -32,7 +34,8 @@ describe('SlashCommandAgentPromptResult', function () {
             ->and($result->prompt)->toBe('Prompt')
             ->and($result->mode)->toBeNull()
             ->and($result->notice)->toBeNull()
-            ->and($result->runtimeSettingsChanged)->toBeNull();
+            ->and($result->runtimeSettingsChanged)->toBeNull()
+            ->and($result->reservationToken)->toBeNull();
     });
 
     it('converts to array correctly', function () {
@@ -40,6 +43,7 @@ describe('SlashCommandAgentPromptResult', function () {
             displayPrompt: 'Show this',
             prompt: 'Run this',
             notice: 'A notice',
+            reservationToken: 'opaque-token',
         );
 
         $array = $result->toArray();
@@ -47,8 +51,18 @@ describe('SlashCommandAgentPromptResult', function () {
         expect($array)->toHaveKey('displayPrompt', 'Show this')
             ->and($array)->toHaveKey('prompt', 'Run this')
             ->and($array)->toHaveKey('notice', 'A notice')
+            ->and($array)->toHaveKey('reservationToken', 'opaque-token')
             ->and($array)->not->toHaveKey('mode')
             ->and($array)->not->toHaveKey('runtimeSettingsChanged');
+    });
+
+    it('omits reservationToken when none is provided', function () {
+        $result = new SlashCommandAgentPromptResult(
+            displayPrompt: 'Show this',
+            prompt: 'Run this',
+        );
+
+        expect($result->toArray())->not->toHaveKey('reservationToken');
     });
 
     it('implements Arrayable', function () {

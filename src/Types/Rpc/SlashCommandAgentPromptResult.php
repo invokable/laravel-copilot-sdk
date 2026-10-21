@@ -19,6 +19,7 @@ readonly class SlashCommandAgentPromptResult implements Arrayable
      * @param  string|null  $mode  Optional target session mode for the agent prompt.
      * @param  string|null  $notice  Optional user-facing notice to show before the prompt is submitted.
      * @param  bool|null  $runtimeSettingsChanged  True when the invocation mutated user runtime settings; consumers caching settings should refresh.
+     * @param  string|null  $reservationToken  Opaque token for finalizing the objective prompt reservation.
      */
     public function __construct(
         public string $displayPrompt,
@@ -26,6 +27,7 @@ readonly class SlashCommandAgentPromptResult implements Arrayable
         public ?string $mode = null,
         public ?string $notice = null,
         public ?bool $runtimeSettingsChanged = null,
+        public ?string $reservationToken = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -36,6 +38,7 @@ readonly class SlashCommandAgentPromptResult implements Arrayable
             mode: $data['mode'] ?? null,
             notice: $data['notice'] ?? null,
             runtimeSettingsChanged: isset($data['runtimeSettingsChanged']) ? (bool) $data['runtimeSettingsChanged'] : null,
+            reservationToken: $data['reservationToken'] ?? null,
         );
     }
 
@@ -47,6 +50,7 @@ readonly class SlashCommandAgentPromptResult implements Arrayable
             'mode' => $this->mode,
             'notice' => $this->notice,
             'runtimeSettingsChanged' => $this->runtimeSettingsChanged,
+            'reservationToken' => $this->reservationToken,
         ], fn ($value) => $value !== null);
     }
 }
