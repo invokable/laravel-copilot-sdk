@@ -95,7 +95,7 @@ class Session implements CopilotSession
     protected array $typedEventHandlers = [];
 
     /**
-     * Wait state: idle flag.
+     * Wait state: whether the requested message has reached a terminal event.
      */
     protected bool $waitIdle = false;
 
@@ -103,6 +103,15 @@ class Session implements CopilotSession
      * Wait state: error message.
      */
     protected ?string $waitError = null;
+
+    protected ?string $waitMessageId = null;
+
+    protected bool $waitRequestStarted = false;
+
+    /**
+     * @var list<SessionEvent>
+     */
+    protected array $waitEvents = [];
 
     /**
      * Whether this session has been disconnected.
@@ -381,12 +390,12 @@ class Session implements CopilotSession
     }
 
     /**
-     * Send a message and wait until the session becomes idle.
+     * Send a message and wait for the request to complete.
      *
      * @param  string  $prompt  The prompt/message to send
      * @param  array<array{type: string, path: string, displayName?: string}>|null  $attachments  File or directory attachments. type: "file" | "directory"
      * @param  ?string  $mode  Message delivery mode. "enqueue": Queue for processing after current turn (default). "immediate": Inject into current turn (steering). Omit for normal use.
-     * @param  ?float  $timeout  Maximum time to wait for idle state, in seconds
+     * @param  ?float  $timeout  Maximum time to wait for request completion, in seconds
      * @param  ?array<string, string>  $requestHeaders  Custom HTTP headers to include in outbound model requests for this turn.
      * @param  AgentMode|string|null  $agentMode  Per-message UI mode: "interactive", "plan", "autopilot", or "shell".
      * @param  ?string  $source  Optional message provenance: "user", "system", or "agent-{id}" for an identified agent. See Support\MessageSource. Omitted by default to preserve the runtime's default for user messages.
@@ -407,7 +416,7 @@ class Session implements CopilotSession
         $this->prepareWait();
 
         try {
-            $this->send(
+            $messageId = $this->send(
                 prompt: $prompt,
                 attachments: $attachments,
                 mode: $mode,
@@ -416,6 +425,7 @@ class Session implements CopilotSession
                 source: $source,
                 responseFormat: $responseFormat,
             );
+            $this->setWaitMessageId($messageId);
             $this->wait($timeout);
 
             MessageSendAndWait::dispatch($this->sessionId, $this->waitLastAssistantMessage, $prompt, $attachments, $mode, $source);
@@ -448,18 +458,123 @@ class Session implements CopilotSession
         $this->waitIdle = false;
         $this->waitError = null;
         $this->waitLastAssistantMessage = null;
+        $this->waitMessageId = null;
+        $this->waitRequestStarted = false;
+        $this->waitEvents = [];
 
         $this->waitHandler = function (SessionEvent $event): void {
-            if ($event->isAssistantMessage()) {
-                $this->waitLastAssistantMessage = $event;
-            } elseif ($event->isIdle()) {
-                $this->waitIdle = true;
-            } elseif ($event->failed()) {
-                $this->waitError = $event->errorMessage() ?? 'Unknown error';
+            if ($event->agentId !== null || ! in_array($event->type, [
+                SessionEventType::USER_MESSAGE,
+                SessionEventType::SESSION_WARNING,
+                SessionEventType::ASSISTANT_MESSAGE,
+                SessionEventType::SESSION_IDLE,
+                SessionEventType::SESSION_AUTOPILOT_STOPPED,
+                SessionEventType::SESSION_ERROR,
+            ], true)) {
+                return;
             }
+
+            if ($this->waitMessageId === null) {
+                $this->waitEvents[] = $event;
+
+                return;
+            }
+
+            $this->handleWaitEvent($event);
         };
 
         $this->on($this->waitHandler);
+    }
+
+    /**
+     * Correlate buffered events after send() returns the request ID.
+     */
+    protected function setWaitMessageId(string $messageId): void
+    {
+        $this->waitMessageId = $messageId;
+
+        foreach ($this->waitEvents as $event) {
+            $this->handleWaitEvent($event);
+        }
+
+        $this->waitEvents = [];
+    }
+
+    /**
+     * Update wait state only for events associated with the requested message.
+     */
+    protected function handleWaitEvent(SessionEvent $event): void
+    {
+        if ($this->waitIdle || $this->waitError !== null) {
+            return;
+        }
+
+        if ($event->is(SessionEventType::USER_MESSAGE)) {
+            if (($event->data['messageId'] ?? null) === $this->waitMessageId) {
+                $this->waitRequestStarted = true;
+            }
+
+            return;
+        }
+
+        if ($event->is(SessionEventType::SESSION_WARNING)) {
+            if (($event->data['warningType'] ?? null) === 'policy_blocked'
+                && ($event->data['originatingMessageId'] ?? null) === $this->waitMessageId) {
+                $this->waitRequestStarted = true;
+            }
+
+            return;
+        }
+
+        if ($event->is(SessionEventType::ASSISTANT_MESSAGE)) {
+            $originatingMessageId = $event->data['originatingMessageId'] ?? null;
+
+            if ($originatingMessageId === $this->waitMessageId || (! $originatingMessageId && $this->waitRequestStarted)) {
+                $this->waitLastAssistantMessage = $event;
+
+                if ($originatingMessageId === $this->waitMessageId) {
+                    $this->waitRequestStarted = true;
+                }
+            }
+
+            return;
+        }
+
+        if ($event->is(SessionEventType::SESSION_IDLE)) {
+            if ($this->waitRequestStarted && ($event->data['mode'] ?? null) !== 'autopilot') {
+                if (($event->data['aborted'] ?? false) === true) {
+                    $this->waitError = 'The requested run was aborted before completion.';
+                } else {
+                    $this->waitIdle = true;
+                }
+            }
+
+            return;
+        }
+
+        if ($event->is(SessionEventType::SESSION_AUTOPILOT_STOPPED)) {
+            if (($event->data['requestId'] ?? null) !== $this->waitMessageId) {
+                return;
+            }
+
+            if (($event->data['reason'] ?? null) === 'error') {
+                $this->waitError = 'Autopilot request failed';
+            } elseif (($event->data['reason'] ?? null) === 'aborted') {
+                $this->waitError = 'The requested run was aborted before completion.';
+            } else {
+                $this->waitIdle = true;
+            }
+
+            return;
+        }
+
+        if ($event->is(SessionEventType::SESSION_ERROR)) {
+            $originatingMessageId = $event->data['originatingMessageId'] ?? null;
+
+            if (! $originatingMessageId || $originatingMessageId === $this->waitMessageId) {
+                $this->waitError = $event->errorMessage() ?? 'Unknown error';
+            }
+        }
     }
 
     /**
@@ -501,7 +616,7 @@ class Session implements CopilotSession
             $this->dispatchEvent($event);
         }
 
-        if (! $this->waitIdle) {
+        if (! $this->waitIdle && $this->waitError === null) {
             $event = new SessionEvent(
                 id: '',
                 timestamp: now()->toDateTimeString(),
@@ -526,6 +641,10 @@ class Session implements CopilotSession
             $this->off($this->waitHandler);
             $this->waitHandler = null;
         }
+
+        $this->waitMessageId = null;
+        $this->waitRequestStarted = false;
+        $this->waitEvents = [];
     }
 
     /**

@@ -1006,6 +1006,267 @@ describe('Session', function () {
             ->toThrow(SessionErrorException::class, 'Session error: Test error');
     });
 
+    it('waits for the requested message when another request errors and becomes idle first', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', Mockery::any())
+            ->once()
+            ->andReturn(['messageId' => 'requested-message']);
+
+        $session = new Session('test-session', $mockClient);
+        EventLoop::delay(0.01, function () use ($session): void {
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'user.message',
+                'data' => ['messageId' => 'other-message'],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'assistant.message',
+                'data' => [
+                    'content' => 'Other response',
+                    'originatingMessageId' => 'other-message',
+                ],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'session.error',
+                'data' => [
+                    'message' => 'Other request failed',
+                    'originatingMessageId' => 'other-message',
+                ],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
+        });
+        EventLoop::delay(0.05, function () use ($session): void {
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'user.message',
+                'data' => ['messageId' => 'requested-message'],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'assistant.message',
+                'data' => [
+                    'content' => 'Requested response',
+                    'originatingMessageId' => 'requested-message',
+                ],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
+        });
+
+        $response = $session->sendAndWait('Hello', timeout: 0.3);
+
+        expect($response?->content())->toBe('Requested response');
+    });
+
+    it('buffers events until the send response provides the request ID', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $session = new Session('test-session', $mockClient);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', Mockery::any())
+            ->once()
+            ->andReturnUsing(function () use ($session): array {
+                $session->dispatchEvent(SessionEvent::fromArray([
+                    'type' => 'user.message',
+                    'data' => ['messageId' => 'other-message'],
+                ]));
+                $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
+                $session->dispatchEvent(SessionEvent::fromArray([
+                    'type' => 'user.message',
+                    'data' => ['messageId' => 'requested-message'],
+                ]));
+                $session->dispatchEvent(SessionEvent::fromArray([
+                    'type' => 'assistant.message',
+                    'data' => [
+                        'content' => 'Requested response',
+                        'originatingMessageId' => 'requested-message',
+                    ],
+                ]));
+                $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
+
+                return ['messageId' => 'requested-message'];
+            });
+
+        $response = $session->sendAndWait('Hello', timeout: 0.3);
+
+        expect($response?->content())->toBe('Requested response');
+    });
+
+    it('completes Autopilot when its request-specific stop event arrives', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', Mockery::any())
+            ->once()
+            ->andReturn(['messageId' => 'requested-message']);
+
+        $session = new Session('test-session', $mockClient);
+        EventLoop::delay(0.02, function () use ($session): void {
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'assistant.message',
+                'data' => [
+                    'content' => 'Autopilot response',
+                    'originatingMessageId' => 'requested-message',
+                ],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'session.autopilot_stopped',
+                'data' => [
+                    'requestId' => 'other-message',
+                    'reason' => 'task_complete',
+                ],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'session.autopilot_stopped',
+                'data' => [
+                    'requestId' => 'requested-message',
+                    'reason' => 'task_complete',
+                ],
+            ]));
+        });
+
+        $response = $session->sendAndWait('Hello', agentMode: 'autopilot', timeout: 0.3);
+
+        expect($response?->content())->toBe('Autopilot response');
+    });
+
+    it('recognizes a policy-blocked warning as the requested message start', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', Mockery::any())
+            ->once()
+            ->andReturn(['messageId' => 'requested-message']);
+
+        $session = new Session('test-session', $mockClient);
+        $receivedError = null;
+        $session->on(SessionEventType::SESSION_ERROR, function (SessionEvent $event) use (&$receivedError): void {
+            $receivedError = $event;
+        });
+        EventLoop::delay(0.02, function () use ($session): void {
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'session.warning',
+                'data' => [
+                    'warningType' => 'policy_blocked',
+                    'originatingMessageId' => 'requested-message',
+                ],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
+        });
+
+        $response = $session->sendAndWait('Hello', timeout: 0.3);
+
+        expect($response)->toBeNull()
+            ->and($receivedError)->toBeNull();
+    });
+
+    it('fails when the requested message reports a correlated error', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', Mockery::any())
+            ->once()
+            ->andReturn(['messageId' => 'requested-message']);
+
+        $session = new Session('test-session', $mockClient);
+        $receivedError = null;
+        $session->on(SessionEventType::SESSION_ERROR, function (SessionEvent $event) use (&$receivedError): void {
+            if ($event->errorMessage() === 'Requested request failed') {
+                $receivedError = $event;
+            }
+        });
+        EventLoop::delay(0.02, function () use ($session): void {
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'user.message',
+                'data' => ['messageId' => 'requested-message'],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'session.error',
+                'data' => [
+                    'message' => 'Requested request failed',
+                    'originatingMessageId' => 'requested-message',
+                ],
+            ]));
+            $session->dispatchEvent(SessionEvent::fromArray(['type' => 'session.idle']));
+        });
+
+        $response = $session->sendAndWait('Hello', timeout: 0.3);
+
+        expect($response)->toBeNull()
+            ->and($receivedError?->failed())->toBeTrue();
+        expect(fn () => $receivedError->throw())
+            ->toThrow(SessionErrorException::class, 'Session error: Requested request failed');
+    });
+
+    it('fails when a requested run is aborted', function (array $abortEvents) {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', Mockery::any())
+            ->once()
+            ->andReturn(['messageId' => 'requested-message']);
+
+        $session = new Session('test-session', $mockClient);
+        $receivedError = null;
+        $session->on(SessionEventType::SESSION_ERROR, function (SessionEvent $event) use (&$receivedError): void {
+            $receivedError = $event;
+        });
+        EventLoop::delay(0.02, function () use ($session, $abortEvents): void {
+            foreach ($abortEvents as $abortEvent) {
+                $session->dispatchEvent(SessionEvent::fromArray($abortEvent));
+            }
+        });
+
+        $response = $session->sendAndWait('Hello', timeout: 0.3);
+
+        expect($response)->toBeNull()
+            ->and($receivedError?->errorMessage())->toBe('The requested run was aborted before completion.');
+        expect(fn () => $receivedError->throw())
+            ->toThrow(SessionErrorException::class, 'Session error: The requested run was aborted before completion.');
+    })->with([
+        'normal session idle' => [[
+            [
+                'type' => 'user.message',
+                'data' => ['messageId' => 'requested-message'],
+            ],
+            [
+                'type' => 'session.idle',
+                'data' => [
+                    'aborted' => true,
+                ],
+            ],
+        ]],
+        'Autopilot stopped' => [[
+            [
+                'type' => 'session.autopilot_stopped',
+                'data' => [
+                    'requestId' => 'requested-message',
+                    'reason' => 'aborted',
+                ],
+            ],
+        ]],
+    ]);
+
+    it('fails when the requested Autopilot run stops with an error', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.send', Mockery::any())
+            ->once()
+            ->andReturn(['messageId' => 'requested-message']);
+
+        $session = new Session('test-session', $mockClient);
+        $receivedError = null;
+        $session->on(SessionEventType::SESSION_ERROR, function (SessionEvent $event) use (&$receivedError): void {
+            $receivedError = $event;
+        });
+        EventLoop::delay(0.02, function () use ($session): void {
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'session.autopilot_stopped',
+                'data' => [
+                    'requestId' => 'requested-message',
+                    'reason' => 'error',
+                ],
+            ]));
+        });
+
+        $response = $session->sendAndWait('Hello', agentMode: 'autopilot', timeout: 0.3);
+
+        expect($response)->toBeNull()
+            ->and($receivedError?->errorMessage())->toBe('Autopilot request failed');
+    });
+
     it('keeps a standalone session attached after a prompt completes', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')
@@ -1019,6 +1280,10 @@ describe('Session', function () {
 
         $session = new Session('test-session', $mockClient);
         EventLoop::delay(0.02, function () use ($session): void {
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'user.message',
+                'data' => ['messageId' => 'msg-123'],
+            ]));
             $session->dispatchEvent(SessionEvent::fromArray([
                 'type' => 'assistant.message',
                 'data' => ['content' => 'Completed response'],

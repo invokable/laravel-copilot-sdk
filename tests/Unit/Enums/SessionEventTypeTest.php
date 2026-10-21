@@ -5,6 +5,11 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\SessionEventType;
 
 describe('SessionEventType', function () {
+    it('has the Autopilot stopped event type', function () {
+        expect(SessionEventType::SESSION_AUTOPILOT_STOPPED->value)->toBe('session.autopilot_stopped')
+            ->and(SessionEventType::from('session.autopilot_stopped'))->toBe(SessionEventType::SESSION_AUTOPILOT_STOPPED);
+    });
+
     it('has MCP OAuth event types', function () {
         expect(SessionEventType::MCP_OAUTH_REQUIRED->value)->toBe('mcp.oauth_required')
             ->and(SessionEventType::MCP_OAUTH_COMPLETED->value)->toBe('mcp.oauth_completed');

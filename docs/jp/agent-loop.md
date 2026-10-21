@@ -116,10 +116,10 @@ CLI の挙動は機械的です（「モデルがツール要求 → 実行 → 
 - 意味: 「エージェントは処理を止め、次のメッセージを受け付け可能」
 - 信頼できる「完了」シグナルとしてはこちらを使う
 
-SDK の `sendAndWait()` はこのイベントを待機します。
+通常のリクエストでは、SDK の `sendAndWait()` は対象メッセージの開始後に届くこのイベントを待機します。別リクエストの先行する `session.idle` は完了として扱いません。Autopilotでは `session.idle` ではなく、対象の `requestId` を持つ `session.autopilot_stopped` を待ちます。
 
 ```typescript
-// session.idle が発行されるまで待機
+// 対象リクエストの完了まで待機
 const response = await session.sendAndWait({ prompt: "Fix the bug" });
 ```
 
