@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Types\EntraAuthConfig;
 use Revolution\Copilot\Types\Rpc\ConnectRequest;
 use Revolution\Copilot\Types\Rpc\ConnectResult;
 
@@ -28,6 +29,17 @@ describe('ConnectRequest', function () {
         $request = new ConnectRequest(token: 'abc');
 
         expect($request->toArray())->toHaveKey('token', 'abc');
+    });
+
+    it('round-trips the host Entra registration', function () {
+        $request = ConnectRequest::fromArray([
+            'entra' => ['clientId' => 'host-application-id'],
+        ]);
+
+        expect($request->entra)->toEqual(new EntraAuthConfig(clientId: 'host-application-id'))
+            ->and($request->toArray())->toBe([
+                'entra' => ['clientId' => 'host-application-id'],
+            ]);
     });
 });
 

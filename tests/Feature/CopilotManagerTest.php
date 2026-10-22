@@ -9,6 +9,7 @@ use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\CopilotManager;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\EntraAuthConfig;
 use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
@@ -411,6 +412,35 @@ describe('CopilotManager', function () {
         expect($receivedOptions)->toHaveCount(2)
             ->and($receivedOptions[0]['onGitHubTelemetry'])->toBe($handler)
             ->and($receivedOptions[1]['on_github_telemetry'])->toBe($handler);
+    });
+
+    it('forwards Entra registration from manager configuration and transport options', function () {
+        $entra = new EntraAuthConfig(clientId: 'host-application-id');
+        $receivedOptions = [];
+
+        $this->app->bind(Client::class, function ($app, array $parameters) use (&$receivedOptions) {
+            $receivedOptions[] = $parameters['options'];
+
+            $client = Mockery::mock(CopilotClient::class);
+            $client->shouldReceive('start')->once();
+            $client->shouldReceive('stop')->andReturn([]);
+
+            return $client;
+        });
+
+        $manager = new CopilotManager(['entra' => $entra]);
+        $manager->client();
+        $manager->useStdio(['entra' => $entra]);
+        $manager->stop();
+
+        $tcpManager = new CopilotManager(['entra' => $entra]);
+        $tcpManager->useTcp('tcp://127.0.0.1:12345');
+        $tcpManager->stop();
+
+        expect($receivedOptions)->toHaveCount(3)
+            ->and($receivedOptions[0]['entra'])->toBe($entra)
+            ->and($receivedOptions[1]['entra'])->toBe($entra)
+            ->and($receivedOptions[2]['entra'])->toBe($entra);
     });
 
     it('forwards built-in plugin directories from manager configuration and useStdio options', function () {

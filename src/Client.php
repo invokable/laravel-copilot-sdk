@@ -42,6 +42,7 @@ use Revolution\Copilot\Transport\TcpTransport;
 use Revolution\Copilot\Types\CanvasDeclaration;
 use Revolution\Copilot\Types\CapiSessionOptions;
 use Revolution\Copilot\Types\CommandDefinition;
+use Revolution\Copilot\Types\EntraAuthConfig;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\GitHubMcpToolConfig;
@@ -133,6 +134,8 @@ class Client implements CopilotClient
      */
     protected ?Closure $onGitHubTelemetry = null;
 
+    protected ?EntraAuthConfig $entra = null;
+
     /**
      * @var Closure(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null
      */
@@ -156,6 +159,15 @@ class Client implements CopilotClient
         $this->onGitHubTelemetry = $onGitHubTelemetry === null
             ? null
             : Closure::fromCallable($onGitHubTelemetry);
+        $entra = $options['entra'] ?? null;
+        if ($entra instanceof EntraAuthConfig) {
+            $this->entra = $entra;
+        } elseif (is_array($entra)) {
+            $this->entra = EntraAuthConfig::fromArray($entra);
+        } elseif ($entra !== null) {
+            throw new InvalidArgumentException('entra must be an EntraAuthConfig or array.');
+        }
+
         $extensionLaunchProvider = array_key_exists('extensionLaunchProvider', $options)
             ? $options['extensionLaunchProvider']
             : ($options['extension_launch_provider'] ?? null);
@@ -1732,9 +1744,14 @@ class Client implements CopilotClient
                 'enableGitHubTelemetryForwarding' => $this->onGitHubTelemetry !== null ? true : null,
                 'token' => $this->connectionToken,
                 'supportedTaskKinds' => [TaskKind::AGENT->value, TaskKind::CLIENT->value, TaskKind::SHELL->value],
+                'entra' => $this->entra?->toArray(),
             ], fn ($value) => $value !== null))->protocolVersion;
         } catch (JsonRpcException $e) {
             if ($e->code === -32601 || str_contains($e->getMessage(), 'Unhandled method connect')) {
+                if ($this->entra !== null) {
+                    throw new RuntimeException('This runtime does not support Entra client configuration.', previous: $e);
+                }
+
                 $serverVersion = $this->ping()['protocolVersion'] ?? null;
             } else {
                 throw $e;
