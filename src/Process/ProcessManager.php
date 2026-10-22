@@ -66,7 +66,6 @@ class ProcessManager
         protected TelemetryConfig|array|null $telemetry = null,
         protected int $sessionIdleTimeoutSeconds = 0,
         protected ?string $baseDirectory = null,
-        protected bool $remote = false,
         CopilotClientMode|string $mode = CopilotClientMode::CopilotCli,
     ) {
         $this->mode = $mode instanceof CopilotClientMode
@@ -246,10 +245,6 @@ class ProcessManager
         if ($this->sessionIdleTimeoutSeconds > 0) {
             $args[] = '--session-idle-timeout';
             $args[] = (string) $this->sessionIdleTimeoutSeconds;
-        }
-
-        if ($this->remote) {
-            $args[] = '--remote';
         }
 
         $command = array_merge(

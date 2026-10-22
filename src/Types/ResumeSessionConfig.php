@@ -10,7 +10,6 @@ use Revolution\Copilot\Contracts\SessionFsProvider;
 use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
-use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\Rpc\AutopilotOptions;
@@ -144,10 +143,6 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?string  $gitHubToken  GitHub token for per-session authentication.
      *                                When provided, the runtime resolves this token into a full GitHub identity
      *                                (login, Copilot plan, endpoints) and stores it on the session.
-     * @param  RemoteSessionMode|string|null  $remoteSession  Per-session remote behavior control:
-     *                                                        - `"off"` — local only, no remote export (default)
-     *                                                        - `"export"` — export session events to GitHub without enabling remote steering
-     *                                                        - `"on"` — export to GitHub AND enable remote steering
      * @param  ?Closure  $onEvent  Optional event handler registered on the session before the session.resume RPC is issued.
      *                             This guarantees that early events emitted by the CLI during session resumption
      *                             are delivered to the handler.
@@ -233,7 +228,6 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $openCanvases = null,
         public ?bool $allowTranscriptRecovery = null,
         public ?string $gitHubToken = null,
-        public RemoteSessionMode|string|null $remoteSession = null,
         public ExtensionInfo|array|null $extensionInfo = null,
         public ?array $canvases = null,
         public ?CanvasHandler $canvasHandler = null,
@@ -453,7 +447,6 @@ readonly class ResumeSessionConfig implements Arrayable
             openCanvases: $data['openCanvases'] ?? null,
             allowTranscriptRecovery: $data['allowTranscriptRecovery'] ?? null,
             gitHubToken: $data['gitHubToken'] ?? null,
-            remoteSession: $data['remoteSession'] ?? null,
             extensionInfo: $extensionInfo,
             canvases: $data['canvases'] ?? null,
             canvasHandler: $data['canvasHandler'] ?? null,
@@ -550,10 +543,6 @@ readonly class ResumeSessionConfig implements Arrayable
             ? $this->modelCapabilities->toArray()
             : $this->modelCapabilities;
 
-        $remoteSession = $this->remoteSession instanceof RemoteSessionMode
-            ? $this->remoteSession->value
-            : $this->remoteSession;
-
         $extensionInfo = $this->extensionInfo instanceof ExtensionInfo
             ? $this->extensionInfo->toArray()
             : $this->extensionInfo;
@@ -647,7 +636,6 @@ readonly class ResumeSessionConfig implements Arrayable
             'openCanvases' => $this->openCanvases,
             'allowTranscriptRecovery' => $this->allowTranscriptRecovery,
             'gitHubToken' => $this->gitHubToken,
-            'remoteSession' => $remoteSession,
             'extensionInfo' => $extensionInfo,
             'canvases' => $this->canvases === null
                 ? null

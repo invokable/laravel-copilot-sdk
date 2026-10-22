@@ -95,6 +95,30 @@ describe('ProcessManager Auth Options', function () {
     });
 });
 
+describe('ProcessManager CLI options', function () {
+    it('does not pass the removed remote flag to the CLI', function () {
+        $argsFile = tempnam(sys_get_temp_dir(), 'copilot-cli-args-');
+        $script = sprintf(
+            'file_put_contents(%s, json_encode($argv)); while (! feof(STDIN)) { usleep(1000); }',
+            var_export($argsFile, true),
+        );
+        $manager = new ProcessManager(
+            cliPath: PHP_BINARY,
+            cliArgs: ['-r', $script, '--'],
+        );
+
+        try {
+            $manager->start();
+            $arguments = json_decode((string) file_get_contents($argsFile), true, flags: JSON_THROW_ON_ERROR);
+
+            expect($arguments)->not->toContain('--remote');
+        } finally {
+            $manager->stop();
+            unlink($argsFile);
+        }
+    });
+});
+
 describe('ProcessManager process diagnostics', function () {
     it('retains only the latest 8 KiB of stderr output after the process stops', function () {
         $manager = new ProcessManager(

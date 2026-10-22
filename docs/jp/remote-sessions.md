@@ -10,37 +10,9 @@ Remote Sessionsを有効にすると、GitHubのMission Control経由でWebや�
 - ユーザーが認証済みであること（GitHubトークンまたはログイン済みユーザー）
 - `workingDirectory` がGitHubリポジトリであること
 
-## クライアントレベルで有効化（常時ON）
+## 公式SDK 1.0.26 / Copilot CLI 1.0.103 で削除された設定
 
-Laravel版では、`config/copilot.php`に固定で追加するより、必要な処理だけ`useStdio()`で`remote: true`を有効化する使い方が扱いやすいです。
-
-`remote`オプションはCLIプロセスをSDK側で起動する場合にのみ有効です。  
-つまり、基本的に**stdioモード専用**です（`useTcp()`など外部サーバー接続時は無視されます）。
-
-```php
-use Revolution\Copilot\Contracts\CopilotSession;
-use Revolution\Copilot\Enums\SessionEventType;
-use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Support\PermissionHandler;
-use Revolution\Copilot\Types\SessionConfig;
-use Revolution\Copilot\Types\SessionEvent;
-
-$config = new SessionConfig(
-    workingDirectory: '/path/to/github-repo',
-    onPermissionRequest: PermissionHandler::approveAll(),
-);
-
-$stdioConfig = config('copilot');
-$stdioConfig['remote'] = true;
-
-Copilot::useStdio($stdioConfig)->start(function (CopilotSession $session): void {
-    $session->on(SessionEventType::SESSION_INFO, function (SessionEvent $event): void {
-        if ($event->data('infoType') === 'remote') {
-            echo 'Remote URL: '.$event->data('url').PHP_EOL;
-        }
-    });
-}, config: $config);
-```
+公式SDK 1.0.26 でクライアント設定の`remote`、セッション設定の`remoteSession`、CLI起動引数の`--remote`は削除されました。既存のリモートセッションRPCは引き続き利用できます。
 
 ## セッションごとに有効化（オンデマンド）
 
@@ -85,7 +57,7 @@ echo $connected->sessionId;
 
 ## ランタイム全体の Remote Control（TCP モード）
 
-`remote: true`はCLIプロセスの起動時に使う設定で、stdioモードに限られます。TCPモードで既存のCLIサーバーに接続する場合、この設定は無視されます。
+`RemoteControlConfig`の`remote`はランタイム全体のRemote Control用設定です。公式SDK 1.0.103で削除されたクライアント起動設定の`remote`とは別です。
 
 TCPモードでは`$client->rpc()->sessions()`からランタイム全体で1つのRemote Controlを管理できます。セッション単位の`remote()->enable()`とは異なり、操作対象セッションの開始・停止・移譲や、現在の状態の取得ができます。
 
@@ -157,7 +129,6 @@ $svg = $writer->writeString($result->url ?? '');
 
 ## 注意点
 
-- `workingDirectory`がGitHubリポジトリでない場合、常時ONではリモート設定がスキップされます
 - オンデマンド有効化（`remote()->enable()`）ではエラーになる場合があります
 - 認証情報（`github_token`または`use_logged_in_user`）を適切に設定してください
 

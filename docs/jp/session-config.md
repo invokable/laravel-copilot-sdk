@@ -5,6 +5,8 @@
 `Copilot::run(prompt: '...', config: $config)`や`Copilot::start(function (CopilotSession $session) { ... }, config: $config)`のように使用します。  
 単純にモデルを指定したいだけのような`SessionConfig`クラスを使うまでもない時は配列での指定も可能です。`Copilot::run(prompt: '...', config: ['model' => 'auto'])`
 
+`remoteSession`設定は公式SDK 1.0.26で削除されました。
+
 ```php
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionConfig;
@@ -137,12 +139,6 @@ $config = new SessionConfig(
     // セッションごとのGitHubトークン（マルチテナント対応）
     // クライアントレベルのgithub_tokenとは別に、セッション単位でトークンを指定できる
     gitHubToken: $user->github_token,
-
-    // リモートセッションの動作モード
-    // 'off' - ローカルのみ（デフォルト）
-    // 'export' - セッションイベントをGitHubにエクスポート（リモートステアリングなし）
-    // 'on' - エクスポートとリモートステアリングを両方有効化
-    remoteSession: \Revolution\Copilot\Enums\RemoteSessionMode::Export,
 
     // クラウドセッション（ローカルではなくクラウドでセッションを作成）
     // オプションでリポジトリ情報を関連付けられる

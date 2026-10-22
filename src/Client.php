@@ -240,7 +240,6 @@ class Client implements CopilotClient
             'telemetry' => data_get($options, 'telemetry'),
             'sessionIdleTimeoutSeconds' => data_get($options, 'session_idle_timeout_seconds', 0),
             'baseDirectory' => $baseDirectory,
-            'remote' => data_get($options, 'remote', false),
             'mode' => $this->mode,
         ]);
     }
@@ -769,7 +768,6 @@ class Client implements CopilotClient
                     : ($config['enableGitHubTelemetryForwarding'] ?? null),
                 'gitHubToken' => $config['gitHubToken'] ?? null,
                 'gitHubTokenProviderRegistrationId' => $tokenProviderRegistrationId,
-                'remoteSession' => $config['remoteSession'] ?? null,
                 'cloud' => $config['cloud'] ?? null,
                 'canvases' => $config['canvases'] ?? null,
                 'requestCanvasRenderer' => $config['requestCanvasRenderer'] ?? null,
@@ -1053,7 +1051,6 @@ class Client implements CopilotClient
                     : ($config['enableGitHubTelemetryForwarding'] ?? null),
                 'gitHubToken' => $config['gitHubToken'] ?? null,
                 'gitHubTokenProviderRegistrationId' => $tokenProviderRegistrationId,
-                'remoteSession' => $config['remoteSession'] ?? null,
                 'canvases' => $config['canvases'] ?? null,
                 'requestCanvasRenderer' => $config['requestCanvasRenderer'] ?? null,
                 'requestExtensions' => $config['requestExtensions'] ?? null,
