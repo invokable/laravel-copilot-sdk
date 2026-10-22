@@ -15,6 +15,7 @@ readonly class SubagentSettings implements Arrayable
 {
     /**
      * @param  array<string, SubagentSettingsEntry>|null  $agents  Per-agent settings keyed by subagent agent_type
+     * @param  ?bool  $contextManagementTools  Whether subagent context management tools are enabled
      * @param  ?array<string>  $disabledSubagents  Names of subagents the user has turned off
      * @param  ?int  $maxConcurrency  Maximum number of subagents that can run concurrently; applies to usage-based billing users only
      * @param  ?int  $maxDepth  Maximum subagent nesting depth; applies to usage-based billing users only
@@ -24,6 +25,7 @@ readonly class SubagentSettings implements Arrayable
         public ?array $disabledSubagents = null,
         public ?int $maxConcurrency = null,
         public ?int $maxDepth = null,
+        public ?bool $contextManagementTools = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -41,6 +43,7 @@ readonly class SubagentSettings implements Arrayable
             disabledSubagents: $data['disabledSubagents'] ?? null,
             maxConcurrency: isset($data['maxConcurrency']) ? (int) $data['maxConcurrency'] : null,
             maxDepth: isset($data['maxDepth']) ? (int) $data['maxDepth'] : null,
+            contextManagementTools: $data['contextManagementTools'] ?? null,
         );
     }
 
@@ -55,6 +58,7 @@ readonly class SubagentSettings implements Arrayable
             'disabledSubagents' => $this->disabledSubagents,
             'maxConcurrency' => $this->maxConcurrency,
             'maxDepth' => $this->maxDepth,
+            'contextManagementTools' => $this->contextManagementTools,
         ], fn ($v) => $v !== null);
     }
 }
