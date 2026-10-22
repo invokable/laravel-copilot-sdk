@@ -10,7 +10,6 @@ use Revolution\Copilot\Contracts\SessionFsProvider;
 use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\ReasoningEffort;
-use Revolution\Copilot\Enums\RemoteSessionMode;
 use Revolution\Copilot\Enums\Verbosity;
 use Revolution\Copilot\Enums\WorkingDirectoryTrust;
 use Revolution\Copilot\Support\CanvasHandler;
@@ -153,10 +152,6 @@ readonly class SessionConfig implements Arrayable
      *                                When provided, the runtime resolves this token into a full GitHub identity
      *                                (login, Copilot plan, endpoints) and stores it on the session.
      *                                This enables multitenancy — different sessions can have different GitHub identities.
-     * @param  RemoteSessionMode|string|null  $remoteSession  Per-session remote behavior control:
-     *                                                        - `"off"` — local only, no remote export (default)
-     *                                                        - `"export"` — export session events to GitHub without enabling remote steering
-     *                                                        - `"on"` — export to GitHub AND enable remote steering
      * @param  CloudSessionOptions|array|null  $cloud  Creates a remote session in the cloud instead of a local session.
      *                                                 The optional repository is associated with the cloud session.
      * @param  ?array  $canvases  Declarative metadata for canvases contributed by this session participant.
@@ -284,7 +279,6 @@ readonly class SessionConfig implements Arrayable
         public InfiniteSessionConfig|array|null $infiniteSessions = null,
         public MemoryConfiguration|array|null $memory = null,
         public ?string $gitHubToken = null,
-        public RemoteSessionMode|string|null $remoteSession = null,
         public CloudSessionOptions|array|null $cloud = null,
         public ?array $canvases = null,
         public ?CanvasHandler $canvasHandler = null,
@@ -499,7 +493,6 @@ readonly class SessionConfig implements Arrayable
             infiniteSessions: $infiniteSessions,
             memory: $memory,
             gitHubToken: $data['gitHubToken'] ?? null,
-            remoteSession: $data['remoteSession'] ?? null,
             cloud: $cloud,
             canvases: $data['canvases'] ?? null,
             canvasHandler: $data['canvasHandler'] ?? null,
@@ -621,10 +614,6 @@ readonly class SessionConfig implements Arrayable
             ? $this->modelCapabilities->toArray()
             : $this->modelCapabilities;
 
-        $remoteSession = $this->remoteSession instanceof RemoteSessionMode
-            ? $this->remoteSession->value
-            : $this->remoteSession;
-
         $cloud = $this->cloud instanceof CloudSessionOptions
             ? $this->cloud->toArray()
             : $this->cloud;
@@ -707,7 +696,6 @@ readonly class SessionConfig implements Arrayable
             'infiniteSessions' => $infiniteSessions,
             'memory' => $memory,
             'gitHubToken' => $this->gitHubToken,
-            'remoteSession' => $remoteSession,
             'cloud' => $cloud,
             'trustWorkingDirectory' => $this->trustWorkingDirectory instanceof WorkingDirectoryTrust
                 ? $this->trustWorkingDirectory->value

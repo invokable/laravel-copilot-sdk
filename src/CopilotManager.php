@@ -251,7 +251,6 @@ class CopilotManager implements Factory
                     'telemetry' => $this->config['telemetry'] ?? null,
                     'session_idle_timeout_seconds' => $this->config['session_idle_timeout_seconds'] ?? 0,
                     'baseDirectory' => $this->config['baseDirectory'] ?? $this->config['base_directory'] ?? $this->config['copilot_home'] ?? null,
-                    'remote' => $this->config['remote'] ?? false,
                     'installation_confirmation_handler' => $this->config['installation_confirmation_handler']
                         ?? $this->config['installationConfirmationHandler'] ?? null,
                     'session_fs' => $this->config['session_fs'] ?? $this->config['sessionFs'] ?? null,
@@ -290,7 +289,7 @@ class CopilotManager implements Factory
     /**
      * Configure the client to use stdio transport with given options.
      *
-     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, mode?: CopilotClientMode|string, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, remote?: bool, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array, entra?: EntraAuthConfig|array, builtin_plugin_directories?: list<string>, builtinPluginDirectories?: list<string>, on_github_telemetry?: callable(GitHubTelemetryNotification): void, onGitHubTelemetry?: callable(GitHubTelemetryNotification): void, extension_launch_provider?: callable(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null, extensionLaunchProvider?: callable(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null, request_handler?: CopilotRequestHandler|Closure|null, requestHandler?: CopilotRequestHandler|Closure|null}  $config  Configuration options for stdio transport.
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, mode?: CopilotClientMode|string, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array, entra?: EntraAuthConfig|array, builtin_plugin_directories?: list<string>, builtinPluginDirectories?: list<string>, on_github_telemetry?: callable(GitHubTelemetryNotification): void, onGitHubTelemetry?: callable(GitHubTelemetryNotification): void, extension_launch_provider?: callable(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null, extensionLaunchProvider?: callable(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null, request_handler?: CopilotRequestHandler|Closure|null, requestHandler?: CopilotRequestHandler|Closure|null}  $config  Configuration options for stdio transport.
      */
     public function useStdio(?array $config = null): static
     {
@@ -312,7 +311,6 @@ class CopilotManager implements Factory
             'copilot_home',
             'base_directory',
             'baseDirectory',
-            'remote',
             'installation_confirmation_handler',
             'installationConfirmationHandler',
             'session_fs',

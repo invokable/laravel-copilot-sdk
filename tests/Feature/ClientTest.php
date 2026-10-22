@@ -54,6 +54,21 @@ describe('Client', function () {
             ->and($client->getState())->toBe(ConnectionState::DISCONNECTED);
     });
 
+    it('does not forward the removed remote option to the process manager', function () {
+        $capturedParameters = null;
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+
+        $this->app->bind(ProcessManager::class, function ($app, $parameters) use (&$capturedParameters, $mockProcessManager) {
+            $capturedParameters = $parameters;
+
+            return $mockProcessManager;
+        });
+
+        new Client(['remote' => true]);
+
+        expect($capturedParameters)->not->toHaveKey('remote');
+    });
+
     it('rejects invalid Entra client configuration', function () {
         expect(fn () => new Client(['entra' => 'invalid']))
             ->toThrow(InvalidArgumentException::class, 'entra must be an EntraAuthConfig or array.')
@@ -1466,7 +1481,7 @@ describe('Client', function () {
                 && ($params['pluginDirectories'] ?? null) === ['/app/plugins/reviewer']
                 && ($params['instructionDirectories'] ?? null) === ['../instructions']
                 && ($params['enableFileHooks'] ?? null) === false
-                && ($params['remoteSession'] ?? null) === 'export'
+                && ! array_key_exists('remoteSession', $params)
                 && ($params['cloud']['repository'] ?? null) === ['owner' => 'myorg', 'name' => 'myrepo', 'branch' => 'main']
                 && ($params['toolSearch'] ?? null) === ['enabled' => true, 'deferThreshold' => 12]
                 && ($params['imageGeneration'] ?? null) === ['enabled' => true]
@@ -1639,7 +1654,7 @@ describe('Client', function () {
                 && ($params['pluginDirectories'] ?? null) === ['/app/plugins/reviewer']
                 && ($params['instructionDirectories'] ?? null) === ['/app/instructions']
                 && ($params['enableFileHooks'] ?? null) === false
-                && ($params['remoteSession'] ?? null) === 'export'
+                && ! array_key_exists('remoteSession', $params)
                 && ($params['largeOutput'] ?? null) === ['enabled' => true, 'maxSizeBytes' => 1024]
                 && ($params['requestMcpApps'] ?? null) === true
                 && ! array_key_exists('enableMcpApps', $params)
