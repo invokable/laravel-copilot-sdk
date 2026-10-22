@@ -10,9 +10,9 @@ Remote Sessionsを有効にすると、GitHubのMission Control経由でWebや�
 - ユーザーが認証済みであること（GitHubトークンまたはログイン済みユーザー）
 - `workingDirectory` がGitHubリポジトリであること
 
-## 公式SDK 1.0.103 で削除された設定
+## 公式SDK 1.0.26 / Copilot CLI 1.0.103 で削除された設定
 
-公式SDK 1.0.103 でクライアント設定の`remote`、セッション設定の`remoteSession`、CLI起動引数の`--remote`は削除されました。既存のリモートセッションRPCは引き続き利用できます。
+公式SDK 1.0.26 でクライアント設定の`remote`、セッション設定の`remoteSession`、CLI起動引数の`--remote`は削除されました。既存のリモートセッションRPCは引き続き利用できます。
 
 ## セッションごとに有効化（オンデマンド）
 
