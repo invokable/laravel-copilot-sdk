@@ -5,7 +5,7 @@
 `Copilot::run(prompt: '...', config: $config)`や`Copilot::start(function (CopilotSession $session) { ... }, config: $config)`のように使用します。  
 単純にモデルを指定したいだけのような`SessionConfig`クラスを使うまでもない時は配列での指定も可能です。`Copilot::run(prompt: '...', config: ['model' => 'auto'])`
 
-`remoteSession`設定は公式SDK 1.0.103で削除されました。
+`remoteSession`設定は公式SDK 1.0.26で削除されました。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
