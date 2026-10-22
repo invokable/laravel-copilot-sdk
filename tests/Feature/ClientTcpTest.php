@@ -11,6 +11,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Protocol;
 use Revolution\Copilot\Session;
 use Revolution\Copilot\Transport\TcpTransport;
+use Revolution\Copilot\Types\EntraAuthConfig;
 use Revolution\Copilot\Types\RuntimeConnection;
 
 beforeEach(function () {
@@ -56,7 +57,7 @@ describe('Client TCP Mode', function () {
         // Use reflection to inject the mock transport
         $client = new Client([
             'cli_url' => 'tcp://127.0.0.1:12345',
-            'entra' => ['clientId' => 'host-application-id'],
+            'entra' => new EntraAuthConfig(clientId: 'host-application-id'),
         ]);
         $reflection = new ReflectionClass($client);
         $transportProperty = $reflection->getProperty('transport');

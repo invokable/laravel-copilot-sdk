@@ -54,6 +54,13 @@ describe('Client', function () {
             ->and($client->getState())->toBe(ConnectionState::DISCONNECTED);
     });
 
+    it('rejects invalid Entra client configuration', function () {
+        expect(fn () => new Client(['entra' => 'invalid']))
+            ->toThrow(InvalidArgumentException::class, 'entra must be an EntraAuthConfig or array.')
+            ->and(fn () => new Client(['entra' => ['clientId' => '  ']]))
+            ->toThrow(InvalidArgumentException::class, 'entra.clientId must be a non-empty string.');
+    });
+
     it('rejects a non-callable GitHub telemetry handler', function () {
         expect(fn () => new Client(['on_github_telemetry' => 'not-callable']))
             ->toThrow(InvalidArgumentException::class, 'onGitHubTelemetry must be callable');
