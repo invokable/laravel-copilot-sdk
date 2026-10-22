@@ -11,6 +11,8 @@ use Revolution\Copilot\Types\Rpc\HostListSessionsRequest;
 use Revolution\Copilot\Types\Rpc\HostListSessionsResult;
 use Revolution\Copilot\Types\Rpc\HostPublishSessionRequest;
 use Revolution\Copilot\Types\Rpc\HostPublishSessionResult;
+use Revolution\Copilot\Types\Rpc\HostSetSessionCreationPolicyRequest;
+use Revolution\Copilot\Types\Rpc\HostSetSessionCreationPolicyResult;
 use Revolution\Copilot\Types\Rpc\HostStartRequest;
 use Revolution\Copilot\Types\Rpc\HostStartResult;
 use Revolution\Copilot\Types\Rpc\HostUnpublishSessionRequest;
@@ -38,6 +40,20 @@ class PendingServerHost
 
         return HostStartResult::fromArray(
             $this->client->request('host.start', $paramsArray),
+        );
+    }
+
+    /**
+     * Update whether remote clients may create new sessions on this host.
+     */
+    public function setSessionCreationPolicy(HostSetSessionCreationPolicyRequest|array $params): HostSetSessionCreationPolicyResult
+    {
+        $paramsArray = $params instanceof HostSetSessionCreationPolicyRequest
+            ? $params->toArray()
+            : HostSetSessionCreationPolicyRequest::fromArray($params)->toArray();
+
+        return HostSetSessionCreationPolicyResult::fromArray(
+            $this->client->request('host.setSessionCreationPolicy', $paramsArray),
         );
     }
 

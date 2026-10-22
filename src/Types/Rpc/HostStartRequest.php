@@ -16,6 +16,8 @@ readonly class HostStartRequest implements Arrayable
         public HostGitHubEnvironmentOptions|array|null $githubEnvironment = null,
         public ?bool $sessionFactory = null,
         public ?bool $resumeFactory = null,
+        public HostAuthentication|array|null $authentication = null,
+        public ?bool $allowCreatingNewSessions = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -35,6 +37,12 @@ readonly class HostStartRequest implements Arrayable
                 : null,
             sessionFactory: $data['sessionFactory'] ?? null,
             resumeFactory: $data['resumeFactory'] ?? null,
+            authentication: isset($data['authentication'])
+                ? ($data['authentication'] instanceof HostAuthentication
+                    ? $data['authentication']
+                    : HostAuthentication::fromArray($data['authentication']))
+                : null,
+            allowCreatingNewSessions: $data['allowCreatingNewSessions'] ?? null,
         );
     }
 
@@ -51,6 +59,10 @@ readonly class HostStartRequest implements Arrayable
                 : $this->githubEnvironment,
             'sessionFactory' => $this->sessionFactory,
             'resumeFactory' => $this->resumeFactory,
+            'authentication' => $this->authentication instanceof HostAuthentication
+                ? $this->authentication->toArray()
+                : $this->authentication,
+            'allowCreatingNewSessions' => $this->allowCreatingNewSessions,
         ], fn ($value) => $value !== null);
     }
 }
