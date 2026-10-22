@@ -75,6 +75,8 @@ it('returns validated credentials and denies rejected or mismatched identities',
         ['identity' => 'tenant-1', 'expiresAt' => '2099-01-01T00:00:00Z'],
         null,
         ['identity' => 'tenant-2', 'expiresAt' => '2099-01-01T00:00:00Z'],
+        ['identity' => 'tenant-1', 'expiresAt' => '2000-01-01T00:00:00Z'],
+        ['identity' => 'tenant-1', 'expiresAt' => 'not-a-date'],
     ];
     $receivedTokens = [];
     $host = $client->startAhpHost(
@@ -90,7 +92,7 @@ it('returns validated credentials and denies rejected or mismatched identities',
         localServer: [],
     );
 
-    foreach (['accepted', 'rejected', 'wrong-identity'] as $requestId) {
+    foreach (['accepted', 'rejected', 'wrong-identity', 'expired', 'invalid-expiry'] as $requestId) {
         $transport->injectRequest($requestId, 'host.validateAuthentication', [
             'hostId' => $host->hostId,
             'requestId' => $requestId,
@@ -105,10 +107,14 @@ it('returns validated credentials and denies rejected or mismatched identities',
 
     expect($transport->responseFor('rejected')['result'])->toBeNull()
         ->and($transport->responseFor('wrong-identity')['result'])->toBeNull()
+        ->and($transport->responseFor('expired')['result'])->toBeNull()
+        ->and($transport->responseFor('invalid-expiry')['result'])->toBeNull()
         ->and($receivedTokens)->toBe([
             'admission-accepted',
             'admission-rejected',
             'admission-wrong-identity',
+            'admission-expired',
+            'admission-invalid-expiry',
         ]);
 });
 
@@ -218,6 +224,12 @@ it('passes trusted identity to create and resume callbacks and releases each han
         'authentication' => ['mode' => 'custom', 'identity' => 'wrong-tenant'],
         'config' => ['sessionId' => 'created-session'],
     ]);
+    $transport->injectRequest('handoff-missing-id', 'host.materializeSession', [
+        'hostId' => $host->hostId,
+        'handoffId' => 'handoff-missing-id',
+        'authentication' => ['mode' => 'custom', 'identity' => 'tenant-1'],
+        'config' => [],
+    ]);
     $transport->injectRequest('handoff-create-valid', 'host.materializeSession', [
         'hostId' => $host->hostId,
         'handoffId' => 'handoff-create-valid',
@@ -246,10 +258,54 @@ it('passes trusted identity to create and resume callbacks and releases each han
     expect($transport->responseFor('handoff-create')['error']['message'])
         ->toContain('does not match host policy');
 
+    expect($transport->responseFor('handoff-missing-id')['error']['message'])
+        ->toContain('must include a nonempty sessionId');
+
     expect($transport->responseFor('handoff-create-valid')['result'])->toBe(['sessionId' => 'created-session'])
         ->and($transport->responseFor('handoff-resume')['result'])->toBe(['sessionId' => 'resumed-session'])
         ->and($receivedIdentities)->toBe(['tenant-1', 'tenant-1'])
         ->and($releasedSessions)->toBe(['created-session', 'resumed-session']);
+});
+
+it('releases a session returned after its handoff was cancelled', function () {
+    [$client, $transport] = createAhpHostTestClient();
+    $releasedSessions = [];
+    $host = $client->startAhpHost(
+        authentication: AhpHostAuthentication::custom(
+            'tenant-1',
+            fn () => new HostAuthenticationResult('tenant-1', '2099-01-01T00:00:00Z'),
+        ),
+        localServer: [],
+        createSession: function (HostMaterializeSessionRequest $request, CancellationToken $signal) use ($client) {
+            $suspension = EventLoop::getSuspension();
+            $signal->onCancellationRequested(fn () => $suspension->resume());
+            $suspension->suspend();
+
+            return $client->createSession([
+                ...$request->config,
+                'onPermissionRequest' => fn () => true,
+            ]);
+        },
+        onSessionReleased: function ($session) use (&$releasedSessions): void {
+            $releasedSessions[] = $session->id();
+        },
+    );
+
+    $transport->injectRequest('late-handoff', 'host.materializeSession', [
+        'hostId' => $host->hostId,
+        'handoffId' => 'late-handoff',
+        'authentication' => ['mode' => 'custom', 'identity' => 'tenant-1'],
+        'config' => ['sessionId' => 'late-session'],
+    ]);
+    EventLoop::delay(0.01, fn () => $transport->injectNotification('host.sessionReleased', [
+        'hostId' => $host->hostId,
+        'handoffId' => 'late-handoff',
+    ]));
+    EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+    EventLoop::run();
+
+    expect($transport->responseFor('late-handoff')['error']['code'])->toBe(-32800)
+        ->and($releasedSessions)->toBe(['late-session']);
 });
 
 /**

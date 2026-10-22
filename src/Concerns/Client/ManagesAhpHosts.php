@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Concerns\Client;
 
 use Closure;
+use DateTimeImmutable;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Revolution\Copilot\AhpHost;
@@ -48,6 +49,8 @@ trait ManagesAhpHosts
      * @var array<string, array{
      *     hostId: string,
      *     handoffId: string,
+     *     materializing: bool,
+     *     released: bool,
      *     signal: CancellationToken,
      *     session: CopilotSession|null,
      *     onSessionReleased: Closure|null
@@ -190,6 +193,10 @@ trait ManagesAhpHosts
                 return new JsonRpcNullResult;
             }
 
+            if (! $this->isFutureRfc3339($result->expiresAt)) {
+                return new JsonRpcNullResult;
+            }
+
             return $result->toArray();
         } finally {
             if (($this->ahpAuthentications[$key] ?? null) === $entry) {
@@ -212,6 +219,11 @@ trait ManagesAhpHosts
             throw new InvalidArgumentException('AHP session factory or trusted authentication is unavailable.');
         }
 
+        $requestedSessionId = $request->config['sessionId'] ?? null;
+        if (! is_string($requestedSessionId) || trim($requestedSessionId) === '') {
+            throw new InvalidArgumentException('AHP factory config must include a nonempty sessionId.');
+        }
+
         $this->assertAhpSessionAuthentication($host['authentication'], $request->authentication);
         $factory = $request->resume === true ? $host['resumeSession'] : $host['createSession'];
         if ($factory === null) {
@@ -227,6 +239,8 @@ trait ManagesAhpHosts
         $entry = [
             'hostId' => $request->hostId,
             'handoffId' => $request->handoffId,
+            'materializing' => true,
+            'released' => false,
             'signal' => $signal,
             'session' => null,
             'onSessionReleased' => $host['onSessionReleased'],
@@ -236,6 +250,7 @@ trait ManagesAhpHosts
             fn () => $signal->cancel(),
         );
         $completed = false;
+        $session = null;
 
         try {
             if ($signal->isCancellationRequested()) {
@@ -247,8 +262,14 @@ trait ManagesAhpHosts
                 throw new InvalidArgumentException('AHP session factory must return a CopilotSession.');
             }
 
-            $this->ahpHandoffs[$key]['session'] = $session;
-            if ($signal->isCancellationRequested()) {
+            $entry = $this->ahpHandoffs[$key] ?? null;
+            if ($entry === null) {
+                throw new JsonRpcException(-32800, 'AHP session handoff cancelled.');
+            }
+
+            $entry['session'] = $session;
+            $this->ahpHandoffs[$key] = $entry;
+            if ($entry['released'] || $signal->isCancellationRequested()) {
                 throw new JsonRpcException(-32800, 'AHP session handoff cancelled.');
             }
 
@@ -256,11 +277,12 @@ trait ManagesAhpHosts
                 throw new InvalidArgumentException('AHP session factory must return a session owned by this client.');
             }
 
-            $requestedSessionId = $request->config['sessionId'] ?? null;
-            if (is_string($requestedSessionId) && $requestedSessionId !== $session->id()) {
+            if ($requestedSessionId !== $session->id()) {
                 throw new InvalidArgumentException('AHP session factory must preserve the requested sessionId.');
             }
 
+            $entry['materializing'] = false;
+            $this->ahpHandoffs[$key] = $entry;
             $completed = true;
 
             return ['sessionId' => $session->id()];
@@ -268,6 +290,15 @@ trait ManagesAhpHosts
             $removeCancellationListener();
 
             if (! $completed) {
+                $entry = $this->ahpHandoffs[$key] ?? null;
+                if ($entry !== null) {
+                    $entry['materializing'] = false;
+                    if ($session instanceof CopilotSession) {
+                        $entry['session'] = $session;
+                    }
+                    $this->ahpHandoffs[$key] = $entry;
+                }
+
                 $this->releaseAhpHandoff($request->hostId, $request->handoffId);
             }
         }
@@ -345,6 +376,29 @@ trait ManagesAhpHosts
         }
     }
 
+    private function isFutureRfc3339(string $value): bool
+    {
+        if (preg_match(
+            '/\A(\d{4}-\d{2}-\d{2})[Tt](\d{2}:\d{2}:\d{2})(?:\.(\d+))?([Zz]|[+-]\d{2}:\d{2})\z/',
+            $value,
+            $matches,
+        ) !== 1) {
+            return false;
+        }
+
+        $fraction = str_pad(substr($matches[3] ?? '', 0, 6), 6, '0');
+        $offset = strtoupper($matches[4]) === 'Z' ? '+00:00' : $matches[4];
+        $expiration = DateTimeImmutable::createFromFormat(
+            '!Y-m-d\TH:i:s.uP',
+            $matches[1].'T'.$matches[2].'.'.$fraction.$offset,
+        );
+        $errors = DateTimeImmutable::getLastErrors();
+
+        return $expiration !== false
+            && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))
+            && $expiration > new DateTimeImmutable('now');
+    }
+
     private function releaseAhpHandoff(string $hostId, string $handoffId): void
     {
         $key = $this->ahpRequestKey($hostId, $handoffId);
@@ -353,8 +407,16 @@ trait ManagesAhpHosts
             return;
         }
 
-        unset($this->ahpHandoffs[$key]);
+        $entry['released'] = true;
         $entry['signal']->cancel();
+
+        if ($entry['materializing']) {
+            $this->ahpHandoffs[$key] = $entry;
+
+            return;
+        }
+
+        unset($this->ahpHandoffs[$key]);
 
         if ($entry['session'] !== null && $entry['onSessionReleased'] !== null) {
             try {
