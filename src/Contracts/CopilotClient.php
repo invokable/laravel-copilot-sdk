@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Contracts;
 
+use Revolution\Copilot\AhpHost;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\ServerRpc;
+use Revolution\Copilot\Types\AhpHostAuthentication;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\ModelInfo;
+use Revolution\Copilot\Types\Rpc\HostGitHubEnvironmentOptions;
+use Revolution\Copilot\Types\Rpc\HostLocalServerOptions;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\SessionLifecycleEvent;
@@ -30,6 +34,22 @@ interface CopilotClient
      * Typed server-scoped RPC methods.
      */
     public function rpc(): ServerRpc;
+
+    /**
+     * Start an AHP listener and configure its admission and session callbacks.
+     *
+     * @param  AhpHostAuthentication|array{mode: string, requireIdentity?: string, authenticate?: callable}  $authentication
+     */
+    public function startAhpHost(
+        AhpHostAuthentication|array $authentication,
+        ?string $computeId = null,
+        HostLocalServerOptions|array|null $localServer = null,
+        HostGitHubEnvironmentOptions|array|null $githubEnvironment = null,
+        ?bool $allowCreatingNewSessions = null,
+        ?callable $createSession = null,
+        ?callable $resumeSession = null,
+        ?callable $onSessionReleased = null,
+    ): AhpHost;
 
     /**
      * Create a new conversation session.

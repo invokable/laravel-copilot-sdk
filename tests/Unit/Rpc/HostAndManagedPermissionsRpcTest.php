@@ -10,7 +10,10 @@ use Revolution\Copilot\Types\Rpc\HostDisposeResult;
 use Revolution\Copilot\Types\Rpc\HostGitHubEnvironmentOptions;
 use Revolution\Copilot\Types\Rpc\HostListSessionsRequest;
 use Revolution\Copilot\Types\Rpc\HostPublishSessionRequest;
+use Revolution\Copilot\Types\Rpc\HostAuthentication;
+use Revolution\Copilot\Types\Rpc\HostSetSessionCreationPolicyRequest;
 use Revolution\Copilot\Types\Rpc\HostStartRequest;
+use Revolution\Copilot\Enums\HostAuthenticationMode;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsPermissionsEvaluateRequest;
 
 it('exposes host catalog and managed permission RPCs with typed results', function () {
@@ -53,8 +56,17 @@ it('starts and publishes host sessions with typed host options', function () {
                 'computeId' => 'compute-1',
                 'requireConnectionBinding' => false,
             ],
+            'authentication' => ['mode' => 'github'],
+            'allowCreatingNewSessions' => false,
         ])
         ->andReturn(['hostId' => 'host-1', 'environmentId' => 'environment-1']);
+    $client->shouldReceive('request')
+        ->once()
+        ->with('host.setSessionCreationPolicy', [
+            'hostId' => 'host-1',
+            'allowCreatingNewSessions' => false,
+        ])
+        ->andReturn([]);
     $client->shouldReceive('request')
         ->once()
         ->with('host.publishSession', [
@@ -73,6 +85,12 @@ it('starts and publishes host sessions with typed host options', function () {
             computeId: 'compute-1',
             requireConnectionBinding: false,
         ),
+        authentication: new HostAuthentication(HostAuthenticationMode::GitHub),
+        allowCreatingNewSessions: false,
+    ));
+    $host->setSessionCreationPolicy(new HostSetSessionCreationPolicyRequest(
+        hostId: 'host-1',
+        allowCreatingNewSessions: false,
     ));
     $published = $host->publishSession(new HostPublishSessionRequest(
         hostId: 'host-1',

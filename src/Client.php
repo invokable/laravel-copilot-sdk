@@ -15,6 +15,7 @@ use Revolution\Copilot\Concerns\Client\HandlesRequestHandler;
 use Revolution\Copilot\Concerns\Client\HandlesServerRequests;
 use Revolution\Copilot\Concerns\Client\HandlesSessionFs;
 use Revolution\Copilot\Concerns\Client\HandlesSkillProvider;
+use Revolution\Copilot\Concerns\Client\ManagesAhpHosts;
 use Revolution\Copilot\Concerns\Client\ManagesModels;
 use Revolution\Copilot\Concerns\Client\ManagesSessions;
 use Revolution\Copilot\Contracts\CopilotClient;
@@ -77,6 +78,7 @@ class Client implements CopilotClient
     use HandlesServerRequests;
     use HandlesSessionFs;
     use HandlesSkillProvider;
+    use ManagesAhpHosts;
     use Macroable;
     use ManagesModels;
     use ManagesSessions;
@@ -340,6 +342,8 @@ class Client implements CopilotClient
                 fn (string $method, array $params) => $this->handleNotification($method, $params),
             );
 
+            $this->registerAhpHostRequestHandlers();
+
             // Set up request handlers for tool calls and permission requests
             $this->rpcClient->setRequestHandler(
                 'tool.call',
@@ -508,6 +512,7 @@ class Client implements CopilotClient
     {
         $errors = [];
 
+        $this->releaseAllAhpHosts();
         $this->cancelPendingRequestHandlerExchanges();
 
         // Destroy all sessions
@@ -1775,6 +1780,18 @@ class Client implements CopilotClient
      */
     protected function handleNotification(string $method, array $params): void
     {
+        if ($method === 'host.authenticationCancelled') {
+            $this->handleAhpAuthenticationCancelled($params);
+        }
+
+        if ($method === 'host.sessionReleased') {
+            $this->handleAhpSessionReleased($params);
+        }
+
+        if ($method === 'host.exited' && is_string($params['hostId'] ?? null)) {
+            $this->releaseAhpHost($params['hostId']);
+        }
+
         if ($method === 'session.event') {
             $sessionId = $params['sessionId'] ?? null;
             $eventData = $params['event'] ?? null;

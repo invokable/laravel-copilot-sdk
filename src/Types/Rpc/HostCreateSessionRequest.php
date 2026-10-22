@@ -14,6 +14,7 @@ readonly class HostCreateSessionRequest implements Arrayable
         public ?bool $resume = null,
         public ?bool $preferResident = null,
         public ?array $config = null,
+        public HostSessionAuthentication|array|null $authentication = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -23,6 +24,11 @@ readonly class HostCreateSessionRequest implements Arrayable
             resume: $data['resume'] ?? null,
             preferResident: $data['preferResident'] ?? null,
             config: $data['config'] ?? null,
+            authentication: isset($data['authentication'])
+                ? ($data['authentication'] instanceof HostSessionAuthentication
+                    ? $data['authentication']
+                    : HostSessionAuthentication::fromArray($data['authentication']))
+                : null,
         );
     }
 
@@ -33,6 +39,9 @@ readonly class HostCreateSessionRequest implements Arrayable
             'resume' => $this->resume,
             'preferResident' => $this->preferResident,
             'config' => $this->config,
+            'authentication' => $this->authentication instanceof HostSessionAuthentication
+                ? $this->authentication->toArray()
+                : $this->authentication,
         ], fn ($value) => $value !== null);
     }
 }
