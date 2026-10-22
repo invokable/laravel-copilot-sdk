@@ -11,6 +11,7 @@ use Revolution\Copilot\Types\Rpc\PendingExternalToolRequestList;
 use Revolution\Copilot\Types\Rpc\ToolResultExpanded;
 use Revolution\Copilot\Types\Rpc\ToolsExecuteRequest;
 use Revolution\Copilot\Types\Rpc\ToolsGetCurrentMetadataResult;
+use Revolution\Copilot\Types\Rpc\ToolsGetSubagentSettingsResult;
 use Revolution\Copilot\Types\Rpc\ToolsSetRequest;
 use Revolution\Copilot\Types\Rpc\ToolsUpdateSubagentSettingsResult;
 use Revolution\Copilot\Types\Rpc\UpdateSubagentSettingsRequest;
@@ -64,6 +65,20 @@ class PendingTools
     {
         return ToolsGetCurrentMetadataResult::fromArray(
             $this->client->request('session.tools.getCurrentMetadata', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Get the current configured subagent settings for this session.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function getSubagentSettings(): ToolsGetSubagentSettingsResult
+    {
+        return ToolsGetSubagentSettingsResult::fromArray(
+            $this->client->request('session.tools.getSubagentSettings', [
                 'sessionId' => $this->sessionId,
             ]),
         );

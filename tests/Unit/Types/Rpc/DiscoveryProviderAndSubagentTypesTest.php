@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AgentDiscoveryPathScope;
+use Revolution\Copilot\Enums\AgentModelPolicy;
 use Revolution\Copilot\Enums\InstructionDiscoveryPathKind;
 use Revolution\Copilot\Enums\InstructionSourceLocation;
 use Revolution\Copilot\Enums\SkillDiscoveryScope;
@@ -540,11 +541,15 @@ describe('SubagentSettingsEntry', function () {
             'contextTier' => 'inherit',
             'effortLevel' => 'medium',
             'model' => 'gpt-5',
+            'modelPolicy' => 'required',
+            'providerId' => 'provider-1',
         ]);
 
         expect($entry->contextTier)->toBe(SubagentSettingsEntryContextTier::Inherit)
             ->and($entry->effortLevel)->toBe('medium')
-            ->and($entry->model)->toBe('gpt-5');
+            ->and($entry->model)->toBe('gpt-5')
+            ->and($entry->modelPolicy)->toBe(AgentModelPolicy::REQUIRED)
+            ->and($entry->providerId)->toBe('provider-1');
     });
 
     it('handles optional fields', function () {
@@ -556,11 +561,19 @@ describe('SubagentSettingsEntry', function () {
     });
 
     it('converts to array', function () {
-        $entry = new SubagentSettingsEntry(contextTier: SubagentSettingsEntryContextTier::Default, effortLevel: 'high', model: 'gpt-5');
+        $entry = new SubagentSettingsEntry(
+            contextTier: SubagentSettingsEntryContextTier::Default,
+            effortLevel: 'high',
+            model: 'gpt-5',
+            modelPolicy: AgentModelPolicy::PREFERRED,
+            providerId: 'provider-2',
+        );
 
         expect($entry->toArray())->toHaveKey('contextTier', 'default')
             ->and($entry->toArray())->toHaveKey('effortLevel', 'high')
-            ->and($entry->toArray())->toHaveKey('model', 'gpt-5');
+            ->and($entry->toArray())->toHaveKey('model', 'gpt-5')
+            ->and($entry->toArray())->toHaveKey('modelPolicy', 'preferred')
+            ->and($entry->toArray())->toHaveKey('providerId', 'provider-2');
     });
 });
 
@@ -571,10 +584,12 @@ describe('SubagentSettings', function () {
                 'agent-1' => ['contextTier' => 'inherit', 'effortLevel' => 'low'],
                 'agent-2' => ['model' => 'gpt-5'],
             ],
+            'contextManagementTools' => false,
         ]);
 
         expect($settings->agents)->toHaveCount(2)
-            ->and($settings->agents['agent-1'])->toBeInstanceOf(SubagentSettingsEntry::class);
+            ->and($settings->agents['agent-1'])->toBeInstanceOf(SubagentSettingsEntry::class)
+            ->and($settings->contextManagementTools)->toBeFalse();
     });
 
     it('handles empty agents', function () {
@@ -586,9 +601,12 @@ describe('SubagentSettings', function () {
     it('converts to array', function () {
         $settings = SubagentSettings::fromArray([
             'agents' => ['agent-a' => ['effortLevel' => 'low']],
+            'contextManagementTools' => true,
         ]);
 
-        expect($settings->toArray())->toHaveKey('agents');
+        expect($settings->toArray())
+            ->toHaveKey('agents')
+            ->toHaveKey('contextManagementTools', true);
     });
 });
 

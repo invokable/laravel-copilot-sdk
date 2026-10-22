@@ -11,6 +11,7 @@ use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
 use Revolution\Copilot\Types\Rpc\ToolResultExpanded;
 use Revolution\Copilot\Types\Rpc\ToolResultNewMessage;
 use Revolution\Copilot\Types\Rpc\ToolsExecuteRequest;
+use Revolution\Copilot\Types\Rpc\ToolsGetSubagentSettingsResult;
 use Revolution\Copilot\Types\Rpc\ToolsSetRequest;
 
 describe('PendingSessionTools', function () {
@@ -91,6 +92,23 @@ describe('PendingSessionTools', function () {
         expect((new PendingTools($client, 'test-session-id'))->set(new ToolsSetRequest([
             ['name' => 'search', 'description' => 'Search', 'parameters' => []],
         ])))->toBe([]);
+    });
+
+    it('gets configured subagent settings for the session', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.tools.getSubagentSettings', ['sessionId' => 'test-session-id'])
+            ->andReturn([
+                'subagents' => [
+                    'agents' => ['reviewer' => ['model' => 'gpt-5']],
+                ],
+            ]);
+
+        $result = (new PendingTools($client, 'test-session-id'))->getSubagentSettings();
+
+        expect($result)->toBeInstanceOf(ToolsGetSubagentSettingsResult::class)
+            ->and($result->subagents->agents['reviewer']->model)->toBe('gpt-5');
     });
 
     it('executes a tool with the session scope and serializes empty arguments as an object', function () {

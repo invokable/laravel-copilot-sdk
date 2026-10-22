@@ -1316,17 +1316,24 @@ $session->rpc()->tools()->getCurrentMetadata();
 $session->rpc()->tools()->set(['tools' => [
     ['name' => 'search', 'description' => 'Search documents', 'parameters' => ['type' => 'object']],
 ]]);
+// 現在のセッションに適用されているサブエージェント設定を取得（experimental）
+$settings = $session->rpc()->tools()->getSubagentSettings();
+// $settings->subagents は SubagentSettings。設定ブロックがなければ null
 // サブエージェントの設定を更新（experimental）
+use Revolution\Copilot\Enums\SubagentSettingsEntryContextTier;
 use Revolution\Copilot\Types\Rpc\SubagentSettings;
 use Revolution\Copilot\Types\Rpc\SubagentSettingsEntry;
 use Revolution\Copilot\Types\Rpc\UpdateSubagentSettingsRequest;
 
 $result = $session->rpc()->tools()->updateSubagentSettings(new UpdateSubagentSettingsRequest(
-    settings: new SubagentSettings(entries: [
-        new SubagentSettingsEntry(agentName: 'my-agent', contextTier: 'medium', enabled: true),
+    subagents: new SubagentSettings(agents: [
+        'my-agent' => new SubagentSettingsEntry(
+            contextTier: SubagentSettingsEntryContextTier::Default,
+            model: 'gpt-5',
+        ),
     ]),
 ));
-// $result->settings - 更新後の SubagentSettings
+// 設定を適用すると空の ToolsUpdateSubagentSettingsResult が返る
 
 // permissions (プロトコルv3+: permission.requestedイベントへの応答)
 use Revolution\Copilot\Types\Rpc\FolderTrustAddParams;
