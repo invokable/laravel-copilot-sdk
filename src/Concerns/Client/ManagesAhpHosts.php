@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Concerns\Client;
 
 use Closure;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Revolution\Copilot\AhpHost;
 use Revolution\Copilot\Contracts\CopilotSession;
@@ -12,7 +13,6 @@ use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Enums\HostAuthenticationMode;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcNullResult;
-use Revolution\Copilot\Rpc\PendingServerHost;
 use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Types\AhpHostAuthentication;
 use Revolution\Copilot\Types\Rpc\HostAuthenticationCancelledNotification;
@@ -88,7 +88,7 @@ trait ManagesAhpHosts
             $this->start();
         }
 
-        $hostId = (string) \Illuminate\Support\Str::uuid();
+        $hostId = (string) Str::uuid();
         $this->ahpHosts[$hostId] = [
             'authentication' => $authentication,
             'createSession' => $createSession === null ? null : Closure::fromCallable($createSession),
@@ -162,7 +162,16 @@ trait ManagesAhpHosts
         );
 
         try {
-            $result = ($host['authentication']->authenticate)($request, $signal);
+            try {
+                $result = ($host['authentication']->authenticate)($request, $signal);
+            } catch (Throwable $e) {
+                if ($signal->isCancellationRequested()) {
+                    throw new JsonRpcException(-32800, 'AHP authentication cancelled.', previous: $e);
+                }
+
+                throw new \RuntimeException('AHP authentication callback failed.', previous: $e);
+            }
+
             if ($signal->isCancellationRequested()) {
                 throw new JsonRpcException(-32800, 'AHP authentication cancelled.');
             }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Support;
 
 use Closure;
+use Throwable;
 
 /**
  * Cooperative cancellation signal for inbound JSON-RPC provider callbacks.
@@ -60,7 +61,11 @@ final class CancellationToken
         $this->listeners = [];
 
         foreach ($listeners as $listener) {
-            $listener();
+            try {
+                $listener();
+            } catch (Throwable) {
+                //
+            }
         }
     }
 }

@@ -78,8 +78,8 @@ class Client implements CopilotClient
     use HandlesServerRequests;
     use HandlesSessionFs;
     use HandlesSkillProvider;
-    use ManagesAhpHosts;
     use Macroable;
+    use ManagesAhpHosts;
     use ManagesModels;
     use ManagesSessions;
 

@@ -14,7 +14,7 @@ readonly class HostMaterializeSessionRequest implements Arrayable
         public string $handoffId,
         public ?HostSessionAuthentication $authentication = null,
         public ?bool $resume = null,
-        public ?array $config = null,
+        public array $config = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -28,7 +28,7 @@ readonly class HostMaterializeSessionRequest implements Arrayable
                     : HostSessionAuthentication::fromArray($data['authentication']))
                 : null,
             resume: $data['resume'] ?? null,
-            config: $data['config'] ?? null,
+            config: $data['config'] ?? [],
         );
     }
 

@@ -2,18 +2,19 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\HostAuthenticationMode;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerHost;
 use Revolution\Copilot\Rpc\ServerRpc;
+use Revolution\Copilot\Types\Rpc\HostAuthentication;
 use Revolution\Copilot\Types\Rpc\HostDisposeRequest;
 use Revolution\Copilot\Types\Rpc\HostDisposeResult;
 use Revolution\Copilot\Types\Rpc\HostGitHubEnvironmentOptions;
 use Revolution\Copilot\Types\Rpc\HostListSessionsRequest;
 use Revolution\Copilot\Types\Rpc\HostPublishSessionRequest;
-use Revolution\Copilot\Types\Rpc\HostAuthentication;
 use Revolution\Copilot\Types\Rpc\HostSetSessionCreationPolicyRequest;
+use Revolution\Copilot\Types\Rpc\HostSetSessionCreationPolicyResult;
 use Revolution\Copilot\Types\Rpc\HostStartRequest;
-use Revolution\Copilot\Enums\HostAuthenticationMode;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsPermissionsEvaluateRequest;
 
 it('exposes host catalog and managed permission RPCs with typed results', function () {
@@ -88,7 +89,7 @@ it('starts and publishes host sessions with typed host options', function () {
         authentication: new HostAuthentication(HostAuthenticationMode::GitHub),
         allowCreatingNewSessions: false,
     ));
-    $host->setSessionCreationPolicy(new HostSetSessionCreationPolicyRequest(
+    $policyResult = $host->setSessionCreationPolicy(new HostSetSessionCreationPolicyRequest(
         hostId: 'host-1',
         allowCreatingNewSessions: false,
     ));
@@ -99,7 +100,8 @@ it('starts and publishes host sessions with typed host options', function () {
     ));
 
     expect($started->environmentId)->toBe('environment-1')
-        ->and($published->sessionUri)->toBe('ahp://host/session-1');
+        ->and($published->sessionUri)->toBe('ahp://host/session-1')
+        ->and($policyResult)->toBeInstanceOf(HostSetSessionCreationPolicyResult::class);
 });
 
 it('disposes a host listener with typed or array parameters', function () {

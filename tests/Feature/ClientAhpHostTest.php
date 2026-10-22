@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Facade;
-use Closure;
 use Revolt\EventLoop;
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Contracts\Transport;
@@ -56,13 +55,18 @@ it('starts an AHP host with custom authentication and changes policy without dis
         ->and(array_column($transport->messages, 'method'))->not->toContain('session.disconnect');
 });
 
-it('rejects an invalid authentication mode before starting the runtime', function () {
+it('rejects invalid authentication configuration before starting the runtime', function () {
     $client = new Client;
 
     expect(fn () => $client->startAhpHost(
         authentication: ['mode' => 'password'],
         localServer: [],
     ))->toThrow(ValueError::class);
+
+    expect(fn () => $client->startAhpHost(
+        authentication: ['mode' => 'custom', 'requireIdentity' => 'tenant-1'],
+        localServer: [],
+    ))->toThrow(InvalidArgumentException::class);
 });
 
 it('returns validated credentials and denies rejected or mismatched identities', function () {
@@ -77,6 +81,7 @@ it('returns validated credentials and denies rejected or mismatched identities',
         authentication: AhpHostAuthentication::custom(
             'tenant-1',
             function (HostValidateAuthenticationRequest $request, CancellationToken $signal) use (&$results, &$receivedTokens): ?array {
+                $signal->onCancellationRequested(fn () => throw new RuntimeException('listener failed'));
                 $receivedTokens[] = $request->token;
 
                 return array_shift($results);
@@ -105,6 +110,27 @@ it('returns validated credentials and denies rejected or mismatched identities',
             'admission-rejected',
             'admission-wrong-identity',
         ]);
+});
+
+it('does not expose admission tokens when a custom authenticator throws', function () {
+    [$client, $transport] = createAhpHostTestClient();
+    $host = $client->startAhpHost(
+        authentication: AhpHostAuthentication::custom(
+            'tenant-1',
+            fn (HostValidateAuthenticationRequest $request) => throw new RuntimeException($request->token),
+        ),
+        localServer: [],
+    );
+
+    $transport->injectRequest('auth-error', 'host.validateAuthentication', [
+        'hostId' => $host->hostId,
+        'requestId' => 'auth-error',
+        'token' => 'private-admission-token',
+    ]);
+
+    expect($transport->responseFor('auth-error')['error']['message'])
+        ->toContain('AHP authentication callback failed')
+        ->not->toContain('private-admission-token');
 });
 
 it('cancels authentication callbacks when validation or the host ends', function () {

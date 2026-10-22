@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Types\Rpc\HostCreateSessionRequest;
+use Revolution\Copilot\Enums\HostAuthenticationMode;
 use Revolution\Copilot\Types\Rpc\HostAuthentication;
 use Revolution\Copilot\Types\Rpc\HostAuthenticationCancelledNotification;
+use Revolution\Copilot\Types\Rpc\HostAuthenticationResult;
+use Revolution\Copilot\Types\Rpc\HostCreateSessionRequest;
 use Revolution\Copilot\Types\Rpc\HostGitHubEnvironmentOptions;
 use Revolution\Copilot\Types\Rpc\HostListSessionsRequest;
 use Revolution\Copilot\Types\Rpc\HostListSessionsResult;
@@ -12,9 +14,9 @@ use Revolution\Copilot\Types\Rpc\HostMaterializeSessionRequest;
 use Revolution\Copilot\Types\Rpc\HostSessionAuthentication;
 use Revolution\Copilot\Types\Rpc\HostSessionReleasedNotification;
 use Revolution\Copilot\Types\Rpc\HostSetSessionCreationPolicyRequest;
+use Revolution\Copilot\Types\Rpc\HostSetSessionCreationPolicyResult;
 use Revolution\Copilot\Types\Rpc\HostStartRequest;
 use Revolution\Copilot\Types\Rpc\HostValidateAuthenticationRequest;
-use Revolution\Copilot\Enums\HostAuthenticationMode;
 
 it('round trips the advertised host session catalog', function () {
     $request = HostListSessionsRequest::fromArray(['hostId' => 'host-1']);
@@ -38,6 +40,11 @@ it('round trips host configuration, connection binding, and resident preference'
     $start = HostStartRequest::fromArray([
         'hostId' => 'host-1',
         'computeId' => 'compute-1',
+        'authentication' => [
+            'mode' => 'custom',
+            'requireIdentity' => 'tenant-1',
+        ],
+        'allowCreatingNewSessions' => false,
         'githubEnvironment' => [
             'name' => 'Example',
             'computeId' => 'compute-1',
@@ -52,7 +59,10 @@ it('round trips host configuration, connection binding, and resident preference'
     ]);
 
     expect($start->githubEnvironment)->toBeInstanceOf(HostGitHubEnvironmentOptions::class)
+        ->and($start->authentication)->toBeInstanceOf(HostAuthentication::class)
         ->and($start->toArray()['computeId'])->toBe('compute-1')
+        ->and($start->toArray()['allowCreatingNewSessions'])->toBeFalse()
+        ->and($start->toArray()['authentication']['requireIdentity'])->toBe('tenant-1')
         ->and($start->toArray()['githubEnvironment']['requireConnectionBinding'])->toBeFalse()
         ->and($handoff->toArray()['preferResident'])->toBeTrue()
         ->and($handoff->toArray()['config']['sessionId'])->toBe('session-1');
@@ -87,6 +97,11 @@ it('round trips AHP authentication, cancellation, and session policy types', fun
         'handoffId' => 'handoff-1',
     ]);
     $policy = new HostSetSessionCreationPolicyRequest('host-1', false);
+    $result = HostAuthenticationResult::fromArray([
+        'identity' => 'tenant-1',
+        'expiresAt' => '2099-01-01T00:00:00Z',
+    ]);
+    $policyResult = HostSetSessionCreationPolicyResult::fromArray([]);
 
     expect($authentication->toArray())->toBe([
         'mode' => 'custom',
@@ -103,10 +118,21 @@ it('round trips AHP authentication, cancellation, and session policy types', fun
     ])->and($materialize->authentication?->identity)->toBe('tenant-1')
         ->and($cancelled->toArray())->toBe(['hostId' => 'host-1', 'requestId' => 'request-1'])
         ->and($released->toArray())->toBe(['hostId' => 'host-1', 'handoffId' => 'handoff-1'])
-        ->and($policy->toArray())->toBe(['hostId' => 'host-1', 'allowCreatingNewSessions' => false]);
+        ->and($policy->toArray())->toBe(['hostId' => 'host-1', 'allowCreatingNewSessions' => false])
+        ->and($result->toArray())->toBe([
+            'identity' => 'tenant-1',
+            'expiresAt' => '2099-01-01T00:00:00Z',
+        ])
+        ->and($policyResult->toArray())->toBe([]);
+
+    expect(HostSessionAuthentication::fromArray(['mode' => 'none'])->toArray())
+        ->toBe(['mode' => 'none']);
 });
 
 it('rejects an unsupported AHP host authentication mode', function () {
     expect(fn () => HostAuthentication::fromArray(['mode' => 'password']))
         ->toThrow(ValueError::class);
+
+    expect(fn () => new HostAuthentication(HostAuthenticationMode::Custom))
+        ->toThrow(InvalidArgumentException::class);
 });

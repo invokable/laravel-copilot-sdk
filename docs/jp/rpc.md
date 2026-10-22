@@ -41,7 +41,7 @@ Copilot::client()->rpc()->secrets()->addFilterValues([
 
 ### セッション・ホスト・実行環境
 
-`sessions()`は永続化済みセッションの検索、イベント読み取り、サイズ確認、削除・整理、forkを扱います。Workspaceの作成・読み込みやリモート制御も利用できます。`host()`はホストの起動、セッション公開・一覧・公開解除、破棄を行い、`runtime()`はランタイムのライフサイクルを扱います。
+`sessions()`は永続化済みセッションの検索、イベント読み取り、サイズ確認、削除・整理、forkを扱います。Workspaceの作成・読み込みやリモート制御も利用できます。`host()`はホストの起動、セッション公開・一覧・公開解除、認証、受付ポリシー変更、破棄を行います。AHPホストの高レベルAPIは[AHPホスト](./ahp.md)を参照してください。`runtime()`はランタイムのライフサイクルを扱います。
 
 ### Git・環境・サンドボックス・ポリシー
 
@@ -845,6 +845,19 @@ $result = Copilot::client()->rpc()->host()->unpublishSession([
 
 ```php
 Copilot::client()->rpc()->host()->dispose(['hostId' => 'host-1']);
+```
+
+`host.setSessionCreationPolicy()` は、稼働中のホストでリモートの新規セッション受付を切り替えます。既存クライアントを切断せず、その後の受付だけに適用します。
+
+```php
+use Revolution\Copilot\Types\Rpc\HostSetSessionCreationPolicyRequest;
+
+Copilot::client()->rpc()->host()->setSessionCreationPolicy(
+    new HostSetSessionCreationPolicyRequest(
+        hostId: 'host-1',
+        allowCreatingNewSessions: false,
+    ),
+);
 ```
 
 SDKが起動したstdioランタイムでは、`Client::stop()` がセッションを切断した後、JSON-RPC接続とプロセスを閉じる前に `runtime.shutdown` を呼び出します。ランタイムのクリーンアップ完了を最大10秒待ち、失敗時はエラーを戻り値に含めたうえで残りの停止処理を続けます。`cli_url` など外部ランタイムへの接続では、共有ランタイムを終了しないようこのRPCを呼び出しません。

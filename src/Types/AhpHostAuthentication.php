@@ -30,8 +30,7 @@ final readonly class AhpHostAuthentication
 
     public static function custom(string $requireIdentity, callable $authenticate): self
     {
-        $requireIdentity = trim($requireIdentity);
-        if ($requireIdentity === '') {
+        if (trim($requireIdentity) === '') {
             throw new InvalidArgumentException('Custom AHP authentication requires a nonempty requireIdentity.');
         }
 
@@ -46,12 +45,18 @@ final readonly class AhpHostAuthentication
     {
         $mode = HostAuthenticationMode::from($data['mode'] ?? '');
 
+        if ($mode !== HostAuthenticationMode::Custom
+            && (isset($data['requireIdentity']) || isset($data['authenticate']))) {
+            throw new InvalidArgumentException('requireIdentity and authenticate are only valid for custom authentication.');
+        }
+
         return match ($mode) {
             HostAuthenticationMode::GitHub => self::github(),
             HostAuthenticationMode::None => self::none(),
-            HostAuthenticationMode::Custom => isset($data['authenticate']) && is_callable($data['authenticate'])
-                ? self::custom($data['requireIdentity'] ?? '', $data['authenticate'])
-                : throw new InvalidArgumentException('Custom AHP authentication requires an authenticate callback.'),
+            HostAuthenticationMode::Custom => is_string($data['requireIdentity'] ?? null)
+                && is_callable($data['authenticate'] ?? null)
+                ? self::custom($data['requireIdentity'], $data['authenticate'])
+                : throw new InvalidArgumentException('Custom AHP authentication requires a nonempty identity and authenticate callback.'),
         };
     }
 
