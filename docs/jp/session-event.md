@@ -261,3 +261,17 @@ $imageTokens = $usage['inputTokensDetails']['imageTokens'] ?? null;
 ### Fusion解決イベント
 
 `session.fusion_resolved` の `data.selectedRuleId` は、サーバー側のルーティングによりローカルのルールとは異なるワークフローが選ばれた場合に、そのサーバールールを識別します。置き換えがない場合は省略されます。
+
+## Copilot CLI 1.0.103 追加イベント
+
+### `instruction.update`
+
+ランタイムが権威ある開発者向け指示を更新した時に発生します。`data.content` が指示本文、`data.authority` が更新元（`runtime`、`host`、`managedPolicy`）、`data.boundary` が適用境界、`data.fallback` がプロバイダー非対応時の動作、`data.lifetime` が有効期間を示します。`data.name` は任意の診断用名称です。
+
+```php
+if ($event->is(SessionEventType::INSTRUCTION_UPDATE)) {
+    $instruction = $event->data['content'];
+}
+```
+
+`persistent` の更新はイベント順に保持され、再生・再開・巻き戻し・フォーク・圧縮後にも復元されます。`turn` の更新は一時的で、`ephemeral` が `true` になります。値は汎用配列として保持されるため、未知の列挙値もそのまま扱えます。

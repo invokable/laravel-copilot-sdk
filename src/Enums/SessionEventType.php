@@ -195,6 +195,8 @@ enum SessionEventType: string
     case HOOK_START = 'hook.start';
     case HOOK_END = 'hook.end';
 
+    case INSTRUCTION_UPDATE = 'instruction.update';
+
     // System message
     case SYSTEM_MESSAGE = 'system.message';
 

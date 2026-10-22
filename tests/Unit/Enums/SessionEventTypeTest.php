@@ -30,6 +30,11 @@ describe('SessionEventType', function () {
             ->and(SessionEventType::from('system.notification'))->toBe(SessionEventType::SYSTEM_NOTIFICATION);
     });
 
+    it('has the instruction update event type', function () {
+        expect(SessionEventType::INSTRUCTION_UPDATE->value)->toBe('instruction.update')
+            ->and(SessionEventType::from('instruction.update'))->toBe(SessionEventType::INSTRUCTION_UPDATE);
+    });
+
     it('has custom agents updated event type', function () {
         expect(SessionEventType::SESSION_CUSTOM_AGENTS_UPDATED->value)->toBe('session.custom_agents_updated');
     });

@@ -44,6 +44,26 @@ describe('SessionEvent', function () {
             ->and($event->agentId)->toBeNull();
     });
 
+    it('preserves instruction update events and their payload', function () {
+        $data = [
+            'content' => 'Follow the updated project instructions.',
+            'authority' => 'runtime',
+            'boundary' => 'nextModelRequest',
+            'fallback' => 'reject',
+            'lifetime' => 'persistent',
+        ];
+
+        $event = SessionEvent::fromArray([
+            'type' => 'instruction.update',
+            'data' => $data,
+            'ephemeral' => false,
+        ]);
+
+        expect($event->type)->toBe(SessionEventType::INSTRUCTION_UPDATE)
+            ->and($event->data)->toBe($data)
+            ->and($event->ephemeral)->toBeFalse();
+    });
+
     it('can check if is assistant message', function () {
         $event = SessionEvent::fromArray([
             'type' => 'assistant.message',
