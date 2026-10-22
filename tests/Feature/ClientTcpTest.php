@@ -36,7 +36,7 @@ describe('Client TCP Mode', function () {
         expect($client->isTcpMode())->toBeFalse();
     });
 
-    it('start method connects via TCP transport', function () {
+    it('starts a TCP connection with the host Entra registration', function () {
         $mockTransport = Mockery::mock(TcpTransport::class, Transport::class);
         $mockTransport->shouldReceive('start')->once();
 
@@ -45,13 +45,19 @@ describe('Client TCP Mode', function () {
         $mockRpcClient->shouldReceive('setNotificationHandler')->once();
         $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
         $mockRpcClient->shouldReceive('request')
-            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->with('connect', [
+                'supportedTaskKinds' => ['agent', 'client', 'shell'],
+                'entra' => ['clientId' => 'host-application-id'],
+            ])
             ->once()
             ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
         $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
 
         // Use reflection to inject the mock transport
-        $client = new Client(['cli_url' => 'tcp://127.0.0.1:12345']);
+        $client = new Client([
+            'cli_url' => 'tcp://127.0.0.1:12345',
+            'entra' => ['clientId' => 'host-application-id'],
+        ]);
         $reflection = new ReflectionClass($client);
         $transportProperty = $reflection->getProperty('transport');
         $transportProperty->setValue($client, $mockTransport);
@@ -60,6 +66,79 @@ describe('Client TCP Mode', function () {
 
         expect($client->getState())->toBe(ConnectionState::CONNECTED)
             ->and($client->isTcpMode())->toBeTrue();
+    });
+
+    it('fails instead of falling back to ping when Entra is configured on a legacy runtime', function () {
+        $mockTransport = Mockery::mock(TcpTransport::class, Transport::class);
+        $mockTransport->shouldReceive('start')->once();
+        $mockTransport->shouldReceive('stop')->once();
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('stop')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', [
+                'supportedTaskKinds' => ['agent', 'client', 'shell'],
+                'entra' => ['clientId' => 'host-application-id'],
+            ])
+            ->once()
+            ->andThrow(new JsonRpcException(-32601, 'Unhandled method connect'));
+        $mockRpcClient->shouldReceive('request')
+            ->with('ping', [])
+            ->never();
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->never();
+
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client([
+            'cli_url' => 'tcp://127.0.0.1:12345',
+            'entra' => ['clientId' => 'host-application-id'],
+        ]);
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('transport')->setValue($client, $mockTransport);
+
+        expect(fn () => $client->start())
+            ->toThrow(RuntimeException::class, 'This runtime does not support Entra client configuration.');
+
+        expect($client->getState())->toBe(ConnectionState::ERROR);
+    });
+
+    it('falls back to ping for a legacy runtime when Entra is not configured', function () {
+        $mockTransport = Mockery::mock(TcpTransport::class, Transport::class);
+        $mockTransport->shouldReceive('start')->once();
+        $mockTransport->shouldReceive('stop')->once();
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('stop')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(29);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andThrow(new JsonRpcException(-32601, 'Unhandled method connect'));
+        $mockRpcClient->shouldReceive('request')
+            ->with('ping', [], 10.0)
+            ->once()
+            ->andReturn(['protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->never();
+
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $client = new Client(['cli_url' => 'tcp://127.0.0.1:12345']);
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('transport')->setValue($client, $mockTransport);
+
+        $client->start();
+        $client->stop();
+
+        expect($client->getState())->toBe(ConnectionState::DISCONNECTED);
     });
 
     it('registers built-in plugin directories with an external server', function () {

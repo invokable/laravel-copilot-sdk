@@ -10,8 +10,34 @@ Copilot SDKは複数の認証方法をサポートします。用途に合わせ
 | OAuth GitHub App / PAT   | ユーザーごとのトークン  | 必要               | `github_token`で指定         |
 | 環境変数                     | CI/CD・サーバー運用 | 必要               | `COPILOT_GITHUB_TOKEN` など |
 | BYOK（Bring Your Own Key） | 自前のモデルプロバイダー | 不要               | カスタムプロバイダー設定              |
+| Microsoft Entra ID       | 組み込みサインイン    | Entraアプリ登録が必要 | `entra.clientId`でホストアプリを指定 |
 
 BYOKは [custom-providers.md](./custom-providers.md) を参照。
+
+## Microsoft Entra ID
+
+組み込みのMicrosoft Entraサインインとトークン更新には、ホストアプリの登録情報をクライアントに設定します。`clientId`にはEntraアプリ登録のアプリケーション（クライアント）IDを指定してください。型または配列で指定でき、空文字列と空白だけの値は受け付けません。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\EntraAuthConfig;
+
+Copilot::useStdio([
+    'entra' => new EntraAuthConfig(clientId: config('services.entra.client_id')),
+])->run(prompt: 'Hello');
+Copilot::stop();
+```
+
+配列で指定することもできます。
+
+```php
+Copilot::useStdio([
+    'entra' => ['clientId' => config('services.entra.client_id')],
+])->run(prompt: 'Hello');
+Copilot::stop();
+```
+
+設定したIDは`server.connect`ハンドシェイクでランタイムに渡されます。Entra設定を指定した場合、`connect`に対応しない古いランタイムでは設定を黙って破棄せず、`This runtime does not support Entra client configuration.`例外を送出します。ランタイムを更新してください。他の認証方法は引き続き利用できます。
 
 ## GitHubログイン（CLI）
 
