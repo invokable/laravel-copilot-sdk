@@ -16,12 +16,15 @@ $host = $client->startAhpHost(
     authentication: AhpHostAuthentication::github(),
     localServer: [],
     allowCreatingNewSessions: true,
+    workspace: '/workspace/project',
 );
 
 echo $host->url;
 ```
 
 `localServer: []` はループバックアドレスと空いているポートを使います。`githubEnvironment` を指定する場合は `github` 認証が必要です。ホストが返す `token` は接続用の秘密情報として扱ってください。
+
+`workspace` は AHP ホストで使う作業ディレクトリです。パスは Copilot ランタイムが動作するホスト上で解釈されるため、Laravel アプリケーション側のパスと同じとは限りません。省略時は workspace を RPC に含めず、ランタイム側の既存動作を維持します。
 
 ## 認証モード
 

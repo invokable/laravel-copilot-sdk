@@ -49,6 +49,7 @@ interface CopilotClient
         ?callable $createSession = null,
         ?callable $resumeSession = null,
         ?callable $onSessionReleased = null,
+        ?string $workspace = null,
     ): AhpHost;
 
     /**

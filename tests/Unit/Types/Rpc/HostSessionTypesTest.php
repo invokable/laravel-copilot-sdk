@@ -40,6 +40,7 @@ it('round trips host configuration, connection binding, and resident preference'
     $start = HostStartRequest::fromArray([
         'hostId' => 'host-1',
         'computeId' => 'compute-1',
+        'workspace' => '/runtime/workspace',
         'authentication' => [
             'mode' => 'custom',
             'requireIdentity' => 'tenant-1',
@@ -61,11 +62,20 @@ it('round trips host configuration, connection binding, and resident preference'
     expect($start->githubEnvironment)->toBeInstanceOf(HostGitHubEnvironmentOptions::class)
         ->and($start->authentication)->toBeInstanceOf(HostAuthentication::class)
         ->and($start->toArray()['computeId'])->toBe('compute-1')
+        ->and($start->toArray()['workspace'])->toBe('/runtime/workspace')
         ->and($start->toArray()['allowCreatingNewSessions'])->toBeFalse()
         ->and($start->toArray()['authentication']['requireIdentity'])->toBe('tenant-1')
         ->and($start->toArray()['githubEnvironment']['requireConnectionBinding'])->toBeFalse()
         ->and($handoff->toArray()['preferResident'])->toBeTrue()
         ->and($handoff->toArray()['config']['sessionId'])->toBe('session-1');
+});
+
+describe('HostStartRequest workspace', function () {
+    it('omits workspace when it is not specified', function () {
+        $request = new HostStartRequest(hostId: 'host-1');
+
+        expect($request->toArray())->toBe(['hostId' => 'host-1']);
+    });
 });
 
 it('round trips AHP authentication, cancellation, and session policy types', function () {
