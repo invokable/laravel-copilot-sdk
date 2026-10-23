@@ -55,6 +55,35 @@ it('starts an AHP host with custom authentication and changes policy without dis
         ->and(array_column($transport->messages, 'method'))->not->toContain('session.disconnect');
 });
 
+describe('AHP host workspace', function () {
+    it('forwards a configured workspace to the runtime host', function () {
+        [$client, $transport] = createAhpHostTestClient();
+
+        $client->startAhpHost(
+            authentication: AhpHostAuthentication::github(),
+            localServer: [],
+            workspace: '/runtime/workspace',
+        );
+
+        $hostStart = collect($transport->messages)->firstWhere('method', 'host.start');
+
+        expect($hostStart['params']['workspace'])->toBe('/runtime/workspace');
+    });
+
+    it('omits workspace when it is not specified', function () {
+        [$client, $transport] = createAhpHostTestClient();
+
+        $client->startAhpHost(
+            authentication: AhpHostAuthentication::github(),
+            localServer: [],
+        );
+
+        $hostStart = collect($transport->messages)->firstWhere('method', 'host.start');
+
+        expect($hostStart['params'])->not->toHaveKey('workspace');
+    });
+});
+
 it('rejects invalid authentication configuration before starting the runtime', function () {
     $client = new Client;
 

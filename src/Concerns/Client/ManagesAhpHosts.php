@@ -74,6 +74,7 @@ trait ManagesAhpHosts
         ?callable $createSession = null,
         ?callable $resumeSession = null,
         ?callable $onSessionReleased = null,
+        ?string $workspace = null,
     ): AhpHost {
         $authentication = $authentication instanceof AhpHostAuthentication
             ? $authentication
@@ -111,6 +112,7 @@ trait ManagesAhpHosts
                 resumeFactory: $resumeSession !== null,
                 authentication: $authentication->toRpcType(),
                 allowCreatingNewSessions: $allowCreatingNewSessions,
+                workspace: $workspace,
             ));
 
             return new AhpHost(

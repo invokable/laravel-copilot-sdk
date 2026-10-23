@@ -18,6 +18,7 @@ readonly class HostStartRequest implements Arrayable
         public ?bool $resumeFactory = null,
         public HostAuthentication|array|null $authentication = null,
         public ?bool $allowCreatingNewSessions = null,
+        public ?string $workspace = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -43,6 +44,7 @@ readonly class HostStartRequest implements Arrayable
                     : HostAuthentication::fromArray($data['authentication']))
                 : null,
             allowCreatingNewSessions: $data['allowCreatingNewSessions'] ?? null,
+            workspace: $data['workspace'] ?? null,
         );
     }
 
@@ -63,6 +65,7 @@ readonly class HostStartRequest implements Arrayable
                 ? $this->authentication->toArray()
                 : $this->authentication,
             'allowCreatingNewSessions' => $this->allowCreatingNewSessions,
+            'workspace' => $this->workspace,
         ], fn ($value) => $value !== null);
     }
 }
