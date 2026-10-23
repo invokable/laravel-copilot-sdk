@@ -40,7 +40,7 @@ steps:
           LATEST=$(git rev-parse origin/main)
 
           if [ "$CURRENT" = "$LATEST" ]; then
-              echo "status=up-to-date" >> $GITHUB_OUTPUT
+              echo '{"type":"noop","message":"snapshots are up to date"}' >> "$GH_AW_SAFE_OUTPUTS"
               exit 0
           fi
 
