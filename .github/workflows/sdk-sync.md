@@ -95,6 +95,7 @@ steps:
           coverage: xdebug
           ini-values: memory_limit=512M
     - name: Install Composer dependencies
+      if: steps.changes.outputs.status == 'changes-detected'
       run: composer install -q --no-interaction --prefer-dist --optimize-autoloader
 
 permissions:
