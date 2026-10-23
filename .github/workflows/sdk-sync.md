@@ -116,7 +116,6 @@ tools:
     cli-proxy: true
     bash: [ "*" ]
     edit: true
-    cache-memory: true
 
 safe-outputs:
     create-pull-request:
