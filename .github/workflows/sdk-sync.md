@@ -7,7 +7,7 @@ on:
         #- cron: weekly on monday around 4:00 utc+9
         #- cron: weekly on wednesday around 4:00 utc+9
         #- cron: weekly on friday around 4:00 utc+9
-        - cron: daily around 15:00 utc+9 on weekdays
+        - cron: daily around 14:00 utc+9 on weekdays
     workflow_dispatch:
 
 max-ai-credits: 500
@@ -41,7 +41,6 @@ steps:
 
           if [ "$CURRENT" = "$LATEST" ]; then
               echo "status=up-to-date" >> $GITHUB_OUTPUT
-              echo '{"type":"noop","message":"snapshot is up to date"}' >> $GH_AW_SAFE_OUTPUTS
               exit 0
           fi
 
@@ -62,6 +61,11 @@ steps:
 
           echo "status=changes-detected" >> $GITHUB_OUTPUT
 
+    - name: Noop
+      if: steps.changes.outputs.status == 'up-to-date'
+      run: |
+          echo "No changes detected. Skipping SDK sync."
+          echo '{"type":"noop","message":"No changes detected. Skipping SDK sync."}' >> "$GH_AW_SAFE_OUTPUTS"
     - name: Check for duplicate sync PR
       if: steps.changes.outputs.status == 'changes-detected'
       env:
