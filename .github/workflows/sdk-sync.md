@@ -67,6 +67,7 @@ steps:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
           echo "No changes detected. Skipping SDK sync."
+          echo "$GH_AW_SAFE_OUTPUTS"
           echo '{"type":"noop","message":"No changes detected. Skipping SDK sync."}' >> "$GH_AW_SAFE_OUTPUTS"
     - name: Check for duplicate sync PR
       if: steps.changes.outputs.status == 'changes-detected'
