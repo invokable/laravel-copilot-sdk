@@ -57,7 +57,6 @@ on:
           - 'create_labels'
           - 'activity_report'
           - 'close_agentic_workflows_issues'
-          - 'clean_cache_memories'
           - 'update_pull_request_branches'
           - 'validate'
           - 'forecast'
@@ -69,7 +68,7 @@ on:
   workflow_call:
     inputs:
       operation:
-        description: 'Optional maintenance operation to run (disable, enable, update, upgrade, safe_outputs, create_labels, activity_report, close_agentic_workflows_issues, clean_cache_memories, update_pull_request_branches, validate, forecast)'
+        description: 'Optional maintenance operation to run (disable, enable, update, upgrade, safe_outputs, create_labels, activity_report, close_agentic_workflows_issues, update_pull_request_branches, validate, forecast)'
         required: false
         type: string
         default: ''
@@ -81,7 +80,7 @@ on:
     outputs:
       operation_completed:
         description: 'The maintenance operation that was completed (empty when none ran or a scheduled job ran)'
-        value: ${{ jobs.run_operation.outputs.operation || (inputs.operation == 'safe_outputs' || inputs.operation == 'create_labels' || inputs.operation == 'activity_report' || inputs.operation == 'close_agentic_workflows_issues' || inputs.operation == 'update_pull_request_branches' || inputs.operation == 'validate' || inputs.operation == 'forecast' || inputs.operation == 'clean_cache_memories') && inputs.operation || '' }}
+        value: ${{ jobs.run_operation.outputs.operation || (inputs.operation == 'safe_outputs' || inputs.operation == 'create_labels' || inputs.operation == 'activity_report' || inputs.operation == 'close_agentic_workflows_issues' || inputs.operation == 'update_pull_request_branches' || inputs.operation == 'validate' || inputs.operation == 'forecast') && inputs.operation || '' }}
       applied_run_url:
         description: 'The run URL that safe outputs were applied from'
         value: ${{ jobs.apply_safe_outputs.outputs.run_url }}
@@ -163,30 +162,6 @@ jobs:
             const { setupGlobals } = require(path.join(actionsDir, 'setup_globals.cjs'));
             setupGlobals(core, github, context, exec, io, getOctokit);
             const { main } = require(path.join(actionsDir, 'close_expired_pull_requests.cjs'));
-            await main();
-
-  cleanup-cache-memory:
-    name: Cleanup cache memory
-    if: ${{ (!(github.event.repository.fork)) && github.event_name != 'push' && (github.event_name != 'workflow_dispatch' && github.event_name != 'workflow_call' || inputs.operation == '' || inputs.operation == 'none' || inputs.operation == 'clean_cache_memories') }}
-    runs-on: ubuntu-slim
-    # Removing obsolete Actions caches requires actions: write.
-    permissions:
-      actions: write
-    steps:
-      - name: Setup Scripts
-        uses: github/gh-aw-actions/setup@d9128eb3ea40c18b77c76184eda03c0ff2608d79 # v0.93.2
-        with:
-          destination: ${{ runner.temp }}/gh-aw/actions
-
-      - name: Cleanup outdated cache-memory entries
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            const path = require('path');
-            const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
-            const { setupGlobals } = require(path.join(actionsDir, 'setup_globals.cjs'));
-            setupGlobals(core, github, context, exec, io, getOctokit);
-            const { main } = require(path.join(actionsDir, 'cleanup_cache_memory.cjs'));
             await main();
 
   run_operation:
