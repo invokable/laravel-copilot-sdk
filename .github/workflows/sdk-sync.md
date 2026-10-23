@@ -34,6 +34,9 @@ steps:
       env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+          set -euo pipefail
+          GH_AW_SAFE_OUTPUTS="${GH_AW_SAFE_OUTPUTS:-${RUNNER_TEMP:-/tmp}/gh-aw/safeoutputs/outputs.jsonl}"
+
           cd copilot-sdk
           git fetch origin main --quiet
           mkdir -p /tmp/gh-aw
@@ -42,6 +45,7 @@ steps:
 
           if [ "$CURRENT" = "$LATEST" ]; then
               echo "status=up-to-date" >> $GITHUB_OUTPUT
+              echo '{"type":"noop","message":"No changes detected. Skipping SDK sync."}' >> "$GH_AW_SAFE_OUTPUTS"
               exit 0
           fi
 
@@ -61,14 +65,6 @@ steps:
 
           echo "status=changes-detected" >> $GITHUB_OUTPUT
 
-    - name: Noop
-      if: steps.changes.outputs.status == 'up-to-date'
-      env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-          echo "No changes detected. Skipping SDK sync."
-          echo "$GH_AW_SAFE_OUTPUTS"
-          echo '{"type":"noop","message":"No changes detected. Skipping SDK sync."}' >> "$GH_AW_SAFE_OUTPUTS"
     - name: Check for duplicate sync PR
       if: steps.changes.outputs.status == 'changes-detected'
       env:
