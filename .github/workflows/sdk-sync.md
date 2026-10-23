@@ -36,6 +36,7 @@ steps:
       run: |
           cd copilot-sdk
           git fetch origin main --quiet
+          mkdir -p /tmp/gh-aw
           CURRENT=$(git rev-parse HEAD)
           LATEST=$(git rev-parse origin/main)
 
@@ -45,7 +46,6 @@ steps:
           fi
 
           # Generate change summary for the agent
-          mkdir -p /tmp/gh-aw
           echo "$CURRENT" > /tmp/gh-aw/current-commit.txt
           echo "$LATEST" > /tmp/gh-aw/latest-commit.txt
 
