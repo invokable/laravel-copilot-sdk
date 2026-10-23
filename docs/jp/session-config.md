@@ -347,6 +347,16 @@ $config = new SessionConfig(
 $response = Copilot::run('...', config: $config);
 ```
 
+## Managed Settingsの適用除外
+
+`excludedManagedSettings`には、ランタイムが取得するManaged Settingsから除外する設定パスを配列で指定します。ホストが`managedSettings`で直接注入する設定には影響しません。セッション再開後も除外を適用するには、`ResumeSessionConfig`にも再指定してください。
+
+```php
+$config = new SessionConfig(
+    excludedManagedSettings: ['permissions'],
+);
+```
+
 `trustWorkingDirectory`には`WorkingDirectoryTrust::Session`または`WorkingDirectoryTrust::User`を指定できます。`Session`は現在のセッションだけ、`User`は後続セッションにも適用される永続的な信頼設定です。省略時は信頼状態を変更しません。この設定は新規セッション作成時のみ利用でき、再開時の`ResumeSessionConfig`には指定できません。
 
 `skillDirectories`、`agentDirectories`、`hookDirectories`、`instructionDirectories` は、それぞれスキル・カスタムエージェント・ファイルフック・カスタム指示の**検出専用ルート**です。これらを指定しても、エージェントに一般的なファイルアクセス権限は付与されません。通常のファイルアクセス先を追加する場合は `additionalDirectories` を使います。

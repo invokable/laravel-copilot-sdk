@@ -1418,6 +1418,7 @@ describe('Client', function () {
             ->with('session.create', Mockery::on(fn ($params) => ($params['enableManagedSettings'] ?? null) === true
                 && ($params['enforceManagedModelDefaults'] ?? null) === true
                 && ($params['managedSettings'] ?? null) === ['permissions' => ['deny' => ['Shell(rm *)']]]
+                && ($params['excludedManagedSettings'] ?? null) === ['permissions']
                 && ($params['enableFileChangeTracking'] ?? null) === true
                 && ($params['disabledMcpServers'] ?? null) === ['github']))
             ->once()
@@ -1448,6 +1449,7 @@ describe('Client', function () {
             'enableManagedSettings' => true,
             'enforceManagedModelDefaults' => true,
             'managedSettings' => ['permissions' => ['deny' => ['Shell(rm *)']]],
+            'excludedManagedSettings' => ['permissions'],
             'enableFileChangeTracking' => true,
             'disabledMcpServers' => ['github'],
             'onPermissionRequest' => PermissionHandler::approveAll(),
@@ -1849,6 +1851,7 @@ describe('Client', function () {
                 ]]
                 && ($params['enableCitations'] ?? null) === true
                 && ($params['excludedBuiltinAgents'] ?? null) === ['explainer']
+                && ($params['excludedManagedSettings'] ?? null) === ['permissions']
                 && ($params['sessionLimits'] ?? null) === ['maxAiCredits' => 5.0]
                 && ! array_key_exists('requestMcpApps', $params)
                 && ! array_key_exists('enableMcpApps', $params)))
@@ -1897,6 +1900,7 @@ describe('Client', function () {
             diagnostics: ['sources' => ['mcp' => ['level' => 'debug']]],
             enableCitations: true,
             excludedBuiltinAgents: ['explainer'],
+            excludedManagedSettings: ['permissions'],
             sessionLimits: new SessionLimitsConfig(maxAiCredits: 5),
             tools: [$tool],
         ));

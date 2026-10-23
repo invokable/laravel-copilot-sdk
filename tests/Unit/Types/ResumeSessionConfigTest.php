@@ -60,6 +60,21 @@ describe('ResumeSessionConfig', function () {
             ->and((new ResumeSessionConfig)->toArray())->not->toHaveKey('autopilot');
     });
 
+    it('round-trips excluded managed settings', function () {
+        $paths = ['permissions'];
+        $default = new ResumeSessionConfig;
+        $fromArray = ResumeSessionConfig::fromArray(['excludedManagedSettings' => $paths]);
+        $typed = new ResumeSessionConfig(excludedManagedSettings: $paths);
+        $empty = new ResumeSessionConfig(excludedManagedSettings: []);
+
+        expect($default->excludedManagedSettings)->toBeNull()
+            ->and($default->toArray())->not->toHaveKey('excludedManagedSettings')
+            ->and($fromArray->excludedManagedSettings)->toBe($paths)
+            ->and($fromArray->toArray())->toHaveKey('excludedManagedSettings', $paths)
+            ->and($typed->toArray())->toHaveKey('excludedManagedSettings', $paths)
+            ->and($empty->toArray())->toHaveKey('excludedManagedSettings', []);
+    });
+
     it('ignores the removed GitHub cache store setting', function () {
         $config = ResumeSessionConfig::fromArray(['enableGitHubCacheStore' => true]);
 

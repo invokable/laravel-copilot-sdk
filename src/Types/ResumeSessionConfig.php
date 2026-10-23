@@ -188,6 +188,7 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?bool  $interactiveUser  Declares that a human drives this session's conversation. Enables user-message analysis telemetry while excluding automated messages.
      *                                  Defaults to false for SDK sessions; ignored for cloud sessions and when resuming an active session.
      * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
+     * @param  ?array  $excludedManagedSettings  Managed setting paths to exclude from runtime-fetched policy. Does not affect host-injected `$managedSettings`.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -292,6 +293,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?bool $interactiveUser = null,
         public SandboxConfig|array|null $sandboxConfig = null,
         public AutopilotOptions|array|null $autopilot = null,
+        public ?array $excludedManagedSettings = null,
     ) {}
 
     /**
@@ -481,6 +483,7 @@ readonly class ResumeSessionConfig implements Arrayable
                 : null,
             enableManagedSettings: $data['enableManagedSettings'] ?? null,
             enforceManagedModelDefaults: $data['enforceManagedModelDefaults'] ?? null,
+            excludedManagedSettings: $data['excludedManagedSettings'] ?? null,
             canvasProvider: $canvasProvider,
             imageGeneration: isset($data['imageGeneration'])
                 ? ($data['imageGeneration'] instanceof ImageGenerationConfig ? $data['imageGeneration'] : ImageGenerationConfig::fromArray($data['imageGeneration']))
@@ -672,6 +675,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'featureFlags' => $this->featureFlags,
             'expAssignments' => $expAssignments,
             'enableManagedSettings' => $this->enableManagedSettings,
+            'excludedManagedSettings' => $this->excludedManagedSettings,
             'canvasProvider' => $canvasProvider,
             'enforceManagedModelDefaults' => $this->enforceManagedModelDefaults,
             'imageGeneration' => $this->imageGeneration instanceof ImageGenerationConfig

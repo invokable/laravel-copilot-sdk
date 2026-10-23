@@ -784,6 +784,21 @@ describe('SessionConfig', function () {
 
         expect($config->featureFlags)->toBe(['enable-bar' => false]);
     });
+
+    it('round-trips excluded managed settings', function () {
+        $paths = ['permissions'];
+        $default = new SessionConfig;
+        $fromArray = SessionConfig::fromArray(['excludedManagedSettings' => $paths]);
+        $typed = new SessionConfig(excludedManagedSettings: $paths);
+        $empty = new SessionConfig(excludedManagedSettings: []);
+
+        expect($default->excludedManagedSettings)->toBeNull()
+            ->and($default->toArray())->not->toHaveKey('excludedManagedSettings')
+            ->and($fromArray->excludedManagedSettings)->toBe($paths)
+            ->and($fromArray->toArray())->toHaveKey('excludedManagedSettings', $paths)
+            ->and($typed->toArray())->toHaveKey('excludedManagedSettings', $paths)
+            ->and($empty->toArray())->toHaveKey('excludedManagedSettings', []);
+    });
 });
 
 it('roundtrips allowedModels', function () {
