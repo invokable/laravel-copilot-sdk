@@ -63,6 +63,8 @@ steps:
 
     - name: Noop
       if: steps.changes.outputs.status == 'up-to-date'
+      env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
           echo "No changes detected. Skipping SDK sync."
           echo '{"type":"noop","message":"No changes detected. Skipping SDK sync."}' >> "$GH_AW_SAFE_OUTPUTS"
