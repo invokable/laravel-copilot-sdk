@@ -1845,10 +1845,15 @@ if (isset($request['sandboxPathGrant'])) {
 }
 ```
 
-### metadata (experimental: クライアント所有メタデータ)
+### metadata (experimental: セッション情報)
 
 ```php
 use Revolution\Copilot\Types\Rpc\MetadataUpdateClientMetadataRequest;
+
+// セッションの現在のアクティビティ状態を取得
+$activity = $session->rpc()->metadata()->activity();
+// $activity->abortable - 中断可能な処理があるか
+// $activity->hasActiveWork - ターンやバックグラウンドタスクなどの作業が実行中か
 
 // このローカルセッションに紐づくクライアント所有メタデータを取得
 $metadata = $session->rpc()->metadata()->getClientMetadata();
