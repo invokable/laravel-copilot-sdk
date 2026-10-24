@@ -8,6 +8,7 @@ on:
     workflow_dispatch:
     report-blocked-version: false
 
+max-ai-credits: 500
 timeout-minutes: 30
 
 engine:
