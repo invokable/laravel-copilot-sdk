@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingAgent;
+use Revolution\Copilot\Rpc\PendingAutopilotObjective;
 use Revolution\Copilot\Rpc\PendingCommands;
 use Revolution\Copilot\Rpc\PendingEventLog;
 use Revolution\Copilot\Rpc\PendingExtensions;
@@ -63,6 +64,12 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->workspaces())->toBeInstanceOf(PendingWorkspaces::class);
+    });
+
+    it('returns PendingAutopilotObjective from autopilotObjective()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->autopilotObjective())->toBeInstanceOf(PendingAutopilotObjective::class);
     });
 
     it('returns PendingFleet from fleet()', function () {
