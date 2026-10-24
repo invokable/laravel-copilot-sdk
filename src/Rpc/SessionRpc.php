@@ -62,6 +62,16 @@ class SessionRpc
     }
 
     /**
+     * Autopilot objective RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function autopilotObjective(): PendingAutopilotObjective
+    {
+        return new PendingAutopilotObjective($this->client, $this->sessionId);
+    }
+
+    /**
      * Instructions RPC operations.
      */
     public function instructions(): PendingInstructions

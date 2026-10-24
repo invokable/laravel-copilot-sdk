@@ -899,6 +899,18 @@ Copilot::start(function (CopilotSession $session) {
 
 `workspaces()`はファイルの一覧・読み取り・書き込み・移動・削除やディレクトリ操作を提供します。`instructions()`でインストラクションの取得・再読み込み・探索、`lsp()`で言語サーバー設定の初期化を行えます。
 
+### Autopilot objective
+
+`autopilotObjective()->getState()`はセッションの現在のAutopilot objective状態を型付きで返します。objectiveが存在しない場合、`state`は`null`です。Workspaceに保存されたobjectiveの有無を確認する`workspaces()->autopilotObjectiveExists()`とは異なるAPIです。
+
+```php
+$state = $session->rpc()->autopilotObjective()->getState()->state;
+
+if ($state !== null) {
+    dump($state->objective, $state->status, $state->turnCount, $state->creditLimit);
+}
+```
+
 ### エージェント・Fleet・バックグラウンドタスク
 
 `agent()`でエージェントの一覧・選択・再読み込み、`fleet()`でFleetを開始します。`tasks()`ではバックグラウンドエージェントやクライアント所有タスクの登録、進捗取得・更新、移行、メッセージ送信、キャンセル、削除を扱います。
