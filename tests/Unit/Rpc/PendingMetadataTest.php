@@ -13,6 +13,7 @@ use Revolution\Copilot\Types\Rpc\MetadataRecordContextChangeRequest;
 use Revolution\Copilot\Types\Rpc\MetadataRecordContextChangeResult;
 use Revolution\Copilot\Types\Rpc\MetadataSetWorkingDirectoryRequest;
 use Revolution\Copilot\Types\Rpc\MetadataSetWorkingDirectoryResult;
+use Revolution\Copilot\Types\Rpc\SessionActivity;
 use Revolution\Copilot\Types\Rpc\SessionMetadataSnapshot;
 use Revolution\Copilot\Types\Rpc\SessionWorkingDirectoryContext;
 
@@ -53,6 +54,24 @@ describe('PendingMetadata', function () {
 
         expect($result)->toBeInstanceOf(MetadataIsProcessingResult::class)
             ->and($result->processing)->toBeTrue();
+    });
+
+    it('returns activity flags from session.metadata.activity', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.metadata.activity', ['sessionId' => 'test-session'])
+            ->andReturn([
+                'abortable' => true,
+                'hasActiveWork' => false,
+            ]);
+
+        $pending = new PendingMetadata($client, 'test-session');
+        $result = $pending->activity();
+
+        expect($result)->toBeInstanceOf(SessionActivity::class)
+            ->and($result->abortable)->toBeTrue()
+            ->and($result->hasActiveWork)->toBeFalse();
     });
 
     it('calls session.metadata.contextInfo', function () {

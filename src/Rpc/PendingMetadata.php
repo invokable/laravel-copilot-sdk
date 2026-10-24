@@ -18,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\MetadataRecordContextChangeResult;
 use Revolution\Copilot\Types\Rpc\MetadataSetWorkingDirectoryRequest;
 use Revolution\Copilot\Types\Rpc\MetadataSetWorkingDirectoryResult;
 use Revolution\Copilot\Types\Rpc\MetadataUpdateClientMetadataRequest;
+use Revolution\Copilot\Types\Rpc\SessionActivity;
 use Revolution\Copilot\Types\Rpc\SessionMetadataSnapshot;
 
 /**
@@ -45,6 +46,15 @@ class PendingMetadata
     {
         return MetadataIsProcessingResult::fromArray(
             $this->client->request('session.metadata.isProcessing', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    public function activity(): SessionActivity
+    {
+        return SessionActivity::fromArray(
+            $this->client->request('session.metadata.activity', [
                 'sessionId' => $this->sessionId,
             ]),
         );
