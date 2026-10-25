@@ -237,21 +237,22 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - https://kawax.biz/en/packages/laravel-copilot-sdk で英語版を公開。
 
 ### docs/jp/
-- `agent-loop.md`(AI): エージェントループ。公式から翻訳。
+- `agent-loop.md`: エージェントループ。公式から翻訳。
+- `ahp.md`: AHPホスト
 - `ai-sdk.md`: Laravel AI SDK Integration
-- `ask-user.md`(AI): User Input Requests。公式から翻訳。
+- `ask-user.md`: User Input Requests。公式から翻訳。
 - `attachments.md`: File Attachments用のヘルパー。
-- `auth.md`(AI): 認証方法。公式を元に作成。
+- `auth.md`: 認証方法。公式を元に作成。
 - `bare-usage.md`: Laravel流ではない公式SDKに沿った使い方
 - `bundle-cli.md`: Laravelプロジェクト内でCopilot CLIをバンドルして管理する方法
 - `currency.md`: Laravel の Concurrency を使った並行実行
-- `custom-agents.md`(AI): カスタムエージェント。公式から翻訳。
-- `custom-providers.md`(AI): カスタムプロバイダー（BYOK - Bring Your Own Key）の使い方。公式から翻訳。
+- `custom-agents.md`: カスタムエージェント。公式から翻訳。
+- `custom-providers.md`: カスタムプロバイダー（BYOK - Bring Your Own Key）の使い方。公式から翻訳。
 - `events.md`: Laravel Event
 - `fake.md`: テスト用機能の使い方
 - `github-actions.md`: GitHub Actionsでの使い方
 - `github-token.md`: GitHubトークンの実行時切り替え
-- `hooks.md`(AI): Session Hooks。公式から翻訳。
+- `hooks.md`: Session Hooks。公式から翻訳。
 - `laravel-cloud.md`: Laravel Cloudでの使い方
 - `mcp.md`: MCPサーバーの使い方
 - `models.md`: 利用可能なモデル一覧
@@ -261,11 +262,12 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `rpc.md`: RPCクラスの説明
 - `send-on.md`: Session `on()`で途中のメッセージを受け取る
 - `session-config.md`: SessionConfigクラスの詳細
-- `session-context.md`(AI): SessionContext
+- `session-context.md`: SessionContext
 - `session-event.md`: Laravel用に強化したSessionEventクラスの詳細
-- `session-lifecycle-event.md`(AI): セッションライフサイクルイベント
+- `session-lifecycle-event.md`: セッションライフサイクルイベント
+- `session-limits.md`: セッションのAIクレジット制限に関するドキュメント
 - `streaming.md`: Streamingの使い方
-- `streaming-events.md`(AI): 公式から翻訳。
-- `tcp-mode.md`(AI): TCPモードの使い方
-- `telemetry.md`(AI): OpenTelemetryの使い方
+- `streaming-events.md`: 公式から翻訳。
+- `tcp-mode.md`: TCPモードの使い方
+- `telemetry.md`: OpenTelemetryの使い方
 - `tools.md`: ツールの使い方
