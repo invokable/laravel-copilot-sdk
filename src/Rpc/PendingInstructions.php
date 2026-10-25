@@ -30,21 +30,6 @@ class PendingInstructions
     }
 
     /**
-     * Discover instruction sources across user, repository, and plugin sources.
-     *
-     * @experimental This API group is experimental and may change or be removed.
-     */
-    public function discover(InstructionsDiscoverRequest|array $params = []): ServerInstructionSourceList
-    {
-        $paramsArray = ($params instanceof InstructionsDiscoverRequest ? $params : InstructionsDiscoverRequest::fromArray($params))->toArray();
-        $paramsArray['sessionId'] = $this->sessionId;
-
-        return ServerInstructionSourceList::fromArray(
-            $this->client->request('instructions.discover', $paramsArray),
-        );
-    }
-
-    /**
      * Reload instruction sources for this session.
      *
      * @experimental This API group is experimental and may change or be removed.
