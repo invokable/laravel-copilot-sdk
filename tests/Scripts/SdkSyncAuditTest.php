@@ -77,6 +77,9 @@ function withSdkSyncFixture(Closure $test): void
                 account: {
                     getWebUrl: async () => connection.sendRequest("account.getWebUrl", {}),
                 },
+                agentRegistry: {
+                    spawn: async () => connection.sendRequest("agentRegistry.spawn", {}),
+                },
             };
         }
         export function createSessionRpc(connection: MessageConnection, sessionId: string) {
@@ -122,6 +125,8 @@ function withSdkSyncFixture(Closure $test): void
         class _InternalServerRpc:
             def __init__(self, client):
                 self.account = _InternalServerAccountApi(client)
+            async def spawn_agent(self):
+                return await self._client.request("agentRegistry.spawn", {})
         class SessionRpc:
             async def suspend(self):
                 return await self._client.request("session.suspend", {})
@@ -342,8 +347,13 @@ describe('SDK sync structural audit', function () {
             expect($methods['ServerRpc']['missing'])->toBe(['account.getWebUrl', 'models.update']);
             expect($methods['ServerRpc']['language_differences']['missing'])->toBe(['models.update']);
             expect($methods['ServerRpc']['local_only'])->toBe([]);
+            expect($methods['ServerRpc']['missing'])->not->toContain('agentRegistry.spawn');
+            expect($methods['ServerRpc']['language_differences']['missing'])->not->toContain('agentRegistry.spawn');
             expect($methods['SessionRpc']['missing'])->toBe(['session.internal', 'session.model.set']);
             expect($methods['SessionRpc']['local_only'])->toBe(['session.model.old']);
+            expect($audit->report()['rpc_method_exclusions'])->toBe([
+                'agentRegistry.spawn' => 'Experimental controller-local API with no identified Laravel use case (discussion #455)',
+            ]);
         });
     });
 

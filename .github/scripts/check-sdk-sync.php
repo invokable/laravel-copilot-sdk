@@ -9,6 +9,10 @@ const SDK_SYNC_RPC_TYPE_EXCLUSIONS = [
     'OpaqueInProcessValue' => 'In-process values are not transferable over JSON-RPC',
 ];
 
+const SDK_SYNC_RPC_METHOD_EXCLUSIONS = [
+    'agentRegistry.spawn' => 'Experimental controller-local API with no identified Laravel use case (discussion #455)',
+];
+
 const SDK_SYNC_CLIENT_OPTION_ALIASES = [
     'workingDirectory' => ['cwd'],
     'gitHubToken' => ['github_token'],
@@ -40,6 +44,7 @@ final class SdkSyncAudit
             'schema_version' => 2,
             'scope' => 'Current upstream snapshot vs Laravel; names and file existence only, not RPC type contents or signatures.',
             'rpc_type_exclusions' => SDK_SYNC_RPC_TYPE_EXCLUSIONS,
+            'rpc_method_exclusions' => SDK_SYNC_RPC_METHOD_EXCLUSIONS,
             'client_option_exclusions' => SDK_SYNC_CLIENT_OPTION_EXCLUSIONS,
             'missing_rpc_types' => $this->rpcTypes($typescript, $python, $this->enumTypes($typescript, $python)),
             'missing_rpc_apis' => $this->missingRpcApis(),
@@ -485,8 +490,9 @@ final class SdkSyncAudit
                 $pythonMethods = array_merge($pythonMethods, $this->pythonRpcMethods($python, $class));
             }
 
-            $javascriptMethods = array_values(array_unique($javascriptMethods));
-            $pythonMethods = array_values(array_unique($pythonMethods));
+            $excludedMethods = array_keys(SDK_SYNC_RPC_METHOD_EXCLUSIONS);
+            $javascriptMethods = array_values(array_diff(array_unique($javascriptMethods), $excludedMethods));
+            $pythonMethods = array_values(array_diff(array_unique($pythonMethods), $excludedMethods));
 
             if ($javascriptMethods === [] || $pythonMethods === []) {
                 throw new RuntimeException("No upstream RPC methods found for $root");
@@ -494,9 +500,10 @@ final class SdkSyncAudit
 
             $upstream = array_values(array_unique([...$javascriptMethods, ...$pythonMethods]));
             sort($upstream);
+            $local = array_values(array_diff($this->phpRpcMethods($root, $upstream), $excludedMethods));
             $result[$root] = [
                 'local_root' => "src/Rpc/$root.php",
-                ...$this->difference($upstream, $this->phpRpcMethods($root, $upstream)),
+                ...$this->difference($upstream, $local),
                 'language_differences' => $this->difference($javascriptMethods, $pythonMethods),
             ];
         }

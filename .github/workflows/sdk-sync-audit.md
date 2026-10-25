@@ -55,6 +55,7 @@ steps:
             missing_rpc_type_count: (.missing_rpc_types | length),
             missing_rpc_api_count: (.missing_rpc_apis | length),
             missing_enum_count: (.missing_enums | length),
+            rpc_method_exclusions,
             rpc_methods, session_config, resume_session_config, client_options, hooks
           }' /tmp/gh-aw/sdk-sync-audit/candidates.json > /tmp/gh-aw/sdk-sync-audit/summary.json
 
@@ -115,7 +116,7 @@ At the beginning of the audit, before reading the prepared evidence or examining
 
 Read `/tmp/gh-aw/sdk-sync-audit/summary.json`, then selectively query relevant entries from `/tmp/gh-aw/sdk-sync-audit/candidates.json` with `jq`. Do not load the full RPC type inventory. This is a current-state audit of the checked-out official SDK submodule against the Laravel implementation; do not update the submodule as part of the audit.
 
-The candidate report detects structural differences in RPC type names, Java RPC API group files mapped to Laravel `Pending*` files, enum names, RPC method names, configuration options, and hooks. Query `.missing_rpc_apis[]` separately from `.missing_rpc_types[]`; Java `*Api.java` files are not RPC data types. It checks file existence rather than fields inside existing RPC types. Treat candidates as leads, not proof: verify each against the relevant upstream source and complete Laravel entry point before creating an issue.
+The candidate report detects structural differences in RPC type names, Java RPC API group files mapped to Laravel `Pending*` files, enum names, RPC method names, configuration options, and hooks. Query `.missing_rpc_apis[]` separately from `.missing_rpc_types[]`; Java `*Api.java` files are not RPC data types. `rpc_method_exclusions` lists upstream methods intentionally omitted from parity candidates, with reasons. It checks file existence rather than fields inside existing RPC types. Treat candidates as leads, not proof: verify each against the relevant upstream source and complete Laravel entry point before creating an issue.
 
 `existing-issues.json` contains paginated open and closed issues; `open-sync-prs.json` contains in-flight `sdk-sync` PRs. If any required evidence is missing, invalid, or unreadable, call `report_incomplete`. If there are no verified, novel, feasible gaps, do not create an issue. Publish issues only through `create-issue`.
 
