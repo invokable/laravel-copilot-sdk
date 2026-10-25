@@ -12,9 +12,23 @@ use Revolution\Copilot\Types\Rpc\ToolResultExpanded;
 use Revolution\Copilot\Types\Rpc\ToolResultNewMessage;
 use Revolution\Copilot\Types\Rpc\ToolsExecuteRequest;
 use Revolution\Copilot\Types\Rpc\ToolsGetSubagentSettingsResult;
+use Revolution\Copilot\Types\Rpc\ToolsInitializeAndValidateResult;
 use Revolution\Copilot\Types\Rpc\ToolsSetRequest;
 
 describe('PendingSessionTools', function () {
+    it('initializes and validates runtime tools for the session', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.tools.initializeAndValidate', ['sessionId' => 'test-session-id'])
+            ->andReturn([]);
+
+        $result = (new PendingTools($client, 'test-session-id'))->initializeAndValidate();
+
+        expect($result)->toBeInstanceOf(ToolsInitializeAndValidateResult::class)
+            ->and($result->toArray())->toBe([]);
+    });
+
     it('calls session.tools.handlePendingToolCall with correct params', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

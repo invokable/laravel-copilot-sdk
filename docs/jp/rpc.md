@@ -1318,6 +1318,10 @@ $session->rpc()->history()->truncate(new HistoryTruncateRequest(
 ));
 
 // tools (プロトコルv3+: external_tool.requestedイベントへの応答)
+// runtime tool setを送信前に初期化・検証（experimental。subagent sessionなどで使用）
+$session->rpc()->tools()->initializeAndValidate();
+// 空の ToolsInitializeAndValidateResult が返る
+
 // 現在セッションに公開されているツールをネイティブの呼び出しパイプラインで実行（experimental）
 use Revolution\Copilot\Types\Rpc\ToolsExecuteRequest;
 
