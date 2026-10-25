@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\InstructionsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\InstructionsGetSourcesResult;
-use Revolution\Copilot\Types\Rpc\ServerInstructionSourceList;
 
 /**
  * Pending instructions RPC operations.

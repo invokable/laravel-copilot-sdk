@@ -6,7 +6,6 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingRemote;
 use Revolution\Copilot\Types\Rpc\RemoteEnableResult;
 use Revolution\Copilot\Types\Rpc\RemoteNotifySteerableChangedRequest;
-use Revolution\Copilot\Types\Rpc\RemoteSessionConnectionResult;
 
 describe('PendingRemote', function () {
     it('calls session.remote.enable and returns RemoteEnableResult', function () {

@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
-use Revolution\Copilot\Types\Rpc\ConnectRemoteSessionParams;
 use Revolution\Copilot\Types\Rpc\RemoteEnableRequest;
 use Revolution\Copilot\Types\Rpc\RemoteEnableResult;
 use Revolution\Copilot\Types\Rpc\RemoteNotifySteerableChangedRequest;
-use Revolution\Copilot\Types\Rpc\RemoteSessionConnectionResult;
 
 /**
  * Pending remote RPC operations for a session.
