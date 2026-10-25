@@ -344,6 +344,16 @@ class SessionRpc
     }
 
     /**
+     * Session telemetry RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function telemetry(): PendingSessionTelemetry
+    {
+        return new PendingSessionTelemetry($this->client, $this->sessionId);
+    }
+
+    /**
      * Session quota RPC operations.
      *
      * @experimental This API group may change or be removed.

@@ -1559,6 +1559,19 @@ $metrics = $session->rpc()->usage()->getMetrics();
 // $metrics->modelMetrics - モデルごとのトークン使用量とリクエスト数
 // $metrics->currentModel - 現在のモデル識別子
 
+// telemetry (experimental: セッションテレメトリー)
+use Revolution\Copilot\Types\Rpc\TelemetrySetFeatureOverridesRequest;
+
+$telemetry = $session->rpc()->telemetry();
+$engagement = $telemetry->getEngagementId();
+// $engagement->engagementId - 利用可能な場合のエンゲージメントID。取得できない場合はnull
+
+$telemetry->setFeatureOverrides(new TelemetrySetFeatureOverridesRequest(
+    features: ['feature-key' => 'override-value'],
+));
+// 指定したoverrideは以後のテレメトリーイベントに付加され、以前のoverrideを置き換えます。
+// SessionConfig::$enableSessionTelemetry（内部テレメトリーの有効化）とは別の機能です。
+
 // auth: セッションの認証状態を取得
 $status = $session->rpc()->auth()->getStatus();
 // $status->isAuthenticated - 認証済みかどうか
