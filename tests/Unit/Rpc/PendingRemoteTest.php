@@ -58,33 +58,6 @@ describe('PendingRemote', function () {
         expect($result)->toBeNull();
     });
 
-    it('connects a remote session using its session-scoped RPC', function () {
-        $client = Mockery::mock(JsonRpcClient::class);
-        $client->shouldReceive('request')
-            ->once()
-            ->with(
-                'session.remote.connectRemoteSession',
-                ['sessionId' => 'bound-session'],
-            )
-            ->andReturn([
-                'metadata' => [
-                    'kind' => 'coding-agent',
-                    'modifiedTime' => '2024-01-01T00:00:00Z',
-                    'repository' => ['branch' => 'main', 'name' => 'repo', 'owner' => 'org'],
-                    'sessionId' => 'remote-session',
-                    'startTime' => '2024-01-01T00:00:00Z',
-                ],
-                'sessionId' => 'connected-session',
-            ]);
-
-        $result = (new PendingRemote($client, 'bound-session'))->connectRemoteSession([
-            'sessionId' => 'remote-session',
-        ]);
-
-        expect($result)->toBeInstanceOf(RemoteSessionConnectionResult::class)
-            ->and($result->sessionId)->toBe('connected-session');
-    });
-
     it('reports remote-steerability changes for its session', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

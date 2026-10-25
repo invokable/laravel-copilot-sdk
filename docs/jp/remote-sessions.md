@@ -53,8 +53,6 @@ echo $connected->sessionId;
 // $connected->metadata - ConnectedRemoteSessionMetadata オブジェクト
 ```
 
-これはセッションスコープの`$session->rpc()->remote()->connectRemoteSession()`とは別のRPCです。後者は既存セッションに紐づく`session.remote.connectRemoteSession`を呼び出します。
-
 ## ランタイム全体の Remote Control（TCP モード）
 
 `RemoteControlConfig`の`remote`はランタイム全体のRemote Control用設定です。公式SDK 1.0.103で削除されたクライアント起動設定の`remote`とは別です。

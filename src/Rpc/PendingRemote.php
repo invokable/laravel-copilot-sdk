@@ -57,21 +57,6 @@ class PendingRemote
     }
 
     /**
-     * Connect to a remote session.
-     *
-     * @experimental This method is part of an experimental API and may change or be removed.
-     */
-    public function connectRemoteSession(ConnectRemoteSessionParams|array $params): RemoteSessionConnectionResult
-    {
-        $paramsArray = ($params instanceof ConnectRemoteSessionParams ? $params : ConnectRemoteSessionParams::fromArray($params))->toArray();
-        $paramsArray['sessionId'] = $this->sessionId;
-
-        return RemoteSessionConnectionResult::fromArray(
-            $this->client->request('session.remote.connectRemoteSession', $paramsArray),
-        );
-    }
-
-    /**
      * Notify the runtime that this session's remote-steerability changed.
      */
     public function notifySteerableChanged(RemoteNotifySteerableChangedRequest|array $params): void
