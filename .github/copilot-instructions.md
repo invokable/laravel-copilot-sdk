@@ -245,11 +245,13 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `auth.md`: 認証方法。公式を元に作成。
 - `bare-usage.md`: Laravel流ではない公式SDKに沿った使い方
 - `bundle-cli.md`: Laravelプロジェクト内でCopilot CLIをバンドルして管理する方法
+- `cloud-sessions.md`: クラウドセッションの使い方
 - `currency.md`: Laravel の Concurrency を使った並行実行
 - `custom-agents.md`: カスタムエージェント。公式から翻訳。
 - `custom-providers.md`: カスタムプロバイダー（BYOK - Bring Your Own Key）の使い方。公式から翻訳。
 - `events.md`: Laravel Event
 - `fake.md`: テスト用機能の使い方
+- `fleet-mode.md`: フリートモード
 - `github-actions.md`: GitHub Actionsでの使い方
 - `github-token.md`: GitHubトークンの実行時切り替え
 - `hooks.md`: Session Hooks。公式から翻訳。
@@ -257,6 +259,7 @@ Copilot::run(prompt: 'What is 2 + 2?', config: ['model' => 'gpt-5']);
 - `mcp.md`: MCPサーバーの使い方
 - `models.md`: 利用可能なモデル一覧
 - `permission-requests.md`: Permission Requests
+- `plugin-directories.md`: プラグインディレクトリの使い方
 - `remote-sessions.md`: リモートセッション
 - `resume.md`: セッションの再開方法
 - `rpc.md`: RPCクラスの説明
