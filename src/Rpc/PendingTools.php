@@ -12,6 +12,7 @@ use Revolution\Copilot\Types\Rpc\ToolResultExpanded;
 use Revolution\Copilot\Types\Rpc\ToolsExecuteRequest;
 use Revolution\Copilot\Types\Rpc\ToolsGetCurrentMetadataResult;
 use Revolution\Copilot\Types\Rpc\ToolsGetSubagentSettingsResult;
+use Revolution\Copilot\Types\Rpc\ToolsInitializeAndValidateResult;
 use Revolution\Copilot\Types\Rpc\ToolsSetRequest;
 use Revolution\Copilot\Types\Rpc\ToolsUpdateSubagentSettingsResult;
 use Revolution\Copilot\Types\Rpc\UpdateSubagentSettingsRequest;
@@ -39,6 +40,20 @@ class PendingTools
 
         return HandlePendingToolCallResult::fromArray(
             $this->client->request('session.tools.handlePendingToolCall', $paramsArray),
+        );
+    }
+
+    /**
+     * Initialize and validate the session's runtime tool set.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function initializeAndValidate(): ToolsInitializeAndValidateResult
+    {
+        return ToolsInitializeAndValidateResult::fromArray(
+            $this->client->request('session.tools.initializeAndValidate', [
+                'sessionId' => $this->sessionId,
+            ]),
         );
     }
 
