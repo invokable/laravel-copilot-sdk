@@ -37,11 +37,12 @@ final class SdkSyncAudit
         $types = $this->read('copilot-sdk/nodejs/src/types.ts');
 
         return [
-            'schema_version' => 1,
-            'scope' => 'Current upstream snapshot vs Laravel; names only, not RPC type contents or signatures.',
+            'schema_version' => 2,
+            'scope' => 'Current upstream snapshot vs Laravel; names and file existence only, not RPC type contents or signatures.',
             'rpc_type_exclusions' => SDK_SYNC_RPC_TYPE_EXCLUSIONS,
             'client_option_exclusions' => SDK_SYNC_CLIENT_OPTION_EXCLUSIONS,
             'missing_rpc_types' => $this->rpcTypes($typescript, $python, $this->enumTypes($typescript, $python)),
+            'missing_rpc_apis' => $this->missingRpcApis(),
             'missing_enums' => $this->missingEnums($this->enumTypes($typescript, $python)),
             'rpc_methods' => $this->rpcMethods($typescript, $python),
             'session_config' => $this->config($types, 'SessionConfig'),
@@ -282,6 +283,11 @@ final class SdkSyncAudit
 
         foreach ($this->files($javaDirectory, 'java') as $file) {
             $name = basename($file, '.java');
+
+            if ($this->isRpcApi($name)) {
+                continue;
+            }
+
             $requestName = preg_replace('/Params$/', 'Request', $name);
             $canonical = in_array($requestName, $knownNames, true) ? $requestName : $name;
             $sources[$this->enumKey($canonical)]['name'] = $canonical;
@@ -313,6 +319,42 @@ final class SdkSyncAudit
         }
 
         return $missing;
+    }
+
+    private function missingRpcApis(): array
+    {
+        $javaDirectory = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
+        $missing = [];
+
+        foreach ($this->files($javaDirectory, 'java') as $file) {
+            $name = basename($file, '.java');
+
+            if (! $this->isRpcApi($name)) {
+                continue;
+            }
+
+            $apiName = substr($name, 0, -3);
+            $pendingName = str_starts_with($apiName, 'Session')
+                ? 'Pending'.substr($apiName, strlen('Session'))
+                : 'Pending'.$apiName;
+            $expectedFile = 'src/Rpc/'.$pendingName.'.php';
+
+            if (! is_file($this->root.'/'.$expectedFile)) {
+                $missing[] = [
+                    'name' => $name,
+                    'source' => $file,
+                    'expected_file' => $expectedFile,
+                ];
+            }
+        }
+
+        return $missing;
+    }
+
+    private function isRpcApi(string $name): bool
+    {
+        return str_ends_with($name, 'Api')
+            && (str_starts_with($name, 'Server') || str_starts_with($name, 'Session'));
     }
 
     private function missingEnums(array $enums): array
@@ -416,12 +458,35 @@ final class SdkSyncAudit
 
     private function rpcMethods(string $typescript, string $python): array
     {
+        $groups = [
+            'ServerRpc' => [
+                'javascript' => ['createServerRpc', 'createInternalServerRpc'],
+                'python' => ['ServerRpc', '_InternalServerRpc'],
+            ],
+            'SessionRpc' => [
+                'javascript' => ['createSessionRpc', 'createInternalSessionRpc'],
+                'python' => ['SessionRpc', '_InternalSessionRpc'],
+            ],
+        ];
         $result = [];
 
-        foreach (['ServerRpc', 'SessionRpc'] as $root) {
-            $body = $this->block($this->withoutComments($typescript), '/export function create'.$root.'\([^)]*\)\s*\{/');
-            $javascriptMethods = $this->names($body, '/connection\.sendRequest\(\s*["\']([^"\']+)["\']/');
-            $pythonMethods = $this->pythonRpcMethods($python, $root);
+        foreach ($groups as $root => $sources) {
+            $javascriptMethods = [];
+            foreach ($sources['javascript'] as $function) {
+                $body = $this->block($this->withoutComments($typescript), '/export function '.$function.'\([^)]*\)\s*\{/');
+                $javascriptMethods = array_merge(
+                    $javascriptMethods,
+                    $this->names($body, '/connection\.sendRequest\(\s*["\']([^"\']+)["\']/'),
+                );
+            }
+
+            $pythonMethods = [];
+            foreach ($sources['python'] as $class) {
+                $pythonMethods = array_merge($pythonMethods, $this->pythonRpcMethods($python, $class));
+            }
+
+            $javascriptMethods = array_values(array_unique($javascriptMethods));
+            $pythonMethods = array_values(array_unique($pythonMethods));
 
             if ($javascriptMethods === [] || $pythonMethods === []) {
                 throw new RuntimeException("No upstream RPC methods found for $root");

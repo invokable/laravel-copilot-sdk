@@ -72,6 +72,13 @@ function withSdkSyncFixture(Closure $test): void
                 },
             };
         }
+        export function createInternalServerRpc(connection: MessageConnection) {
+            return {
+                account: {
+                    getWebUrl: async () => connection.sendRequest("account.getWebUrl", {}),
+                },
+            };
+        }
         export function createSessionRpc(connection: MessageConnection, sessionId: string) {
             return {
                 suspend: async () => connection.sendRequest("session.suspend", { sessionId }),
@@ -80,8 +87,10 @@ function withSdkSyncFixture(Closure $test): void
                 },
             };
         }
-        export function createInternalServerRpc(connection: MessageConnection) {
-            return { hidden: async () => connection.sendRequest("private.hidden", {}) };
+        export function createInternalSessionRpc(connection: MessageConnection, sessionId: string) {
+            return {
+                internal: async () => connection.sendRequest("session.internal", { sessionId }),
+            };
         }
         TS);
     $write('copilot-sdk/python/copilot/generated/rpc.py', <<<'PY'
@@ -107,28 +116,51 @@ function withSdkSyncFixture(Closure $test): void
                 self.models = ServerModelsApi(client)
             async def ping(self):
                 return await self._client.request("ping", {})
+        class _InternalServerAccountApi:
+            async def get_web_url(self):
+                return await self._client.request("account.getWebUrl", {})
+        class _InternalServerRpc:
+            def __init__(self, client):
+                self.account = _InternalServerAccountApi(client)
         class SessionRpc:
             async def suspend(self):
                 return await self._client.request("session.suspend", {})
             async def set_model(self):
                 return await self._client.request("session.model.set", {})
-        class _InternalServerRpc:
-            async def hidden(self):
-                return await self._client.request("private.hidden", {})
+        class _InternalSessionRpc:
+            async def internal(self):
+                return await self._client.request("session.internal", {})
         PY);
     $java = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
 
-    foreach (['ExistingParams', 'MissingParams', 'JavaOnly', 'Extension'] as $name) {
+    foreach ([
+        'ExistingParams',
+        'MissingParams',
+        'JavaOnly',
+        'Extension',
+        'ServerModelsApi',
+        'SessionModelApi',
+        'ServerMissingApi',
+        'SessionMissingApi',
+    ] as $name) {
         $write("$java/$name.java", "public class $name {}");
     }
 
-    foreach (['ExistingEnum', 'MissingEnum', 'JavaOnlyEnum'] as $name) {
+    foreach ([
+        'ExistingEnum',
+        'MissingEnum',
+        'JavaOnlyEnum',
+        'ProviderConfigWireApi',
+        'ProviderEndpointWireApi',
+    ] as $name) {
         $write("$java/$name.java", "public enum $name {}");
     }
 
     $write('src/Types/Rpc/ExistingRequest.php', '<?php readonly class ExistingRequest {}');
     $write('src/Types/Rpc/ExtensionInfo.php', '<?php readonly class ExtensionInfo {}');
     $write('src/Enums/ExistingEnum.php', '<?php enum ExistingEnum: string {}');
+    $write('src/Enums/ProviderConfigWireApi.php', '<?php enum ProviderConfigWireApi: string {}');
+    $write('src/Enums/ProviderEndpointWireApi.php', '<?php enum ProviderEndpointWireApi: string {}');
     $write('src/Rpc/ServerRpc.php', <<<'PHP'
         <?php
         class ServerRpc {
@@ -255,6 +287,29 @@ describe('SDK sync structural audit', function () {
         });
     });
 
+    it('maps Java RPC API groups to Pending files instead of missing RPC types', function () {
+        withSdkSyncFixture(function (SdkSyncAudit $audit): void {
+            $report = $audit->report();
+
+            expect(array_column($report['missing_rpc_apis'], 'name'))->toBe(['ServerMissingApi', 'SessionMissingApi']);
+            expect($report['missing_rpc_apis'][0]['expected_file'])->toBe('src/Rpc/PendingServerMissing.php');
+            expect($report['missing_rpc_apis'][1]['expected_file'])->toBe('src/Rpc/PendingMissing.php');
+            expect(array_column($report['missing_rpc_apis'], 'name'))
+                ->not->toContain('ProviderConfigWireApi', 'ProviderEndpointWireApi');
+            expect(array_column($report['missing_rpc_types'], 'name'))
+                ->not->toContain(
+                    'ServerModelsApi',
+                    'SessionModelApi',
+                    'ServerMissingApi',
+                    'SessionMissingApi',
+                    'ProviderConfigWireApi',
+                    'ProviderEndpointWireApi',
+                );
+            expect(array_column($report['missing_enums'], 'name'))
+                ->not->toContain('ProviderConfigWireApi', 'ProviderEndpointWireApi');
+        });
+    });
+
     it('checks upstream enums separately from RPC data types and matches existing enum files', function () {
         withSdkSyncFixture(function (SdkSyncAudit $audit): void {
             $enums = $audit->report()['missing_enums'];
@@ -284,10 +339,10 @@ describe('SDK sync structural audit', function () {
 
             $methods = $audit->report()['rpc_methods'];
 
-            expect($methods['ServerRpc']['missing'])->toBe(['models.update']);
+            expect($methods['ServerRpc']['missing'])->toBe(['account.getWebUrl', 'models.update']);
             expect($methods['ServerRpc']['language_differences']['missing'])->toBe(['models.update']);
             expect($methods['ServerRpc']['local_only'])->toBe([]);
-            expect($methods['SessionRpc']['missing'])->toBe(['session.model.set']);
+            expect($methods['SessionRpc']['missing'])->toBe(['session.internal', 'session.model.set']);
             expect($methods['SessionRpc']['local_only'])->toBe(['session.model.old']);
         });
     });
@@ -333,9 +388,25 @@ describe('SDK sync structural audit', function () {
             $sessionRpc = file_get_contents($root.'/'.$sessionRpcPath);
             $write($sessionRpcPath, str_replace(
                 'public function model()',
-                'public function plugins() { return new PendingPlugins($this->client); }'.PHP_EOL.'    public function model()',
+                'public function internal() { return $this->client->request("session.internal", []); }'.PHP_EOL.
+                    '    public function plugins() { return new PendingPlugins($this->client); }'.PHP_EOL.
+                    '    public function model()',
                 $sessionRpc,
             ));
+            $serverRpcPath = 'src/Rpc/ServerRpc.php';
+            $serverRpc = file_get_contents($root.'/'.$serverRpcPath);
+            $write($serverRpcPath, str_replace(
+                'public function models()',
+                'public function account() { return new PendingServerAccount($this->client); }'.PHP_EOL.
+                    '    public function models()',
+                $serverRpc,
+            ));
+            $write('src/Rpc/PendingServerAccount.php', <<<'PHP'
+                <?php
+                class PendingServerAccount {
+                    public function getWebUrl() { return $this->client->request('account.getWebUrl', []); }
+                }
+                PHP);
             $write('src/Rpc/PendingPlugins.php', <<<'PHP'
                 <?php
                 class PendingPlugins {
@@ -348,6 +419,7 @@ describe('SDK sync structural audit', function () {
 
             expect($methods['missing'])->toBe([]);
             expect($methods['local_only'])->toBe([]);
+            expect($audit->report()['rpc_methods']['ServerRpc']['missing'])->toBe(['models.update']);
         });
     });
 
@@ -463,7 +535,7 @@ describe('SDK sync structural audit', function () {
             $success->run();
 
             expect($success->getExitCode())->toBe(0);
-            expect(json_decode($success->getOutput(), true, flags: JSON_THROW_ON_ERROR)['schema_version'])->toBe(1);
+            expect(json_decode($success->getOutput(), true, flags: JSON_THROW_ON_ERROR)['schema_version'])->toBe(2);
             expect($success->getErrorOutput())->toBe('');
 
             $write('copilot-sdk/python/copilot/generated/rpc.py', '');
