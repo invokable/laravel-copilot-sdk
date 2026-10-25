@@ -29,6 +29,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          submodules: recursive
 
       - name: Install gh-aw CLI
         uses: github/gh-aw-actions/setup-cli@e89a5670dc4c790b37ade361215b8d72d8ce8942 # v0.93.3
