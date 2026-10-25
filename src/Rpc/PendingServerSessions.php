@@ -38,6 +38,8 @@ use Revolution\Copilot\Types\Rpc\SessionsListRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadDeferredRepoHooksRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadWorkspaceRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadWorkspaceResult;
+use Revolution\Copilot\Types\Rpc\SessionsOpenRequest;
+use Revolution\Copilot\Types\Rpc\SessionsOpenResult;
 use Revolution\Copilot\Types\Rpc\SessionsPruneOldRequest;
 use Revolution\Copilot\Types\Rpc\SessionsReadPersistedEventsRequest;
 use Revolution\Copilot\Types\Rpc\SessionsReleaseLockRequest;
@@ -64,6 +66,22 @@ class PendingServerSessions
     public function __construct(
         protected JsonRpcClient $client,
     ) {}
+
+    /**
+     * Create, resume, attach, or connect to a session.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function open(SessionsOpenRequest|array $params): SessionsOpenResult
+    {
+        $request = $params instanceof SessionsOpenRequest
+            ? $params
+            : SessionsOpenRequest::fromArray($params);
+
+        return SessionsOpenResult::fromArray(
+            $this->client->request('sessions.open', $request->toArray()),
+        );
+    }
 
     /**
      * List persisted sessions without opening them.

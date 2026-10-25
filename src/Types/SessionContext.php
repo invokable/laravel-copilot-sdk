@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Types;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
+use Revolution\Copilot\Enums\HostType;
 
 /**
  * Working directory context for a session.
@@ -16,6 +17,7 @@ readonly class SessionContext implements Arrayable
      * @param  string  $cwd  Working directory where the session was created
      * @param  ?string  $gitRoot  Git repository root (if in a git repo)
      * @param  ?string  $repository  GitHub repository in "owner/repo" format
+     * @param  HostType|string|null  $hostType  Repository hosting platform
      * @param  ?string  $branch  Current git branch
      */
     public function __construct(
@@ -23,6 +25,7 @@ readonly class SessionContext implements Arrayable
         public ?string $gitRoot = null,
         public ?string $repository = null,
         public ?string $branch = null,
+        public HostType|string|null $hostType = null,
     ) {}
 
     /**
@@ -35,6 +38,9 @@ readonly class SessionContext implements Arrayable
             gitRoot: $data['gitRoot'] ?? null,
             repository: $data['repository'] ?? null,
             branch: $data['branch'] ?? null,
+            hostType: isset($data['hostType'])
+                ? HostType::tryFrom($data['hostType']) ?? $data['hostType']
+                : null,
         );
     }
 
@@ -48,6 +54,7 @@ readonly class SessionContext implements Arrayable
             'gitRoot' => $this->gitRoot,
             'repository' => $this->repository,
             'branch' => $this->branch,
+            'hostType' => $this->hostType instanceof HostType ? $this->hostType->value : $this->hostType,
         ], fn ($value) => $value !== null);
     }
 }

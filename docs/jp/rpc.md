@@ -135,6 +135,9 @@ use Revolution\Copilot\Types\Rpc\PluginsUpdateRequest;
 use Revolution\Copilot\Types\Rpc\SessionsListRequest;
 use Revolution\Copilot\Types\Rpc\SessionsPruneOldRequest;
 use Revolution\Copilot\Types\Rpc\SessionsReadPersistedEventsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsOpenCreateRequest;
+use Revolution\Copilot\Enums\SessionsOpenStatus;
+use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillInstallationOperationRequest;
@@ -396,6 +399,18 @@ $client = Copilot::client([
 $sessions = Copilot::client()->rpc()->sessions();
 
 // sessions (experimental: 永続化済みセッションの照会・管理)
+
+// sessions.open は kind で作成・再開・resumeLast・attach・remote/cloud 接続・handoff を選択します。
+$opened = $sessions->open(new SessionsOpenCreateRequest(
+    options: new SessionConfig(sessionId: 'new-session', model: 'gpt-5'),
+));
+if ($opened->status === SessionsOpenStatus::Created) {
+    echo $opened->sessionId;
+}
+// 配列でも指定できます。再開時の sessionId は variant のトップレベルに指定します。
+$resumed = $sessions->open(['kind' => 'resume', 'sessionId' => 'existing-session']);
+// 戻り値は SessionsOpenResult。not_found の場合は sessionId がありません。
+// sessionApi、onTaskCreated、onProgress、onConfirm は in-process 専用で、wire payload には含まれません。
 
 $listed = $sessions->list(new SessionsListRequest(
     source: 'local',
