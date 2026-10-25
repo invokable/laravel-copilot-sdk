@@ -25,6 +25,7 @@ use Revolution\Copilot\Rpc\PendingQueue;
 use Revolution\Copilot\Rpc\PendingSandbox;
 use Revolution\Copilot\Rpc\PendingSchedule;
 use Revolution\Copilot\Rpc\PendingSessionContentExclusion;
+use Revolution\Copilot\Rpc\PendingSessionTelemetry;
 use Revolution\Copilot\Rpc\PendingSkills;
 use Revolution\Copilot\Rpc\PendingTasks;
 use Revolution\Copilot\Rpc\PendingTools;
@@ -196,6 +197,12 @@ describe('SessionRpc', function () {
         $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
 
         expect($rpc->limitPrediction())->toBeInstanceOf(PendingLimitPrediction::class);
+    });
+
+    it('returns PendingSessionTelemetry from telemetry()', function () {
+        $rpc = new SessionRpc(createMockSessionRpcClient(), 'test-session');
+
+        expect($rpc->telemetry())->toBeInstanceOf(PendingSessionTelemetry::class);
     });
 
     it('calls session.suspend via suspend()', function () {
