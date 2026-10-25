@@ -52,6 +52,13 @@ function withSdkSyncFixture(Closure $test): void
         export interface ExistingRequest { changedProperty: string; }
         export interface MissingRequest {}
         export interface TsOnlyRequest {}
+        export interface CoveredContentExclusionParams {}
+        export interface CoveredContentExclusionResult { result: NestedCoveredResult; }
+        export interface CoveredGitHubAuthResult {}
+        export interface NestedCoveredResult {}
+        export interface InternalGitHubAuthResult {}
+        export interface InternalSendAndWaitParams {}
+        export interface InternalSendAndWaitResult {}
         export type MixedAlias = "one" | ExistingRequest;
         export interface Extension {}
         export type ExistingEnum = "one" | "two";
@@ -88,11 +95,25 @@ function withSdkSyncFixture(Closure $test): void
                 model: {
                     set: async () => connection.sendRequest("session.model.set", { sessionId }),
                 },
+                contentExclusion: {
+                    checkPaths: async (params: CoveredContentExclusionParams): Promise<CoveredContentExclusionResult> =>
+                        connection.sendRequest("session.contentExclusion.checkPaths", params),
+                },
+                gitHubAuth: {
+                    getStatus: async (params: SessionGitHubAuthGetStatusParams): Promise<CoveredGitHubAuthResult> =>
+                        connection.sendRequest("session.gitHubAuth.getStatus", params),
+                },
             };
         }
         export function createInternalSessionRpc(connection: MessageConnection, sessionId: string) {
             return {
                 internal: async () => connection.sendRequest("session.internal", { sessionId }),
+                sendAndWait: async (params: InternalSendAndWaitParams): Promise<InternalSendAndWaitResult> =>
+                    connection.sendRequest("session.sendAndWait", params),
+                gitHubAuth: {
+                    getAllAuthAvailable: async (): Promise<InternalGitHubAuthResult[]> =>
+                        connection.sendRequest("session.gitHubAuth.getAllAuthAvailable", {}),
+                },
             };
         }
         TS);
@@ -100,6 +121,20 @@ function withSdkSyncFixture(Closure $test): void
         class ExistingRequest:
             pass
         class MissingRequest:
+            pass
+        class CoveredContentExclusionParams:
+            pass
+        class CoveredContentExclusionResult:
+            pass
+        class CoveredGitHubAuthResult:
+            pass
+        class NestedCoveredResult:
+            pass
+        class InternalGitHubAuthResult:
+            pass
+        class InternalSendAndWaitParams:
+            pass
+        class InternalSendAndWaitResult:
             pass
         class PythonOnlyResult:
             pass
@@ -132,9 +167,20 @@ function withSdkSyncFixture(Closure $test): void
                 return await self._client.request("session.suspend", {})
             async def set_model(self):
                 return await self._client.request("session.model.set", {})
+            async def check_paths(self):
+                return await self._client.request("session.contentExclusion.checkPaths", {})
+            async def get_status(self):
+                return await self._client.request("session.gitHubAuth.getStatus", {})
+        class InternalSessionGitHubAuthApi:
+            async def get_all_auth_available(self):
+                return await self._client.request("session.gitHubAuth.getAllAuthAvailable", {})
         class _InternalSessionRpc:
+            def __init__(self, client):
+                self.git_hub_auth = InternalSessionGitHubAuthApi(client)
             async def internal(self):
                 return await self._client.request("session.internal", {})
+            async def send_and_wait(self):
+                return await self._client.request("session.sendAndWait", {})
         PY);
     $java = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
 
@@ -145,11 +191,63 @@ function withSdkSyncFixture(Closure $test): void
         'Extension',
         'ServerModelsApi',
         'SessionModelApi',
+        'SessionModelSetParams',
+        'CoveredJavaResult',
+        'CoveredGitHubAuthResult',
+        'SessionGitHubAuthGetStatusParams',
+        'SessionInternalResult',
+        'ServerAgentRegistryApi',
         'ServerMissingApi',
         'SessionMissingApi',
     ] as $name) {
         $write("$java/$name.java", "public class $name {}");
     }
+
+    $write("$java/SessionModelApi.java", <<<'JAVA'
+        import java.util.concurrent.CompletableFuture;
+        public final class SessionModelApi {
+            private final RpcCaller caller;
+            public CompletableFuture<CoveredJavaResult> set(SessionModelSetParams params) {
+                return caller.invoke("session.model.set", params, CoveredJavaResult.class);
+            }
+        }
+        JAVA);
+    $write("$java/SessionGitHubAuthApi.java", <<<'JAVA'
+        import java.util.concurrent.CompletableFuture;
+        public final class SessionGitHubAuthApi {
+            private final RpcCaller caller;
+            public CompletableFuture<CoveredGitHubAuthResult> getStatus(SessionGitHubAuthGetStatusParams params) {
+                return caller.invoke("session.gitHubAuth.getStatus", params, CoveredGitHubAuthResult.class);
+            }
+        }
+        JAVA);
+    $write("$java/SessionContentExclusionApi.java", <<<'JAVA'
+        import java.util.concurrent.CompletableFuture;
+        public final class SessionContentExclusionApi {
+            private final RpcCaller caller;
+            public CompletableFuture<CoveredContentExclusionResult> checkPaths(CoveredContentExclusionParams params) {
+                return caller.invoke("session.contentExclusion.checkPaths", params, CoveredContentExclusionResult.class);
+            }
+        }
+        JAVA);
+    $write("$java/SessionInternalApi.java", <<<'JAVA'
+        import java.util.concurrent.CompletableFuture;
+        public final class SessionInternalApi {
+            private final RpcCaller caller;
+            public CompletableFuture<SessionInternalResult> call() {
+                return caller.invoke("session.internal", java.util.Map.of(), SessionInternalResult.class);
+            }
+        }
+        JAVA);
+    $write("$java/ServerAgentRegistryApi.java", <<<'JAVA'
+        import java.util.concurrent.CompletableFuture;
+        public final class ServerAgentRegistryApi {
+            private final RpcCaller caller;
+            public CompletableFuture<Void> spawn() {
+                return caller.invoke("agentRegistry.spawn", java.util.Map.of(), Void.class);
+            }
+        }
+        JAVA);
 
     foreach ([
         'ExistingEnum',
@@ -185,12 +283,26 @@ function withSdkSyncFixture(Closure $test): void
         class SessionRpc {
             public function suspend() { return $this->client->request('session.suspend', []); }
             public function model() { return new PendingModel($this->client); }
+            public function contentExclusion() { return new PendingSessionContentExclusion($this->client); }
+            public function gitHubAuth() { return new PendingSessionAuth($this->client); }
         }
         PHP);
     $write('src/Rpc/PendingModel.php', <<<'PHP'
         <?php
         class PendingModel {
             public function set() { return $this->client->request('session.model.set', []); }
+        }
+        PHP);
+    $write('src/Rpc/PendingSessionContentExclusion.php', <<<'PHP'
+        <?php
+        class PendingSessionContentExclusion {
+            public function checkPaths() { return $this->client->request('session.contentExclusion.checkPaths', []); }
+        }
+        PHP);
+    $write('src/Rpc/PendingSessionAuth.php', <<<'PHP'
+        <?php
+        class PendingSessionAuth {
+            public function getStatus() { return $this->client->request('session.gitHubAuth.getStatus', []); }
         }
         PHP);
     $write('src/Types/SessionConfig.php', <<<'PHP'
@@ -349,11 +461,100 @@ describe('SDK sync structural audit', function () {
             expect($methods['ServerRpc']['local_only'])->toBe([]);
             expect($methods['ServerRpc']['missing'])->not->toContain('agentRegistry.spawn');
             expect($methods['ServerRpc']['language_differences']['missing'])->not->toContain('agentRegistry.spawn');
-            expect($methods['SessionRpc']['missing'])->toBe(['session.internal', 'session.model.set']);
+            expect($methods['SessionRpc']['missing'])->toBe(['session.model.set']);
+            expect($methods['SessionRpc']['missing'])->not->toContain('session.sendAndWait');
             expect($methods['SessionRpc']['local_only'])->toBe(['session.model.old']);
             expect($audit->report()['rpc_method_exclusions'])->toBe([
                 'agentRegistry.spawn' => 'Experimental controller-local API with no identified Laravel use case (discussion #455)',
             ]);
+            expect($audit->report()['rpc_method_inclusions'])->toBe([
+                'account.getWebUrl' => 'Explicitly tracked from the upstream internal server RPC factory.',
+            ]);
+        });
+    });
+
+    it('maps implemented wire methods to upstream types and excludes internal-only method types', function () {
+        withSdkSyncFixture(function (SdkSyncAudit $audit): void {
+            $report = $audit->report();
+            $coverage = $report['rpc_type_coverage'];
+            $covered = array_values(array_filter(
+                $coverage['covered_by_rpc_methods'],
+                fn (array $type): bool => str_starts_with($type['name'], 'CoveredContentExclusion')
+                    || $type['name'] === 'CoveredGitHubAuthResult'
+                    || $type['name'] === 'NestedCoveredResult'
+                    || str_starts_with($type['name'], 'CoveredJava')
+                    || $type['name'] === 'SessionGitHubAuthGetStatusParams'
+                    || $type['name'] === 'SessionModelSetParams',
+            ));
+            $internal = array_values(array_filter(
+                $coverage['internal_only'],
+                fn (array $type): bool => str_starts_with($type['name'], 'Internal'),
+            ));
+
+            expect($covered)->toBe([
+                [
+                    'name' => 'CoveredContentExclusionParams',
+                    'upstream_methods' => ['session.contentExclusion.checkPaths'],
+                    'local_files' => ['src/Rpc/PendingSessionContentExclusion.php'],
+                ],
+                [
+                    'name' => 'CoveredContentExclusionResult',
+                    'upstream_methods' => ['session.contentExclusion.checkPaths'],
+                    'local_files' => ['src/Rpc/PendingSessionContentExclusion.php'],
+                ],
+                [
+                    'name' => 'CoveredGitHubAuthResult',
+                    'upstream_methods' => ['session.gitHubAuth.getStatus'],
+                    'local_files' => ['src/Rpc/PendingSessionAuth.php'],
+                ],
+                [
+                    'name' => 'CoveredJavaResult',
+                    'upstream_methods' => ['session.model.set'],
+                    'local_files' => ['src/Rpc/PendingModel.php'],
+                ],
+                [
+                    'name' => 'NestedCoveredResult',
+                    'upstream_methods' => ['session.contentExclusion.checkPaths'],
+                    'local_files' => ['src/Rpc/PendingSessionContentExclusion.php'],
+                ],
+                [
+                    'name' => 'SessionGitHubAuthGetStatusParams',
+                    'upstream_methods' => ['session.gitHubAuth.getStatus'],
+                    'local_files' => ['src/Rpc/PendingSessionAuth.php'],
+                ],
+                [
+                    'name' => 'SessionModelSetParams',
+                    'upstream_methods' => ['session.model.set'],
+                    'local_files' => ['src/Rpc/PendingModel.php'],
+                ],
+            ]);
+            expect(array_column($internal, 'name'))->toContain(
+                'InternalGitHubAuthResult',
+                'InternalSendAndWaitParams',
+                'InternalSendAndWaitResult',
+            );
+            expect(array_column($report['missing_rpc_types'], 'name'))->not->toContain(
+                'CoveredContentExclusionParams',
+                'CoveredContentExclusionResult',
+                'CoveredGitHubAuthResult',
+                'CoveredJavaResult',
+                'InternalGitHubAuthResult',
+                'InternalSendAndWaitParams',
+                'InternalSendAndWaitResult',
+                'NestedCoveredResult',
+                'SessionModelSetParams',
+                'SessionGitHubAuthGetStatusParams',
+                'SessionInternalResult',
+            );
+
+            $apiCoverage = array_column($report['rpc_api_coverage'], null, 'name');
+
+            expect($apiCoverage['SessionContentExclusionApi']['status'])->toBe('covered_by_rpc_methods');
+            expect($apiCoverage['SessionGitHubAuthApi']['methods'][0]['local_files'])->toBe(['src/Rpc/PendingSessionAuth.php']);
+            expect($apiCoverage['SessionInternalApi']['status'])->toBe('internal_only');
+            expect($apiCoverage['ServerAgentRegistryApi']['status'])->toBe('excluded_methods');
+            expect(array_column($report['missing_rpc_apis'], 'name'))
+                ->not->toContain('SessionContentExclusionApi', 'SessionGitHubAuthApi', 'SessionInternalApi', 'ServerAgentRegistryApi');
         });
     });
 
@@ -545,7 +746,7 @@ describe('SDK sync structural audit', function () {
             $success->run();
 
             expect($success->getExitCode())->toBe(0);
-            expect(json_decode($success->getOutput(), true, flags: JSON_THROW_ON_ERROR)['schema_version'])->toBe(2);
+            expect(json_decode($success->getOutput(), true, flags: JSON_THROW_ON_ERROR)['schema_version'])->toBe(3);
             expect($success->getErrorOutput())->toBe('');
 
             $write('copilot-sdk/python/copilot/generated/rpc.py', '');
