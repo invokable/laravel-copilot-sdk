@@ -9,7 +9,7 @@ use Revolution\Copilot\Rpc\PendingServerGitHubOwners;
 use Revolution\Copilot\Rpc\PendingServerGitHubRepository;
 use Revolution\Copilot\Rpc\PendingServerSandboxProxyCa;
 
-describe('server Git, GitHub, connector, and sandbox RPC operations', function () {
+describe('Server Git, GitHub, connector, and sandbox RPC operations', function () {
     it('dispatches GitHub owner and server connector discovery requests', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')->once()->with('gitHubOwners.nextRequestId', [])->andReturn(['requestId' => 42]);
