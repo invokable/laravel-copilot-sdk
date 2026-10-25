@@ -7,9 +7,8 @@ on:
         #- cron: weekly on monday around 4:00 utc+9
         #- cron: weekly on wednesday around 4:00 utc+9
         #- cron: weekly on friday around 4:00 utc+9
-        #- cron: daily around 12:00 utc+9 on weekdays
-        - cron: "0 17 * * *"
-          timezone: "Asia/Tokyo"
+        - cron: daily around 12:00 utc+9 on weekdays
+
     workflow_dispatch:
 
 max-ai-credits: 500
