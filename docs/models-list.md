@@ -7,6 +7,7 @@ The available models may change depending on Copilot CLI updates and your organi
  │ ID                   │ Display Name                │ Max Context Tokens │ Vision Support │ Supports Reasoning Effort │ Supports Structured Outputs │
  ├──────────────────────┼─────────────────────────────┼────────────────────┼────────────────┼───────────────────────────┼─────────────────────────────┤
  │ auto                 │ Auto                        │ 0                  │ No             │ No                        │ No                          │
+ │ claude-sonnet-5.5    │ Claude Sonnet 5.5           │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-sonnet-5      │ Claude Sonnet 5             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-fable-5.1     │ Claude Fable 5.1            │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-fable-5       │ Claude Fable 5              │ 1000000            │ Yes            │ Yes                       │ Yes                         │
@@ -14,6 +15,7 @@ The available models may change depending on Copilot CLI updates and your organi
  │ claude-opus-5        │ Claude Opus 5               │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-opus-4.8      │ Claude Opus 4.8             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-opus-4.8-fast │ Claude Opus 4.8 (fast mode) │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ claude-haiku-5.5     │ Claude Haiku 5.5            │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-haiku-4.5     │ Claude Haiku 4.5            │ 144000             │ Yes            │ No                        │ No                          │
  │ gpt-6.1-sol          │ GPT-6.1 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-sol            │ GPT-6 Sol                   │ 1000000            │ Yes            │ Yes                       │ Yes                         │
@@ -22,16 +24,11 @@ The available models may change depending on Copilot CLI updates and your organi
  │ gpt-5.6-sol          │ GPT-5.6 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.6-terra        │ GPT-5.6 Terra               │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.6-luna         │ GPT-5.6 Luna                │ 1050000            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5.5              │ GPT-5.5                     │ 1050000            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5.4              │ GPT-5.4                     │ 1050000            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5.4-mini         │ GPT-5.4 mini                │ 400000             │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.3-codex        │ GPT-5.3-Codex               │ 400000             │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5-mini           │ GPT-5 mini                  │ 264000             │ Yes            │ Yes                       │ Yes                         │
  │ mai-code-1.1-flash   │ MAI-Code-1.1-Flash          │ 256000             │ Yes            │ Yes                       │ Yes                         │
- │ grok-4.5             │ Grok 4.5                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
- │ kimi-k3              │ Kimi K3                     │ 1048576            │ Yes            │ Yes                       │ Yes                         │
- │ claude-sonnet-5.5    │ Claude Sonnet 5.5           │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ grok-4.6             │ Grok 4.6                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ grok-4.7             │ Grok 4.7                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
+ │ grok-4.6             │ Grok 4.6                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
+ │ kimi-k3              │ Kimi K3                     │ 1048576            │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-6.1-terra        │ GPT-6.1 Terra               │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  └──────────────────────┴─────────────────────────────┴────────────────────┴────────────────┴───────────────────────────┴─────────────────────────────┘
 ```
