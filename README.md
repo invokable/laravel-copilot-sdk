@@ -18,34 +18,6 @@ This package is Laravel version of [GitHub Copilot SDK](https://github.com/githu
 
 ## Installation
 
-The embedded SDK snapshot is current through the official Copilot CLI 1.0.101-0.
-The Laravel package ports capabilities selectively; advancing the snapshot does
-not imply complete protocol or feature parity.
-
-Snapshot 1.0.101-0 removes the session-level `enableGitHubCacheStore` option
-from session creation and resume. The separate `connect` handshake continues
-to advertise `supportedTaskKinds`, with optional telemetry/client info and a
-connection token when configured; it does not negotiate a GitHub-cache setting.
-The legacy key is ignored in array configuration; remove it from typed
-`SessionConfig` and `ResumeSessionConfig` construction. GitHub-cache
-availability is not controlled through this SDK's session settings. This
-behavior is the same for stdio and TCP transports. Upstream also removed
-`github-cache-store` from its internal `SessionCapability` enum, so that value
-is no longer supported in the `sessionCapabilities` list used by
-`session.options.update`. This SDK has no matching `SessionCapability` enum or
-`sessionCapabilities` request field in its create/resume or post-create option
-updates. Its separate `SessionCapabilities` type represents CLI-reported UI
-elicitation/canvas support; it is not that session-option capability list.
-
-The PHP callback is synchronous; unlike the Node.js SDK it does not currently
-receive a transport cancellation token. Stdio shutdown sends EOF first and
-waits briefly for the runtime to exit naturally before terminating it. If the
-stdio startup handshake times out, the exception includes recent process stderr
-output (up to 8 KiB). TCP mode only closes the client connection and never shuts
-down the external runtime. If the CLI rejects a JSON-RPC frame without a
-correlatable request ID, all currently pending requests fail with a sanitized
-`JsonRpcException`; the connection remains open.
-
 ```shell
 composer require revolution/laravel-copilot-sdk
 ```
