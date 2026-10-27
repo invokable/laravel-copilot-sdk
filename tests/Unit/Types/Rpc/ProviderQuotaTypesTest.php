@@ -89,3 +89,10 @@ it('round trips provider quota budget and monthly usage details', function () {
         ->and($monthlyUsage->state)->toBe(ProviderMonthlyUsageState::AVAILABLE)
         ->and($monthlyUsage->toArray())->toHaveKey('consumedQuantity', 0);
 });
+
+it('decodes the access plan tier on session quota projections', function () {
+    $projection = SessionQuotaGetResult::fromArray(['planTier' => 'access']);
+
+    expect($projection->planTier)->toBe(SessionQuotaPlanTier::ACCESS)
+        ->and($projection->toArray())->toHaveKey('planTier', 'access');
+});

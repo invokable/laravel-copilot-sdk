@@ -12,6 +12,7 @@ enum SessionQuotaPlanTier: string
     case PRO_PLUS = 'pro_plus';
     case BUSINESS = 'business';
     case ENTERPRISE = 'enterprise';
+    case ACCESS = 'access';
     case MAX = 'max';
     case UNKNOWN = 'unknown';
 }
