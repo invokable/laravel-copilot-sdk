@@ -89,4 +89,38 @@ describe('ElicitationContext', function () {
 
         expect($context)->toBeInstanceOf(Arrayable::class);
     });
+
+    it('maps elicitationSourceDisplayName from array', function () {
+        $context = ElicitationContext::fromArray([
+            'sessionId' => 'session-connector',
+            'message' => 'Allow access',
+            'elicitationSource' => 'work-iq-mcp',
+            'elicitationSourceDisplayName' => 'Work IQ',
+        ]);
+
+        expect($context->elicitationSource)->toBe('work-iq-mcp')
+            ->and($context->elicitationSourceDisplayName)->toBe('Work IQ');
+    });
+
+    it('defaults elicitationSourceDisplayName to null when absent', function () {
+        $context = ElicitationContext::fromArray([
+            'sessionId' => 'session-plain',
+            'message' => 'Confirm',
+            'elicitationSource' => 'plain-mcp',
+        ]);
+
+        expect($context->elicitationSourceDisplayName)->toBeNull()
+            ->and($context->toArray())->not->toHaveKey('elicitationSourceDisplayName');
+    });
+
+    it('includes elicitationSourceDisplayName in array output when set', function () {
+        $context = new ElicitationContext(
+            sessionId: 'session-label',
+            message: 'Confirm',
+            elicitationSource: 'work-iq-mcp',
+            elicitationSourceDisplayName: 'Work IQ',
+        );
+
+        expect($context->toArray())->toHaveKey('elicitationSourceDisplayName', 'Work IQ');
+    });
 });
