@@ -22,6 +22,7 @@ readonly class ElicitationContext implements Arrayable
      * @param  ?string  $mode  Elicitation mode: "form" for structured input, "url" for browser redirect
      * @param  ?string  $elicitationSource  The source that initiated the request (e.g. MCP server name)
      * @param  ?string  $url  URL to open in the user's browser (url mode only)
+     * @param  ?string  $elicitationSourceDisplayName  Trusted display label of a Connector-owned MCP server (e.g. "Work IQ"); absent for other sources
      */
     public function __construct(
         public string $sessionId,
@@ -30,6 +31,7 @@ readonly class ElicitationContext implements Arrayable
         public ?string $mode = null,
         public ?string $elicitationSource = null,
         public ?string $url = null,
+        public ?string $elicitationSourceDisplayName = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -41,6 +43,7 @@ readonly class ElicitationContext implements Arrayable
             mode: $data['mode'] ?? null,
             elicitationSource: $data['elicitationSource'] ?? null,
             url: $data['url'] ?? null,
+            elicitationSourceDisplayName: $data['elicitationSourceDisplayName'] ?? null,
         );
     }
 
@@ -53,6 +56,7 @@ readonly class ElicitationContext implements Arrayable
             'mode' => $this->mode,
             'elicitationSource' => $this->elicitationSource,
             'url' => $this->url,
+            'elicitationSourceDisplayName' => $this->elicitationSourceDisplayName,
         ], fn ($v) => $v !== null);
     }
 }

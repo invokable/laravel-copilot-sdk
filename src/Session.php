@@ -942,6 +942,7 @@ class Session implements CopilotSession
                     mode: $event->data['mode'] ?? null,
                     elicitationSource: $event->data['elicitationSource'] ?? null,
                     url: $event->data['url'] ?? null,
+                    elicitationSourceDisplayName: $event->data['elicitationSourceDisplayName'] ?? null,
                 );
 
                 $this->handleElicitationRequest($context, $requestId);

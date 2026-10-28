@@ -13,6 +13,7 @@ use Revolution\Copilot\Exceptions\SessionTimeoutException;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Session;
+use Revolution\Copilot\Types\ElicitationContext;
 use Revolution\Copilot\Types\Hooks\SubagentStartHookInput;
 use Revolution\Copilot\Types\Hooks\SubagentStartHookOutput;
 use Revolution\Copilot\Types\Hooks\SubagentStopHookInput;
@@ -81,6 +82,35 @@ describe('Session', function () {
 
         expect($session->id())->toBe('test-session-id')
             ->and($session->sessionId)->toBe('test-session-id');
+    });
+
+    it('passes elicitationSourceDisplayName from elicitation.requested to the handler', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->with('session.ui.handlePendingElicitation', Mockery::type('array'))
+            ->once()
+            ->andReturn(['success' => true]);
+
+        $received = null;
+        $session = new Session('session-1', $client);
+        $session->registerElicitationHandler(function (ElicitationContext $context) use (&$received): array {
+            $received = $context;
+
+            return ['action' => 'accept'];
+        });
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'elicitation.requested',
+            'data' => [
+                'requestId' => 'elicitation-request-1',
+                'message' => 'Allow access',
+                'elicitationSource' => 'work-iq-mcp',
+                'elicitationSourceDisplayName' => 'Work IQ',
+            ],
+        ]));
+
+        expect($received)->toBeInstanceOf(ElicitationContext::class)
+            ->and($received->elicitationSource)->toBe('work-iq-mcp')
+            ->and($received->elicitationSourceDisplayName)->toBe('Work IQ');
     });
 
     it('sends a host-provided token for MCP OAuth requests', function () {
