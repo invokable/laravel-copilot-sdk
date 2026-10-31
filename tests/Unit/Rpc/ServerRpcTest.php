@@ -19,6 +19,7 @@ use Revolution\Copilot\Rpc\PendingServerSandbox;
 use Revolution\Copilot\Rpc\PendingServerSandboxProxyCa;
 use Revolution\Copilot\Rpc\PendingServerSessionFs;
 use Revolution\Copilot\Rpc\PendingServerSessions;
+use Revolution\Copilot\Rpc\PendingServerSettings;
 use Revolution\Copilot\Rpc\PendingServerSkills;
 use Revolution\Copilot\Rpc\PendingServerTools;
 use Revolution\Copilot\Rpc\ServerRpc;
@@ -108,7 +109,8 @@ describe('ServerRpc', function () {
             ->and($rpc->commands())->toBeInstanceOf(PendingServerCommands::class)
             ->and($rpc->hooks())->toBeInstanceOf(PendingServerHooks::class)
             ->and($rpc->sandbox())->toBeInstanceOf(PendingServerSandbox::class)
-            ->and($rpc->sandboxProxyCa())->toBeInstanceOf(PendingServerSandboxProxyCa::class);
+            ->and($rpc->sandboxProxyCa())->toBeInstanceOf(PendingServerSandboxProxyCa::class)
+            ->and($rpc->settings())->toBeInstanceOf(PendingServerSettings::class);
     });
 });
 
