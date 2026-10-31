@@ -28,6 +28,16 @@ class PendingDiagnostics
         return $this->request('session.diagnostics.read', $params);
     }
 
+    /**
+     * Internal lifecycle diagnostics RPC operations.
+     *
+     * @internal
+     */
+    public function lifecycle(): PendingLifecycleDiagnostics
+    {
+        return new PendingLifecycleDiagnostics($this->client, $this->sessionId);
+    }
+
     protected function request(string $method, array $params): array
     {
         $params['sessionId'] = $this->sessionId;
