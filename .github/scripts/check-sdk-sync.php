@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-// Known naming differences / representations that do not need a new RPC file.
-const SDK_SYNC_RPC_TYPE_EXCLUSIONS = [
-    'Extension' => 'src/Types/Rpc/ExtensionInfo.php',
-    'JsonValue' => 'PHP mixed / arrays',
-    'OpaqueInProcessValue' => 'In-process values are not transferable over JSON-RPC',
-];
-
 const SDK_SYNC_RPC_METHOD_EXCLUSIONS = [
     'agentRegistry.spawn' => 'Experimental controller-local API with no identified Laravel use case (discussion #455)',
 ];
@@ -43,35 +36,20 @@ final class SdkSyncAudit
         $typescript = $this->read('copilot-sdk/nodejs/src/generated/rpc.ts');
         $python = $this->read('copilot-sdk/python/copilot/generated/rpc.py');
         $types = $this->read('copilot-sdk/nodejs/src/types.ts');
-        $enums = $this->enumTypes($typescript, $python);
-        $javaRpc = $this->javaRpcTypeReferences();
         $rpcMethodAnalysis = $this->rpcMethods($typescript, $python);
         $rpcApis = $this->missingRpcApis(
-            $javaRpc['methods_by_api'],
+            $this->javaRpcMethodsByApi(),
             $rpcMethodAnalysis['method_locations'],
             $rpcMethodAnalysis['method_scopes'],
         );
-        $rpcTypes = $this->rpcTypes(
-            $typescript,
-            $python,
-            $enums,
-            $this->rpcTypeReferences($typescript, $javaRpc['types_by_method']),
-            $rpcMethodAnalysis['covered_methods'],
-            $rpcMethodAnalysis['method_locations'],
-        );
-
         return [
-            'schema_version' => 3,
-            'scope' => 'Current upstream snapshot vs Laravel; type names and files are compared structurally, while RPC type candidates account for implemented wire methods and internal-only APIs.',
-            'rpc_type_exclusions' => SDK_SYNC_RPC_TYPE_EXCLUSIONS,
-            'rpc_type_coverage' => $rpcTypes['coverage'],
+            'schema_version' => 4,
+            'scope' => 'Current upstream snapshot vs Laravel; RPC APIs, wire methods, configuration options, and hooks are compared structurally. Type and enum parity is assessed by the workflow.',
             'rpc_method_exclusions' => SDK_SYNC_RPC_METHOD_EXCLUSIONS,
             'rpc_method_inclusions' => SDK_SYNC_RPC_METHOD_INCLUSIONS,
             'client_option_exclusions' => SDK_SYNC_CLIENT_OPTION_EXCLUSIONS,
-            'missing_rpc_types' => $rpcTypes['missing'],
             'rpc_api_coverage' => $rpcApis['coverage'],
             'missing_rpc_apis' => $rpcApis['missing'],
-            'missing_enums' => $this->missingEnums($enums),
             'rpc_methods' => $rpcMethodAnalysis['methods'],
             'session_config' => $this->config($types, 'SessionConfig'),
             'resume_session_config' => $this->config($types, 'ResumeSessionConfig'),
@@ -190,11 +168,6 @@ final class SdkSyncAudit
         ];
     }
 
-    private function enumKey(string $name): string
-    {
-        return strtolower(ltrim($name, '_'));
-    }
-
     private function interfaceProperties(string $source, string $name, array $ancestors = []): array
     {
         if (in_array($name, $ancestors, true)) {
@@ -246,175 +219,6 @@ final class SdkSyncAudit
             'local' => $path,
             ...$this->difference($this->interfaceProperties($types, $name), $this->phpProperties($path)),
         ];
-    }
-
-    private function enumTypes(string $typescript, string $python): array
-    {
-        $javaDirectory = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
-        $enums = [];
-        $typescript = $this->withoutComments($typescript);
-
-        foreach ($this->names($typescript, '/^export\s+enum\s+(\w+)/m') as $name) {
-            $key = $this->enumKey($name);
-            $enums[$key]['name'] = $name;
-            $enums[$key]['sources']['javascript'] = 'copilot-sdk/nodejs/src/generated/rpc.ts#'.$name;
-        }
-
-        preg_match_all('/^export\s+type\s+(\w+)\s*=\s*(.*?);/ms', $typescript, $aliases, PREG_SET_ORDER);
-
-        foreach ($aliases as $alias) {
-            if (preg_match('/^(?:\s*\|\s*)?"(?:\\\\.|[^"\\\\])*"(?:\s*\|\s*"(?:\\\\.|[^"\\\\])*")*$/s', trim($alias[2]))) {
-                $name = $alias[1];
-                $key = $this->enumKey($name);
-                $enums[$key]['name'] = $name;
-                $enums[$key]['sources']['javascript'] = 'copilot-sdk/nodejs/src/generated/rpc.ts#'.$name;
-            }
-        }
-
-        foreach ($this->files($javaDirectory, 'java') as $file) {
-            $name = basename($file, '.java');
-
-            if (preg_match('/\benum\s+'.preg_quote($name, '/').'\b/', $this->read($file))) {
-                $key = $this->enumKey($name);
-                $enums[$key]['name'] ??= $name;
-                $enums[$key]['sources']['java'] = $file;
-            }
-        }
-
-        preg_match_all('/^class\s+(\w+)\s*\(\s*(?:(?:str)\s*,\s*)?Enum\s*\)\s*:/m', $python, $pythonEnums);
-
-        foreach ($pythonEnums[1] as $name) {
-            $key = $this->enumKey($name);
-            $enums[$key]['name'] ??= $name;
-            $enums[$key]['sources']['python'] = 'copilot-sdk/python/copilot/generated/rpc.py#'.$name;
-        }
-
-        foreach (['javascript', 'java'] as $language) {
-            if (array_filter($enums, fn (array $enum): bool => isset($enum['sources'][$language])) === []) {
-                throw new RuntimeException("No $language RPC enum declarations found");
-            }
-        }
-
-        ksort($enums);
-
-        return $enums;
-    }
-
-    private function rpcTypes(
-        string $typescript,
-        string $python,
-        array $enums,
-        array $typeReferences,
-        array $coveredMethods,
-        array $methodLocations,
-    ): array
-    {
-        $javaDirectory = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
-        $declarations = [
-            'javascript' => $this->names($this->withoutComments($typescript), '/^export\s+(?:interface|type)\s+(\w+)/m'),
-            'python' => array_values(array_filter(
-                $this->names($python, '/^class\s+(\w+)/m'),
-                fn (string $name): bool => ! str_starts_with($name, '_') && ! str_ends_with($name, 'Api') && ! str_ends_with($name, 'Rpc'),
-            )),
-        ];
-
-        if ($declarations['javascript'] === [] || $declarations['python'] === []) {
-            throw new RuntimeException('No JS/Python RPC type declarations found');
-        }
-
-        $knownNames = array_merge(...array_values($declarations));
-        $sources = [];
-
-        foreach ($this->files($javaDirectory, 'java') as $file) {
-            $name = basename($file, '.java');
-
-            if ($this->isRpcApi($name)) {
-                continue;
-            }
-
-            $requestName = preg_replace('/Params$/', 'Request', $name);
-            $canonical = in_array($requestName, $knownNames, true) ? $requestName : $name;
-            $sources[$this->enumKey($canonical)]['name'] = $canonical;
-            $sources[$this->enumKey($canonical)]['sources']['java'] = $file;
-        }
-
-        foreach ($declarations as $language => $names) {
-            foreach ($names as $name) {
-                $key = $this->enumKey($name);
-                $sources[$key]['name'] ??= $name;
-                $sources[$key]['sources'][$language] = $language === 'javascript'
-                    ? 'copilot-sdk/nodejs/src/generated/rpc.ts#'.$name
-                    : 'copilot-sdk/python/copilot/generated/rpc.py#'.$name;
-            }
-        }
-
-        $local = array_map(fn (string $file): string => strtolower(basename($file, '.php')), $this->files('src/Types/Rpc', 'php'));
-        $excluded = array_map('strtolower', array_keys(SDK_SYNC_RPC_TYPE_EXCLUSIONS));
-        ksort($sources);
-        $missing = [];
-        $coverage = [
-            'covered_by_rpc_methods' => [],
-            'internal_only' => [],
-        ];
-
-        foreach ($sources as $key => $type) {
-            if (in_array($key, $local, true) || in_array($key, $excluded, true) || isset($enums[$this->enumKey($type['name'])])) {
-                continue;
-            }
-
-            $name = $type['name'];
-            $trackedMethods = $typeReferences['tracked'][$name] ?? [];
-            $internalMethods = $typeReferences['internal'][$name] ?? [];
-            $uncoveredMethods = array_diff($trackedMethods, array_keys($coveredMethods));
-
-            if ($trackedMethods !== [] && $uncoveredMethods === []) {
-                $localFiles = [];
-
-                foreach ($trackedMethods as $method) {
-                    $localFiles = [...$localFiles, ...($coveredMethods[$method] ?? [])];
-                }
-
-                $localFiles = array_values(array_unique($localFiles));
-                sort($localFiles);
-                $coverage['covered_by_rpc_methods'][] = [
-                    'name' => $name,
-                    'upstream_methods' => $trackedMethods,
-                    'local_files' => $localFiles,
-                ];
-
-                continue;
-            }
-
-            if ($trackedMethods === [] && $internalMethods !== []) {
-                $localFiles = [];
-
-                foreach ($internalMethods as $method) {
-                    $localFiles = [...$localFiles, ...($methodLocations[$method] ?? [])];
-                }
-
-                $localFiles = array_values(array_unique($localFiles));
-                sort($localFiles);
-                $coverage['internal_only'][] = [
-                    'name' => $name,
-                    'upstream_methods' => $internalMethods,
-                    'local_files' => $localFiles,
-                ];
-
-                continue;
-            }
-
-            $missing[] = [
-                ...$type,
-                'expected_file' => 'src/Types/Rpc/'.$name.'.php',
-            ];
-        }
-
-        foreach ($coverage as $key => $entries) {
-            usort($entries, fn (array $left, array $right): int => $left['name'] <=> $right['name']);
-            $coverage[$key] = $entries;
-        }
-
-        return ['missing' => $missing, 'coverage' => $coverage];
     }
 
     private function missingRpcApis(array $apiMethodsByFile, array $methodLocations, array $methodScopes): array
@@ -536,32 +340,6 @@ final class SdkSyncAudit
             && (str_starts_with($name, 'Server') || str_starts_with($name, 'Session'));
     }
 
-    private function missingEnums(array $enums): array
-    {
-        $local = array_map(
-            fn (string $file): string => strtolower(basename($file, '.php')),
-            $this->files('src/Enums', 'php'),
-        );
-        $missing = [];
-
-        foreach ($enums as $key => $enum) {
-            if (isset($enum['sources']['javascript']) || isset($enum['sources']['java'])) {
-                $enumKey = $this->enumKey($enum['name']);
-            } else {
-                continue;
-            }
-
-            if (! in_array($enumKey, $local, true)) {
-                $missing[] = [
-                    ...$enum,
-                    'expected_file' => 'src/Enums/'.$enum['name'].'.php',
-                ];
-            }
-        }
-
-        return $missing;
-    }
-
     private function pythonRpcMethods(string $source, string $root): array
     {
         preg_match_all('/^class\s+(\w+)[^\n]*:\n(.*?)(?=^class\s|\z)/ms', $source, $matches, PREG_SET_ORDER);
@@ -651,115 +429,10 @@ final class SdkSyncAudit
         return $methods;
     }
 
-    /**
-     * @return array{tracked: array<string, array<int, string>>, internal: array<string, array<int, string>>}
-     */
-    private function rpcTypeReferences(string $typescript, array $javaTypeReferences): array
-    {
-        $factories = [
-            'tracked' => ['createServerRpc', 'createSessionRpc'],
-            'internal' => ['createInternalServerRpc', 'createInternalSessionRpc'],
-        ];
-        $references = ['tracked' => [], 'internal' => []];
-        $methodScopes = ['tracked' => [], 'internal' => []];
-
-        foreach ($factories as $scope => $functions) {
-            foreach ($functions as $function) {
-                foreach ($this->javascriptRpcTypes($typescript, $function) as $method => $types) {
-                    $methodScope = $scope === 'internal' && isset(SDK_SYNC_RPC_METHOD_INCLUSIONS[$method])
-                        ? 'tracked'
-                        : $scope;
-
-                    $methodScopes[$methodScope][$method] = true;
-
-                    if (isset(SDK_SYNC_RPC_METHOD_EXCLUSIONS[$method])) {
-                        continue;
-                    }
-
-                    foreach ($this->expandJavascriptTypes($typescript, $types) as $type) {
-                        $references[$methodScope][$type][] = $method;
-                    }
-                }
-            }
-        }
-
-        foreach ($javaTypeReferences as $method => $types) {
-            $scope = isset($methodScopes['tracked'][$method])
-                ? 'tracked'
-                : (isset($methodScopes['internal'][$method]) ? 'internal' : null);
-
-            if ($scope === null || isset(SDK_SYNC_RPC_METHOD_EXCLUSIONS[$method])) {
-                continue;
-            }
-
-            foreach ($types as $type) {
-                foreach ($this->expandJavascriptTypes($typescript, [$type]) as $expandedType) {
-                    $references[$scope][$expandedType][] = $method;
-                }
-            }
-        }
-
-        foreach ($references as $scope => $types) {
-            foreach ($types as $name => $methods) {
-                $methods = array_values(array_unique($methods));
-                sort($methods);
-                $references[$scope][$name] = $methods;
-            }
-        }
-
-        return $references;
-    }
-
-    private function expandJavascriptTypes(string $typescript, array $types): array
-    {
-        $source = $this->withoutComments($typescript);
-        $knownTypes = array_fill_keys($this->names($source, '/^export\s+(?:interface|type)\s+(\w+)/m'), true);
-        $queue = array_values(array_unique($types));
-        $expanded = [];
-
-        while ($queue !== []) {
-            $name = array_shift($queue);
-
-            if (isset($expanded[$name])) {
-                continue;
-            }
-
-            $expanded[$name] = true;
-
-            if (! isset($knownTypes[$name])) {
-                continue;
-            }
-
-            $interfacePattern = '/^export\s+interface\s+'.preg_quote($name, '/').'\b[^{}]*\{/m';
-
-            if (preg_match($interfacePattern, $source)) {
-                $body = $this->block($source, $interfacePattern);
-            } elseif (preg_match(
-                '/^export\s+type\s+'.preg_quote($name, '/').'\s*=\s*(.*?);/ms',
-                $source,
-                $alias,
-            )) {
-                $body = $alias[1];
-            } else {
-                continue;
-            }
-
-            foreach ($this->names($body, '/\b([A-Z]\w*)\b/') as $dependency) {
-                if (isset($knownTypes[$dependency]) && ! isset($expanded[$dependency])) {
-                    $queue[] = $dependency;
-                }
-            }
-        }
-
-        return array_keys($expanded);
-    }
-
-    private function javaRpcTypeReferences(): array
+    private function javaRpcMethodsByApi(): array
     {
         $directory = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
-        $references = [];
         $apiMethods = [];
-        $apiStems = [];
         $javaFiles = $this->files($directory, 'java');
 
         foreach ($javaFiles as $path) {
@@ -769,8 +442,6 @@ final class SdkSyncAudit
                 continue;
             }
 
-            $apiStem = substr($fileName, 0, -3);
-            $apiStems[] = $apiStem;
             $source = $this->withoutComments($this->read($path));
             preg_match_all(
                 '/(?:public\s+|protected\s+|private\s+)?CompletableFuture<(.+?)>\s+(\w+)\s*\(([^)]*)\)\s*\{/',
@@ -790,46 +461,12 @@ final class SdkSyncAudit
 
                 $body = $this->blockAt($source, $start, "Java RPC method in $path");
                 $methods = $this->names($body, '/caller\.invoke\(\s*["\']([^"\']+)["\']/');
-                $types = $this->names($signature, '/\b([A-Z]\w*)\b/');
                 $methodName = $declaration[2][0];
 
                 foreach ($methods as $method) {
-                    $references[$method] = [...($references[$method] ?? []), ...$types];
                     $apiMethods[$fileName][$methodName] = $method;
                 }
             }
-        }
-
-        usort($apiStems, fn (string $left, string $right): int => strlen($right) <=> strlen($left));
-
-        foreach ($javaFiles as $path) {
-            $typeName = basename($path, '.java');
-
-            if ($this->isRpcApi($typeName) || ! preg_match('/(?:Params|Request|Result|Response)$/', $typeName)) {
-                continue;
-            }
-
-            $operationType = preg_replace('/(?:Params|Request|Result|Response)$/', '', $typeName);
-
-            foreach ($apiStems as $apiName) {
-                if (! str_starts_with($operationType, $apiName)) {
-                    continue;
-                }
-
-                $methodName = lcfirst(substr($operationType, strlen($apiName)));
-                $apiFile = $apiName.'Api';
-                $method = $apiMethods[$apiFile][$methodName] ?? null;
-
-                if ($method !== null) {
-                    $references[$method][] = $typeName;
-                }
-
-                break;
-            }
-        }
-
-        foreach ($references as $method => $types) {
-            $references[$method] = array_values(array_unique($types));
         }
 
         $methodsByApi = [];
@@ -839,13 +476,10 @@ final class SdkSyncAudit
             sort($methodsByApi[$apiName]);
         }
 
-        return [
-            'types_by_method' => $references,
-            'methods_by_api' => $methodsByApi,
-        ];
+        return $methodsByApi;
     }
 
-    private function javascriptRpcTypes(string $typescript, string $function): array
+    private function javascriptRpcMethods(string $typescript, string $function): array
     {
         $source = $this->withoutComments($typescript);
         $body = $this->block($source, '/export function '.preg_quote($function, '/').'\([^)]*\)\s*\{/');
@@ -873,9 +507,7 @@ final class SdkSyncAudit
             }
 
             if (preg_match('/connection\.sendRequest\(\s*["\']([^"\']+)["\']/', $expression, $wireMethod)) {
-                $returnType = $match[2][0] ?? '';
-                $types = $this->names($match[1][0].' '.$returnType, '/\b([A-Z]\w*)\b/');
-                $methods[$wireMethod[1]] = $types;
+                $methods[] = $wireMethod[1];
             }
         }
 
@@ -899,7 +531,6 @@ final class SdkSyncAudit
             ],
         ];
         $result = [];
-        $coveredMethods = [];
         $methodLocations = [];
         $trackedScope = [];
         $internalScope = [];
@@ -907,7 +538,7 @@ final class SdkSyncAudit
         foreach ($groups as $root => $sources) {
             $javascriptMethods = [];
             foreach ($sources['javascript'] as $function) {
-                $javascriptMethods = [...$javascriptMethods, ...array_keys($this->javascriptRpcTypes($typescript, $function))];
+                $javascriptMethods = [...$javascriptMethods, ...$this->javascriptRpcMethods($typescript, $function)];
             }
 
             $pythonMethods = [];
@@ -917,10 +548,11 @@ final class SdkSyncAudit
 
             $internalMethods = [];
             foreach ($sources['internal_javascript'] as $function) {
-                $internalMethods = [...$internalMethods, ...array_keys($this->javascriptRpcTypes($typescript, $function))];
+                $internalJavascriptMethods = $this->javascriptRpcMethods($typescript, $function);
+                $internalMethods = [...$internalMethods, ...$internalJavascriptMethods];
                 $javascriptMethods = [
                     ...$javascriptMethods,
-                    ...array_values(array_intersect(array_keys($this->javascriptRpcTypes($typescript, $function)), array_keys(SDK_SYNC_RPC_METHOD_INCLUSIONS))),
+                    ...array_values(array_intersect($internalJavascriptMethods, array_keys(SDK_SYNC_RPC_METHOD_INCLUSIONS))),
                 ];
             }
 
@@ -959,10 +591,6 @@ final class SdkSyncAudit
             foreach ($localMethodLocations as $method => $files) {
                 $methodLocations[$method] = [...($methodLocations[$method] ?? []), ...$files];
             }
-
-            foreach (array_intersect($upstream, $localMethods) as $method) {
-                $coveredMethods[$method] = $localMethodLocations[$method] ?? ["src/Rpc/$root.php"];
-            }
         }
 
         foreach ($methodLocations as $method => $files) {
@@ -979,7 +607,6 @@ final class SdkSyncAudit
 
         return [
             'methods' => $result,
-            'covered_methods' => $coveredMethods,
             'method_locations' => $methodLocations,
             'method_scopes' => [
                 'tracked' => $trackedScope,

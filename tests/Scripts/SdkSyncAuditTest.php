@@ -81,9 +81,6 @@ function withSdkSyncFixture(Closure $test): void
         }
         export function createInternalServerRpc(connection: MessageConnection) {
             return {
-                account: {
-                    getWebUrl: async () => connection.sendRequest("account.getWebUrl", {}),
-                },
                 agentRegistry: {
                     spawn: async () => connection.sendRequest("agentRegistry.spawn", {}),
                 },
@@ -154,9 +151,6 @@ function withSdkSyncFixture(Closure $test): void
                 self.models = ServerModelsApi(client)
             async def ping(self):
                 return await self._client.request("ping", {})
-        class _InternalServerAccountApi:
-            async def get_web_url(self):
-                return await self._client.request("account.getWebUrl", {})
         class _InternalServerRpc:
             def __init__(self, client):
                 self.account = _InternalServerAccountApi(client)
@@ -394,17 +388,28 @@ function withSdkSyncFixture(Closure $test): void
 }
 
 describe('SDK sync structural audit', function () {
-    it('checks filenames across three languages without inspecting RPC properties', function () {
+    it('omits type and enum inventories from the structural report', function () {
         withSdkSyncFixture(function (SdkSyncAudit $audit): void {
-            $missing = $audit->report()['missing_rpc_types'];
+            $report = $audit->report();
 
-            expect(array_column($missing, 'name'))->toBe(['JavaOnly', 'MissingRequest', 'MixedAlias', 'PythonOnlyResult', 'TsOnlyRequest']);
-            expect($missing[1]['sources'])->toHaveKeys(['java', 'javascript', 'python']);
-            expect($missing[1]['expected_file'])->toBe('src/Types/Rpc/MissingRequest.php');
+            expect(array_keys($report))->toBe([
+                'schema_version',
+                'scope',
+                'rpc_method_exclusions',
+                'rpc_method_inclusions',
+                'client_option_exclusions',
+                'rpc_api_coverage',
+                'missing_rpc_apis',
+                'rpc_methods',
+                'session_config',
+                'resume_session_config',
+                'client_options',
+                'hooks',
+            ]);
         });
     });
 
-    it('maps Java RPC API groups to Pending files instead of missing RPC types', function () {
+    it('maps Java RPC API groups to Pending files without treating enum names as APIs', function () {
         withSdkSyncFixture(function (SdkSyncAudit $audit): void {
             $report = $audit->report();
 
@@ -413,27 +418,56 @@ describe('SDK sync structural audit', function () {
             expect($report['missing_rpc_apis'][1]['expected_file'])->toBe('src/Rpc/PendingMissing.php');
             expect(array_column($report['missing_rpc_apis'], 'name'))
                 ->not->toContain('ProviderConfigWireApi', 'ProviderEndpointWireApi');
-            expect(array_column($report['missing_rpc_types'], 'name'))
-                ->not->toContain(
-                    'ServerModelsApi',
-                    'SessionModelApi',
-                    'ServerMissingApi',
-                    'SessionMissingApi',
-                    'ProviderConfigWireApi',
-                    'ProviderEndpointWireApi',
-                );
-            expect(array_column($report['missing_enums'], 'name'))
-                ->not->toContain('ProviderConfigWireApi', 'ProviderEndpointWireApi');
         });
     });
 
-    it('checks upstream enums separately from RPC data types and matches existing enum files', function () {
-        withSdkSyncFixture(function (SdkSyncAudit $audit): void {
-            $enums = $audit->report()['missing_enums'];
+    it('does not require local RPC type or enum files to detect structural gaps', function () {
+        withSdkSyncFixture(function (SdkSyncAudit $audit, Closure $write, string $root): void {
+            foreach ([
+                'src/Types/Rpc/ExistingRequest.php',
+                'src/Types/Rpc/ExtensionInfo.php',
+                'src/Enums/ExistingEnum.php',
+                'src/Enums/ProviderConfigWireApi.php',
+                'src/Enums/ProviderEndpointWireApi.php',
+            ] as $path) {
+                unlink($root.'/'.$path);
+            }
 
-            expect(array_column($enums, 'name'))->toBe(['JavaOnlyEnum', 'MissingEnum', 'NativeEnum', 'TsOnlyEnum']);
-            expect($enums[1]['sources'])->toHaveKeys(['java', 'javascript', 'python']);
-            expect($enums[1]['expected_file'])->toBe('src/Enums/MissingEnum.php');
+            $report = $audit->report();
+
+            expect(array_column($report['missing_rpc_apis'], 'name'))->toBe(['ServerMissingApi', 'SessionMissingApi']);
+            expect($report['rpc_methods']['ServerRpc']['missing'])->toBe(['models.update']);
+            expect($report['session_config']['missing'])->toBe([]);
+        });
+    });
+
+    it('does not require upstream type or enum declarations to compare RPC methods', function () {
+        withSdkSyncFixture(function (SdkSyncAudit $audit, Closure $write, string $root): void {
+            $typescriptPath = 'copilot-sdk/nodejs/src/generated/rpc.ts';
+            $typescript = file_get_contents($root.'/'.$typescriptPath);
+            $write($typescriptPath, substr($typescript, strpos($typescript, 'export function createServerRpc')));
+
+            $pythonPath = 'copilot-sdk/python/copilot/generated/rpc.py';
+            $python = file_get_contents($root.'/'.$pythonPath);
+            $write($pythonPath, substr($python, strpos($python, 'class ServerModelsApi:')));
+
+            $java = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
+
+            foreach ([
+                'ExistingEnum',
+                'MissingEnum',
+                'JavaOnlyEnum',
+                'ProviderConfigWireApi',
+                'ProviderEndpointWireApi',
+            ] as $name) {
+                unlink("$root/$java/$name.java");
+            }
+
+            $report = $audit->report();
+
+            expect($report['rpc_methods']['ServerRpc']['missing'])->toBe(['models.update']);
+            expect($report['rpc_methods']['SessionRpc']['missing'])->toBe([]);
+            expect(array_column($report['missing_rpc_apis'], 'name'))->toBe(['ServerMissingApi', 'SessionMissingApi']);
         });
     });
 
@@ -456,7 +490,6 @@ describe('SDK sync structural audit', function () {
 
             $methods = $audit->report()['rpc_methods'];
 
-            expect($methods['ServerRpc']['missing'])->toBe(['account.getWebUrl', 'models.update']);
             expect($methods['ServerRpc']['language_differences']['missing'])->toBe(['models.update']);
             expect($methods['ServerRpc']['local_only'])->toBe([]);
             expect($methods['ServerRpc']['missing'])->not->toContain('agentRegistry.spawn');
@@ -467,86 +500,12 @@ describe('SDK sync structural audit', function () {
             expect($audit->report()['rpc_method_exclusions'])->toBe([
                 'agentRegistry.spawn' => 'Experimental controller-local API with no identified Laravel use case (discussion #455)',
             ]);
-            expect($audit->report()['rpc_method_inclusions'])->toBe([
-                'account.getWebUrl' => 'Explicitly tracked from the upstream internal server RPC factory.',
-            ]);
         });
     });
 
-    it('maps implemented wire methods to upstream types and excludes internal-only method types', function () {
+    it('recognizes API groups covered by split RPC files and excludes internal or intentionally omitted APIs', function () {
         withSdkSyncFixture(function (SdkSyncAudit $audit): void {
             $report = $audit->report();
-            $coverage = $report['rpc_type_coverage'];
-            $covered = array_values(array_filter(
-                $coverage['covered_by_rpc_methods'],
-                fn (array $type): bool => str_starts_with($type['name'], 'CoveredContentExclusion')
-                    || $type['name'] === 'CoveredGitHubAuthResult'
-                    || $type['name'] === 'NestedCoveredResult'
-                    || str_starts_with($type['name'], 'CoveredJava')
-                    || $type['name'] === 'SessionGitHubAuthGetStatusParams'
-                    || $type['name'] === 'SessionModelSetParams',
-            ));
-            $internal = array_values(array_filter(
-                $coverage['internal_only'],
-                fn (array $type): bool => str_starts_with($type['name'], 'Internal'),
-            ));
-
-            expect($covered)->toBe([
-                [
-                    'name' => 'CoveredContentExclusionParams',
-                    'upstream_methods' => ['session.contentExclusion.checkPaths'],
-                    'local_files' => ['src/Rpc/PendingSessionContentExclusion.php'],
-                ],
-                [
-                    'name' => 'CoveredContentExclusionResult',
-                    'upstream_methods' => ['session.contentExclusion.checkPaths'],
-                    'local_files' => ['src/Rpc/PendingSessionContentExclusion.php'],
-                ],
-                [
-                    'name' => 'CoveredGitHubAuthResult',
-                    'upstream_methods' => ['session.gitHubAuth.getStatus'],
-                    'local_files' => ['src/Rpc/PendingSessionAuth.php'],
-                ],
-                [
-                    'name' => 'CoveredJavaResult',
-                    'upstream_methods' => ['session.model.set'],
-                    'local_files' => ['src/Rpc/PendingModel.php'],
-                ],
-                [
-                    'name' => 'NestedCoveredResult',
-                    'upstream_methods' => ['session.contentExclusion.checkPaths'],
-                    'local_files' => ['src/Rpc/PendingSessionContentExclusion.php'],
-                ],
-                [
-                    'name' => 'SessionGitHubAuthGetStatusParams',
-                    'upstream_methods' => ['session.gitHubAuth.getStatus'],
-                    'local_files' => ['src/Rpc/PendingSessionAuth.php'],
-                ],
-                [
-                    'name' => 'SessionModelSetParams',
-                    'upstream_methods' => ['session.model.set'],
-                    'local_files' => ['src/Rpc/PendingModel.php'],
-                ],
-            ]);
-            expect(array_column($internal, 'name'))->toContain(
-                'InternalGitHubAuthResult',
-                'InternalSendAndWaitParams',
-                'InternalSendAndWaitResult',
-            );
-            expect(array_column($report['missing_rpc_types'], 'name'))->not->toContain(
-                'CoveredContentExclusionParams',
-                'CoveredContentExclusionResult',
-                'CoveredGitHubAuthResult',
-                'CoveredJavaResult',
-                'InternalGitHubAuthResult',
-                'InternalSendAndWaitParams',
-                'InternalSendAndWaitResult',
-                'NestedCoveredResult',
-                'SessionModelSetParams',
-                'SessionGitHubAuthGetStatusParams',
-                'SessionInternalResult',
-            );
-
             $apiCoverage = array_column($report['rpc_api_coverage'], null, 'name');
 
             expect($apiCoverage['SessionContentExclusionApi']['status'])->toBe('covered_by_rpc_methods');
@@ -612,12 +571,6 @@ describe('SDK sync structural audit', function () {
                     '    public function models()',
                 $serverRpc,
             ));
-            $write('src/Rpc/PendingServerAccount.php', <<<'PHP'
-                <?php
-                class PendingServerAccount {
-                    public function getWebUrl() { return $this->client->request('account.getWebUrl', []); }
-                }
-                PHP);
             $write('src/Rpc/PendingPlugins.php', <<<'PHP'
                 <?php
                 class PendingPlugins {
@@ -746,7 +699,7 @@ describe('SDK sync structural audit', function () {
             $success->run();
 
             expect($success->getExitCode())->toBe(0);
-            expect(json_decode($success->getOutput(), true, flags: JSON_THROW_ON_ERROR)['schema_version'])->toBe(3);
+            expect(json_decode($success->getOutput(), true, flags: JSON_THROW_ON_ERROR)['schema_version'])->toBe(4);
             expect($success->getErrorOutput())->toBe('');
 
             $write('copilot-sdk/python/copilot/generated/rpc.py', '');

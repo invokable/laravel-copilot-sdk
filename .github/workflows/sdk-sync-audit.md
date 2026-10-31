@@ -52,17 +52,11 @@ steps:
           mkdir -p /tmp/gh-aw/sdk-sync-audit
           php .github/scripts/check-sdk-sync.php > /tmp/gh-aw/sdk-sync-audit/candidates.json
           jq '{
-            missing_rpc_type_count: (.missing_rpc_types | length),
             missing_rpc_api_count: (.missing_rpc_apis | length),
-            missing_enum_count: (.missing_enums | length),
             rpc_api_coverage: {
               covered_by_rpc_methods_count: ([.rpc_api_coverage[] | select(.status == "covered_by_rpc_methods")] | length),
               internal_only_count: ([.rpc_api_coverage[] | select(.status == "internal_only")] | length),
               excluded_methods_count: ([.rpc_api_coverage[] | select(.status == "excluded_methods")] | length)
-            },
-            rpc_type_coverage: {
-              covered_by_rpc_method_count: (.rpc_type_coverage.covered_by_rpc_methods | length),
-              internal_only_count: (.rpc_type_coverage.internal_only | length)
             },
             rpc_method_exclusions,
             rpc_method_inclusions,
@@ -124,9 +118,11 @@ At the beginning of the audit, before reading the prepared evidence or examining
 
 ## Prepared evidence
 
-Read `/tmp/gh-aw/sdk-sync-audit/summary.json`, then selectively query relevant entries from `/tmp/gh-aw/sdk-sync-audit/candidates.json` with `jq`. Do not load the full RPC type inventory. This is a current-state audit of the checked-out official SDK submodule against the Laravel implementation; do not update the submodule as part of the audit.
+Read `/tmp/gh-aw/sdk-sync-audit/summary.json`, then selectively query relevant entries from `/tmp/gh-aw/sdk-sync-audit/candidates.json` with `jq`. This is a current-state audit of the checked-out official SDK submodule against the Laravel implementation; do not update the submodule as part of the audit.
 
-The candidate report detects structural differences in RPC type names, Java RPC API group files mapped to Laravel `Pending*` files, enum names, RPC method names, configuration options, and hooks. Query `.missing_rpc_apis[]` separately from `.missing_rpc_types[]`; Java `*Api.java` files are not RPC data types. `.rpc_api_coverage[]` explains Java API groups covered by split Laravel RPC files, internal-only groups, and explicitly excluded methods. `rpc_method_exclusions` lists upstream methods intentionally omitted from parity candidates, while `rpc_method_inclusions` identifies explicitly tracked methods from internal upstream RPC factories. `rpc_type_coverage.covered_by_rpc_methods` maps type names omitted as missing to implemented wire methods and Laravel files; `rpc_type_coverage.internal_only` identifies types used only by internal RPC methods and lists any related Laravel files. Selectively query coverage entries by relevant type or API name; do not load the full coverage arrays. Public RPC method comparisons exclude internal factories, including `session.sendAndWait`. The check still compares names and file presence, not RPC type fields or semantic equivalence. Treat candidates as leads, not proof: verify each against the relevant upstream source and complete Laravel entry point before creating an issue.
+The candidate report detects structural differences in Java RPC API group files mapped to Laravel `Pending*` files, RPC method names, configuration options, and hooks. `.rpc_api_coverage[]` explains Java API groups covered by split Laravel RPC files, internal-only groups, and explicitly excluded methods. `rpc_method_exclusions` lists upstream methods intentionally omitted from parity candidates, while `rpc_method_inclusions` identifies explicitly tracked methods from internal upstream RPC factories. Selectively query coverage entries by relevant API name; do not load the full coverage array. Public RPC method comparisons exclude internal factories, including `session.sendAndWait`. The check compares names and file presence, not semantic equivalence. Treat candidates as leads, not proof: verify each against the relevant upstream source and complete Laravel entry point before creating an issue.
+
+Type and enum checks are intentionally absent from the script. During each audit, also look for types and enums that need porting by inspecting relevant upstream public capabilities and their request, response, configuration, and dispatch paths, even when the structural report has no missing APIs or methods. Compare their uses with existing Laravel types, enums, arrays, and equivalent entry points; a missing same-named PHP file alone is not a gap. Laravel keeps `SessionEvent::$data` as an array, so event-payload-only types and enums do not need standalone PHP equivalents. Exclude primitive aliases, generator-only helpers, and internal-only representations with no useful Laravel behavior. Create a type or enum task only when verified public behavior or a useful Laravel-facing typed API requires it, and group necessary types and enums with their end-to-end capability rather than filing one issue per name. Keep this investigation selective; do not load or enumerate the full upstream type inventory.
 
 `existing-issues.json` contains paginated open and closed issues; `open-sync-prs.json` contains in-flight `sdk-sync` PRs. If any required evidence is missing, invalid, or unreadable, call `report_incomplete`. If there are no verified, novel, feasible gaps, do not create an issue. Publish issues only through `create-issue`.
 
