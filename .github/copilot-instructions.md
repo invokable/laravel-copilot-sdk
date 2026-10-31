@@ -1,4 +1,4 @@
-# GitHub Copilot SDK for Laravel Project Guidelines
+# Microsoft Copilot SDK for Laravel Project Guidelines
 
 ## Overview
 
@@ -6,6 +6,8 @@ GitHub Copilot CLIへプログラムからアクセスするSDK。公式にはno
 
 ## 公式 SDK
 https://github.com/github/copilot-sdk
+
+2026年10月にGiHub Copilot SDKからMicrosoft Copilot SDKに名前が変更。
 
 `./copilot-sdk/`内はgit submoduleで追加した公式SDKのコード。
 公式SDKのコードを確認する時は以下のコマンドで最新に更新してください。
