@@ -72,6 +72,16 @@ class SessionRpc
     }
 
     /**
+     * Internal Autopilot RPC operations.
+     *
+     * @internal
+     */
+    public function autopilot(): PendingAutopilot
+    {
+        return new PendingAutopilot($this->client, $this->sessionId);
+    }
+
+    /**
      * Instructions RPC operations.
      */
     public function instructions(): PendingInstructions
