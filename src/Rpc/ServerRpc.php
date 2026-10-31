@@ -276,6 +276,16 @@ class ServerRpc
     }
 
     /**
+     * Server-level settings file RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function settings(): PendingServerSettings
+    {
+        return new PendingServerSettings($this->client);
+    }
+
+    /**
      * Content-exclusion policy RPC operations.
      */
     public function contentExclusion(): PendingServerContentExclusion

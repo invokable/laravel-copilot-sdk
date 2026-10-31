@@ -45,7 +45,7 @@ Copilot::client()->rpc()->secrets()->addFilterValues([
 
 ### Git・環境・サンドボックス・ポリシー
 
-`git()`からブランチや作業ディレクトリ、Git remoteの情報を取得し、`gitHubRepository()`と`gitHubOwners()`からGitHubリポジトリや所有者を探索できます。`environments()`はMission Control環境、`sandbox()`と`sandboxProxyCa()`はサンドボックス対応状況やProxy CA、`contentExclusion()`は除外ポリシーの検証、`managedSettings()`と`userSettings()`は設定を扱います。
+`git()`からブランチや作業ディレクトリ、Git remoteの情報を取得し、`gitHubRepository()`と`gitHubOwners()`からGitHubリポジトリや所有者を探索できます。`environments()`はMission Control環境、`sandbox()`と`sandboxProxyCa()`はサンドボックス対応状況やProxy CA、`contentExclusion()`は除外ポリシーの検証、`managedSettings()`と`userSettings()`は設定を扱います。設定ファイルの個別キー削除と表示用の値のマスキングは`settings()`から行えます。
 
 ### ローカルモデル・HTTP推論・ファイルシステム
 
@@ -842,6 +842,24 @@ $preview = $client->rpc()->managedSettings()->compose(['layers' => [
     ['source' => 'device', 'settings' => ['permissions' => []]],
 ]]);
 $client->rpc()->managedSettings()->clearCache();
+```
+
+### settings (experimental: 設定ファイルの操作)
+
+設定ファイルから指定したキーを削除し、表示用に秘匿値を置き換えます。`removeRawKey()`は読み込みに失敗したキーなど、正規の設定パスではないキーもそのまま削除できます。ファイルが解析できない場合は上書きせず`status`が`invalid`になります。`redactValueForDisplay()`は`basePath`で指定した設定ツリー上の位置を基に秘匿値をプレースホルダーへ置き換えるため、ユーザーへの表示やログ出力に使えます。
+
+```php
+$result = $client->rpc()->settings()->removeRawKey([
+    'filePath' => '/path/to/settings.json',
+    'rawKey' => 'misspelledKey',
+]);
+// $result->status は 'ok' または 'invalid'
+
+$redacted = $client->rpc()->settings()->redactValueForDisplay([
+    'value' => ['apiKey' => 'secret-value', 'name' => 'visible'],
+    'basePath' => ['providers', 'openai'],
+]);
+// $redacted->value のうち秘匿値はプレースホルダーに置き換えられています
 ```
 
 ### Runtime・Host のライフサイクル（experimental）
