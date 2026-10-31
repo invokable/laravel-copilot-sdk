@@ -4,12 +4,36 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingExtensions;
+use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\ExtensionList;
+use Revolution\Copilot\Types\Rpc\ExtensionManagedPolicy;
 use Revolution\Copilot\Types\Rpc\ExtensionsDisableRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionsEnableRequest;
 use Revolution\Copilot\Types\Rpc\SendAttachmentsToMessageParams;
 
 describe('PendingExtensions', function () {
+    it('gets the session extension policy and returns a typed result', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.extensions.getPolicy', ['sessionId' => 'session-abc'])
+            ->andReturn([
+                'standalone' => 'plugin_only',
+                'enforcementVersion' => 1,
+                'eligiblePluginEntries' => [
+                    ['id' => 'plugin:helper', 'modulePath' => '/workspace/plugin/helper.js'],
+                ],
+            ]);
+
+        $result = (new SessionRpc($client, 'session-abc'))
+            ->extensions()
+            ->getPolicy();
+
+        expect($result)->toBeInstanceOf(ExtensionManagedPolicy::class)
+            ->and($result->standalone)->toBe('plugin_only')
+            ->and($result->eligiblePluginEntries[0]['modulePath'])->toBe('/workspace/plugin/helper.js');
+    });
+
     it('calls session.extensions.list and returns result', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
