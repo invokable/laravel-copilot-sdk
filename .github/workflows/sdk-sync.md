@@ -174,4 +174,5 @@ If a required commit, log, status, or changed-file diff is missing, report the m
 - For completed changes, create a PR titled `Sync with copilot-sdk: [brief description]`. Include the exact commit range, compare URL, a summary, modified Laravel files, and references to deferred issues.
 - Clearly distinguish implemented from deferred work. Advancing the submodule does not mean the entire upstream range was ported; do not claim full synchronization or close deferred issues.
 - If no coherent implementation is completed, create or reference deferred issues without creating an empty PR.
-- Every successful run must produce a PR, an issue for deferred work, or a concise `noop` when there is no actionable change or an existing PR covers it. Use `report_incomplete` when required evidence or tools prevent meaningful analysis.
+- Before ending a run successfully, invoke at least one terminal safe output: create a PR for completed changes, create issues for deferred work, or call `noop` when there is no actionable change or an existing PR covers it. Do not end after analysis or with a narrative response alone. When no PR or issue is warranted, call `noop` with a concise reason.
+- Use `report_incomplete` only when required evidence or tools prevent meaningful analysis; it deliberately marks the run incomplete and does not replace the successful-run output.
