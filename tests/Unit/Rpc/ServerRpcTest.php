@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerAccount;
+use Revolution\Copilot\Rpc\PendingServerAgentRegistry;
 use Revolution\Copilot\Rpc\PendingServerAzureMl;
 use Revolution\Copilot\Rpc\PendingServerCatalog;
 use Revolution\Copilot\Rpc\PendingServerCommands;
@@ -113,6 +114,8 @@ describe('ServerRpc', function () {
             ->and($rpc->sandboxProxyCa())->toBeInstanceOf(PendingServerSandboxProxyCa::class)
             ->and($rpc->settings())->toBeInstanceOf(PendingServerSettings::class)
             ->and($rpc->kerberosAuth())->toBeInstanceOf(PendingServerKerberosAuth::class);
+
+        expect($rpc->agentRegistry())->toBeInstanceOf(PendingServerAgentRegistry::class);
     });
 });
 
