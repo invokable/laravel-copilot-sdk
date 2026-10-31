@@ -51,6 +51,19 @@ Copilot::client()->rpc()->secrets()->addFilterValues([
 
 `azureMl()`はローカルモデルのカタログ・解決・ダウンロードと、その状態確認・キャンセル・削除を提供します。`llmInference()`はモデル層のHTTPリクエストをクライアント側へ中継する実験的APIです。`sessionFs()`はセッションのファイルシステム／SQLiteコールバックプロバイダーを登録します。
 
+### Kerberos認証（experimental）
+
+`kerberosAuth()->setProvider()`でKerberos認証プロバイダーを登録します。`mode`にはネイティブ認証情報の取得に失敗した場合だけコールバックを使う`fallback`、または常にコールバックを使う`always`を指定します。`scope`は省略すると`connection`となり、`runtime`を指定するとランタイム共通のバックグラウンド通信も対象になります。このスコープを指定できる接続は同時に1つだけです。登録RPCの戻り値はありません。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\KerberosAuthSetProviderRequest;
+
+Copilot::client()->rpc()->kerberosAuth()->setProvider(
+    new KerberosAuthSetProviderRequest(mode: 'fallback', scope: 'connection'),
+);
+```
+
 ### 基本的な呼び出し例
 
 ```php
@@ -954,7 +967,12 @@ if ($state !== null) {
 
 ### Tools・Permissions・Commands・UI
 
-`tools()`と`permissions()`はイベントで届いた保留中リクエストへの応答や設定を扱います。`commands()`はコマンド一覧・実行・イベント応答、`ui()`はユーザー入力・elicitation・プラン承認などの要求への応答を提供します。`completions()`は入力候補を取得します。
+`tools()`と`permissions()`はイベントで届いた保留中リクエストへの応答や設定を扱います。`permissions()->clearResumeEscalation()`は再開時に履歴から復元された権限昇格をメモリ内で解除し、成否を型付きで返します。`commands()`はコマンド一覧・実行・イベント応答、`ui()`はユーザー入力・elicitation・プラン承認などの要求への応答を提供します。`completions()`は入力候補を取得します。
+
+```php
+$result = $session->rpc()->permissions()->clearResumeEscalation();
+// $result->success
+```
 
 ### Accounts・認証・Providers
 

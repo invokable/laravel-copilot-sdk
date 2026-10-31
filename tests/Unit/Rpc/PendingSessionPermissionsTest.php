@@ -19,6 +19,7 @@ use Revolution\Copilot\Types\Rpc\PermissionPathsUpdatePrimaryParams;
 use Revolution\Copilot\Types\Rpc\PermissionPathsWorkspaceCheckResult;
 use Revolution\Copilot\Types\Rpc\PermissionPromptShownNotification;
 use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
+use Revolution\Copilot\Types\Rpc\PermissionsClearResumeEscalationResult;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureParams;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureResult;
 use Revolution\Copilot\Types\Rpc\PermissionsGetModeResult;
@@ -242,6 +243,19 @@ describe('PendingSessionPermissions', function () {
         expect($result)->toBeInstanceOf(PermissionsResetSessionApprovalsResult::class)
             ->and($decoded['method'])->toBe('session.permissions.resetSessionApprovals')
             ->and($decoded['params']['sessionId'])->toBe('session-abc');
+    });
+
+    it('clearResumeEscalation sends the session id and maps its result', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $result = (new PendingPermissions($client, 'session-abc'))->clearResumeEscalation();
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+
+        expect($result)->toBeInstanceOf(PermissionsClearResumeEscalationResult::class)
+            ->and($result->success)->toBeTrue()
+            ->and($decoded['method'])->toBe('session.permissions.clearResumeEscalation')
+            ->and($decoded['params'])->toBe(['sessionId' => 'session-abc']);
     });
 
     it('returns nested permissions paths and urls RPC handlers', function () {
