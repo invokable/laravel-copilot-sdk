@@ -124,6 +124,16 @@ class ServerRpc
     }
 
     /**
+     * Experimental Kerberos authentication RPC operations.
+     *
+     * @experimental
+     */
+    public function kerberosAuth(): PendingServerKerberosAuth
+    {
+        return new PendingServerKerberosAuth($this->client);
+    }
+
+    /**
      * MCP configuration RPC operations.
      */
     public function mcp(): PendingServerMcpConfig
@@ -334,5 +344,15 @@ class ServerRpc
     public function runtime(): PendingServerRuntime
     {
         return new PendingServerRuntime($this->client);
+    }
+
+    /**
+     * Local agent registry RPC operations.
+     *
+     * @experimental
+     */
+    public function agentRegistry(): PendingServerAgentRegistry
+    {
+        return new PendingServerAgentRegistry($this->client);
     }
 }

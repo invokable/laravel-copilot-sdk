@@ -6,11 +6,13 @@ use Revolution\Copilot\Enums\AuthInfoType;
 use Revolution\Copilot\Enums\PermissionsSetApproveAllSource;
 use Revolution\Copilot\Types\Rpc\AccountGetQuotaRequest;
 use Revolution\Copilot\Types\Rpc\AuthInfo;
+use Revolution\Copilot\Types\Rpc\KerberosAuthSetProviderRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginResult;
 use Revolution\Copilot\Types\Rpc\ModelsListRequest;
+use Revolution\Copilot\Types\Rpc\PermissionsClearResumeEscalationResult;
 use Revolution\Copilot\Types\Rpc\PermissionsResetSessionApprovalsRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsResetSessionApprovalsResult;
 use Revolution\Copilot\Types\Rpc\PermissionsSetApproveAllRequest;
@@ -186,6 +188,38 @@ describe('PermissionsResetSessionApprovalsResult', function () {
         $result = new PermissionsResetSessionApprovalsResult(success: false);
 
         expect($result->toArray())->toBe(['success' => false]);
+    });
+});
+
+describe('PermissionsClearResumeEscalationResult', function () {
+    it('can be created from array and serialized', function () {
+        $result = PermissionsClearResumeEscalationResult::fromArray(['success' => true]);
+
+        expect($result->success)->toBeTrue()
+            ->and($result->toArray())->toBe(['success' => true]);
+    });
+});
+
+describe('KerberosAuthSetProviderRequest', function () {
+    it('round-trips the required mode and optional scope', function () {
+        $request = KerberosAuthSetProviderRequest::fromArray([
+            'mode' => 'fallback',
+            'scope' => 'runtime',
+        ]);
+
+        expect($request->mode)->toBe('fallback')
+            ->and($request->scope)->toBe('runtime')
+            ->and($request->toArray())->toBe([
+                'mode' => 'fallback',
+                'scope' => 'runtime',
+            ]);
+    });
+
+    it('omits the optional scope when absent', function () {
+        $request = KerberosAuthSetProviderRequest::fromArray(['mode' => 'always']);
+
+        expect($request->scope)->toBeNull()
+            ->and($request->toArray())->toBe(['mode' => 'always']);
     });
 });
 

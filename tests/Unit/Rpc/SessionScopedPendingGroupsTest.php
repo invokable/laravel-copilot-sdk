@@ -2,11 +2,16 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\AutopilotEvaluateIdleContinuationOutcome;
+use Revolution\Copilot\Enums\DiagnosticCursorStatus;
+use Revolution\Copilot\Enums\QueuedCommandWaitRequirement;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Rpc\PendingAutopilot;
 use Revolution\Copilot\Rpc\PendingConnectors;
 use Revolution\Copilot\Rpc\PendingCustomizations;
 use Revolution\Copilot\Rpc\PendingDiagnostics;
 use Revolution\Copilot\Rpc\PendingInstructions;
+use Revolution\Copilot\Rpc\PendingLifecycleDiagnostics;
 use Revolution\Copilot\Rpc\PendingLsp;
 use Revolution\Copilot\Rpc\PendingManagedSettings;
 use Revolution\Copilot\Rpc\PendingMarketplaces;
@@ -21,7 +26,12 @@ use Revolution\Copilot\Rpc\PendingUi;
 use Revolution\Copilot\Rpc\PendingWorkflow;
 use Revolution\Copilot\Rpc\PendingWorkflowJournal;
 use Revolution\Copilot\Rpc\SessionRpc;
+use Revolution\Copilot\Types\Rpc\AutopilotEvaluateIdleContinuationResult;
+use Revolution\Copilot\Types\Rpc\CommandsReportQueuedCommandWaitRequest;
+use Revolution\Copilot\Types\Rpc\CommandsReportQueuedCommandWaitResult;
 use Revolution\Copilot\Types\Rpc\CustomizationsReloadResult;
+use Revolution\Copilot\Types\Rpc\LifecycleDiagnosticsReadRequest;
+use Revolution\Copilot\Types\Rpc\LifecycleDiagnosticsReadResult;
 use Revolution\Copilot\Types\Rpc\ManagedSettingsResolvedData;
 
 describe('SessionRpc session-scoped operations', function () {
@@ -82,6 +92,69 @@ describe('SessionRpc session-scoped operations', function () {
             ->and($session->connectors()->list())->toBe(['connectors' => []])
             ->and($session->diagnostics())->toBeInstanceOf(PendingDiagnostics::class)
             ->and($session->diagnostics()->read(['sources' => ['mcp']]))->toBe(['entries' => []]);
+    });
+
+    it('sends internal session RPCs with typed results and bound session ids', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.autopilot.evaluateIdleContinuation', [
+                'sessionId' => 'session-123',
+            ])
+            ->andReturn(['outcome' => 'continued']);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.commands.reportQueuedCommandWait', [
+                'requestId' => 'request-1',
+                'accountIdentity' => 'account-1',
+                'requirement' => 'managed-policy-published',
+                'waiting' => true,
+                'sessionId' => 'session-123',
+            ])
+            ->andReturn(['recorded' => true]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.diagnostics.lifecycle.read', [
+                'cursor' => 'cursor-1',
+                'max' => 25,
+                'waitMs' => 250,
+                'sessionId' => 'session-123',
+            ])
+            ->andReturn([
+                'events' => [[
+                    'data' => ['system' => 'mcp'],
+                    'timestamp' => '2026-10-31T12:00:00Z',
+                    'type' => 'runtime.lifecycle.system_state',
+                ]],
+                'cursor' => 'cursor-2',
+                'cursorStatus' => 'ok',
+                'hasMore' => false,
+            ]);
+
+        $session = new SessionRpc($client, 'session-123');
+        $autopilotResult = $session->autopilot()->evaluateIdleContinuation();
+        $commandsResult = $session->commands()->reportQueuedCommandWait(new CommandsReportQueuedCommandWaitRequest(
+            requestId: 'request-1',
+            accountIdentity: 'account-1',
+            requirement: QueuedCommandWaitRequirement::ManagedPolicyPublished,
+            waiting: true,
+        ));
+        $lifecycleDiagnostics = $session->diagnostics()->lifecycle();
+        $diagnosticsResult = $lifecycleDiagnostics->read(new LifecycleDiagnosticsReadRequest(
+            cursor: 'cursor-1',
+            max: 25,
+            waitMs: 250,
+        ));
+
+        expect($session->autopilot())->toBeInstanceOf(PendingAutopilot::class)
+            ->and($autopilotResult)->toBeInstanceOf(AutopilotEvaluateIdleContinuationResult::class)
+            ->and($autopilotResult->outcome)->toBe(AutopilotEvaluateIdleContinuationOutcome::Continued)
+            ->and($commandsResult)->toBeInstanceOf(CommandsReportQueuedCommandWaitResult::class)
+            ->and($commandsResult->recorded)->toBeTrue()
+            ->and($lifecycleDiagnostics)->toBeInstanceOf(PendingLifecycleDiagnostics::class)
+            ->and($diagnosticsResult)->toBeInstanceOf(LifecycleDiagnosticsReadResult::class)
+            ->and($diagnosticsResult->cursorStatus)->toBe(DiagnosticCursorStatus::Ok)
+            ->and($diagnosticsResult->events[0]->type)->toBe('runtime.lifecycle.system_state');
     });
 
     it('exposes settings, customizations, and plugin marketplace operations', function () {

@@ -10,6 +10,8 @@ use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandRequest;
 use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandResult;
 use Revolution\Copilot\Types\Rpc\CommandsInvokeRequest;
 use Revolution\Copilot\Types\Rpc\CommandsListRequest;
+use Revolution\Copilot\Types\Rpc\CommandsReportQueuedCommandWaitRequest;
+use Revolution\Copilot\Types\Rpc\CommandsReportQueuedCommandWaitResult;
 use Revolution\Copilot\Types\Rpc\CommandsRespondToQueuedCommandRequest;
 use Revolution\Copilot\Types\Rpc\CommandsRespondToQueuedCommandResult;
 use Revolution\Copilot\Types\Rpc\EnqueueCommandParams;
@@ -109,6 +111,23 @@ class PendingCommands
 
         return CommandsRespondToQueuedCommandResult::fromArray(
             $this->client->request('session.commands.respondToQueuedCommand', $paramsArray),
+        );
+    }
+
+    /**
+     * Reports that the host started or stopped waiting while executing a queued command.
+     *
+     * @internal
+     */
+    public function reportQueuedCommandWait(CommandsReportQueuedCommandWaitRequest|array $params): CommandsReportQueuedCommandWaitResult
+    {
+        $paramsArray = ($params instanceof CommandsReportQueuedCommandWaitRequest
+            ? $params
+            : CommandsReportQueuedCommandWaitRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return CommandsReportQueuedCommandWaitResult::fromArray(
+            $this->client->request('session.commands.reportQueuedCommandWait', $paramsArray),
         );
     }
 }
