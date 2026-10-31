@@ -1,6 +1,6 @@
 {
     "name": "revolution/laravel-copilot-sdk",
-    "description": "GitHub Copilot SDK for Laravel",
+    "description": "Microsoft Copilot SDK for Laravel",
     "keywords": [
         "laravel",
         "copilot-cli",
