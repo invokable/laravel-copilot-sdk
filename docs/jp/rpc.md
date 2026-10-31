@@ -51,6 +51,40 @@ Copilot::client()->rpc()->secrets()->addFilterValues([
 
 `azureMl()`はローカルモデルのカタログ・解決・ダウンロードと、その状態確認・キャンセル・削除を提供します。`llmInference()`はモデル層のHTTPリクエストをクライアント側へ中継する実験的APIです。`sessionFs()`はセッションのファイルシステム／SQLiteコールバックプロバイダーを登録します。
 
+### 内部・実験的な RPC
+
+公式SDKで内部用とされる次のRPCも、Laravelでは`@experimental`として公開しています。将来変更・削除される可能性があり、ランタイムの呼び出し元制限も適用されます。エージェントレジストリの作成・一覧・削除、認証URLのブラウザ起動、期限切れの大きなツール出力の整理、サンドボックスのパス許可警告を利用できます。一覧結果には接続資格情報は含まれません。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\AgentRegistryEnsureDirRequest;
+use Revolution\Copilot\Types\Rpc\AgentRegistryListEntriesRequest;
+use Revolution\Copilot\Types\Rpc\AgentRegistryRemoveEntryRequest;
+use Revolution\Copilot\Types\Rpc\RuntimeOpenBrowserRequest;
+use Revolution\Copilot\Types\Rpc\SandboxPathGrantWarningParams;
+
+$rpc = Copilot::client()->rpc();
+$homeDir = '/home/user';
+
+$registry = $rpc->agentRegistry();
+$registry->ensureDir(new AgentRegistryEnsureDirRequest(homeDir: $homeDir));
+$entries = $registry->listEntries(new AgentRegistryListEntriesRequest(homeDir: $homeDir));
+$registry->removeEntry(new AgentRegistryRemoveEntryRequest(
+    homeDir: $homeDir,
+    pid: 1234,
+));
+
+$rpc->runtime()->openBrowser(new RuntimeOpenBrowserRequest(
+    url: 'https://example.com/authorize',
+));
+$rpc->tools()->largeOutput()->cleanup();
+
+$warning = $rpc->sandbox()->getPathGrantWarning(new SandboxPathGrantWarningParams(
+    resolvedPath: '/workspace/project',
+    readOnly: false,
+));
+```
+
 ### 基本的な呼び出し例
 
 ```php

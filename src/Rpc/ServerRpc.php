@@ -335,4 +335,14 @@ class ServerRpc
     {
         return new PendingServerRuntime($this->client);
     }
+
+    /**
+     * Local agent registry RPC operations.
+     *
+     * @experimental
+     */
+    public function agentRegistry(): PendingServerAgentRegistry
+    {
+        return new PendingServerAgentRegistry($this->client);
+    }
 }
