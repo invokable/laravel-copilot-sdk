@@ -13,6 +13,7 @@ use Revolution\Copilot\Rpc\PendingServerGit;
 use Revolution\Copilot\Rpc\PendingServerGitHubOwners;
 use Revolution\Copilot\Rpc\PendingServerGitHubRepository;
 use Revolution\Copilot\Rpc\PendingServerHooks;
+use Revolution\Copilot\Rpc\PendingServerKerberosAuth;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Rpc\PendingServerModels;
 use Revolution\Copilot\Rpc\PendingServerPlugins;
@@ -111,7 +112,9 @@ describe('ServerRpc', function () {
             ->and($rpc->hooks())->toBeInstanceOf(PendingServerHooks::class)
             ->and($rpc->sandbox())->toBeInstanceOf(PendingServerSandbox::class)
             ->and($rpc->sandboxProxyCa())->toBeInstanceOf(PendingServerSandboxProxyCa::class)
-            ->and($rpc->settings())->toBeInstanceOf(PendingServerSettings::class);
+            ->and($rpc->settings())->toBeInstanceOf(PendingServerSettings::class)
+            ->and($rpc->kerberosAuth())->toBeInstanceOf(PendingServerKerberosAuth::class);
+
         expect($rpc->agentRegistry())->toBeInstanceOf(PendingServerAgentRegistry::class);
     });
 });

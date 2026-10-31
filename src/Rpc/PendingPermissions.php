@@ -9,6 +9,7 @@ use Revolution\Copilot\Types\Rpc\PendingPermissionRequestList;
 use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
 use Revolution\Copilot\Types\Rpc\PermissionPromptShownNotification;
 use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
+use Revolution\Copilot\Types\Rpc\PermissionsClearResumeEscalationResult;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureParams;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureResult;
 use Revolution\Copilot\Types\Rpc\PermissionsGetModeResult;
@@ -70,6 +71,20 @@ class PendingPermissions
     {
         return PermissionsResetSessionApprovalsResult::fromArray(
             $this->client->request('session.permissions.resetSessionApprovals', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Clear the permission escalation restored from this session's history.
+     *
+     * @experimental
+     */
+    public function clearResumeEscalation(): PermissionsClearResumeEscalationResult
+    {
+        return PermissionsClearResumeEscalationResult::fromArray(
+            $this->client->request('session.permissions.clearResumeEscalation', [
                 'sessionId' => $this->sessionId,
             ]),
         );

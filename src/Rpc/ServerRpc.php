@@ -124,6 +124,16 @@ class ServerRpc
     }
 
     /**
+     * Experimental Kerberos authentication RPC operations.
+     *
+     * @experimental
+     */
+    public function kerberosAuth(): PendingServerKerberosAuth
+    {
+        return new PendingServerKerberosAuth($this->client);
+    }
+
+    /**
      * MCP configuration RPC operations.
      */
     public function mcp(): PendingServerMcpConfig
