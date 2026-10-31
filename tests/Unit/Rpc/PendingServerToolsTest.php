@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Rpc\PendingServerLargeOutput;
 use Revolution\Copilot\Rpc\PendingServerTools;
+use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Types\Rpc\ToolList;
 use Revolution\Copilot\Types\Rpc\ToolsListRequest;
 
@@ -65,5 +67,19 @@ describe('PendingServerTools', function () {
 
         expect($result)->toBeInstanceOf(ToolList::class)
             ->and($result->tools)->toHaveCount(1);
+    });
+
+    it('cleans up expired large tool output files', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('tools.largeOutput.cleanup', [])
+            ->andReturn([]);
+
+        $largeOutput = (new ServerRpc($client))->tools()->largeOutput();
+
+        expect($largeOutput)->toBeInstanceOf(PendingServerLargeOutput::class);
+
+        $largeOutput->cleanup();
     });
 });

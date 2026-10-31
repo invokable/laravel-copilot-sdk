@@ -28,4 +28,14 @@ class PendingServerTools
             $this->client->request('tools.list', $paramsArray),
         );
     }
+
+    /**
+     * Large tool output file operations.
+     *
+     * @experimental
+     */
+    public function largeOutput(): PendingServerLargeOutput
+    {
+        return new PendingServerLargeOutput($this->client);
+    }
 }
