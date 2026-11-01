@@ -32,6 +32,7 @@ use Revolution\Copilot\Types\Rpc\CommandsReportQueuedCommandWaitResult;
 use Revolution\Copilot\Types\Rpc\CustomizationsReloadResult;
 use Revolution\Copilot\Types\Rpc\LifecycleDiagnosticsReadRequest;
 use Revolution\Copilot\Types\Rpc\LifecycleDiagnosticsReadResult;
+use Revolution\Copilot\Types\Rpc\ManagedSettingsResolvedData;
 
 describe('SessionRpc session-scoped operations', function () {
     it('runs a workflow with its owning session id', function () {
@@ -181,6 +182,29 @@ describe('SessionRpc session-scoped operations', function () {
 
         expect($session->plugins()->marketplaces())->toBeInstanceOf(PendingMarketplaces::class)
             ->and($session->plugins()->marketplaces()->list())->toBe(['marketplaces' => []]);
+    });
+
+    it('rechecks the session policy helper and returns a typed managed settings snapshot', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.managedSettings.recheckPolicyHelper', ['sessionId' => 'session-123'])
+            ->andReturn([
+                'bypassPermissionsDisabled' => false,
+                'deviceManaged' => false,
+                'failClosed' => false,
+                'managedKeys' => ['model'],
+                'serverManaged' => true,
+                'source' => 'server',
+            ]);
+
+        $result = (new SessionRpc($client, 'session-123'))
+            ->managedSettings()
+            ->recheckPolicyHelper();
+
+        expect($result)->toBeInstanceOf(ManagedSettingsResolvedData::class)
+            ->and($result->serverManaged)->toBeTrue()
+            ->and($result->managedKeys)->toBe(['model']);
     });
 
     it('adds session scope to plugin, queue, provider, and instruction operations', function () {

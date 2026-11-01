@@ -6,8 +6,10 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\ExtensionList;
+use Revolution\Copilot\Types\Rpc\ExtensionManagedPolicy;
 use Revolution\Copilot\Types\Rpc\ExtensionsDisableRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionsEnableRequest;
+use Revolution\Copilot\Types\Rpc\ExtensionsGetPolicyRequest;
 use Revolution\Copilot\Types\Rpc\SendAttachmentsToMessageParams;
 
 /**
@@ -21,6 +23,21 @@ class PendingExtensions
         protected JsonRpcClient $client,
         protected string $sessionId,
     ) {}
+
+    /**
+     * Get the runtime-derived standalone extension policy for this session.
+     *
+     * @experimental This method is experimental and may change or be removed.
+     */
+    public function getPolicy(): ExtensionManagedPolicy
+    {
+        $params = (new ExtensionsGetPolicyRequest)->toArray();
+        $params['sessionId'] = $this->sessionId;
+
+        return ExtensionManagedPolicy::fromArray(
+            $this->client->request('session.extensions.getPolicy', $params),
+        );
+    }
 
     /**
      * List discovered extensions and their current status.

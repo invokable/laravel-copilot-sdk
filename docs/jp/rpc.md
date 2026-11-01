@@ -1369,11 +1369,18 @@ $session->rpc()->plugins()->reload(new PluginsReloadRequest(
 ));
 
 // extensions (experimental: エクステンションの管理)
+$policy = $session->rpc()->extensions()->getPolicy(); // ExtensionManagedPolicy
+// $policy->standalone は allowed / plugin_only / pending
+// ポリシーはスナップショットであり、起動許可のトークンではありません。実際の起動判断には使わないでください
 $session->rpc()->extensions()->list();
 $session->rpc()->extensions()->enable(new ExtensionsEnableRequest(id: 'project:my-ext'));
 $session->rpc()->extensions()->disable(new ExtensionsDisableRequest(id: 'project:my-ext'));
 $session->rpc()->extensions()->reconcile(); // host-only: 実効membershipを再同期し、settled listを返す
 $session->rpc()->extensions()->reload();
+
+// managedSettings (experimental: セッションの管理設定)
+// Policy Helperを再評価し、適用後の実効設定を返す
+$settings = $session->rpc()->managedSettings()->recheckPolicyHelper(); // ManagedSettingsResolvedData
 
 // compaction → history に名前変更
 $session->rpc()->history()->compact();

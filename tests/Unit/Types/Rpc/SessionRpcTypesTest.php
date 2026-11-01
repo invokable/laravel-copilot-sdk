@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
+use Revolution\Copilot\Types\Rpc\ExtensionManagedPolicy;
+use Revolution\Copilot\Types\Rpc\ExtensionsGetPolicyRequest;
 use Revolution\Copilot\Types\Rpc\FleetStartRequest;
 use Revolution\Copilot\Types\Rpc\FleetStartResult;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
@@ -14,6 +16,8 @@ use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
 use Revolution\Copilot\Types\Rpc\LogRequest;
 use Revolution\Copilot\Types\Rpc\LogResult;
+use Revolution\Copilot\Types\Rpc\ManagedSettingsRecheckPolicyHelperRequest;
+use Revolution\Copilot\Types\Rpc\ManagedSettingsResolvedData;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
 use Revolution\Copilot\Types\Rpc\ModeSetRequest;
@@ -25,6 +29,62 @@ use Revolution\Copilot\Types\Rpc\ShellExecRequest;
 use Revolution\Copilot\Types\Rpc\ShellExecResult;
 use Revolution\Copilot\Types\Rpc\ShellKillRequest;
 use Revolution\Copilot\Types\Rpc\ShellKillResult;
+
+describe('Session policy RPC request types', function () {
+    it('serializes the empty extension policy request', function () {
+        expect((new ExtensionsGetPolicyRequest)->toArray())->toBe([])
+            ->and(ExtensionsGetPolicyRequest::fromArray([])->toArray())->toBe([]);
+    });
+
+    it('serializes the empty policy helper recheck request', function () {
+        expect((new ManagedSettingsRecheckPolicyHelperRequest)->toArray())->toBe([])
+            ->and(ManagedSettingsRecheckPolicyHelperRequest::fromArray([])->toArray())->toBe([]);
+    });
+});
+
+describe('ExtensionManagedPolicy', function () {
+    it('round trips the session policy and eligible plugin entries', function () {
+        $data = [
+            'standalone' => 'plugin_only',
+            'enforcementVersion' => 1,
+            'eligiblePluginEntries' => [
+                ['id' => 'plugin:helper', 'modulePath' => '/workspace/plugin/helper.js'],
+            ],
+        ];
+
+        $result = ExtensionManagedPolicy::fromArray($data);
+
+        expect($result->standalone)->toBe('plugin_only')
+            ->and($result->enforcementVersion)->toBe(1)
+            ->and($result->toArray())->toBe($data);
+    });
+});
+
+describe('ManagedSettingsResolvedData', function () {
+    it('round trips the session managed settings snapshot while preserving false values', function () {
+        $data = [
+            'bypassPermissionsDisabled' => false,
+            'clientManaged' => false,
+            'deviceManaged' => false,
+            'failClosed' => false,
+            'managedKeys' => [],
+            'permissionsAllowIntersected' => false,
+            'permissionsContext' => ['failClosed' => false],
+            'policyHelperCapabilities' => ['recheck' => true, 'structuredFailure' => false],
+            'policyHelperManaged' => false,
+            'sandboxEnabledByUndeterminedPolicy' => false,
+            'serverManaged' => true,
+            'settings' => null,
+            'source' => 'server',
+        ];
+
+        $result = ManagedSettingsResolvedData::fromArray($data);
+
+        expect($result->clientManaged)->toBeFalse()
+            ->and($result->permissionsAllowIntersected)->toBeFalse()
+            ->and($result->toArray())->toBe($data);
+    });
+});
 
 describe('CurrentModel', function () {
     it('can be created from array', function () {
