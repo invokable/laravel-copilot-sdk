@@ -210,7 +210,7 @@ class PendingWorkspaces
     }
 
     /**
-     * Keep only the newest summaries after a rollback.
+     * Truncate local workspace compaction summaries after a rollback.
      */
     public function truncateSummaries(WorkspacesTruncateSummariesRequest|array $params): WorkspacesGetWorkspaceResult
     {
