@@ -14,6 +14,9 @@ use Illuminate\Support\Arr;
  */
 readonly class WorkspacesTruncateSummariesRequest implements Arrayable
 {
+    /**
+     * @param  int  $keepCount  Highest checkpoint number to keep. Checkpoints 1 through keepCount (the oldest) are kept and every later checkpoint is deleted; 0 deletes all.
+     */
     public function __construct(
         public int $keepCount,
     ) {}

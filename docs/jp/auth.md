@@ -150,6 +150,8 @@ SDKは以下の順で認証情報を解決します。
 
 保存済みの認証情報を使いたくない場合は`use_logged_in_user`を`false`にします。
 
+`false`にすると、認証に使われるのは明示的に指定したトークン（`github_token`）だけで、環境変数トークン（`COPILOT_GITHUB_TOKEN`、`GH_TOKEN`、`GITHUB_TOKEN`）は無視されます。
+
 ```php
 use Revolution\Copilot\Facades\Copilot;
 

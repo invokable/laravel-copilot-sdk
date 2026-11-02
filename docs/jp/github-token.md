@@ -45,7 +45,7 @@ $config = [
 ];
 ```
 
-`github_token`なしで`use_logged_in_user`を`false`にすると、`--no-auto-login`フラグが追加され、CLIは自動ログインを行いません。
+`github_token`なしで`use_logged_in_user`を`false`にすると、`--no-auto-login`フラグが追加され、CLIは自動ログインを行いません。このとき環境変数トークン（`COPILOT_GITHUB_TOKEN`、`GH_TOKEN`、`GITHUB_TOKEN`）も無視されます。
 
 ## セッションごとのGitHubトークン（v0.3.0+）
 
