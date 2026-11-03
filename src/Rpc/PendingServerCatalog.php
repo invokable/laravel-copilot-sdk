@@ -8,6 +8,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\CatalogGetGeneratedFeedRequest;
 use Revolution\Copilot\Types\Rpc\CatalogGetSavedFeedRequest;
 use Revolution\Copilot\Types\Rpc\CatalogPlanInstallFromReferenceRequest;
+use Revolution\Copilot\Types\Rpc\CatalogRecommendRequest;
 use Revolution\Copilot\Types\Rpc\CatalogReferenceInstallationResult;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
@@ -53,6 +54,22 @@ class PendingServerCatalog
             : CatalogSearchRequest::fromArray($params))->toArray();
 
         return $this->client->request('catalog.search', $paramsArray);
+    }
+
+    /**
+     * Requests recommendations for an official product and complete task.
+     *
+     * @return array<string, mixed>
+     *
+     * @experimental
+     */
+    public function recommend(CatalogRecommendRequest|array $params): array
+    {
+        $paramsArray = ($params instanceof CatalogRecommendRequest
+            ? $params
+            : CatalogRecommendRequest::fromArray($params))->toArray();
+
+        return $this->client->request('catalog.recommend', $paramsArray);
     }
 
     /**

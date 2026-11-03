@@ -55,4 +55,7 @@ enum CatalogInvalidRequestField: string
 
     /** The requested trust tiers were invalid. */
     case TrustTiers = 'trustTiers';
+
+    /** The requested product was missing or invalid. */
+    case Product = 'product';
 }

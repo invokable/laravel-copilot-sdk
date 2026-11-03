@@ -10,6 +10,7 @@ use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogGetGeneratedFeedRequest;
 use Revolution\Copilot\Types\Rpc\CatalogGetSavedFeedRequest;
+use Revolution\Copilot\Types\Rpc\CatalogRecommendRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionResult;
@@ -65,6 +66,47 @@ describe('PendingServerCatalog', function () {
 
         expect($result)->toBeArray()
             ->and($result['kind'])->toBe('unavailable');
+    });
+
+    it('calls catalog.recommend with typed params and returns the raw array', function () {
+        $params = [
+            'contract' => ['protocolVersion' => 3, 'requiredCapabilities' => ['catalog-recommend']],
+            'policySessionId' => 'session-1',
+            'query' => 'Review this repository and identify security issues.',
+            'product' => 'GitHub Copilot',
+        ];
+        $response = ['kind' => 'succeeded', 'recommendations' => [['name' => 'Copilot']]];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('catalog.recommend', $params)
+            ->andReturn($response);
+
+        $result = (new PendingServerCatalog($client))->recommend(new CatalogRecommendRequest(
+            contract: new CatalogClientContract(3, ['catalog-recommend']),
+            query: 'Review this repository and identify security issues.',
+            product: 'GitHub Copilot',
+            policySessionId: 'session-1',
+        ));
+
+        expect($result)->toBe($response);
+    });
+
+    it('calls catalog.recommend with array params', function () {
+        $params = [
+            'contract' => ['protocolVersion' => 1, 'requiredCapabilities' => []],
+            'query' => 'Summarize this project.',
+            'product' => 'GitHub Copilot',
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('catalog.recommend', $params)
+            ->andReturn(['kind' => 'unavailable']);
+
+        $result = (new PendingServerCatalog($client))->recommend($params);
+
+        expect($result)->toBe(['kind' => 'unavailable']);
     });
 
     it('forwards categories only with the negotiated category capability', function () {

@@ -58,4 +58,7 @@ enum CatalogCapability: string
 
     /** Understands the optional categories filter on catalog.search. */
     case CatalogSearchCategories = 'catalog-search-categories';
+
+    /** Understands product recommendations through catalog.recommend. */
+    case CatalogRecommend = 'catalog-recommend';
 }

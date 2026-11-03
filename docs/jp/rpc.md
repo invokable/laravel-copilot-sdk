@@ -37,7 +37,7 @@ Copilot::client()->rpc()->secrets()->addFilterValues([
 
 ### カタログとインストール
 
-`catalog()`で候補検索・選択・フィード取得を行い、Skills・Plugins・MCPの各APIでインストール計画の確認、適用、状態照会やキャンセルを行います。計画と適用は別操作です。実際のインストール例は後半の各項目を参照してください。
+`catalog()`で候補検索・製品の推奨取得・選択・フィード取得を行い、Skills・Plugins・MCPの各APIでインストール計画の確認、適用、状態照会やキャンセルを行います。計画と適用は別操作です。実際のインストール例は後半の各項目を参照してください。
 
 ### セッション・ホスト・実行環境
 
@@ -151,6 +151,7 @@ use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogGetGeneratedFeedRequest;
 use Revolution\Copilot\Types\Rpc\CatalogGetSavedFeedRequest;
 use Revolution\Copilot\Types\Rpc\CatalogMaterializationReference;
+use Revolution\Copilot\Types\Rpc\CatalogRecommendRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProfile;
@@ -564,6 +565,14 @@ Copilot::client()->rpc()->skills()->config()->setSkillDisabled(
 
 $contract = new CatalogClientContract(1, ['catalog-selection', 'ai-skill-installation']);
 $catalog = Copilot::client()->rpc()->catalog();
+
+// 製品名と完全なタスクから公式製品の推奨候補を取得 (experimental)
+$recommendations = $catalog->recommend(new CatalogRecommendRequest(
+    contract: new CatalogClientContract(1, [CatalogCapability::CatalogRecommend->value]),
+    query: 'Review this repository and identify security issues.',
+    product: 'GitHub Copilot',
+));
+
 $search = $catalog->search(new CatalogSearchRequest(
     contract: $contract,
     query: 'code review skill',
