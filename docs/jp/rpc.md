@@ -43,6 +43,55 @@ Copilot::client()->rpc()->secrets()->addFilterValues([
 
 `sessions()`は永続化済みセッションの検索、イベント読み取り、サイズ確認、削除・整理、forkを扱います。Workspaceの作成・読み込みやリモート制御も利用できます。`host()`はホストの起動、セッション公開・一覧・公開解除、認証、受付ポリシー変更、破棄を行います。AHPホストの高レベルAPIは[AHPホスト](./ahp.md)を参照してください。`runtime()`はランタイムのライフサイクルを扱います。
 
+### ローカルセッション管理（experimental）
+
+同じ設定ディレクトリで管理をオプトインしたローカルセッションを、`$session->rpc()->management()`から設定・一覧・メッセージ送信・クローズできます。管理対象セッションの作成やホストコールバックはこのRPCグループには含まれません。
+
+```php
+use Revolution\Copilot\Contracts\CopilotSession;
+use Revolution\Copilot\Enums\SessionManagementScope;
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\SessionManagementCloseRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementConfigureRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementListRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementMessageRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementToolOverrides;
+
+Copilot::start(function (CopilotSession $session): void {
+    $management = $session->rpc()->management();
+
+    $policy = $management->configure(new SessionManagementConfigureRequest(
+        cwd: base_path(),
+        enabled: true,
+        scope: SessionManagementScope::All,
+        tools: new SessionManagementToolOverrides(
+            create: false,
+            list: true,
+            message: true,
+            close: true,
+        ),
+    ));
+
+    $peers = $management->list(new SessionManagementListRequest());
+    $peer = $peers->sessions[0] ?? null;
+
+    if ($peer !== null) {
+        $message = $management->message(new SessionManagementMessageRequest(
+            targetSessionId: $peer->sessionId,
+            message: 'Please report your progress.',
+        ));
+    }
+});
+```
+
+`message()`の`accepted`は配信の受け入れを示し、応答やタスク完了を意味しません。子セッションの作業完了を別途確認した後、作成した子だけを閉じる場合は`close()`を使います。保存済み履歴は削除されません。
+
+```php
+$management->close(new SessionManagementCloseRequest(
+    targetSessionId: 'child-session-id',
+));
+```
+
 ### Git・環境・サンドボックス・ポリシー
 
 `git()`からブランチや作業ディレクトリ、Git remoteの情報を取得し、`gitHubRepository()`と`gitHubOwners()`からGitHubリポジトリや所有者を探索できます。`environments()`はMission Control環境、`sandbox()`と`sandboxProxyCa()`はサンドボックス対応状況やProxy CA、`contentExclusion()`は除外ポリシーの検証、`managedSettings()`と`userSettings()`は設定を扱います。設定ファイルの個別キー削除と表示用の値のマスキングは`settings()`から行えます。

@@ -434,6 +434,16 @@ class SessionRpc
     }
 
     /**
+     * Local session management RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function management(): PendingSessionManagement
+    {
+        return new PendingSessionManagement($this->client, $this->sessionId);
+    }
+
+    /**
      * MCP headers RPC operations (dynamic headers refresh).
      *
      * @experimental This API group is experimental and may change or be removed.
