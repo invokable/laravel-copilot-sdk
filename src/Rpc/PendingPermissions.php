@@ -9,6 +9,7 @@ use Revolution\Copilot\Types\Rpc\PendingPermissionRequestList;
 use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
 use Revolution\Copilot\Types\Rpc\PermissionPromptShownNotification;
 use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
+use Revolution\Copilot\Types\Rpc\PermissionsCapabilities;
 use Revolution\Copilot\Types\Rpc\PermissionsClearResumeEscalationResult;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureParams;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureResult;
@@ -214,6 +215,20 @@ class PendingPermissions
     {
         return PermissionsGetModeResult::fromArray(
             $this->client->request('session.permissions.getMode', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Get the permission modes available under the session's feature and managed permission policy.
+     *
+     * @experimental
+     */
+    public function getCapabilities(): PermissionsCapabilities
+    {
+        return PermissionsCapabilities::fromArray(
+            $this->client->request('session.permissions.getCapabilities', [
                 'sessionId' => $this->sessionId,
             ]),
         );

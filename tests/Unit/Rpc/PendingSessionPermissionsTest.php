@@ -19,6 +19,7 @@ use Revolution\Copilot\Types\Rpc\PermissionPathsUpdatePrimaryParams;
 use Revolution\Copilot\Types\Rpc\PermissionPathsWorkspaceCheckResult;
 use Revolution\Copilot\Types\Rpc\PermissionPromptShownNotification;
 use Revolution\Copilot\Types\Rpc\PermissionRequestResult;
+use Revolution\Copilot\Types\Rpc\PermissionsCapabilities;
 use Revolution\Copilot\Types\Rpc\PermissionsClearResumeEscalationResult;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureParams;
 use Revolution\Copilot\Types\Rpc\PermissionsConfigureResult;
@@ -63,6 +64,7 @@ function makePermissionsClient(array &$sentMessages): JsonRpcClient
                     'session.permissions.paths.isPathWithinAllowedDirectories', 'session.permissions.paths.isPathWithinWorkspace' => ['allowed' => true],
                     'session.permissions.setMode' => ['success' => true, 'mode' => 'allow-all'],
                     'session.permissions.getMode' => ['mode' => 'manual'],
+                    'session.permissions.getCapabilities' => ['assistedApproval' => true, 'bypassPermissions' => false],
                     default => ['success' => true],
                 };
                 $response = JsonRpcMessage::response($request['id'], $result);
@@ -229,6 +231,21 @@ describe('PendingSessionPermissions', function () {
         expect($result)->toBeInstanceOf(PermissionsGetModeResult::class)
             ->and($result->mode)->toBe(PermissionMode::Manual)
             ->and($decoded['method'])->toBe('session.permissions.getMode')
+            ->and($decoded['params']['sessionId'])->toBe('session-abc');
+    });
+
+    it('getCapabilities sends correct method and maps result', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $pending = new PendingPermissions($client, 'session-abc');
+        $result = $pending->getCapabilities();
+
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+        expect($result)->toBeInstanceOf(PermissionsCapabilities::class)
+            ->and($result->assistedApproval)->toBeTrue()
+            ->and($result->bypassPermissions)->toBeFalse()
+            ->and($decoded['method'])->toBe('session.permissions.getCapabilities')
             ->and($decoded['params']['sessionId'])->toBe('session-abc');
     });
 

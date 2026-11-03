@@ -1473,6 +1473,10 @@ $session->rpc()->permissions()->setApproveAll(new PermissionsSetApproveAllReques
 $session->rpc()->permissions()->setMode(new PermissionsSetModeRequest(mode: PermissionMode::AllowAll));
 // 現在の権限モードを取得
 $mode = $session->rpc()->permissions()->getMode();
+// 現在のポリシーで利用可能な承認モードを取得 (experimental)
+$capabilities = $session->rpc()->permissions()->getCapabilities();
+// $capabilities->assistedApproval - LLM支援の承認が有効か
+// $capabilities->bypassPermissions - 管理ポリシーが無条件承認を許可しているか
 // セッションスコープの権限承認をリセット
 $session->rpc()->permissions()->resetSessionApprovals();
 // 現在pending中の権限リクエスト一覧を取得
@@ -1688,6 +1692,10 @@ $endpoint = $session->rpc()->provider()->getEndpoint();
 // $endpoint->apiKey - 認証情報（nullable）
 // $endpoint->sessionToken - 短命のセッション認証情報（nullable）
 // $endpoint->wireApi - プロバイダー固有のワイヤーAPI（nullable）
+
+// 選択中モデルのプロバイダー構成状態を取得（資格情報の検証やプロバイダーへの通信は行わない） (experimental)
+$status = $session->rpc()->provider()->getStatus();
+// $status->hasCustomProvider - GitHub認証の代わりにカスタムプロバイダーを使っているか
 
 // 特定モデルのエンドポイントを取得
 $endpoint = $session->rpc()->provider()->getEndpoint(
