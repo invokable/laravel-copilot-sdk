@@ -8,6 +8,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\SessionManagementCloseRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementCloseResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementConfigureRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementListRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementListResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementMessageRequest;
@@ -68,6 +70,21 @@ class PendingSessionManagement
 
         return SessionManagementMessageResult::fromArray(
             $this->client->request('session.management.message', $paramsArray),
+        );
+    }
+
+    /**
+     * Asks the owning host to create and supervise a separate session.
+     */
+    public function create(SessionManagementCreateRequest|array $params): SessionManagementCreateResult
+    {
+        $paramsArray = ($params instanceof SessionManagementCreateRequest
+            ? $params
+            : SessionManagementCreateRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SessionManagementCreateResult::fromArray(
+            $this->client->request('session.management.create', $paramsArray),
         );
     }
 

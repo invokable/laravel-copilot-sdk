@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Facade;
 use Revolt\EventLoop;
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Contracts\Transport;
+use Revolution\Copilot\Enums\ContextTier;
+use Revolution\Copilot\Enums\PermissionMode;
 use Revolution\Copilot\Enums\UIAutoModeSwitchResponse;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\JsonRpc\JsonRpcMessage;
@@ -16,6 +18,8 @@ use Revolution\Copilot\Types\AutoModeSwitchRequest;
 use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\ExitPlanModeResult;
 use Revolution\Copilot\Types\ResumeSessionConfig;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateResult;
 use Revolution\Copilot\Types\SessionConfig;
 
 beforeEach(function () {
@@ -132,6 +136,108 @@ describe('Client reverse requests', function () {
             ->and($transport->responseFor('exit-unknown')['error']['message'])
             ->toBe('Session not found: missing-session');
     });
+
+    it('returns the result from a registered session creation handler', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $callbackRequest = null;
+        $session = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+        ));
+        $request = [
+            'sessionId' => $session->id(),
+            'parentSessionId' => $session->id(),
+            'newSessionId' => 'session-child',
+            'cwd' => '/workspace',
+            'configDir' => '/config',
+            'permissionMode' => 'manual',
+            'contextTier' => 'long_context',
+        ];
+        $policy = $session->setSessionCreationHandler(
+            function (SessionManagementCreateHostRequest $request) use (&$callbackRequest): SessionManagementCreateResult {
+                $callbackRequest = $request;
+
+                return new SessionManagementCreateResult(sessionId: $request->newSessionId);
+            },
+        );
+
+        $transport->injectRequest('create-child', 'sessionManagement.create', $request);
+
+        $configureRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.management.configure',
+        ))[0];
+
+        expect($policy->create)->toBeTrue()
+            ->and($configureRequest['params'])->toBe([
+                'hasCreateHandler' => true,
+                'sessionId' => $session->id(),
+            ])
+            ->and($callbackRequest)->toBeInstanceOf(SessionManagementCreateHostRequest::class)
+            ->and($callbackRequest->permissionMode)->toBe(PermissionMode::Manual)
+            ->and($callbackRequest->contextTier)->toBe(ContextTier::LONG_CONTEXT)
+            ->and($transport->responseFor('create-child')['result'])->toBe(['sessionId' => 'session-child']);
+    });
+
+    it('rejects session creation requests without a handler or from a different parent', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $session = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+        ));
+        $request = [
+            'sessionId' => $session->id(),
+            'parentSessionId' => $session->id(),
+            'newSessionId' => 'session-child',
+            'cwd' => '/workspace',
+            'configDir' => '/config',
+            'permissionMode' => 'manual',
+        ];
+
+        $transport->injectRequest('create-no-handler', 'sessionManagement.create', [
+            ...$request,
+        ]);
+
+        $callbackCalls = 0;
+        $session->setSessionCreationHandler(
+            function (SessionManagementCreateHostRequest $request) use (&$callbackCalls): SessionManagementCreateResult {
+                $callbackCalls++;
+
+                return new SessionManagementCreateResult(sessionId: $request->newSessionId);
+            },
+        );
+        $transport->injectRequest('create-wrong-parent', 'sessionManagement.create', [
+            ...$request,
+            'parentSessionId' => 'different-parent',
+        ]);
+
+        expect($transport->responseFor('create-no-handler')['error']['message'])
+            ->toBe('Session creation handler is unavailable')
+            ->and($transport->responseFor('create-wrong-parent')['error']['message'])
+            ->toBe('Session creation handler is unavailable')
+            ->and($callbackCalls)->toBe(0);
+    });
+
+    it('does not expose session creation callback exception details', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $session = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+        ));
+        $session->setSessionCreationHandler(function (): never {
+            throw new RuntimeException('Sensitive host detail');
+        });
+
+        $transport->injectRequest('create-failed', 'sessionManagement.create', [
+            'sessionId' => $session->id(),
+            'parentSessionId' => $session->id(),
+            'newSessionId' => 'session-child',
+            'cwd' => '/workspace',
+            'configDir' => '/config',
+            'permissionMode' => 'manual',
+        ]);
+
+        expect($transport->responseFor('create-failed')['error']['message'])
+            ->toBe('Session creation callback failed')
+            ->not->toContain('Sensitive host detail');
+    });
 });
 
 /**
@@ -171,6 +277,14 @@ function createReverseRpcTestClient(): array
                 'connect' => ['protocolVersion' => Protocol::version()],
                 'session.create' => ['sessionId' => 'created-session'],
                 'session.resume' => ['sessionId' => $request['params']['sessionId']],
+                'session.management.configure' => [
+                    'enabled' => true,
+                    'scope' => 'all',
+                    'list' => true,
+                    'create' => true,
+                    'message' => false,
+                    'close' => false,
+                ],
                 default => [],
             };
 

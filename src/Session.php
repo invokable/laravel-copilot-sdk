@@ -17,6 +17,7 @@ use Revolution\Copilot\Concerns\Session\HasExitPlanModeHandler;
 use Revolution\Copilot\Concerns\Session\HasHooks;
 use Revolution\Copilot\Concerns\Session\HasMcpAuthHandler;
 use Revolution\Copilot\Concerns\Session\HasPermissionHandler;
+use Revolution\Copilot\Concerns\Session\HasSessionCreationHandler;
 use Revolution\Copilot\Concerns\Session\HasSessionFs;
 use Revolution\Copilot\Concerns\Session\HasSkillProvider;
 use Revolution\Copilot\Concerns\Session\HasToolHandlers;
@@ -54,6 +55,10 @@ use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\OpenCanvasInstance;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
+use Revolution\Copilot\Types\Rpc\SessionManagementConfigureRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateResult;
+use Revolution\Copilot\Types\Rpc\SessionManagementPolicy;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
 use Revolution\Copilot\Types\Tool;
@@ -73,6 +78,7 @@ class Session implements CopilotSession
     use HasHooks;
     use HasMcpAuthHandler;
     use HasPermissionHandler;
+    use HasSessionCreationHandler;
     use HasSessionFs;
     use HasSkillProvider;
     use HasToolHandlers;
@@ -345,6 +351,29 @@ class Session implements CopilotSession
     public function rpc(): SessionRpc
     {
         return new SessionRpc($this->client, $this->sessionId);
+    }
+
+    /**
+     * Register the host callback for session-management create requests.
+     *
+     * @param  Closure(SessionManagementCreateHostRequest): SessionManagementCreateResult|array  $handler
+     */
+    public function setSessionCreationHandler(?Closure $handler): SessionManagementPolicy
+    {
+        $previousHandler = $this->sessionCreationHandler;
+        $this->registerSessionCreationHandler($handler);
+
+        try {
+            return $this->rpc()->management()->configure(
+                new SessionManagementConfigureRequest(hasCreateHandler: $handler !== null),
+            );
+        } catch (Throwable $exception) {
+            if ($this->sessionCreationHandler === $handler) {
+                $this->registerSessionCreationHandler($previousHandler);
+            }
+
+            throw $exception;
+        }
     }
 
     /**
@@ -1043,6 +1072,7 @@ class Session implements CopilotSession
         $this->hooks = null;
         $this->skillProvider = null;
         $this->sessionFsProvider = null;
+        $this->sessionCreationHandler = null;
         $this->canvasHandler = null;
         $this->canvasDeclarations = [];
         $this->openCanvases = [];

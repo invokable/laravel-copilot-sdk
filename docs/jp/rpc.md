@@ -45,7 +45,9 @@ Copilot::client()->rpc()->secrets()->addFilterValues([
 
 ### ローカルセッション管理（experimental）
 
-同じ設定ディレクトリで管理をオプトインしたローカルセッションを、`$session->rpc()->management()`から設定・一覧・メッセージ送信・クローズできます。管理対象セッションの作成やホストコールバックはこのRPCグループには含まれません。
+同じ設定ディレクトリで管理をオプトインしたローカルセッションを、`$session->rpc()->management()`から設定・一覧・作成・メッセージ送信・クローズできます。`setSessionCreationHandler()`でホストコールバックを登録すると、`create()`からのreverse-RPCを受け取れます。コールバックは`newSessionId`と権限・モデル制限を保って子セッションを作成し、`SessionManagementCreateResult`を返す必要があります。
+
+以下の例では、`$sessionCreationHandler`は`SessionManagementCreateHostRequest`を受け取り、ホスト側で子セッションを作成して`SessionManagementCreateResult`を返すクロージャです。
 
 ```php
 use Revolution\Copilot\Contracts\CopilotSession;
@@ -53,11 +55,13 @@ use Revolution\Copilot\Enums\SessionManagementScope;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\Rpc\SessionManagementCloseRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementConfigureRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementListRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementMessageRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementToolOverrides;
 
-Copilot::start(function (CopilotSession $session): void {
+Copilot::start(function (CopilotSession $session) use ($sessionCreationHandler): void {
+    $session->setSessionCreationHandler($sessionCreationHandler);
     $management = $session->rpc()->management();
 
     $policy = $management->configure(new SessionManagementConfigureRequest(
@@ -65,7 +69,7 @@ Copilot::start(function (CopilotSession $session): void {
         enabled: true,
         scope: SessionManagementScope::All,
         tools: new SessionManagementToolOverrides(
-            create: false,
+            create: true,
             list: true,
             message: true,
             close: true,
@@ -74,6 +78,10 @@ Copilot::start(function (CopilotSession $session): void {
 
     $peers = $management->list(new SessionManagementListRequest());
     $peer = $peers->sessions[0] ?? null;
+
+    $child = $management->create(new SessionManagementCreateRequest(
+        prompt: 'Review the current implementation.',
+    ));
 
     if ($peer !== null) {
         $message = $management->message(new SessionManagementMessageRequest(

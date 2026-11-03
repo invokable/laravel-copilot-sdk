@@ -366,6 +366,11 @@ class Client implements CopilotClient
             );
 
             $this->rpcClient->setRequestHandler(
+                'sessionManagement.create',
+                fn (array $params) => $this->handleSessionManagementCreate($params),
+            );
+
+            $this->rpcClient->setRequestHandler(
                 'autoModeSwitch.request',
                 fn (array $params) => $this->handleAutoModeSwitchRequest($params),
             );
