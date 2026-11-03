@@ -1057,7 +1057,7 @@ if ($state !== null) {
 }
 ```
 
-`setStayInAutopilot()`でobjectiveの完了・一時停止時にinteractive modeへ戻る要求を抑制できます。この設定はクライアントのメモリ内に保持され、既定値は`false`です。接続し直した場合は再設定してください。
+`setStayInAutopilot()`でobjectiveの完了・一時停止時にinteractive modeへ戻る要求を抑制できます。この設定はクライアントのメモリ内に保持され、既定値は`true`です。`value`に`false`を渡すと抑制を解除できます。接続し直した場合は再設定してください。
 
 ```php
 $session->rpc()->autopilotObjective()->setStayInAutopilot(['value' => true]);
