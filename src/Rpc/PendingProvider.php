@@ -9,6 +9,7 @@ use Revolution\Copilot\Types\Rpc\ProviderAddRequest;
 use Revolution\Copilot\Types\Rpc\ProviderAddResult;
 use Revolution\Copilot\Types\Rpc\ProviderEndpoint;
 use Revolution\Copilot\Types\Rpc\ProviderGetEndpointRequest;
+use Revolution\Copilot\Types\Rpc\ProviderStatus;
 use Revolution\Copilot\Types\Rpc\ProviderWithdrawRequest;
 use Revolution\Copilot\Types\Rpc\ProviderWithdrawResult;
 
@@ -71,6 +72,20 @@ class PendingProvider
         $params['sessionId'] = $this->sessionId;
 
         return $this->client->request('session.provider.sync', $params);
+    }
+
+    /**
+     * Returns credential-free provider configuration status for the selected model. This does not validate provider credentials or contact the provider.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function getStatus(): ProviderStatus
+    {
+        return ProviderStatus::fromArray(
+            $this->client->request('session.provider.getStatus', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
     }
 
     /**

@@ -20,6 +20,7 @@ use Revolution\Copilot\Types\Rpc\ModelProviderDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\ModelProviderInstanceReference;
 use Revolution\Copilot\Types\Rpc\ProviderEndpoint;
 use Revolution\Copilot\Types\Rpc\ProviderGetEndpointRequest;
+use Revolution\Copilot\Types\Rpc\ProviderStatus;
 use Revolution\Copilot\Types\Rpc\ServerAgentList;
 use Revolution\Copilot\Types\Rpc\ServerInstructionSourceList;
 
@@ -165,6 +166,19 @@ describe('PendingServerInstructions', function () {
 });
 
 describe('PendingProvider', function () {
+    it('calls session.provider.getStatus and returns ProviderStatus', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.provider.getStatus', ['sessionId' => 'session-xyz'])
+            ->andReturn(['hasCustomProvider' => true]);
+
+        $result = (new PendingProvider($client, 'session-xyz'))->getStatus();
+
+        expect($result)->toBeInstanceOf(ProviderStatus::class)
+            ->and($result->hasCustomProvider)->toBeTrue();
+    });
+
     it('calls session.provider.getEndpoint and returns ProviderEndpoint', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
