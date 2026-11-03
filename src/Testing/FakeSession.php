@@ -13,12 +13,14 @@ use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ModelSwitchAutoTierStatus;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
+use Revolution\Copilot\Enums\SessionManagementScope;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
+use Revolution\Copilot\Types\Rpc\SessionManagementPolicy;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
@@ -80,6 +82,18 @@ class FakeSession implements CopilotSession
     public function setTools(array $tools): void
     {
         // No-op in fake
+    }
+
+    public function setSessionCreationHandler(?Closure $handler): SessionManagementPolicy
+    {
+        return new SessionManagementPolicy(
+            enabled: false,
+            scope: SessionManagementScope::All,
+            list: false,
+            create: false,
+            message: false,
+            close: false,
+        );
     }
 
     public function elicitation(string $message, array $requestedSchema): UIElicitationResponse

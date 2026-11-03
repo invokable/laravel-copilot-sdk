@@ -9,6 +9,8 @@ use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\ManagedSessionInfo;
 use Revolution\Copilot\Types\Rpc\SessionManagementCloseResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementConfigureRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementListResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementMessageRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementMessageResult;
@@ -100,6 +102,28 @@ describe('PendingSessionManagement', function () {
         expect($result)->toBeInstanceOf(SessionManagementMessageResult::class)
             ->and($result->accepted)->toBeTrue()
             ->and($result->targetSessionName)->toBe('worker');
+    });
+
+    it('asks the host to create a session and returns its identifier', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.management.create', [
+                'prompt' => 'Review the implementation.',
+                'cwd' => '/workspace',
+                'sessionId' => 'session-parent',
+            ])
+            ->andReturn(['sessionId' => 'session-child']);
+
+        $result = (new SessionRpc($client, 'session-parent'))->management()->create(
+            new SessionManagementCreateRequest(
+                prompt: 'Review the implementation.',
+                cwd: '/workspace',
+            ),
+        );
+
+        expect($result)->toBeInstanceOf(SessionManagementCreateResult::class)
+            ->and($result->sessionId)->toBe('session-child');
     });
 
     it('closes a target session and returns the close status', function () {

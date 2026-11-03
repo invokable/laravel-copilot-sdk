@@ -16,6 +16,9 @@ use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\OpenCanvasInstance;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateResult;
+use Revolution\Copilot\Types\Rpc\SessionManagementPolicy;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
@@ -36,6 +39,13 @@ interface CopilotSession
      * Typed session-scoped RPC methods.
      */
     public function rpc(): SessionRpc;
+
+    /**
+     * Register the host callback for session-management create requests.
+     *
+     * @param  Closure(SessionManagementCreateHostRequest): SessionManagementCreateResult|array  $handler
+     */
+    public function setSessionCreationHandler(?Closure $handler): SessionManagementPolicy;
 
     /**
      * Get the host capabilities for this session.

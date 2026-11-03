@@ -2,11 +2,16 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\ContextTier;
+use Revolution\Copilot\Enums\PermissionMode;
 use Revolution\Copilot\Enums\SessionManagementScope;
 use Revolution\Copilot\Types\Rpc\ManagedSessionInfo;
 use Revolution\Copilot\Types\Rpc\SessionManagementCloseRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementCloseResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementConfigureRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateRequest;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementListRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementListResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementMessageRequest;
@@ -107,5 +112,40 @@ describe('session management RPC types', function () {
             ->and(SessionManagementMessageResult::fromArray($messageResultData)->toArray())->toBe($messageResultData)
             ->and(SessionManagementCloseRequest::fromArray($closeRequestData)->toArray())->toBe($closeRequestData)
             ->and(SessionManagementCloseResult::fromArray($closeResultData)->toArray())->toBe($closeResultData);
+    });
+
+    it('round trips create requests, host callback requests, and results', function () {
+        $createRequestData = [
+            'prompt' => 'Review the implementation.',
+            'name' => 'reviewer',
+            'cwd' => '/workspace',
+            'model' => 'gpt-5',
+            'reasoningEffort' => 'high',
+            'contextTier' => 'long_context',
+        ];
+        $hostRequestData = [
+            'sessionId' => 'session-parent',
+            'parentSessionId' => 'session-parent',
+            'newSessionId' => 'session-child',
+            'cwd' => '/workspace',
+            'configDir' => '/config',
+            'permissionMode' => 'manual',
+            'model' => 'gpt-5',
+            'providerId' => 'provider-1',
+            'reasoningEffort' => 'high',
+            'contextTier' => 'long_context',
+            'allowedModels' => ['gpt-5'],
+            'name' => 'reviewer',
+        ];
+        $resultData = ['sessionId' => 'session-child'];
+        $createRequest = SessionManagementCreateRequest::fromArray($createRequestData);
+        $hostRequest = SessionManagementCreateHostRequest::fromArray($hostRequestData);
+
+        expect($createRequest->contextTier)->toBe(ContextTier::LONG_CONTEXT)
+            ->and($createRequest->toArray())->toBe($createRequestData)
+            ->and($hostRequest->permissionMode)->toBe(PermissionMode::Manual)
+            ->and($hostRequest->contextTier)->toBe(ContextTier::LONG_CONTEXT)
+            ->and($hostRequest->toArray())->toBe($hostRequestData)
+            ->and(SessionManagementCreateResult::fromArray($resultData)->toArray())->toBe($resultData);
     });
 });

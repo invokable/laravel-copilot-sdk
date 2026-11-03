@@ -9,6 +9,7 @@ use Revolution\Copilot\Types\AutoModeSwitchRequest;
 use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
+use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
 use Revolution\Copilot\Types\ToolResultObject;
 use Revolution\Copilot\Types\UserInputRequest;
 use RuntimeException;
@@ -253,5 +254,20 @@ trait HandlesServerRequests
         }
 
         return [];
+    }
+
+    /**
+     * Handle host callback requests to create a managed session.
+     */
+    protected function handleSessionManagementCreate(array $params): array
+    {
+        $request = SessionManagementCreateHostRequest::fromArray($params);
+        $session = $this->sessions[$request->sessionId] ?? null;
+
+        if ($session === null) {
+            throw new RuntimeException('Session creation owner is unavailable');
+        }
+
+        return $session->handleSessionManagementCreate($request)->toArray();
     }
 }
