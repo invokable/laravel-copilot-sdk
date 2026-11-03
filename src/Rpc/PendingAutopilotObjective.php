@@ -6,6 +6,7 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\AutopilotObjectiveGetStateResult;
+use Revolution\Copilot\Types\Rpc\AutopilotObjectiveSetStayInAutopilotRequest;
 
 /**
  * Pending Autopilot objective RPC operations for a session.
@@ -29,5 +30,18 @@ class PendingAutopilotObjective
                 'sessionId' => $this->sessionId,
             ]),
         );
+    }
+
+    /**
+     * Prevent a request to return to interactive mode when the objective completes or pauses.
+     */
+    public function setStayInAutopilot(AutopilotObjectiveSetStayInAutopilotRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof AutopilotObjectiveSetStayInAutopilotRequest
+            ? $params
+            : AutopilotObjectiveSetStayInAutopilotRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.autopilotObjective.setStayInAutopilot', $paramsArray);
     }
 }
