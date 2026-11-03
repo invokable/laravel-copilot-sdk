@@ -8,6 +8,7 @@ use Revolution\Copilot\Rpc\PendingAutopilotObjective;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\AutopilotObjectiveCreditLimit;
 use Revolution\Copilot\Types\Rpc\AutopilotObjectiveGetStateResult;
+use Revolution\Copilot\Types\Rpc\AutopilotObjectiveSetStayInAutopilotRequest;
 use Revolution\Copilot\Types\Rpc\AutopilotObjectiveState;
 
 describe('PendingAutopilotObjective', function () {
@@ -56,5 +57,35 @@ describe('PendingAutopilotObjective', function () {
 
         expect($result->state)->toBeNull()
             ->and($result->toArray())->toBe(['state' => null]);
+    });
+
+    it('sets the stay-in-autopilot preference with the session id', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.autopilotObjective.setStayInAutopilot', [
+                'value' => true,
+                'sessionId' => 'session-1',
+            ]);
+
+        $result = (new PendingAutopilotObjective($client, 'session-1'))
+            ->setStayInAutopilot(new AutopilotObjectiveSetStayInAutopilotRequest(value: true));
+
+        expect($result)->toBeNull();
+    });
+
+    it('accepts array params and preserves a false preference', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.autopilotObjective.setStayInAutopilot', [
+                'value' => false,
+                'sessionId' => 'session-1',
+            ]);
+
+        $result = (new PendingAutopilotObjective($client, 'session-1'))
+            ->setStayInAutopilot(['value' => false]);
+
+        expect($result)->toBeNull();
     });
 });

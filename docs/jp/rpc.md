@@ -1057,6 +1057,12 @@ if ($state !== null) {
 }
 ```
 
+`setStayInAutopilot()`でobjectiveの完了・一時停止時にinteractive modeへ戻る要求を抑制できます。この設定はクライアントのメモリ内に保持され、既定値は`false`です。接続し直した場合は再設定してください。
+
+```php
+$session->rpc()->autopilotObjective()->setStayInAutopilot(['value' => true]);
+```
+
 ### エージェント・Fleet・バックグラウンドタスク
 
 `agent()`でエージェントの一覧・選択・再読み込み、`fleet()`でFleetを開始します。`tasks()`ではバックグラウンドエージェントやクライアント所有タスクの登録、進捗取得・更新、移行、メッセージ送信、キャンセル、削除を扱います。
