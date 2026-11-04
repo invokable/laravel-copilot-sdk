@@ -327,6 +327,16 @@ class ServerRpc
     }
 
     /**
+     * Cloud coding-agent task RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function cloudTasks(): PendingServerCloudTasks
+    {
+        return new PendingServerCloudTasks($this->client);
+    }
+
+    /**
      * Host session catalog RPC operations.
      *
      * @experimental

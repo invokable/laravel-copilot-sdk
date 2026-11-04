@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Revolution\Copilot\Types\Rpc;
+
+use Illuminate\Contracts\Support\Arrayable;
+
+/**
+ * Parameters for starting a cloud coding-agent task.
+ *
+ * @experimental
+ */
+readonly class CloudTasksCreateParams implements Arrayable
+{
+    public function __construct(
+        public mixed $authInfo,
+        public string $integrationId,
+        public ?string $baseUrl = null,
+        public ?string $authContextId = null,
+        public ?string $repositoryOwner = null,
+        public ?string $repositoryName = null,
+        public ?string $owner = null,
+    ) {}
+
+    public static function fromArray(array $data): static
+    {
+        return new static(
+            baseUrl: $data['baseUrl'] ?? null,
+            authInfo: $data['authInfo'],
+            authContextId: $data['authContextId'] ?? null,
+            integrationId: $data['integrationId'],
+            repositoryOwner: $data['repositoryOwner'] ?? null,
+            repositoryName: $data['repositoryName'] ?? null,
+            owner: $data['owner'] ?? null,
+        );
+    }
+
+    public function toArray(): array
+    {
+        return array_filter([
+            'baseUrl' => $this->baseUrl,
+            'authInfo' => $this->authInfo,
+            'authContextId' => $this->authContextId,
+            'integrationId' => $this->integrationId,
+            'repositoryOwner' => $this->repositoryOwner,
+            'repositoryName' => $this->repositoryName,
+            'owner' => $this->owner,
+        ], fn ($value, $key): bool => $key === 'authInfo' || $value !== null, ARRAY_FILTER_USE_BOTH);
+    }
+}

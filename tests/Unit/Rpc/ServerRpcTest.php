@@ -7,6 +7,7 @@ use Revolution\Copilot\Rpc\PendingServerAccount;
 use Revolution\Copilot\Rpc\PendingServerAgentRegistry;
 use Revolution\Copilot\Rpc\PendingServerAzureMl;
 use Revolution\Copilot\Rpc\PendingServerCatalog;
+use Revolution\Copilot\Rpc\PendingServerCloudTasks;
 use Revolution\Copilot\Rpc\PendingServerCommands;
 use Revolution\Copilot\Rpc\PendingServerConnectors;
 use Revolution\Copilot\Rpc\PendingServerGit;
@@ -86,6 +87,12 @@ describe('ServerRpc', function () {
         $rpc = new ServerRpc(createMockRpcClient());
 
         expect($rpc->catalog())->toBeInstanceOf(PendingServerCatalog::class);
+    });
+
+    it('returns PendingServerCloudTasks from cloudTasks()', function () {
+        $rpc = new ServerRpc(createMockRpcClient());
+
+        expect($rpc->cloudTasks())->toBeInstanceOf(PendingServerCloudTasks::class);
     });
 
     it('registers the extension launch provider', function () {
