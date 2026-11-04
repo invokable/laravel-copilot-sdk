@@ -43,6 +43,29 @@ Copilot::client()->rpc()->secrets()->addFilterValues([
 
 `sessions()`は永続化済みセッションの検索、イベント読み取り、サイズ確認、削除・整理、forkを扱います。Workspaceの作成・読み込みやリモート制御も利用できます。`host()`はホストの起動、セッション公開・一覧・公開解除、認証、受付ポリシー変更、破棄を行います。AHPホストの高レベルAPIは[AHPホスト](./ahp.md)を参照してください。`runtime()`はランタイムのライフサイクルを扱います。
 
+### クラウドエージェントタスク（experimental）
+
+`cloudTasks()`はクラウドコーディングエージェントのタスク作成・削除・取得、セッションログやリプレイの取得、共有状態の変更、タスクIDから開くセッションの解決を行います。各メソッドは対応するParams型または配列を受け取り、結果を型付きDTOで返します。作成結果の`ok`が`false`の場合、サービスによる拒否理由は`reason`と`message`、実行されたHTTPリクエストの失敗情報は`statusCode`、`errorMessage`、`errorPayloadJson`で確認できます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\CloudTasksCreateParams;
+
+$result = Copilot::client()->rpc()->cloudTasks()->create(
+    new CloudTasksCreateParams(
+        authInfo: $authInfo,
+        integrationId: 'my-app',
+        repositoryOwner: 'octo',
+        repositoryName: 'example',
+    ),
+);
+
+if (! $result->ok) {
+    // $result->reason and $result->message describe a declined request.
+    // $result->statusCode and $result->errorMessage describe an attempted HTTP request.
+}
+```
+
 ### Git・環境・サンドボックス・ポリシー
 
 `git()`からブランチや作業ディレクトリ、Git remoteの情報を取得し、`gitHubRepository()`と`gitHubOwners()`からGitHubリポジトリや所有者を探索できます。`environments()`はMission Control環境、`sandbox()`と`sandboxProxyCa()`はサンドボックス対応状況やProxy CA、`contentExclusion()`は除外ポリシーの検証、`managedSettings()`と`userSettings()`は設定を扱います。設定ファイルの個別キー削除と表示用の値のマスキングは`settings()`から行えます。
