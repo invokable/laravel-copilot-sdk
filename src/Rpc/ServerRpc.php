@@ -240,6 +240,26 @@ class ServerRpc
     }
 
     /**
+     * Experimental authenticated GitHub API request operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function gitHubFetch(): PendingServerGitHubFetch
+    {
+        return new PendingServerGitHubFetch($this->client);
+    }
+
+    /**
+     * Experimental GitHub release lookup and asset download operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function gitHubRelease(): PendingServerGitHubRelease
+    {
+        return new PendingServerGitHubRelease($this->client);
+    }
+
+    /**
      * Cancellable GitHub organization-owner discovery operations.
      */
     public function gitHubOwners(): PendingServerGitHubOwners

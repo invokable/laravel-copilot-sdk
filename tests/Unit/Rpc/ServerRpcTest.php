@@ -11,7 +11,9 @@ use Revolution\Copilot\Rpc\PendingServerCloudTasks;
 use Revolution\Copilot\Rpc\PendingServerCommands;
 use Revolution\Copilot\Rpc\PendingServerConnectors;
 use Revolution\Copilot\Rpc\PendingServerGit;
+use Revolution\Copilot\Rpc\PendingServerGitHubFetch;
 use Revolution\Copilot\Rpc\PendingServerGitHubOwners;
+use Revolution\Copilot\Rpc\PendingServerGitHubRelease;
 use Revolution\Copilot\Rpc\PendingServerGitHubRepository;
 use Revolution\Copilot\Rpc\PendingServerHooks;
 use Revolution\Copilot\Rpc\PendingServerKerberosAuth;
@@ -114,6 +116,8 @@ describe('ServerRpc', function () {
         expect($rpc->connectors())->toBeInstanceOf(PendingServerConnectors::class)
             ->and($rpc->git())->toBeInstanceOf(PendingServerGit::class)
             ->and($rpc->gitHubRepository())->toBeInstanceOf(PendingServerGitHubRepository::class)
+            ->and($rpc->gitHubFetch())->toBeInstanceOf(PendingServerGitHubFetch::class)
+            ->and($rpc->gitHubRelease())->toBeInstanceOf(PendingServerGitHubRelease::class)
             ->and($rpc->gitHubOwners())->toBeInstanceOf(PendingServerGitHubOwners::class)
             ->and($rpc->commands())->toBeInstanceOf(PendingServerCommands::class)
             ->and($rpc->hooks())->toBeInstanceOf(PendingServerHooks::class)
