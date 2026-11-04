@@ -70,6 +70,30 @@ if (! $result->ok) {
 
 `git()`からブランチや作業ディレクトリ、Git remoteの情報を取得し、`gitHubRepository()`と`gitHubOwners()`からGitHubリポジトリや所有者を探索できます。`environments()`はMission Control環境、`sandbox()`と`sandboxProxyCa()`はサンドボックス対応状況やProxy CA、`contentExclusion()`は除外ポリシーの検証、`managedSettings()`と`userSettings()`は設定を扱います。設定ファイルの個別キー削除と表示用の値のマスキングは`settings()`から行えます。
 
+`gitHubRepository()->getById()`はGitHubリポジトリIDからowner/nameを解決し、`lookupBranchPullRequest()`は指定したhead ownerとブランチを、優先順に指定したリポジトリで検索します。どちらも`authInfo`をそのまま渡します。`getById()`の結果は`repository`にowner/nameを含み、見つからない場合は`null`です。Pull Request検索の`status`は`found`、`no-token`、`no-pr`、`lookup-failed`のいずれかで、未知の値は文字列のまま保持されるため例外になりません。`pullRequest`は見つかった場合の連想配列で、それ以外は`null`です。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+$repository = Copilot::client()->rpc()->gitHubRepository();
+
+$resolved = $repository->getById([
+    'authInfo' => $authInfo,
+    'repositoryId' => 12345,
+]);
+
+$lookup = $repository->lookupBranchPullRequest([
+    'authInfo' => $authInfo,
+    'headOwner' => 'octo',
+    'baseRepositories' => [
+        ['owner' => 'octo', 'name' => 'demo'],
+        ['owner' => 'upstream', 'name' => 'demo'],
+    ],
+    'branch' => 'feature',
+    'includeClosed' => false,
+]);
+```
+
 `gitHubFetch()`は認証付きGitHub APIリクエストと名前付き操作を、`gitHubRelease()`はリリースの検索・スナップショット・資産ダウンロードと進捗確認を提供します。Fetchでは`sessionId`でセッションの認証を選び、省略時はプロセスの認証が使われます。ホストが管理する認証バインディングを使う場合は`authOwnerId`を指定します。Releaseの`authInfo`はランタイムが管理する認証情報の選択子で、公開リリースの検索・ダウンロードは匿名でも実行できます。ダウンロード結果の`path`は利用後に呼び出し側で削除してください。
 
 Fetchの`allocateRequestId()`、`request()`、`executeOperation()`と、Releaseの`abandonRequest()`、`getSnapshot()`、`downloadAsset()`はExtensionsから呼び出せません。現在のLaravel SDKは両グループの`cancel` RPCを公開していないため、実行中の操作をSDKからキャンセルできません。`abandonRequest()`は未使用のRelease request IDを破棄する操作であり、実行中の操作を停止するものではありません。

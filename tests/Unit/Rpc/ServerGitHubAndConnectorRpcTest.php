@@ -93,4 +93,54 @@ describe('Server Git, GitHub, connector, and sandbox RPC operations', function (
             ->and($trusted->state)->toBe('trusted')
             ->and($removed->state)->toBe('absent');
     });
+
+    it('routes repository id and branch pull request lookups through typed responses', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('gitHubRepository.getById', [
+                'authInfo' => ['type' => 'gh-cli'],
+                'authContextId' => 'account-1',
+                'repositoryId' => 123,
+            ])
+            ->andReturn(['repository' => ['owner' => 'octo', 'name' => 'demo']]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('gitHubRepository.lookupBranchPullRequest', [
+                'authInfo' => ['type' => 'gh-cli'],
+                'headOwner' => 'octo',
+                'baseRepositories' => [
+                    ['owner' => 'octo', 'name' => 'demo'],
+                    ['owner' => 'upstream', 'name' => 'demo'],
+                ],
+                'branch' => 'feature',
+                'includeClosed' => false,
+            ])
+            ->andReturn([
+                'status' => 'found',
+                'pullRequest' => ['number' => 42, 'title' => 'Add feature'],
+            ]);
+
+        $repository = new PendingServerGitHubRepository($client);
+        $resolved = $repository->getById([
+            'authInfo' => ['type' => 'gh-cli'],
+            'authContextId' => 'account-1',
+            'repositoryId' => 123,
+        ]);
+        $pullRequest = $repository->lookupBranchPullRequest([
+            'authInfo' => ['type' => 'gh-cli'],
+            'headOwner' => 'octo',
+            'baseRepositories' => [
+                ['owner' => 'octo', 'name' => 'demo'],
+                ['owner' => 'upstream', 'name' => 'demo'],
+            ],
+            'branch' => 'feature',
+            'includeClosed' => false,
+        ]);
+
+        expect($resolved->repository?->owner)->toBe('octo')
+            ->and($resolved->repository?->name)->toBe('demo')
+            ->and($pullRequest->status->value)->toBe('found')
+            ->and($pullRequest->pullRequest['number'])->toBe(42);
+    });
 });
