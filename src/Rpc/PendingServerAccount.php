@@ -7,12 +7,16 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\AccountAllUsers;
 use Revolution\Copilot\Types\Rpc\AccountGetCurrentAuthResult;
+use Revolution\Copilot\Types\Rpc\AccountGetHostUrlRequest;
+use Revolution\Copilot\Types\Rpc\AccountGetHostUrlResult;
 use Revolution\Copilot\Types\Rpc\AccountGetQuotaRequest;
 use Revolution\Copilot\Types\Rpc\AccountGetQuotaResult;
 use Revolution\Copilot\Types\Rpc\AccountLoginRequest;
 use Revolution\Copilot\Types\Rpc\AccountLoginResult;
 use Revolution\Copilot\Types\Rpc\AccountLogoutRequest;
 use Revolution\Copilot\Types\Rpc\AccountLogoutResult;
+use Revolution\Copilot\Types\Rpc\AccountSubscribeCopilotFreeRequest;
+use Revolution\Copilot\Types\Rpc\AccountSubscribeCopilotFreeResult;
 
 /**
  * Pending account RPC operations.
@@ -37,6 +41,38 @@ class PendingServerAccount
 
         return AccountGetQuotaResult::fromArray(
             $this->client->request('account.getQuota', $paramsArray),
+        );
+    }
+
+    /**
+     * Resolve the absolute URL of the configured GitHub host.
+     *
+     * @param  AccountGetHostUrlRequest|array|null  $params  Configured host names.
+     */
+    public function getHostUrl(AccountGetHostUrlRequest|array|null $params = null): AccountGetHostUrlResult
+    {
+        $paramsArray = $params === null
+            ? []
+            : ($params instanceof AccountGetHostUrlRequest ? $params : AccountGetHostUrlRequest::fromArray($params))->toArray();
+
+        return AccountGetHostUrlResult::fromArray(
+            $this->client->request('account.getHostUrl', $paramsArray),
+        );
+    }
+
+    /**
+     * Enroll an authenticated identity in Copilot Free.
+     *
+     * @param  AccountSubscribeCopilotFreeRequest|array  $params  Credential-free identity to enroll.
+     */
+    public function subscribeCopilotFree(AccountSubscribeCopilotFreeRequest|array $params): AccountSubscribeCopilotFreeResult
+    {
+        $paramsArray = ($params instanceof AccountSubscribeCopilotFreeRequest
+            ? $params
+            : AccountSubscribeCopilotFreeRequest::fromArray($params))->toArray();
+
+        return AccountSubscribeCopilotFreeResult::fromArray(
+            $this->client->request('account.subscribeCopilotFree', $paramsArray),
         );
     }
 

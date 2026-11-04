@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerAccount;
+use Revolution\Copilot\Types\Rpc\AccountGetHostUrlRequest;
+use Revolution\Copilot\Types\Rpc\AccountGetHostUrlResult;
 use Revolution\Copilot\Types\Rpc\AccountGetQuotaRequest;
 use Revolution\Copilot\Types\Rpc\AccountGetQuotaResult;
+use Revolution\Copilot\Types\Rpc\AccountSubscribeCopilotFreeResult;
 use Revolution\Copilot\Types\Rpc\QuotaSnapshot;
 
 describe('PendingServerAccount', function () {
@@ -76,5 +79,57 @@ describe('PendingServerAccount', function () {
         $result = $pending->getQuota(['gitHubToken' => 'ghs_xyz']);
 
         expect($result)->toBeInstanceOf(AccountGetQuotaResult::class);
+    });
+
+    it('calls account.getHostUrl and returns the resolved URL', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('account.getHostUrl', [
+                'copilotGhHost' => 'github.example.com',
+                'ghHost' => 'github.com',
+            ])
+            ->andReturn(['url' => 'https://github.example.com']);
+
+        $pending = new PendingServerAccount($client);
+        $result = $pending->getHostUrl(new AccountGetHostUrlRequest(
+            copilotGhHost: 'github.example.com',
+            ghHost: 'github.com',
+        ));
+
+        expect($result)->toBeInstanceOf(AccountGetHostUrlResult::class)
+            ->and($result->url)->toBe('https://github.example.com');
+    });
+
+    it('calls account.subscribeCopilotFree and returns the enrollment outcome', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('account.subscribeCopilotFree', [
+                'identity' => [
+                    'type' => 'token',
+                    'host' => 'https://github.com',
+                    'login' => 'octocat',
+                ],
+            ])
+            ->andReturn([
+                'kind' => 'subscribed',
+                'status' => 'already_subscribed',
+                'message' => 'Already enrolled',
+            ]);
+
+        $pending = new PendingServerAccount($client);
+        $result = $pending->subscribeCopilotFree([
+            'identity' => [
+                'type' => 'token',
+                'host' => 'https://github.com',
+                'login' => 'octocat',
+            ],
+        ]);
+
+        expect($result)->toBeInstanceOf(AccountSubscribeCopilotFreeResult::class)
+            ->and($result->kind)->toBe('subscribed')
+            ->and($result->status)->toBe('already_subscribed')
+            ->and($result->message)->toBe('Already enrolled');
     });
 });
