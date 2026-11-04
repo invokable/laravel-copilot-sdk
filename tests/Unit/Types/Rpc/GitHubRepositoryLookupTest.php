@@ -53,6 +53,10 @@ describe('GitHub repository lookup requests', function () {
             ->and($missingRepository->toArray())->toBe(['repository' => null])
             ->and($foundPullRequest->status)->toBe(GitHubBranchPullRequestLookupStatus::Found)
             ->and($foundPullRequest->pullRequest)->toBe(['number' => 42, 'title' => 'Add feature'])
+            ->and($foundPullRequest->toArray())->toBe([
+                'status' => 'found',
+                'pullRequest' => ['number' => 42, 'title' => 'Add feature'],
+            ])
             ->and($noPullRequest->status)->toBe(GitHubBranchPullRequestLookupStatus::NoPr)
             ->and($noPullRequest->pullRequest)->toBeNull();
     });
