@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\GitHubBranchPullRequestLookupStatus;
 use Revolution\Copilot\Enums\GitHubFetchOperation;
 use Revolution\Copilot\Enums\GitHubFetchResultKind;
 use Revolution\Copilot\Enums\GitHubReleaseDownloadKind;
@@ -25,6 +26,8 @@ it('matches upstream GitHub RPC enum values', function () {
         ]);
     expect(array_map(static fn (GitHubFetchResultKind $case): string => $case->value, GitHubFetchResultKind::cases()))
         ->toBe(['response', 'circuit-breaker', 'proxy-response', 'failed']);
+    expect(array_map(static fn (GitHubBranchPullRequestLookupStatus $case): string => $case->value, GitHubBranchPullRequestLookupStatus::cases()))
+        ->toBe(['found', 'no-token', 'no-pr', 'lookup-failed']);
     expect(array_map(static fn (GitHubReleaseDownloadKind $case): string => $case->value, GitHubReleaseDownloadKind::cases()))
         ->toBe(['downloaded', 'http-error', 'digest-mismatch', 'cancelled', 'failed']);
     expect(array_map(static fn (GitHubReleaseLookupKind $case): string => $case->value, GitHubReleaseLookupKind::cases()))
