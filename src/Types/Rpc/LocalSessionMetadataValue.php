@@ -25,6 +25,7 @@ readonly class LocalSessionMetadataValue implements Arrayable
         public ?bool $isDetached = null,
         public ?LocalSessionContext $context = null,
         public ?string $mcTaskId = null,
+        public ?string $lastClientName = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -42,6 +43,7 @@ readonly class LocalSessionMetadataValue implements Arrayable
                 ? LocalSessionContext::fromArray($data['context'])
                 : null,
             mcTaskId: $data['mcTaskId'] ?? null,
+            lastClientName: $data['lastClientName'] ?? null,
         );
     }
 
@@ -58,6 +60,7 @@ readonly class LocalSessionMetadataValue implements Arrayable
             'isDetached' => $this->isDetached,
             'context' => $this->context?->toArray(),
             'mcTaskId' => $this->mcTaskId,
+            'lastClientName' => $this->lastClientName,
         ], fn ($value): bool => $value !== null);
     }
 }

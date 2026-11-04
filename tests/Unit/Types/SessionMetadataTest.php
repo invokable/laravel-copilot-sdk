@@ -103,6 +103,47 @@ describe('SessionMetadata', function () {
             ->and($metadata->context->branch)->toBe('main');
     });
 
+    it('can be created with client names', function () {
+        $metadata = SessionMetadata::fromArray([
+            'sessionId' => 'session-clients',
+            'startTime' => '2026-01-24T10:00:00Z',
+            'modifiedTime' => '2026-01-24T10:30:00Z',
+            'clientName' => 'github/cli',
+            'lastClientName' => 'my-app',
+        ]);
+
+        expect($metadata->clientName)->toBe('github/cli')
+            ->and($metadata->lastClientName)->toBe('my-app');
+    });
+
+    it('defaults client names to null when absent', function () {
+        $metadata = SessionMetadata::fromArray([
+            'sessionId' => 'session-no-clients',
+            'startTime' => '2026-01-24T10:00:00Z',
+            'modifiedTime' => '2026-01-24T10:30:00Z',
+        ]);
+
+        expect($metadata->clientName)->toBeNull()
+            ->and($metadata->lastClientName)->toBeNull()
+            ->and($metadata->toArray())->not->toHaveKeys(['clientName', 'lastClientName']);
+    });
+
+    it('round trips client names through arrays', function () {
+        $metadata = new SessionMetadata(
+            sessionId: 'session-round-trip',
+            startTime: '2026-01-24T10:00:00Z',
+            modifiedTime: '2026-01-24T10:30:00Z',
+            clientName: 'github/cli',
+            lastClientName: 'my-app',
+        );
+
+        $array = $metadata->toArray();
+
+        expect($array['clientName'])->toBe('github/cli')
+            ->and($array['lastClientName'])->toBe('my-app')
+            ->and(SessionMetadata::fromArray($array))->toEqual($metadata);
+    });
+
     it('can convert to array with context', function () {
         $context = new SessionContext(
             cwd: '/home/user/project',

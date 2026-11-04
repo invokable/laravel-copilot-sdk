@@ -128,6 +128,8 @@ Copilot::start(function ($session) {
 ### 新しいプロパティ
 
 - `context` (?SessionContext): セッションの作業ディレクトリとGit情報
+- `clientName` (?string): セッションを作成したクライアント名（例: `github/cli`）。不明な場合はnull
+- `lastClientName` (?string): セッションを最後に実行したクライアント名。作成したクライアント、または再開して実行したクライアントを指します。再開して閲覧だけした場合は変わりません。以前のセッションでは不明なためnullになります
 
 ### 使用例
 
