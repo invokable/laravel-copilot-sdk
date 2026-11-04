@@ -19,6 +19,8 @@ readonly class SessionMetadata implements Arrayable
      * @param  ?string  $summary  Session summary
      * @param  bool  $isRemote  Whether this is a remote session
      * @param  ?SessionContext  $context  Working directory context (cwd, git info) from session creation
+     * @param  ?string  $clientName  Name of the client that created the session (for example `github/cli`), when known
+     * @param  ?string  $lastClientName  Name of the client that most recently ran the session, when known
      */
     public function __construct(
         public string $sessionId,
@@ -27,6 +29,8 @@ readonly class SessionMetadata implements Arrayable
         public ?string $summary = null,
         public bool $isRemote = false,
         public ?SessionContext $context = null,
+        public ?string $clientName = null,
+        public ?string $lastClientName = null,
     ) {}
 
     /**
@@ -41,6 +45,8 @@ readonly class SessionMetadata implements Arrayable
             summary: $data['summary'] ?? null,
             isRemote: Arr::boolean($data, 'isRemote', false),
             context: isset($data['context']) ? SessionContext::fromArray($data['context']) : null,
+            clientName: $data['clientName'] ?? null,
+            lastClientName: $data['lastClientName'] ?? null,
         );
     }
 
@@ -56,6 +62,8 @@ readonly class SessionMetadata implements Arrayable
             'summary' => $this->summary,
             'isRemote' => $this->isRemote,
             'context' => $this->context?->toArray(),
+            'clientName' => $this->clientName,
+            'lastClientName' => $this->lastClientName,
         ], fn ($value) => $value !== null);
     }
 }
