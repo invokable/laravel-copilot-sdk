@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Rpc;
 
-use Revolution\Copilot\Contracts\CopilotClient;
+use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\McpResourcesListRequest;
 use Revolution\Copilot\Types\Rpc\McpResourcesListResult;
 use Revolution\Copilot\Types\Rpc\McpResourcesListTemplatesRequest;
@@ -20,7 +20,7 @@ use Revolution\Copilot\Types\Rpc\McpResourcesReadResult;
 class PendingMcpResources
 {
     public function __construct(
-        protected CopilotClient $client,
+        protected JsonRpcClient $client,
         protected string $sessionId,
     ) {}
 
