@@ -551,6 +551,60 @@ describe('Client', function () {
         fclose($stdout);
     });
 
+    it('shares one session detach budget across sessions when stopping', function () {
+        $stdin = fopen('php://memory', 'r+');
+        $stdout = fopen('php://memory', 'r+');
+        $detachTimeouts = [];
+
+        $mockProcessManager = Mockery::mock(ProcessManager::class);
+        $mockProcessManager->shouldReceive('start')->once();
+        $mockProcessManager->shouldReceive('stop')->once();
+        $mockProcessManager->shouldReceive('getStdioTransport')->andReturn(Mockery::mock(StdioTransport::class));
+
+        $mockRpcClient = Mockery::mock(JsonRpcClient::class);
+        $mockRpcClient->shouldReceive('start')->once();
+        $mockRpcClient->shouldReceive('stop')->once();
+        $mockRpcClient->shouldReceive('setNotificationHandler')->once();
+        $mockRpcClient->shouldReceive('setRequestHandler')->times(32);
+        $mockRpcClient->shouldReceive('request')
+            ->with('connect', ['supportedTaskKinds' => ['agent', 'client', 'shell']])
+            ->once()
+            ->andReturn(['version' => '', 'protocolVersion' => Protocol::version()]);
+        $mockRpcClient->shouldReceive('request')
+            ->with('runtime.shutdown', [], 10.0)
+            ->once()
+            ->andReturn([]);
+
+        $this->app->bind(ProcessManager::class, fn () => $mockProcessManager);
+        $this->app->bind(JsonRpcClient::class, fn () => $mockRpcClient);
+
+        $firstSession = Mockery::mock(CopilotSession::class);
+        $firstSession->shouldReceive('disconnect')->once()->andReturnUsing(function (?float $timeout) use (&$detachTimeouts): void {
+            $detachTimeouts[] = $timeout;
+            usleep(50_000);
+        });
+        $secondSession = Mockery::mock(CopilotSession::class);
+        $secondSession->shouldReceive('disconnect')->once()->andReturnUsing(function (?float $timeout) use (&$detachTimeouts): void {
+            $detachTimeouts[] = $timeout;
+        });
+
+        $client = new Client;
+        $client->start();
+        (new ReflectionClass($client))
+            ->getProperty('sessions')
+            ->setValue($client, ['session-1' => $firstSession, 'session-2' => $secondSession]);
+
+        $errors = $client->stop();
+
+        expect($errors)->toBe([])
+            ->and($detachTimeouts)->toHaveCount(2)
+            ->and($detachTimeouts[0])->toBeGreaterThan(9.0)->toBeLessThanOrEqual(10.0)
+            ->and($detachTimeouts[1])->toBeLessThanOrEqual($detachTimeouts[0] - 0.04);
+
+        fclose($stdin);
+        fclose($stdout);
+    });
+
     it('returns JSON-RPC cleanup errors and still stops the process', function () {
         $mockProcessManager = Mockery::mock(ProcessManager::class);
         $mockProcessManager->shouldReceive('start')->once();
