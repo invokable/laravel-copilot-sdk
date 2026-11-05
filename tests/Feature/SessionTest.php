@@ -780,7 +780,7 @@ describe('Session', function () {
     it('disconnect sends detach request and clears handlers', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')
-            ->with('session.detach', ['sessionId' => 'test-session'])
+            ->with('session.detach', ['sessionId' => 'test-session'], Mockery::type('float'))
             ->once()
             ->andReturn(['success' => true]);
 
@@ -811,7 +811,7 @@ describe('Session', function () {
     it('disconnect is idempotent', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')
-            ->with('session.detach', ['sessionId' => 'test-session'])
+            ->with('session.detach', ['sessionId' => 'test-session'], Mockery::type('float'))
             ->once()
             ->andReturn(['success' => true]);
 
@@ -823,7 +823,7 @@ describe('Session', function () {
     it('disconnect throws and does not clear handlers when the runtime reports failure', function () {
         $mockClient = Mockery::mock(JsonRpcClient::class);
         $mockClient->shouldReceive('request')
-            ->with('session.detach', ['sessionId' => 'test-session'])
+            ->with('session.detach', ['sessionId' => 'test-session'], Mockery::type('float'))
             ->twice()
             ->andReturn(['success' => false, 'error' => 'Connection lost']);
 
@@ -1304,7 +1304,7 @@ describe('Session', function () {
             ->once()
             ->andReturn(['messageId' => 'msg-123']);
         $mockClient->shouldReceive('request')
-            ->with('session.detach', ['sessionId' => 'test-session'])
+            ->with('session.detach', ['sessionId' => 'test-session'], Mockery::type('float'))
             ->once()
             ->andReturn(['success' => true]);
 

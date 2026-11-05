@@ -83,6 +83,8 @@ class Client implements CopilotClient
     use ManagesModels;
     use ManagesSessions;
 
+    private const float SESSION_DETACH_TIMEOUT = 10.0;
+
     protected ?ProcessManager $processManager = null;
 
     protected ?Transport $transport = null;
@@ -520,10 +522,11 @@ class Client implements CopilotClient
         $this->releaseAllAhpHosts();
         $this->cancelPendingRequestHandlerExchanges();
 
-        // Destroy all sessions
+        // Destroy all sessions; their detach requests share one shutdown budget
+        $detachDeadline = microtime(true) + self::SESSION_DETACH_TIMEOUT;
         foreach ($this->sessions as $session) {
             try {
-                $session->disconnect();
+                $session->disconnect(max(0.0, $detachDeadline - microtime(true)));
             } catch (Throwable $e) {
                 $errors[] = $e;
             }

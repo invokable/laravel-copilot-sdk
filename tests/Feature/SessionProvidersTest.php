@@ -151,7 +151,7 @@ describe('session-scoped providers', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
-            ->with('session.detach', ['sessionId' => 'session-1'])
+            ->with('session.detach', ['sessionId' => 'session-1'], Mockery::type('float'))
             ->andReturn(['success' => true]);
 
         $session = new Session('session-1', $client);

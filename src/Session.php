@@ -1031,19 +1031,22 @@ class Session implements CopilotSession
      * This method is idempotent — calling it multiple times is safe and will
      * not raise an error if the session is already disconnected.
      *
+     * @param  ?float  $timeout  Maximum total time to wait for session.detach across retries, in seconds. Null waits without a limit.
+     *
      * @throws JsonRpcException
      */
-    public function disconnect(): void
+    public function disconnect(?float $timeout = 30.0): void
     {
         if ($this->disconnected) {
             return;
         }
 
+        $deadline = $timeout === null ? null : microtime(true) + $timeout;
         $response = ['success' => false];
         for ($attempt = 0; $attempt < 2 && ! ($response['success'] ?? false); $attempt++) {
             $response = $this->client->request('session.detach', [
                 'sessionId' => $this->sessionId,
-            ]);
+            ], $deadline === null ? null : max(0.0, $deadline - microtime(true)));
         }
 
         if (! ($response['success'] ?? false)) {
