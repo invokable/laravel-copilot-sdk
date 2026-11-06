@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\AuthLoginMethod;
 use Revolution\Copilot\Enums\AuthLoginMode;
 use Revolution\Copilot\Enums\LoginProviderKind;
 use Revolution\Copilot\Types\Rpc\AuthLoginBeginRequest;
@@ -11,6 +12,15 @@ describe('AuthLoginBeginRequest', function () {
         $request = new AuthLoginBeginRequest(LoginProviderKind::ENTRA);
 
         expect($request->toArray())->toBe(['kind' => 'entra']);
+    });
+
+    it('serializes the device-code login method to its wire value', function () {
+        $request = new AuthLoginBeginRequest(LoginProviderKind::ENTRA, method: AuthLoginMethod::DEVICE_CODE);
+
+        expect($request->toArray())->toBe([
+            'kind' => 'entra',
+            'method' => 'device-code',
+        ]);
     });
 
     it('preserves an unrecognized provider kind string', function () {

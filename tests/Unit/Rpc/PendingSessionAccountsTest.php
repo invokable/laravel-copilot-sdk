@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\AuthLoginMethod;
 use Revolution\Copilot\Enums\AuthLoginMode;
+use Revolution\Copilot\Enums\AuthLoginStepKind;
 use Revolution\Copilot\Enums\LoginProviderKind;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingSessionAccounts;
@@ -99,5 +101,37 @@ describe('PendingSessionAccounts', function () {
         $result = (new PendingSessionAccounts($client, 'session-1'))->begin(LoginProviderKind::ENTRA);
 
         expect($result->flowId)->toBe('flow-2');
+    });
+
+    it('sends the device-code method and returns its typed login step', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.accounts.login.begin', [
+                'sessionId' => 'session-1',
+                'kind' => 'entra',
+                'method' => 'device-code',
+            ])
+            ->andReturn([
+                'flowId' => 'flow-3',
+                'step' => [
+                    'kind' => 'device-code',
+                    'userCode' => 'ABCD-EFGH',
+                    'verificationUri' => 'https://github.com/login/device',
+                    'expiresIn' => 900,
+                    'interval' => 5,
+                ],
+            ]);
+
+        $result = (new PendingSessionAccounts($client, 'session-1'))->begin(new AuthLoginBeginRequest(
+            LoginProviderKind::ENTRA,
+            method: AuthLoginMethod::DEVICE_CODE,
+        ));
+
+        expect($result->step->kind)->toBe(AuthLoginStepKind::DEVICE_CODE)
+            ->and($result->step->userCode)->toBe('ABCD-EFGH')
+            ->and($result->step->verificationUri)->toBe('https://github.com/login/device')
+            ->and($result->step->expiresIn)->toBe(900)
+            ->and($result->step->interval)->toBe(5);
     });
 });
