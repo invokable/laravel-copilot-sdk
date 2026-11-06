@@ -21,6 +21,8 @@ describe('plugin, sandbox, and shutdown types', function () {
             'name' => 'trusted-plugin',
             'marketplace' => '',
             'enabled' => true,
+            'id' => 'opaque-plugin-id',
+            'rootPath' => '/home/user/.copilot/plugins/trusted-plugin',
             'source' => 'builtin',
             'directSourceId' => 'stable-id',
             'description' => 'A reviewed plugin.',
@@ -32,16 +34,33 @@ describe('plugin, sandbox, and shutdown types', function () {
         ]);
 
         expect($plugin->source)->toBe('builtin')
+            ->and($plugin->id)->toBe('opaque-plugin-id')
+            ->and($plugin->rootPath)->toBe('/home/user/.copilot/plugins/trusted-plugin')
             ->and($plugin->directSourceId)->toBe('stable-id')
             ->and($plugin->description)->toBe('A reviewed plugin.')
             ->and($plugin->verifiedSource->repository)->toBe('owner/repo')
             ->and($plugin->verifiedSource->revision)->toBe('0123456789abcdef0123456789abcdef01234567')
             ->and($plugin->iconUrl)->toBe('https://raw.githubusercontent.com/owner/repo/0123456789/icon.png')
             ->and($plugin->toArray()['source'])->toBe('builtin')
+            ->and($plugin->toArray()['id'])->toBe('opaque-plugin-id')
+            ->and($plugin->toArray()['rootPath'])->toBe('/home/user/.copilot/plugins/trusted-plugin')
             ->and($plugin->toArray()['verifiedSource'])->toBe([
                 'repository' => 'owner/repo',
                 'revision' => '0123456789abcdef0123456789abcdef01234567',
             ]);
+    });
+
+    it('omits installed plugin identity fields for older responses', function () {
+        $plugin = InstalledPluginInfo::fromArray([
+            'name' => 'legacy-plugin',
+            'marketplace' => 'official',
+            'enabled' => true,
+        ]);
+
+        expect($plugin->id)->toBeNull()
+            ->and($plugin->rootPath)->toBeNull()
+            ->and($plugin->toArray())->not->toHaveKey('id')
+            ->and($plugin->toArray())->not->toHaveKey('rootPath');
     });
 
     it('round trips managed MCP server and sandbox policy configuration', function () {

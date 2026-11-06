@@ -14,15 +14,24 @@ use Illuminate\Support\Arr;
  */
 readonly class DiscoveredExtensionPlugin implements Arrayable
 {
-    public function __construct(public string $name) {}
+    public function __construct(
+        public string $name,
+        public ?string $id = null,
+    ) {}
 
     public static function fromArray(array $data): self
     {
-        return new self(name: Arr::string($data, 'name'));
+        return new self(
+            name: Arr::string($data, 'name'),
+            id: $data['id'] ?? null,
+        );
     }
 
     public function toArray(): array
     {
-        return ['name' => $this->name];
+        return array_filter([
+            'name' => $this->name,
+            'id' => $this->id,
+        ], fn ($value) => $value !== null);
     }
 }

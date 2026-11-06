@@ -22,6 +22,8 @@ readonly class DiscoveredHook implements Arrayable
         public ?string $projectPath,
         public bool $enabled,
         public ?string $disableKey = null,
+        public ?string $definitionFileUri = null,
+        public ?string $pluginId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -37,6 +39,8 @@ readonly class DiscoveredHook implements Arrayable
             projectPath: isset($data['projectPath']) ? Arr::string($data, 'projectPath') : null,
             enabled: Arr::boolean($data, 'enabled', false),
             disableKey: isset($data['disableKey']) ? Arr::string($data, 'disableKey') : null,
+            definitionFileUri: isset($data['definitionFileUri']) ? Arr::string($data, 'definitionFileUri') : null,
+            pluginId: isset($data['pluginId']) ? Arr::string($data, 'pluginId') : null,
         );
     }
 
@@ -50,6 +54,8 @@ readonly class DiscoveredHook implements Arrayable
             'projectPath' => $this->projectPath,
             'enabled' => $this->enabled,
             'disableKey' => $this->disableKey,
+            'definitionFileUri' => $this->definitionFileUri,
+            'pluginId' => $this->pluginId,
         ], fn ($value): bool => $value !== null);
     }
 }

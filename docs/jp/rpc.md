@@ -786,6 +786,9 @@ $plugins->update(new PluginsUpdateRequest(name: 'eslint@official'));
 $plugins->updateAll();
 $plugins->enable(new PluginsEnableRequest(names: ['eslint@official']));
 $plugins->disable(new PluginsDisableRequest(names: ['eslint@official']));
+// 同名の直接インストールを区別する場合は、list() の directSourceId を names に指定
+$plugins->enable(new PluginsEnableRequest(names: ['opaque-direct-source-id']));
+$plugins->disable(new PluginsDisableRequest(names: ['opaque-direct-source-id']));
 
 // ビルトインプラグインのディレクトリ設定
 $plugins->builtin()->set(new PluginsBuiltinSetRequest(paths: ['/opt/copilot/plugins']));
@@ -1438,6 +1441,9 @@ $cancelled = $session->rpc()->mcp()->oauth()->cancelLogin(new SessionMcpOauthCan
 
 // plugins (experimental: プラグインの一覧)
 $session->rpc()->plugins()->list();
+// 同名の直接インストールを指定する場合、list() の directSourceId を names に渡す
+$session->rpc()->plugins()->enable(['names' => ['opaque-direct-source-id']]);
+$session->rpc()->plugins()->disable(['names' => ['opaque-direct-source-id']]);
 // プラグインをリロード
 $session->rpc()->plugins()->reload();
 // オプションを指定してリロード

@@ -14,7 +14,7 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class PluginsDisableRequest implements Arrayable
 {
     /**
-     * @param  array<string>  $names
+     * @param  array<string>  $names  Plugin names, plugin@marketplace specs, or directSourceId values to disable.
      */
     public function __construct(
         public array $names,

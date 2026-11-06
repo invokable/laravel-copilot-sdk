@@ -24,6 +24,8 @@ readonly class InstalledPluginInfo extends PluginInfo
         public ?string $description = null,
         public ?InstalledPluginVerifiedSource $verifiedSource = null,
         public ?string $iconUrl = null,
+        public ?string $id = null,
+        public ?string $rootPath = null,
     ) {
         parent::__construct($name, $marketplace, $enabled, $version);
     }
@@ -41,6 +43,8 @@ readonly class InstalledPluginInfo extends PluginInfo
             description: $data['description'] ?? null,
             verifiedSource: isset($data['verifiedSource']) ? InstalledPluginVerifiedSource::fromArray($data['verifiedSource']) : null,
             iconUrl: $data['iconUrl'] ?? null,
+            id: $data['id'] ?? null,
+            rootPath: $data['rootPath'] ?? null,
         );
     }
 
@@ -54,6 +58,8 @@ readonly class InstalledPluginInfo extends PluginInfo
             'description' => $this->description,
             'verifiedSource' => $this->verifiedSource?->toArray(),
             'iconUrl' => $this->iconUrl,
+            'id' => $this->id,
+            'rootPath' => $this->rootPath,
         ], fn ($value) => $value !== null);
     }
 }

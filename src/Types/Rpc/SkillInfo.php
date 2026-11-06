@@ -21,6 +21,7 @@ readonly class SkillInfo implements Arrayable
      * @param  bool  $userInvocable  Whether the skill can be invoked by the user as a slash command
      * @param  bool  $enabled  Whether the skill is currently enabled
      * @param  ?string  $path  Absolute path to the skill file
+     * @param  ?string  $pluginId  Opaque identity of the owning plugin
      */
     public function __construct(
         public string $name,
@@ -29,6 +30,7 @@ readonly class SkillInfo implements Arrayable
         public bool $userInvocable,
         public bool $enabled,
         public ?string $path = null,
+        public ?string $pluginId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -40,6 +42,7 @@ readonly class SkillInfo implements Arrayable
             userInvocable: Arr::boolean($data, 'userInvocable'),
             enabled: Arr::boolean($data, 'enabled'),
             path: $data['path'] ?? null,
+            pluginId: $data['pluginId'] ?? null,
         );
     }
 
@@ -52,6 +55,7 @@ readonly class SkillInfo implements Arrayable
             'userInvocable' => $this->userInvocable,
             'enabled' => $this->enabled,
             'path' => $this->path,
+            'pluginId' => $this->pluginId,
         ], fn ($v) => $v !== null);
     }
 }

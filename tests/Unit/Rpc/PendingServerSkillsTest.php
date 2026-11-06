@@ -32,6 +32,7 @@ describe('ServerSkill', function () {
             'enabled' => true,
             'path' => '/workspace/.copilot/skills/code-review',
             'projectPath' => '/workspace',
+            'pluginId' => 'opaque-plugin-id',
         ]);
 
         expect($skill->name)->toBe('code-review')
@@ -40,7 +41,8 @@ describe('ServerSkill', function () {
             ->and($skill->userInvocable)->toBeTrue()
             ->and($skill->enabled)->toBeTrue()
             ->and($skill->path)->toBe('/workspace/.copilot/skills/code-review')
-            ->and($skill->projectPath)->toBe('/workspace');
+            ->and($skill->projectPath)->toBe('/workspace')
+            ->and($skill->pluginId)->toBe('opaque-plugin-id');
     });
 
     it('handles optional fields', function () {
@@ -53,7 +55,9 @@ describe('ServerSkill', function () {
         ]);
 
         expect($skill->path)->toBeNull()
-            ->and($skill->projectPath)->toBeNull();
+            ->and($skill->projectPath)->toBeNull()
+            ->and($skill->pluginId)->toBeNull()
+            ->and($skill->toArray())->not->toHaveKey('pluginId');
     });
 
     it('converts to array', function () {
@@ -64,6 +68,7 @@ describe('ServerSkill', function () {
             'userInvocable' => true,
             'enabled' => false,
             'path' => '/path/to/skill',
+            'pluginId' => 'opaque-plugin-id',
         ]);
 
         $arr = $skill->toArray();
@@ -74,6 +79,7 @@ describe('ServerSkill', function () {
             ->and($arr)->toHaveKey('userInvocable', true)
             ->and($arr)->toHaveKey('enabled', false)
             ->and($arr)->toHaveKey('path', '/path/to/skill')
+            ->and($arr)->toHaveKey('pluginId', 'opaque-plugin-id')
             ->and($arr)->not->toHaveKey('projectPath');
     });
 });

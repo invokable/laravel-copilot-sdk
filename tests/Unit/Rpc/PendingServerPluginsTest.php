@@ -150,13 +150,13 @@ describe('PendingServerPlugins', function () {
         $client->shouldReceive('request')
             ->once()
             ->with('plugins.enable', [
-                'names' => ['eslint@official'],
+                'names' => ['eslint@official', 'opaque-direct-source-id'],
                 'workingDirectory' => '/workspace',
             ])
             ->andReturn([]);
 
         (new PendingServerPlugins($client))->enable([
-            'names' => ['eslint@official'],
+            'names' => ['eslint@official', 'opaque-direct-source-id'],
             'workingDirectory' => '/workspace',
         ]);
     });
@@ -166,13 +166,13 @@ describe('PendingServerPlugins', function () {
         $client->shouldReceive('request')
             ->once()
             ->with('plugins.enable', [
-                'names' => ['eslint@official'],
+                'names' => ['eslint@official', 'opaque-direct-source-id'],
                 'workingDirectory' => '/workspace',
             ])
             ->andReturn([]);
 
         (new PendingServerPlugins($client))->enable(
-            new PluginsEnableRequest(['eslint@official'], '/workspace'),
+            new PluginsEnableRequest(['eslint@official', 'opaque-direct-source-id'], '/workspace'),
         );
     });
 
@@ -181,13 +181,13 @@ describe('PendingServerPlugins', function () {
         $client->shouldReceive('request')
             ->once()
             ->with('plugins.disable', [
-                'names' => ['eslint@official'],
+                'names' => ['eslint@official', 'opaque-direct-source-id'],
                 'workingDirectory' => '/workspace',
             ])
             ->andReturn([]);
 
         (new PendingServerPlugins($client))->disable(
-            new PluginsDisableRequest(['eslint@official'], '/workspace'),
+            new PluginsDisableRequest(['eslint@official', 'opaque-direct-source-id'], '/workspace'),
         );
     });
 });
