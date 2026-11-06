@@ -27,6 +27,7 @@ readonly class InstructionSource implements Arrayable
      * @param  ?bool  $defaultDisabled  When true, this source starts disabled.
      * @param  ?string  $description  Short description for use in instruction tables.
      * @param  ?string  $projectPath  The project path this source was discovered from.
+     * @param  ?string  $pluginId  Opaque identity of the owning plugin.
      */
     public function __construct(
         public string $content,
@@ -39,6 +40,7 @@ readonly class InstructionSource implements Arrayable
         public ?bool $defaultDisabled = null,
         public ?string $description = null,
         public ?string $projectPath = null,
+        public ?string $pluginId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -54,6 +56,7 @@ readonly class InstructionSource implements Arrayable
             defaultDisabled: $data['defaultDisabled'] ?? null,
             description: $data['description'] ?? null,
             projectPath: $data['projectPath'] ?? null,
+            pluginId: $data['pluginId'] ?? null,
         );
     }
 
@@ -70,6 +73,7 @@ readonly class InstructionSource implements Arrayable
             'defaultDisabled' => $this->defaultDisabled,
             'description' => $this->description,
             'projectPath' => $this->projectPath,
+            'pluginId' => $this->pluginId,
         ], fn ($v) => $v !== null);
     }
 }

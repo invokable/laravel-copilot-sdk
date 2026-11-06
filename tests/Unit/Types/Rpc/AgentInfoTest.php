@@ -33,7 +33,8 @@ describe('AgentInfo', function () {
         expect($info->path)->toBeNull()
             ->and($info->prompt)->toBeNull()
             ->and($info->userInvocable)->toBeNull()
-            ->and($info->disableModelInvocation)->toBeNull();
+            ->and($info->disableModelInvocation)->toBeNull()
+            ->and($info->pluginId)->toBeNull();
     });
 
     it('can be created from array', function () {
@@ -78,6 +79,7 @@ describe('AgentInfo', function () {
             'description' => 'Reviews code',
             'displayName' => 'Reviewer',
             'id' => 'builtin:reviewer',
+            'pluginId' => 'opaque-plugin-id',
             'model' => 'gpt-review',
             'modelPolicy' => 'required',
             'models' => ['gpt-review', 'claude-review'],
@@ -90,11 +92,13 @@ describe('AgentInfo', function () {
         ]);
 
         expect($info->id)->toBe('builtin:reviewer')
+            ->and($info->pluginId)->toBe('opaque-plugin-id')
             ->and($info->modelPolicy)->toBe(AgentModelPolicy::REQUIRED)
             ->and($info->source)->toBe(AgentInfoSource::BUILTIN)
             ->and($info->models)->toBe(['gpt-review', 'claude-review'])
             ->and($info->toArray())->toMatchArray([
                 'id' => 'builtin:reviewer',
+                'pluginId' => 'opaque-plugin-id',
                 'model' => 'gpt-review',
                 'modelPolicy' => 'required',
                 'models' => ['gpt-review', 'claude-review'],

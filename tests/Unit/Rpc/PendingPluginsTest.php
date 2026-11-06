@@ -44,4 +44,24 @@ describe('PendingPlugins', function () {
         expect($result)->toBeInstanceOf(PluginList::class)
             ->and($result->plugins)->toBe([]);
     });
+
+    it('passes directSourceId values through session plugin enable and disable', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.plugins.enable', [
+                'names' => ['eslint@official', 'opaque-direct-source-id'],
+                'sessionId' => 'session-abc',
+            ]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.plugins.disable', [
+                'names' => ['eslint@official', 'opaque-direct-source-id'],
+                'sessionId' => 'session-abc',
+            ]);
+
+        $pending = new PendingPlugins($client, 'session-abc');
+        $pending->enable(['names' => ['eslint@official', 'opaque-direct-source-id']]);
+        $pending->disable(['names' => ['eslint@official', 'opaque-direct-source-id']]);
+    });
 });

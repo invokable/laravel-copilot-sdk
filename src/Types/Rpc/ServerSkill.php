@@ -20,6 +20,7 @@ readonly class ServerSkill implements Arrayable
      * @param  bool  $enabled  Whether the skill is currently enabled (based on global config)
      * @param  ?string  $path  Absolute path to the skill file
      * @param  ?string  $projectPath  The project path this skill belongs to (only for project/inherited skills)
+     * @param  ?string  $pluginId  Opaque identity of the owning plugin
      */
     public function __construct(
         public string $name,
@@ -29,6 +30,7 @@ readonly class ServerSkill implements Arrayable
         public bool $enabled,
         public ?string $path = null,
         public ?string $projectPath = null,
+        public ?string $pluginId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -41,6 +43,7 @@ readonly class ServerSkill implements Arrayable
             enabled: Arr::boolean($data, 'enabled'),
             path: $data['path'] ?? null,
             projectPath: $data['projectPath'] ?? null,
+            pluginId: $data['pluginId'] ?? null,
         );
     }
 
@@ -54,6 +57,7 @@ readonly class ServerSkill implements Arrayable
             'enabled' => $this->enabled,
             'path' => $this->path,
             'projectPath' => $this->projectPath,
+            'pluginId' => $this->pluginId,
         ], fn ($v) => $v !== null);
     }
 }

@@ -32,6 +32,8 @@ it('round trips discovered hooks and hook discovery results', function () {
             'source' => '.github/hooks.json',
             'projectPath' => '/workspace',
             'enabled' => false,
+            'definitionFileUri' => 'file:///workspace/.github/hooks.json',
+            'pluginId' => 'opaque-plugin-id',
         ]],
         'warnings' => ['warning'],
         'errors' => ['error'],
@@ -41,6 +43,8 @@ it('round trips discovered hooks and hook discovery results', function () {
         ->and($result->hooks[0]->hookType)->toBe(HookType::PreToolUse)
         ->and($result->hooks[0]->origin)->toBe(HookOrigin::Repository)
         ->and($result->hooks[0]->enabled)->toBeFalse()
+        ->and($result->hooks[0]->definitionFileUri)->toBe('file:///workspace/.github/hooks.json')
+        ->and($result->hooks[0]->pluginId)->toBe('opaque-plugin-id')
         ->and($result->toArray())->toBe([
             'hooks' => [[
                 'id' => 'hook-1',
@@ -49,6 +53,8 @@ it('round trips discovered hooks and hook discovery results', function () {
                 'source' => '.github/hooks.json',
                 'projectPath' => '/workspace',
                 'enabled' => false,
+                'definitionFileUri' => 'file:///workspace/.github/hooks.json',
+                'pluginId' => 'opaque-plugin-id',
             ]],
             'warnings' => ['warning'],
             'errors' => ['error'],

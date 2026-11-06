@@ -217,6 +217,7 @@ describe('InstructionSource', function () {
             'defaultDisabled' => false,
             'description' => 'PHP instructions',
             'projectPath' => '/my/project',
+            'pluginId' => 'opaque-plugin-id',
         ]);
 
         expect($source->content)->toBe('Be helpful.')
@@ -224,7 +225,8 @@ describe('InstructionSource', function () {
             ->and($source->location)->toBe(InstructionSourceLocation::REPOSITORY)
             ->and($source->type)->toBe(InstructionSourceType::REPO)
             ->and($source->applyTo)->toBe(['**/*.php'])
-            ->and($source->projectPath)->toBe('/my/project');
+            ->and($source->projectPath)->toBe('/my/project')
+            ->and($source->pluginId)->toBe('opaque-plugin-id');
     });
 
     it('handles optional fields defaulting to null', function () {
@@ -239,7 +241,9 @@ describe('InstructionSource', function () {
 
         expect($source->applyTo)->toBeNull()
             ->and($source->description)->toBeNull()
-            ->and($source->projectPath)->toBeNull();
+            ->and($source->projectPath)->toBeNull()
+            ->and($source->pluginId)->toBeNull()
+            ->and($source->toArray())->not->toHaveKey('pluginId');
     });
 
     it('converts to array', function () {
@@ -250,12 +254,14 @@ describe('InstructionSource', function () {
             'location' => 'plugin',
             'sourcePath' => 'path',
             'type' => 'home',
+            'pluginId' => 'opaque-plugin-id',
         ]);
 
         $array = $source->toArray();
 
         expect($array)->toHaveKey('location', 'plugin')
             ->and($array)->toHaveKey('type', 'home')
+            ->and($array)->toHaveKey('pluginId', 'opaque-plugin-id')
             ->and($array)->not->toHaveKey('projectPath');
     });
 });

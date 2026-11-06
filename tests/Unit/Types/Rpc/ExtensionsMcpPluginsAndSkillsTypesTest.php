@@ -11,6 +11,8 @@ use Revolution\Copilot\Enums\ServerSource;
 use Revolution\Copilot\Types\Rpc\AgentReloadResult;
 use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandRequest;
 use Revolution\Copilot\Types\Rpc\CommandsHandlePendingCommandResult;
+use Revolution\Copilot\Types\Rpc\DiscoveredExtension;
+use Revolution\Copilot\Types\Rpc\DiscoveredExtensionPlugin;
 use Revolution\Copilot\Types\Rpc\ExtensionInfo;
 use Revolution\Copilot\Types\Rpc\ExtensionList;
 use Revolution\Copilot\Types\Rpc\ExtensionsDisableRequest;
@@ -39,6 +41,7 @@ describe('SkillInfo', function () {
             'userInvocable' => true,
             'enabled' => true,
             'path' => '/workspace/.copilot/skills/code-review',
+            'pluginId' => 'opaque-plugin-id',
         ]);
 
         expect($info->name)->toBe('code-review')
@@ -46,7 +49,8 @@ describe('SkillInfo', function () {
             ->and($info->source)->toBe('project')
             ->and($info->userInvocable)->toBeTrue()
             ->and($info->enabled)->toBeTrue()
-            ->and($info->path)->toBe('/workspace/.copilot/skills/code-review');
+            ->and($info->path)->toBe('/workspace/.copilot/skills/code-review')
+            ->and($info->pluginId)->toBe('opaque-plugin-id');
     });
 
     it('can be created from array without optional path', function () {
@@ -58,7 +62,9 @@ describe('SkillInfo', function () {
             'enabled' => false,
         ]);
 
-        expect($info->path)->toBeNull();
+        expect($info->path)->toBeNull()
+            ->and($info->pluginId)->toBeNull()
+            ->and($info->toArray())->not->toHaveKey('pluginId');
     });
 
     it('can convert to array', function () {
@@ -68,6 +74,7 @@ describe('SkillInfo', function () {
             source: 'project',
             userInvocable: true,
             enabled: true,
+            pluginId: 'opaque-plugin-id',
         );
 
         expect($info->toArray())->toBe([
@@ -76,6 +83,7 @@ describe('SkillInfo', function () {
             'source' => 'project',
             'userInvocable' => true,
             'enabled' => true,
+            'pluginId' => 'opaque-plugin-id',
         ]);
     });
 
@@ -501,13 +509,21 @@ describe('PluginList', function () {
                     'marketplace' => 'npm',
                     'enabled' => true,
                     'version' => '8.0.0',
+                    'id' => 'opaque-plugin-id',
+                    'rootPath' => '/plugins/eslint',
                 ],
             ],
         ]);
 
         expect($result->plugins)->toHaveCount(1)
             ->and($result->plugins[0])->toBeInstanceOf(PluginInfo::class)
-            ->and($result->plugins[0]->name)->toBe('eslint');
+            ->and($result->plugins[0]->name)->toBe('eslint')
+            ->and($result->plugins[0]->id)->toBe('opaque-plugin-id')
+            ->and($result->plugins[0]->rootPath)->toBe('/plugins/eslint')
+            ->and($result->toArray()['plugins'][0])->toMatchArray([
+                'id' => 'opaque-plugin-id',
+                'rootPath' => '/plugins/eslint',
+            ]);
     });
 
     it('handles empty plugins list', function () {
@@ -523,6 +539,41 @@ describe('PluginList', function () {
         $array = $result->toArray();
         expect($array['plugins'])->toHaveCount(1)
             ->and($array['plugins'][0]['name'])->toBe('eslint');
+    });
+});
+
+describe('DiscoveredExtensionPlugin', function () {
+    it('round trips its identity through a discovered extension', function () {
+        $extension = DiscoveredExtension::fromArray([
+            'id' => 'extension-1',
+            'name' => 'my-extension',
+            'path' => '/extensions/my-extension',
+            'source' => 'plugin',
+            'enabled' => true,
+            'plugin' => [
+                'name' => 'my-plugin',
+                'id' => 'opaque-plugin-id',
+            ],
+        ]);
+
+        expect($extension->plugin)->toBeInstanceOf(DiscoveredExtensionPlugin::class)
+            ->and($extension->plugin->id)->toBe('opaque-plugin-id')
+            ->and($extension->toArray())->toBe([
+                'id' => 'extension-1',
+                'name' => 'my-extension',
+                'path' => '/extensions/my-extension',
+                'source' => 'plugin',
+                'enabled' => true,
+                'plugin' => [
+                    'name' => 'my-plugin',
+                    'id' => 'opaque-plugin-id',
+                ],
+            ]);
+    });
+
+    it('omits the owning plugin id when absent', function () {
+        expect(DiscoveredExtensionPlugin::fromArray(['name' => 'my-plugin'])->toArray())
+            ->toBe(['name' => 'my-plugin']);
     });
 });
 

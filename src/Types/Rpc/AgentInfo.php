@@ -31,6 +31,7 @@ readonly class AgentInfo implements Arrayable
      * @param  string[]  $skills  Skill names preloaded into the agent context.
      * @param  AgentInfoSource|string|null  $source  Where the agent definition was loaded from.
      * @param  string[]  $tools  Allowed tool names for the agent.
+     * @param  ?string  $pluginId  Opaque identity of the owning plugin.
      */
     public function __construct(
         public string $name,
@@ -49,6 +50,7 @@ readonly class AgentInfo implements Arrayable
         public array $skills = [],
         public AgentInfoSource|string|null $source = null,
         public array $tools = [],
+        public ?string $pluginId = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -74,6 +76,7 @@ readonly class AgentInfo implements Arrayable
                 ? (AgentInfoSource::tryFrom($data['source']) ?? $data['source'])
                 : null,
             tools: $data['tools'] ?? [],
+            pluginId: $data['pluginId'] ?? null,
         );
     }
 
@@ -139,6 +142,10 @@ readonly class AgentInfo implements Arrayable
 
         if ($this->tools !== []) {
             $result['tools'] = $this->tools;
+        }
+
+        if ($this->pluginId !== null) {
+            $result['pluginId'] = $this->pluginId;
         }
 
         return $result;
