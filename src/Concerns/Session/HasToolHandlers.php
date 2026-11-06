@@ -108,12 +108,20 @@ trait HasToolHandlers
                 if ($rawResult === null) {
                     $result = '';
                 } elseif ($rawResult instanceof ToolResultObject) {
+                    try {
+                        json_encode($rawResult->toolTelemetry, JSON_THROW_ON_ERROR);
+                    } catch (Throwable $e) {
+                        throw new \RuntimeException('failed to serialize tool telemetry: '.$e->getMessage(), previous: $e);
+                    }
+
                     $result = $rawResult->toArray();
                 } elseif (is_string($rawResult) || is_array($rawResult)) {
                     $result = $rawResult;
                 } else {
                     $result = (string) $rawResult;
                 }
+
+                json_encode($result, JSON_THROW_ON_ERROR);
 
                 // Send failure via error param for consistent server-side formatting
                 if (is_array($result) && ($result['resultType'] ?? null) === 'failure' && isset($result['error'])) {
@@ -136,7 +144,7 @@ trait HasToolHandlers
                     $this->rpc()->tools()->handlePendingToolCall(
                         new HandlePendingToolCallRequest(
                             requestId: $requestId,
-                            error: $e->getMessage(),
+                            error: $e->getMessage() !== '' ? $e->getMessage() : (get_class($e) ?: 'Error'),
                         )
                     );
                 } catch (Throwable) {
