@@ -24,6 +24,7 @@ use Revolution\Copilot\Types\McpAuthResult;
 use Revolution\Copilot\Types\McpAuthToken;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\SessionEvent;
+use Revolution\Copilot\Types\ToolResultObject;
 
 beforeEach(function () {
     Copilot::clearResolvedInstances();
@@ -754,6 +755,145 @@ describe('Session', function () {
         expect($session->getToolHandler('toolA'))->toBe($handlerA)
             ->and($session->getToolHandler('toolB'))->toBe($handlerB)
             ->and($session->getToolHandler('toolC'))->toBeNull();
+    });
+
+    it('returns an error when a structured tool result cannot be serialized', function () {
+        $response = null;
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->once()
+            ->with('session.tools.handlePendingToolCall', Mockery::on(function (array $params) use (&$response): bool {
+                $response = $params;
+
+                return true;
+            }))
+            ->andReturn(['success' => true]);
+
+        $session = new Session('test-session', $mockClient);
+        $session->registerTools([[
+            'name' => 'invalid_result',
+            'handler' => fn () => new ToolResultObject(
+                textResultForLlm: 'result',
+                binaryResultsForLlm: ['invalid' => INF],
+            ),
+        ]]);
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'external_tool.requested',
+            'data' => ['requestId' => 'request-1', 'toolName' => 'invalid_result'],
+        ]));
+
+        expect($response)->toHaveKey('error')
+            ->and($response['error'])->not->toBe('')
+            ->and($response)->not->toHaveKey('result');
+    });
+
+    it('returns an error when tool telemetry cannot be serialized', function () {
+        $response = null;
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->once()
+            ->with('session.tools.handlePendingToolCall', Mockery::on(function (array $params) use (&$response): bool {
+                $response = $params;
+
+                return true;
+            }))
+            ->andReturn(['success' => true]);
+
+        $session = new Session('test-session', $mockClient);
+        $session->registerTools([[
+            'name' => 'invalid_telemetry',
+            'handler' => fn () => new ToolResultObject(
+                textResultForLlm: 'result',
+                toolTelemetry: ['invalid' => INF],
+            ),
+        ]]);
+        $session->dispatchEvent(SessionEvent::fromArray([
+            'type' => 'external_tool.requested',
+            'data' => ['requestId' => 'request-2', 'toolName' => 'invalid_telemetry'],
+        ]));
+
+        expect($response)->toHaveKey('error')
+            ->and($response['error'])->toStartWith('failed to serialize tool telemetry:')
+            ->and($response)->not->toHaveKey('result');
+    });
+
+    it('uses the exception class for empty messages and preserves non-empty messages', function () {
+        $errors = [];
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->twice()
+            ->with('session.tools.handlePendingToolCall', Mockery::on(function (array $params) use (&$errors): bool {
+                $errors[$params['requestId']] = $params['error'] ?? null;
+
+                return true;
+            }))
+            ->andReturn(['success' => true]);
+
+        $session = new Session('test-session', $mockClient);
+        $session->registerTools([[
+            'name' => 'throw',
+            'handler' => fn (array $arguments) => throw new RuntimeException($arguments['message']),
+        ]]);
+
+        foreach ([
+            'request-empty' => '',
+            'request-message' => 'tool failed',
+        ] as $requestId => $message) {
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'external_tool.requested',
+                'data' => [
+                    'requestId' => $requestId,
+                    'toolName' => 'throw',
+                    'arguments' => ['message' => $message],
+                ],
+            ]));
+        }
+
+        expect($errors)->toBe([
+            'request-empty' => RuntimeException::class,
+            'request-message' => 'tool failed',
+        ]);
+    });
+
+    it('preserves string, array, and structured tool results', function () {
+        $results = [];
+        $expectedResults = [
+            'string' => 'plain result',
+            'array' => ['answer' => 42],
+            'object' => ['textResultForLlm' => 'structured result', 'resultType' => 'success'],
+        ];
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->times(3)
+            ->with('session.tools.handlePendingToolCall', Mockery::on(function (array $params) use (&$results): bool {
+                $results[$params['requestId']] = $params['result'] ?? null;
+
+                return true;
+            }))
+            ->andReturn(['success' => true]);
+
+        $session = new Session('test-session', $mockClient);
+        $session->registerTools([[
+            'name' => 'normal_result',
+            'handler' => fn (array $arguments) => match ($arguments['kind']) {
+                'string' => 'plain result',
+                'array' => ['answer' => 42],
+                'object' => new ToolResultObject(textResultForLlm: 'structured result'),
+            },
+        ]]);
+
+        foreach (array_keys($expectedResults) as $kind) {
+            $session->dispatchEvent(SessionEvent::fromArray([
+                'type' => 'external_tool.requested',
+                'data' => [
+                    'requestId' => $kind,
+                    'toolName' => 'normal_result',
+                    'arguments' => ['kind' => $kind],
+                ],
+            ]));
+        }
+
+        expect($results)->toBe($expectedResults);
     });
 
     it('getEvents returns session events', function () {
