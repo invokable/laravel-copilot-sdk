@@ -30,7 +30,11 @@ describe('AuthLoginBegun', function () {
             ->and($begun->step->url)->toBeNull()
             ->and($begun->step->prompt)->toBeNull()
             ->and($begun->step->message)->toBeNull()
-            ->and($begun->step->result)->toBeNull();
+            ->and($begun->step->result)->toBeNull()
+            ->and($begun->step->userCode)->toBeNull()
+            ->and($begun->step->verificationUri)->toBeNull()
+            ->and($begun->step->expiresIn)->toBeNull()
+            ->and($begun->step->interval)->toBeNull();
     });
 
     it('serializes the flow id and nested login step to the wire format', function () {
@@ -49,5 +53,28 @@ describe('AuthLoginBegun', function () {
                 'prompt' => 'Enter the device code',
             ],
         ]);
+    });
+
+    it('reads and serializes a device-code login step', function () {
+        $step = AuthLoginStep::fromArray([
+            'kind' => 'device-code',
+            'userCode' => 'ABCD-EFGH',
+            'verificationUri' => 'https://github.com/login/device',
+            'expiresIn' => 900,
+            'interval' => 5,
+        ]);
+
+        expect($step->kind)->toBe(AuthLoginStepKind::DEVICE_CODE)
+            ->and($step->userCode)->toBe('ABCD-EFGH')
+            ->and($step->verificationUri)->toBe('https://github.com/login/device')
+            ->and($step->expiresIn)->toBe(900)
+            ->and($step->interval)->toBe(5)
+            ->and($step->toArray())->toBe([
+                'kind' => 'device-code',
+                'userCode' => 'ABCD-EFGH',
+                'verificationUri' => 'https://github.com/login/device',
+                'expiresIn' => 900,
+                'interval' => 5,
+            ]);
     });
 });

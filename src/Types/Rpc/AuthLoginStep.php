@@ -15,6 +15,10 @@ readonly class AuthLoginStep implements Arrayable
         public ?string $prompt = null,
         public ?string $message = null,
         public ?AuthLoginResultDto $result = null,
+        public ?string $userCode = null,
+        public ?string $verificationUri = null,
+        public ?int $expiresIn = null,
+        public ?int $interval = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -27,6 +31,10 @@ readonly class AuthLoginStep implements Arrayable
             result: isset($data['result']) && is_array($data['result'])
                 ? AuthLoginResultDto::fromArray($data['result'])
                 : null,
+            userCode: $data['userCode'] ?? null,
+            verificationUri: $data['verificationUri'] ?? null,
+            expiresIn: $data['expiresIn'] ?? null,
+            interval: $data['interval'] ?? null,
         );
     }
 
@@ -38,6 +46,10 @@ readonly class AuthLoginStep implements Arrayable
             'prompt' => $this->prompt,
             'message' => $this->message,
             'result' => $this->result?->toArray(),
+            'userCode' => $this->userCode,
+            'verificationUri' => $this->verificationUri,
+            'expiresIn' => $this->expiresIn,
+            'interval' => $this->interval,
         ], static fn ($value): bool => $value !== null);
     }
 }
