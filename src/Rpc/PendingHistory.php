@@ -16,6 +16,7 @@ use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindResult;
 use Revolution\Copilot\Types\Rpc\HistoryRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryRewindResult;
+use Revolution\Copilot\Types\Rpc\HistorySetCompactionConfigRequest;
 use Revolution\Copilot\Types\Rpc\HistorySummarizeForHandoffResult;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
@@ -86,6 +87,24 @@ class PendingHistory
         return HistoryCompactResult::fromArray(
             $this->client->request('session.history.compact', $paramsArray),
         );
+    }
+
+    /**
+     * Replaces the compaction settings (model, prompt, reasoning effort) used by automatic and manual compactions.
+     *
+     * Each call replaces all three: an omitted field returns to its default. Settings are held in memory only,
+     * so re-apply them after resuming the session in a new process. Rejects on a remote session.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function setCompactionConfig(HistorySetCompactionConfigRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof HistorySetCompactionConfigRequest
+            ? $params
+            : HistorySetCompactionConfigRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.history.setCompactionConfig', $paramsArray);
     }
 
     /**
