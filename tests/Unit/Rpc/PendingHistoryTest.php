@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingHistory;
 use Revolution\Copilot\Types\Rpc\HistoryAbortManualCompactionResult;
@@ -13,11 +14,58 @@ use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryPreviewRewindResult;
 use Revolution\Copilot\Types\Rpc\HistoryRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryRewindResult;
+use Revolution\Copilot\Types\Rpc\HistorySetCompactionConfigRequest;
 use Revolution\Copilot\Types\Rpc\HistorySummarizeForHandoffResult;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
 
 describe('PendingHistory', function () {
+    it('sets compaction config with the session id and returns nothing', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.history.setCompactionConfig', [
+                'model' => 'gpt-5',
+                'prompt' => 'Keep decisions',
+                'reasoningEffort' => 'low',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(null);
+
+        $result = (new PendingHistory($client, 'session-abc'))->setCompactionConfig(
+            new HistorySetCompactionConfigRequest(
+                model: 'gpt-5',
+                prompt: 'Keep decisions',
+                reasoningEffort: ReasoningEffort::LOW,
+            ),
+        );
+
+        expect($result)->toBeNull();
+    });
+
+    it('sends only the sessionId when the compaction config is reset', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.history.setCompactionConfig', ['sessionId' => 'session-abc'])
+            ->andReturn(null);
+
+        (new PendingHistory($client, 'session-abc'))->setCompactionConfig([]);
+    });
+
+    it('accepts compaction config as an array', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.history.setCompactionConfig', [
+                'reasoningEffort' => 'max',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn(null);
+
+        (new PendingHistory($client, 'session-abc'))->setCompactionConfig(['reasoningEffort' => 'max']);
+    });
+
     it('aborts manual history compaction', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

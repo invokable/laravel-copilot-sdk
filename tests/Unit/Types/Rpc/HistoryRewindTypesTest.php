@@ -7,6 +7,7 @@ use Revolution\Copilot\Enums\HistoryRewindChangeType;
 use Revolution\Copilot\Enums\HistoryRewindMode;
 use Revolution\Copilot\Enums\HistoryRewindOutcome;
 use Revolution\Copilot\Enums\HistoryRewindUnavailableReason;
+use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Types\Rpc\HistoryAbortManualCompactionResult;
 use Revolution\Copilot\Types\Rpc\HistoryCancelBackgroundCompactionResult;
 use Revolution\Copilot\Types\Rpc\HistoryCompactRequest;
@@ -17,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\HistoryRewindFilePreview;
 use Revolution\Copilot\Types\Rpc\HistoryRewindPoint;
 use Revolution\Copilot\Types\Rpc\HistoryRewindRequest;
 use Revolution\Copilot\Types\Rpc\HistoryRewindResult;
+use Revolution\Copilot\Types\Rpc\HistorySetCompactionConfigRequest;
 use Revolution\Copilot\Types\Rpc\HistorySkippedFileRestore;
 use Revolution\Copilot\Types\Rpc\HistorySummarizeForHandoffResult;
 
@@ -33,6 +35,40 @@ describe('HistoryCompactRequest', function () {
 
     it('supports an empty payload', function () {
         expect(HistoryCompactRequest::fromArray([])->toArray())->toBe([]);
+    });
+});
+
+describe('HistorySetCompactionConfigRequest', function () {
+    it('serializes the official camelCase fields', function () {
+        $request = new HistorySetCompactionConfigRequest(
+            model: 'gpt-5',
+            prompt: 'Keep the decisions only',
+            reasoningEffort: ReasoningEffort::HIGH,
+        );
+
+        expect($request->toArray())->toBe([
+            'model' => 'gpt-5',
+            'prompt' => 'Keep the decisions only',
+            'reasoningEffort' => 'high',
+        ]);
+    });
+
+    it('omits unset fields so each call resets them to defaults', function () {
+        expect((new HistorySetCompactionConfigRequest(model: 'gpt-5'))->toArray())->toBe(['model' => 'gpt-5'])
+            ->and((new HistorySetCompactionConfigRequest)->toArray())->toBe([]);
+    });
+
+    it('hydrates from an array and keeps unknown reasoning effort strings', function () {
+        $request = HistorySetCompactionConfigRequest::fromArray([
+            'prompt' => 'Summarize',
+            'reasoningEffort' => 'max',
+        ]);
+
+        expect($request->reasoningEffort)->toBe(ReasoningEffort::MAX)
+            ->and($request->toArray())->toBe(['prompt' => 'Summarize', 'reasoningEffort' => 'max']);
+
+        expect(HistorySetCompactionConfigRequest::fromArray(['reasoningEffort' => 'future'])->reasoningEffort)
+            ->toBe('future');
     });
 });
 

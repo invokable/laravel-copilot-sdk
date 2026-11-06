@@ -1095,7 +1095,7 @@ $result = $session->rpc()->permissions()->clearResumeEscalation();
 
 ### 履歴・キュー・ログ・使用量
 
-`history()`は会話の圧縮・中断・引き継ぎ要約・切り詰め、`queue()`は保留項目の挿入・移動・編集・削除・即時送信を提供します。`log()`、`eventLog()`、`usage()`、`quota()`、`limitPrediction()`でログやイベント、使用量と上限情報を扱います。`schedule()`ではスケジュール済みプロンプトを確認・停止できます。
+`history()`は会話の圧縮（圧縮設定を含む）・中断・引き継ぎ要約・切り詰め、`queue()`は保留項目の挿入・移動・編集・削除・即時送信を提供します。`log()`、`eventLog()`、`usage()`、`quota()`、`limitPrediction()`でログやイベント、使用量と上限情報を扱います。`schedule()`ではスケジュール済みプロンプトを確認・停止できます。
 
 ### ライフサイクル・リモート・ホスト連携
 
@@ -1465,6 +1465,12 @@ $settings = $session->rpc()->managedSettings()->recheckPolicyHelper(); // Manage
 
 // compaction → history に名前変更
 $session->rpc()->history()->compact();
+// 圧縮に使うモデル・指示文・推論強度を設定する（experimental）。呼ぶたびに3項目すべてが置き換わり、省略した項目はデフォルトに戻る
+$session->rpc()->history()->setCompactionConfig(new HistorySetCompactionConfigRequest(
+    model: 'gpt-5', // 任意。BYOK/providerセッションなどでは要約はセッションのモデルで行われる
+    prompt: 'Keep decisions only', // 任意。組み込みプロンプトを置き換える
+    reasoningEffort: ReasoningEffort::LOW, // 任意
+));
 // 手動圧縮を中断する / バックグラウンド圧縮をキャンセルする
 $session->rpc()->history()->abortManualCompaction();
 $session->rpc()->history()->cancelBackgroundCompaction();
