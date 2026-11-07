@@ -32,9 +32,9 @@ jobs:
           submodules: recursive
 
       - name: Install gh-aw CLI
-        uses: github/gh-aw-actions/setup-cli@4607d462dc213dbe54d02f77ec31215776fd5554 # v1.2.0
+        uses: github/gh-aw-actions/setup-cli@406c7719e31d7fe354224d4bb8fe3d4aeb47da1c # v1.2.1
         with:
-          version: v1.2.0
+          version: v1.2.1
 
       - name: Set up PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
