@@ -1468,7 +1468,7 @@ class Client implements CopilotClient
         }
 
         if (! is_array($result)) {
-            throw new \UnexpectedValueException('GitHub token provider must return an array result');
+            throw new UnexpectedValueException('GitHub token provider must return an array result');
         }
 
         return $result;
