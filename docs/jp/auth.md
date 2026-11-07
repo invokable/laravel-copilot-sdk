@@ -39,6 +39,37 @@ Copilot::stop();
 
 設定したIDは`server.connect`ハンドシェイクでランタイムに渡されます。Entra設定を指定した場合、`connect`に対応しない古いランタイムでは設定を黙って破棄せず、`This runtime does not support Entra client configuration.`例外を送出します。ランタイムを更新してください。他の認証方法は引き続き利用できます。
 
+## Kerberos資格情報コールバック
+
+Kerberos認証が必要な環境では、`kerberosAuth`に資格情報コールバックを設定します。コールバックにはSPNを持つ`KerberosAuthAcquireRequest`と、リクエストのキャンセルを確認できる`CancellationToken`が渡されます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Support\CancellationToken;
+use Revolution\Copilot\Types\Rpc\KerberosAuthAcquireRequest;
+
+Copilot::useStdio([
+    'kerberosAuth' => [
+        'mode' => 'fallback',
+        'callback' => function (KerberosAuthAcquireRequest $request, CancellationToken $token) use ($credentials): ?string {
+            if ($token->isCancellationRequested()) {
+                return null;
+            }
+
+            return $credentials->acquire($request->spn, $token);
+        },
+    ],
+])->run(prompt: 'Hello');
+Copilot::stop();
+```
+
+コールバックは`Negotiate `プレフィックスを含まない、単回使用のbase64 SPNEGOトークンを返します。資格情報を取得できない場合は`null`を返します。`kerberos_auth`も同じ設定のエイリアスです。
+SPNはランタイムから渡されるため、資格情報を発行する前に検証してください。
+
+`mode`には`fallback`または`always`を指定します。`fallback`はランタイムのネイティブな資格情報取得に失敗した場合だけコールバックを使い、`always`はネイティブな取得を行いません。
+
+`scope`は省略すると`connection`です。`connection`はこのクライアントが作成または再開したセッションのリクエストだけを認証します。`runtime`はランタイム共有のバックグラウンド通信にもコールバックを使いますが、同時にこのscopeを保持できる接続は1つだけです。
+
 ## GitHubログイン（CLI）
 
 `copilot` もしくは `gh` CLIでログイン済みの場合は、何も指定しなければ保存済みの認証情報が使われます。
