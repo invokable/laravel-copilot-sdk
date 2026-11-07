@@ -55,6 +55,9 @@ use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
+use Revolution\Copilot\Types\Rpc\KerberosAuthAcquireRequest;
+use Revolution\Copilot\Types\Rpc\KerberosAuthAcquireResult;
+use Revolution\Copilot\Types\Rpc\KerberosAuthSetProviderRequest;
 use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireRequest;
 use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireResult;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
@@ -66,6 +69,7 @@ use Revolution\Copilot\Types\TranscriptRecovery;
 use RuntimeException;
 use SensitiveParameter;
 use Throwable;
+use UnexpectedValueException;
 
 /**
  * Main client for interacting with the Copilot CLI.
@@ -145,6 +149,15 @@ class Client implements CopilotClient
      */
     protected ?Closure $extensionLaunchProvider = null;
 
+    /**
+     * @var array{
+     *     mode: string,
+     *     scope: ?string,
+     *     callback: Closure(KerberosAuthAcquireRequest, CancellationToken): mixed
+     * }|null
+     */
+    protected ?array $kerberosAuth = null;
+
     protected CopilotRequestHandler|Closure|null $requestHandler = null;
 
     /**
@@ -181,6 +194,38 @@ class Client implements CopilotClient
         $this->extensionLaunchProvider = $extensionLaunchProvider === null
             ? null
             : Closure::fromCallable($extensionLaunchProvider);
+        $kerberosAuthOption = array_key_exists('kerberosAuth', $options)
+            ? 'kerberosAuth'
+            : (array_key_exists('kerberos_auth', $options) ? 'kerberos_auth' : null);
+        $kerberosAuth = $kerberosAuthOption === null ? null : $options[$kerberosAuthOption];
+        if ($kerberosAuth !== null) {
+            if (! is_array($kerberosAuth)) {
+                throw new InvalidArgumentException('kerberosAuth must be an array.');
+            }
+
+            $kerberosMode = $kerberosAuth['mode'] ?? null;
+            if (! is_string($kerberosMode) || ! in_array($kerberosMode, ['fallback', 'always'], true)) {
+                throw new InvalidArgumentException('kerberosAuth.mode must be either "fallback" or "always".');
+            }
+
+            $kerberosScope = $kerberosAuth['scope'] ?? null;
+            if (array_key_exists('scope', $kerberosAuth)
+                && (! is_string($kerberosScope) || ! in_array($kerberosScope, ['connection', 'runtime'], true))) {
+                throw new InvalidArgumentException('kerberosAuth.scope must be either "connection" or "runtime".');
+            }
+
+            $kerberosCallback = $kerberosAuth['callback'] ?? null;
+            if (! is_callable($kerberosCallback)) {
+                throw new InvalidArgumentException('kerberosAuth.callback must be callable.');
+            }
+
+            $this->kerberosAuth = [
+                'mode' => $kerberosMode,
+                'scope' => $kerberosScope,
+                'callback' => Closure::fromCallable($kerberosCallback),
+            ];
+        }
+
         $requestHandler = array_key_exists('requestHandler', $options)
             ? $options['requestHandler']
             : ($options['request_handler'] ?? null);
@@ -397,6 +442,13 @@ class Client implements CopilotClient
                 fn (array $params) => $this->handleExtensionLaunchProviderResolve($params),
             );
 
+            if ($this->kerberosAuth !== null) {
+                $this->rpcClient->setRequestHandler(
+                    'kerberosAuth.acquire',
+                    fn (array $params, CancellationToken $token) => $this->acquireKerberosToken($params, $token),
+                );
+            }
+
             foreach ([
                 'canvas.open' => 'handleCanvasOpen',
                 'canvas.close' => 'handleCanvasClose',
@@ -462,6 +514,13 @@ class Client implements CopilotClient
 
             if ($this->extensionLaunchProvider !== null) {
                 $this->rpc()->registerExtensionLaunchProvider();
+            }
+
+            if ($this->kerberosAuth !== null) {
+                $this->rpc()->kerberosAuth()->setProvider(new KerberosAuthSetProviderRequest(
+                    mode: $this->kerberosAuth['mode'],
+                    scope: $this->kerberosAuth['scope'],
+                ));
             }
 
             if ($this->builtinPluginDirectories !== []) {
@@ -1432,6 +1491,19 @@ class Client implements CopilotClient
         ]);
 
         return (new ProviderTokenAcquireResult(token: $token))->toArray();
+    }
+
+    private function acquireKerberosToken(array $params, CancellationToken $token): array
+    {
+        $request = KerberosAuthAcquireRequest::fromArray($params);
+        $callback = $this->kerberosAuth['callback'];
+        $result = $callback($request, $token);
+
+        if ($result !== null && ! is_string($result)) {
+            throw new UnexpectedValueException('Kerberos auth callback must return a string or null.');
+        }
+
+        return (new KerberosAuthAcquireResult(token: $result))->toArray();
     }
 
     protected function forgetGitHubTokenProviderForSession(string $sessionId): void
