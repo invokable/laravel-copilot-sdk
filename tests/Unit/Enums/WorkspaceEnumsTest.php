@@ -47,3 +47,46 @@ describe('SessionSyncLevel', function () {
         expect(SessionSyncLevel::tryFrom('invalid'))->toBeNull();
     });
 });
+
+describe('HostType case and parsing coverage', function () {
+    it('has github case', function () {
+        expect(HostType::GITHUB->value)->toBe('github');
+    });
+
+    it('has ado case', function () {
+        expect(HostType::ADO->value)->toBe('ado');
+    });
+
+    it('can create from string', function () {
+        expect(HostType::from('github'))->toBe(HostType::GITHUB)
+            ->and(HostType::from('ado'))->toBe(HostType::ADO);
+    });
+
+    it('returns null for unknown value with tryFrom', function () {
+        expect(HostType::tryFrom('unknown'))->toBeNull();
+    });
+});
+
+describe('SessionSyncLevel individual case and parsing coverage', function () {
+    it('has local case', function () {
+        expect(SessionSyncLevel::LOCAL->value)->toBe('local');
+    });
+
+    it('has user case', function () {
+        expect(SessionSyncLevel::USER->value)->toBe('user');
+    });
+
+    it('has repo_and_user case', function () {
+        expect(SessionSyncLevel::REPO_AND_USER->value)->toBe('repo_and_user');
+    });
+
+    it('can create from string', function () {
+        expect(SessionSyncLevel::from('local'))->toBe(SessionSyncLevel::LOCAL)
+            ->and(SessionSyncLevel::from('user'))->toBe(SessionSyncLevel::USER)
+            ->and(SessionSyncLevel::from('repo_and_user'))->toBe(SessionSyncLevel::REPO_AND_USER);
+    });
+
+    it('returns null for unknown value with tryFrom', function () {
+        expect(SessionSyncLevel::tryFrom('unknown'))->toBeNull();
+    });
+});
