@@ -4,16 +4,6 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\ModelChangeSource;
 use Revolution\Copilot\Enums\ModelSwitchAutoTierStatus;
-use Revolution\Copilot\Enums\SessionEventType;
-use Revolution\Copilot\Enums\TaskKind;
-
-describe('TaskKind', function () {
-    it('has correct values', function () {
-        expect(TaskKind::AGENT->value)->toBe('agent')
-            ->and(TaskKind::CLIENT->value)->toBe('client')
-            ->and(TaskKind::SHELL->value)->toBe('shell');
-    });
-});
 
 describe('ModelSwitchAutoTierStatus', function () {
     it('has correct values', function () {
@@ -34,15 +24,5 @@ describe('ModelChangeSource', function () {
             ->and(ModelChangeSource::AGENT->value)->toBe('agent')
             ->and(ModelChangeSource::PLAN_MODE->value)->toBe('plan_mode')
             ->and(ModelChangeSource::AUTOMATIC->value)->toBe('automatic');
-    });
-});
-
-describe('SessionEventType auto tier failure, completion receipt and MCP server events', function () {
-    it('has auto tier and completion receipt events', function () {
-        expect(SessionEventType::SESSION_AUTO_TIER_SWITCH_FAILED->value)->toBe('session.auto_tier_switch_failed')
-            ->and(SessionEventType::SESSION_COMPLETION_RECEIPT->value)->toBe('session.completion_receipt')
-            ->and(SessionEventType::SESSION_MCP_SERVER_REMOVED->value)->toBe('session.mcp_server_removed')
-            ->and(SessionEventType::SESSION_MCP_SERVER_NEEDS_RECONNECT->value)->toBe('session.mcp_server_needs_reconnect')
-            ->and(SessionEventType::ASSISTANT_FUSION_PHASE_ACTIVITY->value)->toBe('assistant.fusion_phase_activity');
     });
 });

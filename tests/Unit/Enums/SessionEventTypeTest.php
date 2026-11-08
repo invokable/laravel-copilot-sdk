@@ -5,6 +5,14 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\SessionEventType;
 
 describe('SessionEventType', function () {
+    it('has auto tier and completion receipt events', function () {
+        expect(SessionEventType::SESSION_AUTO_TIER_SWITCH_FAILED->value)->toBe('session.auto_tier_switch_failed')
+            ->and(SessionEventType::SESSION_COMPLETION_RECEIPT->value)->toBe('session.completion_receipt')
+            ->and(SessionEventType::SESSION_MCP_SERVER_REMOVED->value)->toBe('session.mcp_server_removed')
+            ->and(SessionEventType::SESSION_MCP_SERVER_NEEDS_RECONNECT->value)->toBe('session.mcp_server_needs_reconnect')
+            ->and(SessionEventType::ASSISTANT_FUSION_PHASE_ACTIVITY->value)->toBe('assistant.fusion_phase_activity');
+    });
+
     it('has the Autopilot stopped event type', function () {
         expect(SessionEventType::SESSION_AUTOPILOT_STOPPED->value)->toBe('session.autopilot_stopped')
             ->and(SessionEventType::from('session.autopilot_stopped'))->toBe(SessionEventType::SESSION_AUTOPILOT_STOPPED);

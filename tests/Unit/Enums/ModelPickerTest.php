@@ -42,3 +42,56 @@ describe('ModelPickerPriceCategory', function () {
         expect(ModelPickerPriceCategory::cases())->toHaveCount(4);
     });
 });
+
+describe('ModelPickerCategory individual case and parsing coverage', function () {
+    it('has lightweight case', function () {
+        expect(ModelPickerCategory::Lightweight->value)->toBe('lightweight');
+    });
+
+    it('has powerful case', function () {
+        expect(ModelPickerCategory::Powerful->value)->toBe('powerful');
+    });
+
+    it('has versatile case', function () {
+        expect(ModelPickerCategory::Versatile->value)->toBe('versatile');
+    });
+
+    it('can create from string', function () {
+        expect(ModelPickerCategory::from('lightweight'))->toBe(ModelPickerCategory::Lightweight)
+            ->and(ModelPickerCategory::from('powerful'))->toBe(ModelPickerCategory::Powerful)
+            ->and(ModelPickerCategory::from('versatile'))->toBe(ModelPickerCategory::Versatile);
+    });
+
+    it('returns null for unknown value with tryFrom', function () {
+        expect(ModelPickerCategory::tryFrom('unknown'))->toBeNull();
+    });
+});
+
+describe('ModelPickerPriceCategory individual case and parsing coverage', function () {
+    it('has high case', function () {
+        expect(ModelPickerPriceCategory::High->value)->toBe('high');
+    });
+
+    it('has low case', function () {
+        expect(ModelPickerPriceCategory::Low->value)->toBe('low');
+    });
+
+    it('has medium case', function () {
+        expect(ModelPickerPriceCategory::Medium->value)->toBe('medium');
+    });
+
+    it('has very_high case', function () {
+        expect(ModelPickerPriceCategory::VeryHigh->value)->toBe('very_high');
+    });
+
+    it('can create all cases from string', function () {
+        expect(ModelPickerPriceCategory::from('high'))->toBe(ModelPickerPriceCategory::High)
+            ->and(ModelPickerPriceCategory::from('low'))->toBe(ModelPickerPriceCategory::Low)
+            ->and(ModelPickerPriceCategory::from('medium'))->toBe(ModelPickerPriceCategory::Medium)
+            ->and(ModelPickerPriceCategory::from('very_high'))->toBe(ModelPickerPriceCategory::VeryHigh);
+    });
+
+    it('returns null for unknown value with tryFrom', function () {
+        expect(ModelPickerPriceCategory::tryFrom('unknown'))->toBeNull();
+    });
+});
