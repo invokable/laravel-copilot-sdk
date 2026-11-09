@@ -84,6 +84,14 @@ describe('Client reverse requests', function () {
             'sessionId' => $resumedSession->id(),
             'errorCode' => 'rate_limited',
         ]);
+        $createRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.create',
+        ))[0];
+        $resumeRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.resume',
+        ))[0];
 
         expect($transport->responseFor('exit-created')['result'])->toBe([
             'approved' => false,
@@ -93,7 +101,81 @@ describe('Client reverse requests', function () {
             ->and($transport->responseFor('auto-resumed')['result'])->toBe(['response' => 'yes_always'])
             ->and($exitHandlerCalls)->toBe(1)
             ->and($eventTypes)->toBe(['exit_plan_mode.requested'])
-            ->and(array_column($transport->messages, 'method'))->not->toContain('session.handleExitPlanMode');
+            ->and(array_column($transport->messages, 'method'))->not->toContain('session.handleExitPlanMode')
+            ->and($createRequest['params']['requestAutoModeSwitch'])->toBeTrue()
+            ->and($createRequest['params'])->not->toHaveKey('requestAutoModeRecovery')
+            ->and($resumeRequest['params']['requestAutoModeSwitch'])->toBeTrue()
+            ->and($resumeRequest['params'])->not->toHaveKey('requestAutoModeRecovery');
+    });
+
+    it('sends recovery opt-in for created and resumed sessions when acknowledged', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $transport->capabilities = ['ui' => ['autoModeRecovery' => true]];
+        $handler = fn () => UIAutoModeSwitchResponse::Yes;
+
+        $createdSession = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            onAutoModeSwitchRequest: $handler,
+            autoModeRecovery: true,
+        ));
+        $resumedSession = $client->resumeSession('recovery-session', new ResumeSessionConfig(
+            onPermissionRequest: fn () => true,
+            onAutoModeSwitchRequest: $handler,
+            autoModeRecovery: true,
+        ));
+
+        $createRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.create',
+        ))[0];
+        $resumeRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.resume',
+        ))[0];
+
+        expect($createRequest['params']['requestAutoModeRecovery'])->toBeTrue()
+            ->and($resumeRequest['params']['requestAutoModeRecovery'])->toBeTrue()
+            ->and($createdSession->capabilities()->supportsAutoModeRecovery())->toBeTrue()
+            ->and($resumedSession->capabilities()->supportsAutoModeRecovery())->toBeTrue();
+    });
+
+    it('requires an auto mode switch handler when recovery is enabled', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+
+        expect(fn () => $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            autoModeRecovery: true,
+        )))->toThrow(InvalidArgumentException::class, 'An onAutoModeSwitchRequest handler is required when autoModeRecovery is enabled.')
+            ->and(fn () => $client->resumeSession('recovery-session', new ResumeSessionConfig(
+                onPermissionRequest: fn () => true,
+                autoModeRecovery: true,
+            )))->toThrow(InvalidArgumentException::class, 'An onAutoModeSwitchRequest handler is required when autoModeRecovery is enabled.')
+            ->and(array_column($transport->messages, 'method'))->not->toContain('session.create', 'session.resume');
+    });
+
+    it('detaches and rejects sessions when recovery is not acknowledged', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $handler = fn () => UIAutoModeSwitchResponse::Yes;
+
+        expect(fn () => $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            onAutoModeSwitchRequest: $handler,
+            autoModeRecovery: true,
+        )))->toThrow(RuntimeException::class, 'The runtime does not support autoModeRecovery.');
+
+        $transport->capabilities = ['ui' => ['autoModeRecovery' => false]];
+
+        expect(fn () => $client->resumeSession('recovery-session', new ResumeSessionConfig(
+            onPermissionRequest: fn () => true,
+            onAutoModeSwitchRequest: $handler,
+            autoModeRecovery: true,
+        )))->toThrow(RuntimeException::class, 'The runtime does not support autoModeRecovery.');
+
+        expect(array_column($transport->messages, 'method'))->toContain('session.detach')
+            ->and(count(array_filter(
+                $transport->messages,
+                fn (array $message): bool => ($message['method'] ?? null) === 'session.detach',
+            )))->toBe(2);
     });
 
     it('returns defaults without handlers and JSON-RPC errors for invalid requests', function () {
@@ -498,6 +580,8 @@ function createReverseRpcTestClient(): array
          */
         public array $messages = [];
 
+        public ?array $capabilities = null;
+
         protected ?Closure $receiveHandler = null;
 
         public function start(): void {}
@@ -521,8 +605,14 @@ function createReverseRpcTestClient(): array
 
             $result = match ($request['method']) {
                 'connect' => ['protocolVersion' => Protocol::version()],
-                'session.create' => ['sessionId' => $request['params']['sessionId'] ?? 'created-session'],
-                'session.resume' => ['sessionId' => $request['params']['sessionId']],
+                'session.create' => array_filter([
+                    'sessionId' => $request['params']['sessionId'] ?? 'created-session',
+                    'capabilities' => $this->capabilities,
+                ], fn ($value) => $value !== null),
+                'session.resume' => array_filter([
+                    'sessionId' => $request['params']['sessionId'],
+                    'capabilities' => $this->capabilities,
+                ], fn ($value) => $value !== null),
                 'session.detach' => ['success' => true],
                 'session.management.configure' => [
                     'enabled' => true,

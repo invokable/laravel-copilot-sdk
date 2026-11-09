@@ -204,6 +204,10 @@ $config = new SessionConfig(
         return UIAutoModeSwitchResponse::Yes;
     },
 
+    // 有効なアクティブリクエストの自動回復をランタイムに依頼する（既定値: false）
+    // onAutoModeSwitchRequest が必須。回復の再試行や巻き戻しはランタイムが行う。
+    autoModeRecovery: true,
+
     // セッション内部テレメトリの有効/無効化（デフォルト: null = 有効）
     // falseに設定するとこのセッションのテレメトリを無効化
     // カスタムプロバイダー（BYOK）設定時は常に無効
@@ -372,6 +376,11 @@ $config = new SessionConfig(
     excludedManagedSettings: ['permissions'],
 );
 ```
+
+`autoModeRecovery` は作成時・再開時の両方で指定します。ランタイムが
+`capabilities.ui.autoModeRecovery` を `true` として応答しない場合、セッションは切り離され例外になります。
+回復オファーは `AutoModeSwitchRequest` の `$request->autoModeRecovery` にコンテキストが設定されます。
+この機能を使わない場合、既存の `onAutoModeSwitchRequest` による将来メッセージ向けの切り替え動作は変わりません。
 
 `trustWorkingDirectory`には`WorkingDirectoryTrust::Session`または`WorkingDirectoryTrust::User`を指定できます。`Session`は現在のセッションだけ、`User`は後続セッションにも適用される永続的な信頼設定です。省略時は信頼状態を変更しません。この設定は新規セッション作成時のみ利用でき、再開時の`ResumeSessionConfig`には指定できません。
 

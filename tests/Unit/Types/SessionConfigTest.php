@@ -235,6 +235,7 @@ describe('SessionConfig', function () {
             'customAgentsLocalOnly' => true,
             'coauthorEnabled' => false,
             'manageScheduleEnabled' => true,
+            'autoModeRecovery' => true,
             'infiniteSessions' => ['enabled' => true, 'backgroundCompactionThreshold' => 0.80],
             'agent' => 'reviewer',
         ]);
@@ -252,6 +253,7 @@ describe('SessionConfig', function () {
             ->and($config->onUserInputRequest)->toBe($userInputHandler)
             ->and($config->onExitPlanModeRequest)->toBe($exitPlanModeHandler)
             ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler)
+            ->and($config->autoModeRecovery)->toBeTrue()
             ->and($config->onMcpAuthRequest)->toBe($mcpAuthHandler)
             ->and($config->hooks)->toBeInstanceOf(SessionHooks::class)
             ->and($config->hooks->onPreToolUse)->toBe($preToolUseHook)
@@ -376,6 +378,7 @@ describe('SessionConfig', function () {
             manageScheduleEnabled: true,
             infiniteSessions: new InfiniteSessionConfig(enabled: false),
             agent: 'reviewer',
+            autoModeRecovery: true,
         );
 
         $array = $config->toArray();
@@ -393,6 +396,7 @@ describe('SessionConfig', function () {
             ->and($array['onUserInputRequest'])->toBe($userInputHandler)
             ->and($array['onExitPlanModeRequest'])->toBe($exitPlanModeHandler)
             ->and($array['onAutoModeSwitchRequest'])->toBe($autoModeSwitchHandler)
+            ->and($array['autoModeRecovery'])->toBeTrue()
             ->and($array['hooks'])->toBe(['onPreToolUse' => $preToolUseHook])
             ->and($array['workingDirectory'])->toBe('/home/user')
             ->and($array['streaming'])->toBeFalse()

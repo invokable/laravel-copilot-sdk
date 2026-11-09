@@ -687,7 +687,7 @@ class Client implements CopilotClient
      *
      * Custom-agent declarative hooks are forwarded with their agent definition; top-level hooks are session callbacks.
      *
-     * @param  SessionConfig|array{session_id?: string, name?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array, interactiveUser?: bool, autopilot?: AutopilotOptions|array, sandboxConfig?: SandboxConfig|array, sandbox?: SandboxConfig|array}  $config
+     * @param  SessionConfig|array{session_id?: string, name?: string, model?: string, tools?: array, system_message?: array, available_tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, config_dir?: string, skill_directories?: array, disabled_skills?: array, interactiveUser?: bool, autoModeRecovery?: bool, autopilot?: AutopilotOptions|array, sandboxConfig?: SandboxConfig|array, sandbox?: SandboxConfig|array}  $config
      *
      * @throws JsonRpcException
      */
@@ -721,6 +721,10 @@ class Client implements CopilotClient
                 'An onPermissionRequest handler is required when creating a session. '
                 .'For example, to allow all permissions, use new SessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
             );
+        }
+
+        if (($config['autoModeRecovery'] ?? false) === true && ! is_callable($config['onAutoModeSwitchRequest'] ?? null)) {
+            throw new InvalidArgumentException('An onAutoModeSwitchRequest handler is required when autoModeRecovery is enabled.');
         }
 
         $canvasHandler = $config['canvasHandler'] ?? null;
@@ -855,6 +859,7 @@ class Client implements CopilotClient
                     : ($config['askUserVariant'] ?? null),
                 'requestExitPlanMode' => isset($config['onExitPlanModeRequest']),
                 'requestAutoModeSwitch' => isset($config['onAutoModeSwitchRequest']),
+                'requestAutoModeRecovery' => ($config['autoModeRecovery'] ?? false) === true ? true : null,
                 'hooks' => $hasHooks,
                 'workingDirectory' => $config['workingDirectory'] ?? null,
                 'trustWorkingDirectory' => ($config['trustWorkingDirectory'] ?? null) instanceof WorkingDirectoryTrust
@@ -976,6 +981,9 @@ class Client implements CopilotClient
             });
         }
         $session->setCapabilities($capabilities);
+        if (($config['autoModeRecovery'] ?? false) === true && ! $session->capabilities()->supportsAutoModeRecovery()) {
+            $this->rejectUnsupportedAutoModeRecovery($session, $sessionId, $tokenProviderRegistrationId);
+        }
         if (isset($response['permissionModeResult']) && is_array($response['permissionModeResult'])) {
             $session->setPermissionModeResult(PermissionsSetModeResult::fromArray($response['permissionModeResult']));
         }
@@ -1006,7 +1014,7 @@ class Client implements CopilotClient
     /**
      * Resume an existing session.
      *
-     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array, interactiveUser?: bool, autopilot?: AutopilotOptions|array, sandboxConfig?: SandboxConfig|array, sandbox?: SandboxConfig|array}  $config
+     * @param  ResumeSessionConfig|array{tools?: array, provider?: array, on_permission_request: callable, on_user_input_request?: callable, on_mcp_auth_request?: callable, hooks?: array, working_directory?: string, streaming?: bool, mcp_servers?: array, custom_agents?: array, skill_directories?: array, disabled_skills?: array, interactiveUser?: bool, autoModeRecovery?: bool, autopilot?: AutopilotOptions|array, sandboxConfig?: SandboxConfig|array, sandbox?: SandboxConfig|array}  $config
      *
      * @throws JsonRpcException
      */
@@ -1039,6 +1047,10 @@ class Client implements CopilotClient
                 'An onPermissionRequest handler is required when resuming a session. '
                 .'For example, to allow all permissions, use new ResumeSessionConfig(onPermissionRequest: PermissionHandler::approveAll()).',
             );
+        }
+
+        if (($config['autoModeRecovery'] ?? false) === true && ! is_callable($config['onAutoModeSwitchRequest'] ?? null)) {
+            throw new InvalidArgumentException('An onAutoModeSwitchRequest handler is required when autoModeRecovery is enabled.');
         }
 
         $canvasHandler = $config['canvasHandler'] ?? null;
@@ -1149,6 +1161,7 @@ class Client implements CopilotClient
                     : ($config['askUserVariant'] ?? null),
                 'requestExitPlanMode' => isset($config['onExitPlanModeRequest']),
                 'requestAutoModeSwitch' => isset($config['onAutoModeSwitchRequest']),
+                'requestAutoModeRecovery' => ($config['autoModeRecovery'] ?? false) === true ? true : null,
                 'hooks' => $hasHooks,
                 'workingDirectory' => $config['workingDirectory'] ?? null,
                 'additionalDirectories' => $config['additionalDirectories'] ?? null,
@@ -1258,6 +1271,9 @@ class Client implements CopilotClient
             });
         }
         $session->setCapabilities($capabilities);
+        if (($config['autoModeRecovery'] ?? false) === true && ! $session->capabilities()->supportsAutoModeRecovery()) {
+            $this->rejectUnsupportedAutoModeRecovery($session, $resumedSessionId, $tokenProviderRegistrationId);
+        }
         if (isset($response['permissionModeResult']) && is_array($response['permissionModeResult'])) {
             $session->setPermissionModeResult(PermissionsSetModeResult::fromArray($response['permissionModeResult']));
         }
@@ -1548,6 +1564,31 @@ class Client implements CopilotClient
             'sessionId' => $sessionId,
             'eventType' => 'mcp.oauth_required',
         ]);
+    }
+
+    private function rejectUnsupportedAutoModeRecovery(
+        Session $session,
+        string $sessionId,
+        ?string $tokenProviderRegistrationId,
+    ): never {
+        $disconnectException = null;
+
+        try {
+            $session->disconnect();
+        } catch (Throwable $e) {
+            $disconnectException = $e;
+        }
+
+        unset($this->sessions[$sessionId], $this->bearerTokenProviders[$sessionId]);
+        if ($tokenProviderRegistrationId !== null) {
+            unset($this->gitHubTokenProviders[$tokenProviderRegistrationId]);
+        }
+
+        if ($disconnectException !== null) {
+            throw new RuntimeException('The runtime does not support autoModeRecovery.', previous: $disconnectException);
+        }
+
+        throw new RuntimeException('The runtime does not support autoModeRecovery.');
     }
 
     private function acquireGitHubToken(array $params): array

@@ -192,6 +192,7 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?array  $excludedManagedSettings  Managed setting paths to exclude from runtime-fetched policy. Does not affect host-injected `$managedSettings`.
      * @param  ?bool  $allowMultipleToolCalls  Whether the model may request multiple tool calls per response. Defaults to true. Re-supply after a cold resume.
      * @param  PermissionMode|string|null  $permissionMode  Permission mode for the session. Omission leaves the runtime default unchanged. Re-supply after a cold resume. Not supported for cloud sessions.
+     * @param  ?bool  $autoModeRecovery  Enables runtime recovery of eligible active requests; requires an auto-mode-switch handler.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -299,6 +300,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?array $excludedManagedSettings = null,
         public ?bool $allowMultipleToolCalls = null,
         public PermissionMode|string|null $permissionMode = null,
+        public ?bool $autoModeRecovery = null,
     ) {}
 
     /**
@@ -519,6 +521,7 @@ readonly class ResumeSessionConfig implements Arrayable
             skillProvider: $data['skillProvider'] ?? null,
             sessionFsProvider: $data['sessionFsProvider'] ?? null,
             interactiveUser: $data['interactiveUser'] ?? null,
+            autoModeRecovery: $data['autoModeRecovery'] ?? null,
         );
     }
 
@@ -704,6 +707,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'sandboxConfig' => $sandboxConfig instanceof SandboxConfig ? $sandboxConfig->toArray() : $sandboxConfig,
             'allowedModels' => $this->allowedModels,
             'interactiveUser' => $this->interactiveUser,
+            'autoModeRecovery' => $this->autoModeRecovery,
         ], fn ($value) => $value !== null);
     }
 }
