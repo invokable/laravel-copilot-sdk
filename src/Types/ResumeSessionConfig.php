@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Contracts\SessionFsProvider;
 use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Enums\AskUserVariant;
+use Revolution\Copilot\Enums\PermissionMode;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Support\CanvasHandler;
 use Revolution\Copilot\Support\ToolSet;
@@ -190,6 +191,7 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
      * @param  ?array  $excludedManagedSettings  Managed setting paths to exclude from runtime-fetched policy. Does not affect host-injected `$managedSettings`.
      * @param  ?bool  $allowMultipleToolCalls  Whether the model may request multiple tool calls per response. Defaults to true. Re-supply after a cold resume.
+     * @param  PermissionMode|string|null  $permissionMode  Permission mode for the session. Omission leaves the runtime default unchanged. Re-supply after a cold resume. Not supported for cloud sessions.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -296,6 +298,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public AutopilotOptions|array|null $autopilot = null,
         public ?array $excludedManagedSettings = null,
         public ?bool $allowMultipleToolCalls = null,
+        public PermissionMode|string|null $permissionMode = null,
     ) {}
 
     /**
@@ -487,6 +490,9 @@ readonly class ResumeSessionConfig implements Arrayable
             enforceManagedModelDefaults: $data['enforceManagedModelDefaults'] ?? null,
             excludedManagedSettings: $data['excludedManagedSettings'] ?? null,
             allowMultipleToolCalls: $data['allowMultipleToolCalls'] ?? null,
+            permissionMode: isset($data['permissionMode'])
+                ? (is_string($data['permissionMode']) ? (PermissionMode::tryFrom($data['permissionMode']) ?? $data['permissionMode']) : $data['permissionMode'])
+                : null,
             canvasProvider: $canvasProvider,
             imageGeneration: isset($data['imageGeneration'])
                 ? ($data['imageGeneration'] instanceof ImageGenerationConfig ? $data['imageGeneration'] : ImageGenerationConfig::fromArray($data['imageGeneration']))
@@ -680,6 +686,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'enableManagedSettings' => $this->enableManagedSettings,
             'excludedManagedSettings' => $this->excludedManagedSettings,
             'allowMultipleToolCalls' => $this->allowMultipleToolCalls,
+            'permissionMode' => $this->permissionMode instanceof PermissionMode ? $this->permissionMode->value : $this->permissionMode,
             'canvasProvider' => $canvasProvider,
             'enforceManagedModelDefaults' => $this->enforceManagedModelDefaults,
             'imageGeneration' => $this->imageGeneration instanceof ImageGenerationConfig

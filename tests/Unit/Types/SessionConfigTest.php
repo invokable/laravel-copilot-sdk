@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\MemoryMode;
+use Revolution\Copilot\Enums\PermissionMode;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\WorkingDirectoryTrust;
 use Revolution\Copilot\Support\ToolSet;
@@ -820,4 +821,23 @@ it('roundtrips allowedModels', function () {
     expect($config->allowedModels)->toBe(['gpt-5'])
         ->and($config->toArray()['allowedModels'])->toBe(['gpt-5'])
         ->and((new SessionConfig)->toArray())->not->toHaveKey('allowedModels');
+});
+
+it('round-trips permission mode and omits an unset mode', function () {
+    foreach ([
+        [PermissionMode::Manual, 'manual'],
+        [PermissionMode::Assisted, 'assisted'],
+        [PermissionMode::AllowAll, 'allow-all'],
+    ] as [$mode, $value]) {
+        $config = new SessionConfig(permissionMode: $mode);
+        $fromArray = SessionConfig::fromArray(['permissionMode' => $value]);
+
+        expect($config->toArray())->toHaveKey('permissionMode', $value)
+            ->and($fromArray->permissionMode)->toBe($mode)
+            ->and($fromArray->toArray())->toHaveKey('permissionMode', $value);
+    }
+
+    expect((new SessionConfig)->toArray())->not->toHaveKey('permissionMode')
+        ->and(SessionConfig::fromArray(['permissionMode' => 'assisted'])->permissionMode)->toBe(PermissionMode::Assisted)
+        ->and((new SessionConfig(permissionMode: 'assisted'))->toArray())->toHaveKey('permissionMode', 'assisted');
 });

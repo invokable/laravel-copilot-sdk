@@ -1573,6 +1573,10 @@ $session->rpc()->permissions()->setApproveAll(new PermissionsSetApproveAllReques
 $session->rpc()->permissions()->setMode(new PermissionsSetModeRequest(mode: PermissionMode::AllowAll));
 // 現在の権限モードを取得
 $mode = $session->rpc()->permissions()->getMode();
+// セッション作成・再開時に permissionMode を指定した場合、適用結果はセッションから取得できる
+$result = $session->permissionModeResult();
+// $result->success - 適用に成功したか
+// $result->mode - 適用後の権限モード
 // 現在のポリシーで利用可能な承認モードを取得 (experimental)
 $capabilities = $session->rpc()->permissions()->getCapabilities();
 // $capabilities->assistedApproval - LLM支援の承認が有効か

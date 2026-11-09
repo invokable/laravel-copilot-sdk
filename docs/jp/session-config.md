@@ -458,6 +458,17 @@ $config = new SessionConfig(
 );
 ```
 
+`permissionMode` を指定すると、セッション作成・再開時に権限モード（`manual` / `assisted` / `allow-all`）をランタイムへ伝えます。省略するとランタイムの既定のままです。`PermissionMode` enum または文字列で指定でき、`ResumeSessionConfig` でも同じように指定できます。クラウドセッションでは未対応です。
+
+```php
+use Revolution\Copilot\Enums\PermissionMode;
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(permissionMode: PermissionMode::Assisted);
+```
+
+作成・再開の応答に `permissionModeResult` が含まれている場合、`$session->permissionModeResult()` で適用結果（成功可否と適用後のモード）を取得できます。応答に含まれない場合は `null` です。
+
 ## Autopilot の自動継続設定
 
 `autopilot`でAutopilotモード中の自動継続ポリシーを設定できます。セッションモード自体は変更しません。新規SDKセッションでは、省略時に自動継続が有効になり、`maxContinues`は5です。`0`を指定すると通常の自動継続を無効にできます。
