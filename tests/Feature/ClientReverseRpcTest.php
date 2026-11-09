@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Facades\Log;
 use Revolt\EventLoop;
 use Revolution\Copilot\Client;
 use Revolution\Copilot\Contracts\Transport;
@@ -13,14 +14,18 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\JsonRpc\JsonRpcMessage;
 use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Protocol;
+use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\AutoModeSwitchRequest;
 use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\ExitPlanModeResult;
+use Revolution\Copilot\Types\MemoryConfiguration;
+use Revolution\Copilot\Types\MemoryStoreCallOptions;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateResult;
 use Revolution\Copilot\Types\SessionConfig;
+use Revolution\Copilot\Types\StoredMemory;
 
 beforeEach(function () {
     Facade::clearResolvedInstances();
@@ -238,6 +243,247 @@ describe('Client reverse requests', function () {
             ->toBe('Session creation callback failed')
             ->not->toContain('Sensitive host detail');
     });
+
+    it('registers app memory stores for created and resumed sessions', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $createdCall = null;
+        $resumedCall = null;
+        $createdSession = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            memory: new MemoryConfiguration(
+                enabled: true,
+                storeMemory: function (StoredMemory $memory, MemoryStoreCallOptions $options) use (&$createdCall): void {
+                    $createdCall = [$memory, $options];
+                },
+            ),
+        ));
+        $resumedSession = $client->resumeSession(
+            'resumed-session',
+            new ResumeSessionConfig(
+                onPermissionRequest: fn () => true,
+                memory: new MemoryConfiguration(
+                    enabled: true,
+                    storeMemory: function (StoredMemory $memory, MemoryStoreCallOptions $options) use (&$resumedCall): void {
+                        $resumedCall = [$memory, $options];
+                    },
+                ),
+            ),
+        );
+        $memoryData = [
+            'subject' => 'Project conventions',
+            'fact' => 'Use readonly data types.',
+            'citations' => 'src/Types/SessionEvent.php:55',
+            'reason' => 'Preserves immutable payload behavior.',
+        ];
+
+        $createRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.create',
+        ))[0];
+        $resumeRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.resume',
+        ))[0];
+
+        $transport->injectRequest('memory-created', 'memoryStore.store', [
+            ...$memoryData,
+            'sessionId' => $createdSession->id(),
+        ]);
+        $transport->injectRequest('memory-resumed', 'memoryStore.store', [
+            ...$memoryData,
+            'sessionId' => $resumedSession->id(),
+        ]);
+
+        expect($createRequest['params']['hasMemoryStore'])->toBeTrue()
+            ->and($createRequest['params']['memory'])->toBe(['enabled' => true])
+            ->and($resumeRequest['params']['hasMemoryStore'])->toBeTrue()
+            ->and($resumeRequest['params']['memory'])->toBe(['enabled' => true])
+            ->and($createdCall[0])->toBeInstanceOf(StoredMemory::class)
+            ->and($createdCall[0]->toArray())->toBe(['sessionId' => $createdSession->id(), ...$memoryData])
+            ->and($createdCall[1]->signal)->toBeInstanceOf(CancellationToken::class)
+            ->and($resumedCall[0])->toBeInstanceOf(StoredMemory::class)
+            ->and($resumedCall[0]->toArray())->toBe(['sessionId' => $resumedSession->id(), ...$memoryData])
+            ->and($resumedCall[1]->signal)->toBeInstanceOf(CancellationToken::class)
+            ->and($transport->responseFor('memory-created')['result'])->toBe([])
+            ->and($transport->responseFor('memory-resumed')['result'])->toBe([]);
+    });
+
+    it('supports callbacks in array memory configuration', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $storeCalls = 0;
+        $session = $client->createSession([
+            'onPermissionRequest' => fn () => true,
+            'memory' => [
+                'enabled' => true,
+                'storeMemory' => function (StoredMemory $memory, MemoryStoreCallOptions $options) use (&$storeCalls): void {
+                    $storeCalls++;
+                },
+            ],
+        ]);
+        $request = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.create',
+        ))[0];
+
+        $transport->injectRequest('memory-array', 'memoryStore.store', [
+            'sessionId' => $session->id(),
+            'subject' => 'Project conventions',
+            'fact' => 'Use readonly data types.',
+            'citations' => 'src/Types/SessionEvent.php:55',
+            'reason' => 'Preserves immutable payload behavior.',
+        ]);
+
+        expect($request['params']['hasMemoryStore'])->toBeTrue()
+            ->and($request['params']['memory'])->toBe(['enabled' => true])
+            ->and($transport->responseFor('memory-array')['result'])->toBe([])
+            ->and($storeCalls)->toBe(1);
+    });
+
+    it('omits memory store advertisement when no callback is configured', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            memory: new MemoryConfiguration(enabled: true),
+        ));
+        $client->resumeSession(
+            'resumed-session',
+            new ResumeSessionConfig(
+                onPermissionRequest: fn () => true,
+                memory: ['enabled' => true],
+            ),
+        );
+
+        $createRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.create',
+        ))[0];
+        $resumeRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.resume',
+        ))[0];
+
+        expect($createRequest['params'])->not->toHaveKey('hasMemoryStore')
+            ->and($resumeRequest['params'])->not->toHaveKey('hasMemoryStore');
+    });
+
+    it('requires enabled memory and rejects memory stores for cloud sessions', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $storeMemory = fn () => null;
+
+        expect(fn () => $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            memory: new MemoryConfiguration(enabled: false, storeMemory: $storeMemory),
+        )))->toThrow(InvalidArgumentException::class, 'memory.storeMemory requires memory.enabled to be true.')
+            ->and(fn () => $client->resumeSession('disabled-memory-session', [
+                'onPermissionRequest' => fn () => true,
+                'memory' => [
+                    'enabled' => false,
+                    'storeMemory' => $storeMemory,
+                ],
+            ]))->toThrow(InvalidArgumentException::class, 'memory.storeMemory requires memory.enabled to be true.')
+            ->and(fn () => $client->createSession([
+                'onPermissionRequest' => fn () => true,
+                'memory' => [
+                    'enabled' => true,
+                    'storeMemory' => $storeMemory,
+                ],
+                'cloud' => [],
+            ]))->toThrow(InvalidArgumentException::class, 'Memory stores are not supported for cloud sessions.')
+            ->and(array_column($transport->messages, 'method'))->not->toContain('session.create', 'session.resume');
+    });
+
+    it('returns a generic error and logs callback details when memory storage fails', function () {
+        Log::spy();
+        [$client, $transport] = createReverseRpcTestClient();
+        $session = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            memory: new MemoryConfiguration(
+                enabled: true,
+                storeMemory: fn () => throw new RuntimeException('Sensitive host detail'),
+            ),
+        ));
+
+        $transport->injectRequest('memory-failed', 'memoryStore.store', [
+            'sessionId' => $session->id(),
+            'subject' => 'Project conventions',
+            'fact' => 'Use readonly data types.',
+            'citations' => 'src/Types/SessionEvent.php:55',
+            'reason' => 'Preserves immutable payload behavior.',
+        ]);
+
+        expect($transport->responseFor('memory-failed')['error']['message'])
+            ->toBe('Memory store callback failed')
+            ->not->toContain('Sensitive host detail');
+
+        Log::shouldHaveReceived('warning')->once()->withArgs(
+            fn (string $message, array $context): bool => $message === 'Memory store callback failed'
+                && ($context['exception'] ?? null) instanceof RuntimeException
+                && $context['exception']->getMessage() === 'Sensitive host detail',
+        );
+    });
+
+    it('discards a memory store result when the runtime cancels the request', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $signal = null;
+        $session = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            memory: new MemoryConfiguration(
+                enabled: true,
+                storeMemory: function (StoredMemory $memory, MemoryStoreCallOptions $options) use ($transport, &$signal): void {
+                    $signal = $options->signal;
+                    $suspension = EventLoop::getSuspension();
+                    $options->signal->onCancellationRequested(fn () => $suspension->resume());
+                    EventLoop::delay(0.01, fn () => $transport->injectNotification(
+                        '$/cancelRequest',
+                        ['id' => 'memory-cancelled'],
+                    ));
+                    $suspension->suspend();
+                },
+            ),
+        ));
+
+        $transport->injectRequest('memory-cancelled', 'memoryStore.store', [
+            'sessionId' => $session->id(),
+            'subject' => 'Project conventions',
+            'fact' => 'Use readonly data types.',
+            'citations' => 'src/Types/SessionEvent.php:55',
+            'reason' => 'Preserves immutable payload behavior.',
+        ]);
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
+
+        expect($signal)->toBeInstanceOf(CancellationToken::class)
+            ->and($signal->isCancellationRequested())->toBeTrue()
+            ->and($transport->responseFor('memory-cancelled')['error']['code'])->toBe(-32800)
+            ->and($transport->responseFor('memory-cancelled')['error']['message'])->toContain('Memory store call cancelled');
+    });
+
+    it('clears the memory callback when the session disconnects', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $calls = 0;
+        $session = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            memory: new MemoryConfiguration(
+                enabled: true,
+                storeMemory: function () use (&$calls): void {
+                    $calls++;
+                },
+            ),
+        ));
+        $session->disconnect();
+
+        $transport->injectRequest('memory-after-disconnect', 'memoryStore.store', [
+            'sessionId' => $session->id(),
+            'subject' => 'Project conventions',
+            'fact' => 'Use readonly data types.',
+            'citations' => 'src/Types/SessionEvent.php:55',
+            'reason' => 'Preserves immutable payload behavior.',
+        ]);
+
+        expect($transport->responseFor('memory-after-disconnect')['error']['message'])
+            ->toBe('Memory store handler is unavailable')
+            ->and($calls)->toBe(0);
+    });
 });
 
 /**
@@ -275,8 +521,9 @@ function createReverseRpcTestClient(): array
 
             $result = match ($request['method']) {
                 'connect' => ['protocolVersion' => Protocol::version()],
-                'session.create' => ['sessionId' => 'created-session'],
+                'session.create' => ['sessionId' => $request['params']['sessionId'] ?? 'created-session'],
                 'session.resume' => ['sessionId' => $request['params']['sessionId']],
+                'session.detach' => ['success' => true],
                 'session.management.configure' => [
                     'enabled' => true,
                     'scope' => 'all',

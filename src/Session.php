@@ -16,6 +16,7 @@ use Revolution\Copilot\Concerns\Session\HasElicitationHandler;
 use Revolution\Copilot\Concerns\Session\HasExitPlanModeHandler;
 use Revolution\Copilot\Concerns\Session\HasHooks;
 use Revolution\Copilot\Concerns\Session\HasMcpAuthHandler;
+use Revolution\Copilot\Concerns\Session\HasMemoryStoreHandler;
 use Revolution\Copilot\Concerns\Session\HasPermissionHandler;
 use Revolution\Copilot\Concerns\Session\HasSessionCreationHandler;
 use Revolution\Copilot\Concerns\Session\HasSessionFs;
@@ -77,6 +78,7 @@ class Session implements CopilotSession
     use HasExitPlanModeHandler;
     use HasHooks;
     use HasMcpAuthHandler;
+    use HasMemoryStoreHandler;
     use HasPermissionHandler;
     use HasSessionCreationHandler;
     use HasSessionFs;
@@ -1076,6 +1078,7 @@ class Session implements CopilotSession
         $this->skillProvider = null;
         $this->sessionFsProvider = null;
         $this->sessionCreationHandler = null;
+        $this->registerMemoryStoreHandler(null);
         $this->canvasHandler = null;
         $this->canvasDeclarations = [];
         $this->openCanvases = [];

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Types;
 
+use Closure;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\MemoryMode;
@@ -17,10 +18,12 @@ readonly class MemoryConfiguration implements Arrayable
     /**
      * @param  bool  $enabled  Whether the memory feature is enabled for this session.
      * @param  MemoryMode|string|null  $mode  Memory injection mode. When omitted, the runtime default applies.
+     * @param  Closure(StoredMemory, MemoryStoreCallOptions): void|null  $storeMemory  Application callback for persisting memories.
      */
     public function __construct(
         public bool $enabled,
         public MemoryMode|string|null $mode = null,
+        public ?Closure $storeMemory = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -39,6 +42,7 @@ readonly class MemoryConfiguration implements Arrayable
         return new self(
             enabled: Arr::boolean($data, 'enabled', false),
             mode: $mode,
+            storeMemory: $data['storeMemory'] ?? null,
         );
     }
 

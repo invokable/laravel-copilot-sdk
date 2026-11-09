@@ -48,6 +48,7 @@ use Revolution\Copilot\Types\EntraAuthConfig;
 use Revolution\Copilot\Types\GetAuthStatusResponse;
 use Revolution\Copilot\Types\GetStatusResponse;
 use Revolution\Copilot\Types\GitHubMcpToolConfig;
+use Revolution\Copilot\Types\MemoryConfiguration;
 use Revolution\Copilot\Types\NamedProviderConfig;
 use Revolution\Copilot\Types\ProviderConfig;
 use Revolution\Copilot\Types\ResumeSessionConfig;
@@ -698,6 +699,7 @@ class Client implements CopilotClient
             : [
                 ...$config->toArray(),
                 'onMcpAuthRequest' => $config->onMcpAuthRequest,
+                'memory' => $config->memory,
                 'provider' => $config->provider,
                 'providers' => $config->providers,
                 'gitHubTokenProvider' => $config->gitHubTokenProvider,
@@ -707,6 +709,7 @@ class Client implements CopilotClient
         $config = $this->normalizeToolFilters($config);
         $config = $this->applyModeDefaults($config);
         [$config, $bearerTokenProviders] = $this->extractBearerTokenProviders($config);
+        $storeMemory = $this->memoryStoreCallback($config['memory'] ?? null);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
             throw new InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
@@ -729,6 +732,10 @@ class Client implements CopilotClient
         $this->validateSessionFsProvider($sessionFsProvider);
 
         $isCloudSession = ($config['cloud'] ?? null) !== null;
+        if ($isCloudSession && $storeMemory !== null) {
+            throw new InvalidArgumentException('Memory stores are not supported for cloud sessions.');
+        }
+
         if ($isCloudSession && $skillProvider !== null) {
             throw new InvalidArgumentException('Skill providers are not supported for cloud sessions.');
         }
@@ -766,6 +773,7 @@ class Client implements CopilotClient
             $skillProvider !== null
             || $sessionFsProvider !== null
             || $sessionFsFactory !== null
+            || $storeMemory !== null
             || $bearerTokenProviders !== []
             || $canvasHandler !== null
             || $config['canvases'] !== null
@@ -824,7 +832,8 @@ class Client implements CopilotClient
                 'toolSearch' => $this->normalizeArrayableValue($config['toolSearch'] ?? null),
                 'providers' => $this->normalizeArrayableValue($config['providers'] ?? null),
                 'models' => $this->normalizeArrayableValue($config['models'] ?? null),
-                'memory' => $this->normalizeArrayableValue($config['memory'] ?? null),
+                'memory' => $this->normalizeArrayableValue($this->memoryConfigurationForRequest($config['memory'] ?? null)),
+                'hasMemoryStore' => $storeMemory !== null ? true : null,
                 'imageGeneration' => $this->normalizeArrayableValue($config['imageGeneration'] ?? null),
                 'canvasProvider' => $this->normalizeArrayableValue($config['canvasProvider'] ?? null),
                 'featureFlags' => $config['featureFlags'] ?? null,
@@ -1003,6 +1012,7 @@ class Client implements CopilotClient
             : [
                 ...$config->toArray(),
                 'onMcpAuthRequest' => $config->onMcpAuthRequest,
+                'memory' => $config->memory,
                 'provider' => $config->provider,
                 'gitHubTokenProvider' => $config->gitHubTokenProvider,
                 'skillProvider' => $config->skillProvider,
@@ -1011,6 +1021,7 @@ class Client implements CopilotClient
         $config = $this->normalizeToolFilters($config);
         $config = $this->applyModeDefaults($config);
         [$config, $bearerTokenProviders] = $this->extractBearerTokenProviders($config);
+        $storeMemory = $this->memoryStoreCallback($config['memory'] ?? null);
 
         if (isset($config['gitHubToken'], $config['gitHubTokenProvider'])) {
             throw new InvalidArgumentException('gitHubToken and gitHubTokenProvider are mutually exclusive');
@@ -1110,7 +1121,8 @@ class Client implements CopilotClient
                 'toolSearch' => $this->normalizeArrayableValue($config['toolSearch'] ?? null),
                 'providers' => $this->normalizeArrayableValue($config['providers'] ?? null),
                 'models' => $this->normalizeArrayableValue($config['models'] ?? null),
-                'memory' => $this->normalizeArrayableValue($config['memory'] ?? null),
+                'memory' => $this->normalizeArrayableValue($this->memoryConfigurationForRequest($config['memory'] ?? null)),
+                'hasMemoryStore' => $storeMemory !== null ? true : null,
                 'imageGeneration' => $this->normalizeArrayableValue($config['imageGeneration'] ?? null),
                 'canvasProvider' => $this->normalizeArrayableValue($config['canvasProvider'] ?? null),
                 'featureFlags' => $config['featureFlags'] ?? null,
@@ -1315,6 +1327,41 @@ class Client implements CopilotClient
         return array_map(fn ($item) => $this->normalizeArrayableValue($item), $value);
     }
 
+    private function memoryStoreCallback(mixed $memory): ?Closure
+    {
+        if ($memory instanceof MemoryConfiguration) {
+            if ($memory->storeMemory !== null && $memory->enabled !== true) {
+                throw new InvalidArgumentException('memory.storeMemory requires memory.enabled to be true.');
+            }
+
+            return $memory->storeMemory;
+        }
+
+        if (! is_array($memory) || ! array_key_exists('storeMemory', $memory)) {
+            return null;
+        }
+
+        $storeMemory = $memory['storeMemory'];
+        if ($storeMemory !== null && ! $storeMemory instanceof Closure) {
+            throw new InvalidArgumentException('memory.storeMemory must be a Closure.');
+        }
+
+        if ($storeMemory !== null && ($memory['enabled'] ?? null) !== true) {
+            throw new InvalidArgumentException('memory.storeMemory requires memory.enabled to be true.');
+        }
+
+        return $storeMemory;
+    }
+
+    private function memoryConfigurationForRequest(mixed $memory): mixed
+    {
+        if (is_array($memory)) {
+            unset($memory['storeMemory']);
+        }
+
+        return $memory;
+    }
+
     /**
      * @return array{array, array<string, callable(array{providerName: string, sessionId: string}): string>}
      */
@@ -1401,6 +1448,15 @@ class Client implements CopilotClient
         $session->registerTools($tools);
         $session->registerCommands($commands);
         $session->registerPermissionHandler($config['onPermissionRequest']);
+
+        $storeMemory = $this->memoryStoreCallback($config['memory'] ?? null);
+        if ($storeMemory !== null) {
+            $session->registerMemoryStoreHandler($storeMemory);
+            $this->rpcClient->setRequestHandler(
+                'memoryStore.store',
+                fn (array $params, CancellationToken $token) => $this->handleMemoryStore($params, $token),
+            );
+        }
 
         if (isset($config['canvasHandler']) || isset($config['canvases'])) {
             $session->registerCanvasHandler($config['canvasHandler'] ?? null, $config['canvases'] ?? null);
