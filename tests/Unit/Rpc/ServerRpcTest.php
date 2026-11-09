@@ -19,6 +19,7 @@ use Revolution\Copilot\Rpc\PendingServerHooks;
 use Revolution\Copilot\Rpc\PendingServerKerberosAuth;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Rpc\PendingServerModels;
+use Revolution\Copilot\Rpc\PendingServerNetwork;
 use Revolution\Copilot\Rpc\PendingServerPlugins;
 use Revolution\Copilot\Rpc\PendingServerSandbox;
 use Revolution\Copilot\Rpc\PendingServerSandboxProxyCa;
@@ -124,6 +125,7 @@ describe('ServerRpc', function () {
             ->and($rpc->sandbox())->toBeInstanceOf(PendingServerSandbox::class)
             ->and($rpc->sandboxProxyCa())->toBeInstanceOf(PendingServerSandboxProxyCa::class)
             ->and($rpc->settings())->toBeInstanceOf(PendingServerSettings::class)
+            ->and($rpc->network())->toBeInstanceOf(PendingServerNetwork::class)
             ->and($rpc->kerberosAuth())->toBeInstanceOf(PendingServerKerberosAuth::class);
 
         expect($rpc->agentRegistry())->toBeInstanceOf(PendingServerAgentRegistry::class);

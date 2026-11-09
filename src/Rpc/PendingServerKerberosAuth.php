@@ -6,11 +6,12 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\KerberosAuthSetProviderRequest;
+use Revolution\Copilot\Types\Rpc\NetworkSetProviderRequest;
 
 /**
- * Pending server-level Kerberos authentication RPC operations.
+ * Legacy Kerberos API alias for network callback registration.
  *
- * @experimental This API group is experimental and may change or be removed.
+ * @deprecated Use PendingServerNetwork instead.
  */
 class PendingServerKerberosAuth
 {
@@ -19,16 +20,21 @@ class PendingServerKerberosAuth
     ) {}
 
     /**
-     * Register the Kerberos provider for this SDK connection.
+     * Register the Kerberos provider through the network RPC.
      *
-     * @experimental
+     * @deprecated Use PendingServerNetwork::setProvider() instead.
      */
     public function setProvider(KerberosAuthSetProviderRequest|array $params): void
     {
-        $paramsArray = ($params instanceof KerberosAuthSetProviderRequest
+        $legacyParams = ($params instanceof KerberosAuthSetProviderRequest
             ? $params
             : KerberosAuthSetProviderRequest::fromArray($params))->toArray();
 
-        $this->client->request('kerberosAuth.setProvider', $paramsArray);
+        $legacyRequest = KerberosAuthSetProviderRequest::fromArray($legacyParams);
+
+        (new PendingServerNetwork($this->client))->setProvider(new NetworkSetProviderRequest(
+            scope: $legacyRequest->scope,
+            authenticateNegotiate: true,
+        ));
     }
 }

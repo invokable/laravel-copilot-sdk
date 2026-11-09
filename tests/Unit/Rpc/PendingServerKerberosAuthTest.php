@@ -6,14 +6,14 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerKerberosAuth;
 use Revolution\Copilot\Types\Rpc\KerberosAuthSetProviderRequest;
 
-describe('PendingServerKerberosAuth', function () {
-    it('registers the Kerberos provider with the configured scope', function () {
+describe('PendingServerKerberosAuth compatibility alias', function () {
+    it('registers the Kerberos callback through the network RPC', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
-            ->with('kerberosAuth.setProvider', [
-                'mode' => 'always',
+            ->with('network.setProvider', [
                 'scope' => 'runtime',
+                'authenticateNegotiate' => (object) [],
             ])
             ->andReturnNull();
 
@@ -25,11 +25,11 @@ describe('PendingServerKerberosAuth', function () {
             ->toBe('void');
     });
 
-    it('accepts array params and omits the optional scope', function () {
+    it('accepts legacy array params and omits the optional scope', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
             ->once()
-            ->with('kerberosAuth.setProvider', ['mode' => 'fallback'])
+            ->with('network.setProvider', ['authenticateNegotiate' => (object) []])
             ->andReturnNull();
 
         (new PendingServerKerberosAuth($client))->setProvider(['mode' => 'fallback']);

@@ -235,7 +235,7 @@ class CopilotManager implements Factory
                     ...Arr::only($this->config, ['builtin_plugin_directories', 'builtinPluginDirectories']),
                     ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
                     ...Arr::only($this->config, ['extension_launch_provider', 'extensionLaunchProvider']),
-                    ...Arr::only($this->config, ['kerberos_auth', 'kerberosAuth']),
+                    ...Arr::only($this->config, ['network', 'kerberos_auth', 'kerberosAuth']),
                     ...Arr::only($this->config, ['request_handler', 'requestHandler']),
                 ];
             } else {
@@ -259,7 +259,7 @@ class CopilotManager implements Factory
                     ...Arr::only($this->config, ['builtin_plugin_directories', 'builtinPluginDirectories']),
                     ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
                     ...Arr::only($this->config, ['extension_launch_provider', 'extensionLaunchProvider']),
-                    ...Arr::only($this->config, ['kerberos_auth', 'kerberosAuth']),
+                    ...Arr::only($this->config, ['network', 'kerberos_auth', 'kerberosAuth']),
                     ...Arr::only($this->config, ['request_handler', 'requestHandler']),
                 ];
             }
@@ -291,7 +291,7 @@ class CopilotManager implements Factory
     /**
      * Configure the client to use stdio transport with given options.
      *
-     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, mode?: CopilotClientMode|string, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array, entra?: EntraAuthConfig|array, builtin_plugin_directories?: list<string>, builtinPluginDirectories?: list<string>, on_github_telemetry?: callable(GitHubTelemetryNotification): void, onGitHubTelemetry?: callable(GitHubTelemetryNotification): void, extension_launch_provider?: callable(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null, extensionLaunchProvider?: callable(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null, kerberos_auth?: array{mode: string, scope?: string, callback: callable}, kerberosAuth?: array{mode: string, scope?: string, callback: callable}, request_handler?: CopilotRequestHandler|Closure|null, requestHandler?: CopilotRequestHandler|Closure|null}  $config  Configuration options for stdio transport.
+     * @param  ?array{cli_path: string, cli_args?: array, cwd?: string, log_level?: string, env?: array, mode?: CopilotClientMode|string, github_token?: string, use_logged_in_user?: bool, telemetry?: TelemetryConfig|array|null, session_idle_timeout_seconds?: int, copilot_home?: string, base_directory?: string, baseDirectory?: string, installation_confirmation_handler?: callable, installationConfirmationHandler?: callable, session_fs?: SessionFsConfig|array, sessionFs?: SessionFsConfig|array, entra?: EntraAuthConfig|array, builtin_plugin_directories?: list<string>, builtinPluginDirectories?: list<string>, on_github_telemetry?: callable(GitHubTelemetryNotification): void, onGitHubTelemetry?: callable(GitHubTelemetryNotification): void, extension_launch_provider?: callable(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null, extensionLaunchProvider?: callable(ExtensionLaunchProviderResolveRequest): ExtensionLaunchProviderResolveResult|array|null, network?: array{scope?: string, resolveProxy?: callable, authenticateNegotiate?: callable}, kerberos_auth?: array{mode: string, scope?: string, callback: callable}, kerberosAuth?: array{mode: string, scope?: string, callback: callable}, request_handler?: CopilotRequestHandler|Closure|null, requestHandler?: CopilotRequestHandler|Closure|null}  $config  Configuration options for stdio transport.
      */
     public function useStdio(?array $config = null): static
     {
@@ -324,6 +324,7 @@ class CopilotManager implements Factory
             'onGitHubTelemetry',
             'extension_launch_provider',
             'extensionLaunchProvider',
+            'network',
             'kerberos_auth',
             'kerberosAuth',
             'request_handler',
@@ -363,7 +364,7 @@ class CopilotManager implements Factory
             ...Arr::only($this->config, ['on_github_telemetry', 'onGitHubTelemetry']),
             ...Arr::only($this->config, ['request_handler', 'requestHandler']),
             ...Arr::only($this->config, ['extension_launch_provider', 'extensionLaunchProvider']),
-            ...Arr::only($this->config, ['kerberos_auth', 'kerberosAuth']),
+            ...Arr::only($this->config, ['network', 'kerberos_auth', 'kerberosAuth']),
         ]);
 
         return $this;

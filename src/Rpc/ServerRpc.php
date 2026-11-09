@@ -124,9 +124,19 @@ class ServerRpc
     }
 
     /**
-     * Experimental Kerberos authentication RPC operations.
+     * Experimental network callback RPC operations.
      *
      * @experimental
+     */
+    public function network(): PendingServerNetwork
+    {
+        return new PendingServerNetwork($this->client);
+    }
+
+    /**
+     * Legacy Kerberos RPC alias.
+     *
+     * @deprecated Use network() instead.
      */
     public function kerberosAuth(): PendingServerKerberosAuth
     {
