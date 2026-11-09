@@ -11,6 +11,8 @@
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\MemoryConfiguration;
+use Revolution\Copilot\Types\MemoryStoreCallOptions;
+use Revolution\Copilot\Types\StoredMemory;
 use Revolution\Copilot\Types\SystemMessageConfig;
 use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\UserInputRequest;
@@ -129,9 +131,23 @@ $config = new SessionConfig(
         // modeを省略するとsystem-prompt（システムプロンプトへの注入）を使用する。
         // user-promptを指定すると生成されるユーザーメッセージへ注入する。
         // mode: MemoryMode::UserPrompt,
+        storeMemory: function (StoredMemory $memory, MemoryStoreCallOptions $options) use ($memoryRepository): void {
+            if ($options->signal->isCancellationRequested()) {
+                return;
+            }
+
+            $memoryRepository->store($memory);
+        },
     ),
-    // 配列での指定も可能
-    // memory: ['enabled' => true, 'mode' => 'user-prompt'],
+    // 配列でも指定できる。storeMemoryにはClosureを渡す。
+    // memory: ['enabled' => true, 'mode' => 'user-prompt', 'storeMemory' => $storeMemory],
+
+    // storeMemory自体はアプリ側だけで使用し、RPCペイロードには含めない。
+    // 設定するとsession.create / session.resumeにhasMemoryStore: trueを送る。
+    // storeMemoryを使う場合はmemory.enabledをtrueにする。クラウドセッションでは使用できない。
+    // ランタイムはメモリを想起せず、vote_memoryも利用できなくなるため、
+    // 想起はsystemMessageなどでアプリ側から補う。
+    // コールバックのsignalはタイムアウトや切断時にキャンセルされ、後からの結果は破棄される。
 
     // これらのBYOK・メモリ設定は、作成時と再開時のRPCペイロードに送信される。
     // 再開時はResumeSessionConfigまたは同じキーを持つ配列で指定する。

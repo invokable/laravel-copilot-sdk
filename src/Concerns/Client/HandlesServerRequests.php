@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Concerns\Client;
 
 use Revolution\Copilot\Events\Client\ToolCall;
+use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Types\AutoModeSwitchRequest;
 use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
+use Revolution\Copilot\Types\StoredMemory;
 use Revolution\Copilot\Types\ToolResultObject;
 use Revolution\Copilot\Types\UserInputRequest;
 use RuntimeException;
@@ -269,5 +271,22 @@ trait HandlesServerRequests
         }
 
         return $session->handleSessionManagementCreate($request)->toArray();
+    }
+
+    /**
+     * Handle a memory store callback from the server.
+     */
+    protected function handleMemoryStore(array $params, CancellationToken $token): array
+    {
+        $memory = StoredMemory::fromArray($params);
+        $session = $this->sessions[$memory->sessionId] ?? null;
+
+        if ($session === null) {
+            throw new RuntimeException('Memory store owner is unavailable');
+        }
+
+        $session->handleMemoryStore($memory, $token);
+
+        return [];
     }
 }
