@@ -234,6 +234,7 @@ readonly class SessionConfig implements Arrayable
      *                                  Defaults to false for SDK sessions; ignored for cloud sessions and when resuming an active session.
      * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
      * @param  ?array  $excludedManagedSettings  Managed setting paths to exclude from runtime-fetched policy. Does not affect host-injected `$managedSettings`.
+     * @param  ?bool  $allowMultipleToolCalls  Whether the model may request multiple tool calls per response. Defaults to true. False is a provider hint, not an execution guarantee.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -343,6 +344,7 @@ readonly class SessionConfig implements Arrayable
         public SandboxConfig|array|null $sandboxConfig = null,
         public AutopilotOptions|array|null $autopilot = null,
         public ?array $excludedManagedSettings = null,
+        public ?bool $allowMultipleToolCalls = null,
     ) {}
 
     /**
@@ -533,6 +535,7 @@ readonly class SessionConfig implements Arrayable
             enableManagedSettings: $data['enableManagedSettings'] ?? null,
             enforceManagedModelDefaults: $data['enforceManagedModelDefaults'] ?? null,
             excludedManagedSettings: $data['excludedManagedSettings'] ?? null,
+            allowMultipleToolCalls: $data['allowMultipleToolCalls'] ?? null,
             imageGeneration: isset($data['imageGeneration'])
                 ? ($data['imageGeneration'] instanceof ImageGenerationConfig ? $data['imageGeneration'] : ImageGenerationConfig::fromArray($data['imageGeneration']))
                 : null,
@@ -743,6 +746,7 @@ readonly class SessionConfig implements Arrayable
             'enableManagedSettings' => $this->enableManagedSettings,
             'enforceManagedModelDefaults' => $this->enforceManagedModelDefaults,
             'excludedManagedSettings' => $this->excludedManagedSettings,
+            'allowMultipleToolCalls' => $this->allowMultipleToolCalls,
             'imageGeneration' => $this->imageGeneration instanceof ImageGenerationConfig
                 ? $this->imageGeneration->toArray()
                 : $this->imageGeneration,

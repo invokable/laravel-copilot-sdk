@@ -38,6 +38,18 @@ flowchart TD
 
 **重要:** このループの 1 反復は LLM API 呼び出し 1 回と完全に一致し、イベントログ上では `assistant.turn_start` / `assistant.turn_end` の 1 ペアとして見えます。隠れた呼び出しはありません。
 
+## Multiple tool calls
+
+セッションの作成と再開では `allowMultipleToolCalls` を指定できます。省略または `true` の場合は既定動作（モデルは 1 回のレスポンスで複数のツールを要求でき、ランタイムはハンドラーを並行実行できる）のままです。
+
+`false` を指定すると、プロバイダーに 1 レスポンスあたり最大 1 つのツール呼び出しを要求します。これはプロバイダーへのヒントであり、実行を保証するものではありません。プロバイダーが複数の呼び出しを返した場合も、ランタイムは既存の実行ポリシーですべて処理します。
+
+```php
+use Revolution\Copilot\Types\SessionConfig;
+
+$config = new SessionConfig(allowMultipleToolCalls: false);
+```
+
 ## Turn（ターン）とは何か
 
 **Turn** は、LLM API 呼び出し 1 回とその結果のことです。
