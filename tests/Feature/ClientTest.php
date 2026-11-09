@@ -887,6 +887,37 @@ describe('Client', function () {
             ->and($resumed->id())->toBe('resumed-session');
     });
 
+    it('forwards allowMultipleToolCalls false through create and resume requests', function () {
+        $rpc = Mockery::mock(JsonRpcClient::class);
+        $rpc->shouldReceive('request')
+            ->with('session.create', Mockery::on(fn (array $params) => array_key_exists('allowMultipleToolCalls', $params)
+                && $params['allowMultipleToolCalls'] === false))
+            ->once()
+            ->andReturn(['sessionId' => 'created-session']);
+        $rpc->shouldReceive('request')
+            ->with('session.resume', Mockery::on(fn (array $params) => array_key_exists('allowMultipleToolCalls', $params)
+                && $params['allowMultipleToolCalls'] === false))
+            ->once()
+            ->andReturn(['sessionId' => 'resumed-session']);
+
+        $client = new Client;
+        $reflection = new ReflectionClass($client);
+        $reflection->getProperty('rpcClient')->setValue($client, $rpc);
+        $reflection->getProperty('state')->setValue($client, ConnectionState::CONNECTED);
+
+        $created = $client->createSession(new SessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            allowMultipleToolCalls: false,
+        ));
+        $resumed = $client->resumeSession('resumed-session', new ResumeSessionConfig(
+            onPermissionRequest: PermissionHandler::approveAll(),
+            allowMultipleToolCalls: false,
+        ));
+
+        expect($created->id())->toBe('created-session')
+            ->and($resumed->id())->toBe('resumed-session');
+    });
+
     it('forwards autopilot configuration through create resume and options update requests', function () {
         $autopilot = ['continuationEnabled' => false, 'maxContinues' => 0];
         $rpc = Mockery::mock(JsonRpcClient::class);

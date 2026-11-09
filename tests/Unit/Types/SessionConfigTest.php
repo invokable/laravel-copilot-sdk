@@ -59,6 +59,19 @@ describe('SessionConfig', function () {
             ->and($explicitFalse->toArray())->toHaveKey('interactiveUser', false);
     });
 
+    it('round-trips allowMultipleToolCalls while preserving explicit false', function () {
+        $default = new SessionConfig;
+        $enabled = SessionConfig::fromArray(['allowMultipleToolCalls' => true]);
+        $explicitFalse = SessionConfig::fromArray(['allowMultipleToolCalls' => false]);
+
+        expect($default->allowMultipleToolCalls)->toBeNull()
+            ->and($default->toArray())->not->toHaveKey('allowMultipleToolCalls')
+            ->and($enabled->allowMultipleToolCalls)->toBeTrue()
+            ->and($enabled->toArray())->toHaveKey('allowMultipleToolCalls', true)
+            ->and($explicitFalse->allowMultipleToolCalls)->toBeFalse()
+            ->and($explicitFalse->toArray())->toHaveKey('allowMultipleToolCalls', false);
+    });
+
     it('round-trips autopilot configuration while preserving false and zero', function () {
         $options = ['continuationEnabled' => false, 'maxContinues' => 0];
         $config = SessionConfig::fromArray(['autopilot' => $options]);

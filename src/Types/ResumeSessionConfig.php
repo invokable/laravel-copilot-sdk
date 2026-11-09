@@ -189,6 +189,7 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                  Defaults to false for SDK sessions; ignored for cloud sessions and when resuming an active session.
      * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
      * @param  ?array  $excludedManagedSettings  Managed setting paths to exclude from runtime-fetched policy. Does not affect host-injected `$managedSettings`.
+     * @param  ?bool  $allowMultipleToolCalls  Whether the model may request multiple tool calls per response. Defaults to true. Re-supply after a cold resume.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -294,6 +295,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public SandboxConfig|array|null $sandboxConfig = null,
         public AutopilotOptions|array|null $autopilot = null,
         public ?array $excludedManagedSettings = null,
+        public ?bool $allowMultipleToolCalls = null,
     ) {}
 
     /**
@@ -484,6 +486,7 @@ readonly class ResumeSessionConfig implements Arrayable
             enableManagedSettings: $data['enableManagedSettings'] ?? null,
             enforceManagedModelDefaults: $data['enforceManagedModelDefaults'] ?? null,
             excludedManagedSettings: $data['excludedManagedSettings'] ?? null,
+            allowMultipleToolCalls: $data['allowMultipleToolCalls'] ?? null,
             canvasProvider: $canvasProvider,
             imageGeneration: isset($data['imageGeneration'])
                 ? ($data['imageGeneration'] instanceof ImageGenerationConfig ? $data['imageGeneration'] : ImageGenerationConfig::fromArray($data['imageGeneration']))
@@ -676,6 +679,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'expAssignments' => $expAssignments,
             'enableManagedSettings' => $this->enableManagedSettings,
             'excludedManagedSettings' => $this->excludedManagedSettings,
+            'allowMultipleToolCalls' => $this->allowMultipleToolCalls,
             'canvasProvider' => $canvasProvider,
             'enforceManagedModelDefaults' => $this->enforceManagedModelDefaults,
             'imageGeneration' => $this->imageGeneration instanceof ImageGenerationConfig
