@@ -75,4 +75,15 @@ describe('MemoryConfiguration', function () {
     it('implements Arrayable', function () {
         expect(new MemoryConfiguration(enabled: false))->toBeInstanceOf(Arrayable::class);
     });
+
+    it('retains the store callback without including it in serialized configuration', function () {
+        $storeMemory = fn () => null;
+        $configuration = MemoryConfiguration::fromArray([
+            'enabled' => true,
+            'storeMemory' => $storeMemory,
+        ]);
+
+        expect($configuration->storeMemory)->toBe($storeMemory)
+            ->and($configuration->toArray())->toBe(['enabled' => true]);
+    });
 });
