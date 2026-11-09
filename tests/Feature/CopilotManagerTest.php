@@ -508,10 +508,9 @@ describe('CopilotManager', function () {
             ->and($receivedOptions[2]['extension_launch_provider'])->toBe($handler);
     });
 
-    it('forwards Kerberos authentication options from manager and transport configuration', function () {
-        $kerberosAuth = [
-            'mode' => 'fallback',
-            'callback' => fn () => null,
+    it('forwards network options from manager and transport configuration', function () {
+        $network = [
+            'resolveProxy' => fn () => 'DIRECT',
         ];
         $receivedOptions = [];
 
@@ -525,30 +524,30 @@ describe('CopilotManager', function () {
             return $client;
         });
 
-        $manager = new CopilotManager(['kerberos_auth' => $kerberosAuth]);
+        $manager = new CopilotManager(['network' => $network]);
         $manager->client();
-        $manager->useStdio(['kerberosAuth' => $kerberosAuth]);
+        $manager->useStdio(['network' => $network]);
         $manager->stop();
 
         $tcpManager = new CopilotManager([
             'url' => 'tcp://127.0.0.1:12345',
-            'kerberosAuth' => $kerberosAuth,
+            'network' => $network,
         ]);
         $tcpManager->client();
         $tcpManager->stop();
 
         $useTcpManager = new CopilotManager([
             'url' => 'tcp://127.0.0.1:12345',
-            'kerberos_auth' => $kerberosAuth,
+            'network' => $network,
         ]);
         $useTcpManager->useTcp('tcp://127.0.0.1:12345');
         $useTcpManager->stop();
 
         expect($receivedOptions)->toHaveCount(4)
-            ->and($receivedOptions[0]['kerberos_auth'])->toBe($kerberosAuth)
-            ->and($receivedOptions[1]['kerberosAuth'])->toBe($kerberosAuth)
-            ->and($receivedOptions[2]['kerberosAuth'])->toBe($kerberosAuth)
-            ->and($receivedOptions[3]['kerberos_auth'])->toBe($kerberosAuth);
+            ->and($receivedOptions[0]['network'])->toBe($network)
+            ->and($receivedOptions[1]['network'])->toBe($network)
+            ->and($receivedOptions[2]['network'])->toBe($network)
+            ->and($receivedOptions[3]['network'])->toBe($network);
     });
 
     it('forwards request handlers from manager and transport options', function () {

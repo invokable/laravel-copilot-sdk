@@ -8,27 +8,27 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 
 /**
- * Inbound request for a Kerberos credential provider.
+ * Inbound request to resolve the proxy for a request target.
  *
  * @experimental
  */
-readonly class KerberosAuthAcquireRequest implements Arrayable
+readonly class NetworkResolveProxyRequest implements Arrayable
 {
     public function __construct(
-        public string $spn,
+        public string $url,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            spn: Arr::string($data, 'spn'),
+            url: Arr::string($data, 'url'),
         );
     }
 
     public function toArray(): array
     {
         return [
-            'spn' => $this->spn,
+            'url' => $this->url,
         ];
     }
 }

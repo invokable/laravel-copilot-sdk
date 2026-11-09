@@ -23,6 +23,7 @@ use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Contracts\Transport;
 use Revolution\Copilot\Enums\ConnectionState;
 use Revolution\Copilot\Enums\CopilotClientMode;
+use Revolution\Copilot\Enums\NetworkScope;
 use Revolution\Copilot\Enums\RuntimeConnectionKind;
 use Revolution\Copilot\Enums\TaskKind;
 use Revolution\Copilot\Enums\WorkingDirectoryTrust;
@@ -55,9 +56,11 @@ use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
-use Revolution\Copilot\Types\Rpc\KerberosAuthAcquireRequest;
-use Revolution\Copilot\Types\Rpc\KerberosAuthAcquireResult;
-use Revolution\Copilot\Types\Rpc\KerberosAuthSetProviderRequest;
+use Revolution\Copilot\Types\Rpc\NetworkAuthenticateNegotiateRequest;
+use Revolution\Copilot\Types\Rpc\NetworkAuthenticateNegotiateResult;
+use Revolution\Copilot\Types\Rpc\NetworkResolveProxyRequest;
+use Revolution\Copilot\Types\Rpc\NetworkResolveProxyResult;
+use Revolution\Copilot\Types\Rpc\NetworkSetProviderRequest;
 use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireRequest;
 use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireResult;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
@@ -68,6 +71,7 @@ use Revolution\Copilot\Types\SessionFsConfig;
 use Revolution\Copilot\Types\TranscriptRecovery;
 use RuntimeException;
 use SensitiveParameter;
+use stdClass;
 use Throwable;
 use UnexpectedValueException;
 
@@ -151,12 +155,12 @@ class Client implements CopilotClient
 
     /**
      * @var array{
-     *     mode: string,
-     *     scope: ?string,
-     *     callback: Closure(KerberosAuthAcquireRequest, CancellationToken): mixed
+     *     scope: ?NetworkScope,
+     *     resolveProxy: ?Closure(NetworkResolveProxyRequest, CancellationToken): mixed,
+     *     authenticateNegotiate: ?Closure(NetworkAuthenticateNegotiateRequest, CancellationToken): mixed
      * }|null
      */
-    protected ?array $kerberosAuth = null;
+    protected ?array $network = null;
 
     protected CopilotRequestHandler|Closure|null $requestHandler = null;
 
@@ -194,36 +198,44 @@ class Client implements CopilotClient
         $this->extensionLaunchProvider = $extensionLaunchProvider === null
             ? null
             : Closure::fromCallable($extensionLaunchProvider);
-        $kerberosAuthOption = array_key_exists('kerberosAuth', $options)
-            ? 'kerberosAuth'
-            : (array_key_exists('kerberos_auth', $options) ? 'kerberos_auth' : null);
-        $kerberosAuth = $kerberosAuthOption === null ? null : $options[$kerberosAuthOption];
-        if ($kerberosAuth !== null) {
-            if (! is_array($kerberosAuth)) {
-                throw new InvalidArgumentException('kerberosAuth must be an array.');
+        $network = $options['network'] ?? null;
+        if ($network !== null) {
+            if (! is_array($network)) {
+                throw new InvalidArgumentException('network must be an array.');
             }
 
-            $kerberosMode = $kerberosAuth['mode'] ?? null;
-            if (! is_string($kerberosMode) || ! in_array($kerberosMode, ['fallback', 'always'], true)) {
-                throw new InvalidArgumentException('kerberosAuth.mode must be either "fallback" or "always".');
+            $networkScopeOption = $network['scope'] ?? null;
+            $networkScope = $networkScopeOption instanceof NetworkScope
+                ? $networkScopeOption->value
+                : $networkScopeOption;
+            if (array_key_exists('scope', $network)
+                && ! ($networkScopeOption instanceof NetworkScope)
+                && (! is_string($networkScope) || NetworkScope::tryFrom($networkScope) === null)) {
+                throw new InvalidArgumentException('network.scope must be either "connection" or "runtime".');
             }
 
-            $kerberosScope = $kerberosAuth['scope'] ?? null;
-            if (array_key_exists('scope', $kerberosAuth)
-                && (! is_string($kerberosScope) || ! in_array($kerberosScope, ['connection', 'runtime'], true))) {
-                throw new InvalidArgumentException('kerberosAuth.scope must be either "connection" or "runtime".');
+            $resolveProxy = $network['resolveProxy'] ?? null;
+            if ($resolveProxy !== null && ! is_callable($resolveProxy)) {
+                throw new InvalidArgumentException('network.resolveProxy must be callable.');
             }
 
-            $kerberosCallback = $kerberosAuth['callback'] ?? null;
-            if (! is_callable($kerberosCallback)) {
-                throw new InvalidArgumentException('kerberosAuth.callback must be callable.');
+            $authenticateNegotiate = $network['authenticateNegotiate'] ?? null;
+            if ($authenticateNegotiate !== null && ! is_callable($authenticateNegotiate)) {
+                throw new InvalidArgumentException('network.authenticateNegotiate must be callable.');
             }
 
-            $this->kerberosAuth = [
-                'mode' => $kerberosMode,
-                'scope' => $kerberosScope,
-                'callback' => Closure::fromCallable($kerberosCallback),
-            ];
+            $resolveProxy = $resolveProxy === null ? null : Closure::fromCallable($resolveProxy);
+            $authenticateNegotiate = $authenticateNegotiate === null
+                ? null
+                : Closure::fromCallable($authenticateNegotiate);
+
+            if ($resolveProxy !== null || $authenticateNegotiate !== null) {
+                $this->network = [
+                    'scope' => $networkScope === null ? null : NetworkScope::from($networkScope),
+                    'resolveProxy' => $resolveProxy,
+                    'authenticateNegotiate' => $authenticateNegotiate,
+                ];
+            }
         }
 
         $requestHandler = array_key_exists('requestHandler', $options)
@@ -442,10 +454,17 @@ class Client implements CopilotClient
                 fn (array $params) => $this->handleExtensionLaunchProviderResolve($params),
             );
 
-            if ($this->kerberosAuth !== null) {
+            if ($this->network !== null && $this->network['resolveProxy'] !== null) {
                 $this->rpcClient->setRequestHandler(
-                    'kerberosAuth.acquire',
-                    fn (array $params, CancellationToken $token) => $this->acquireKerberosToken($params, $token),
+                    'network.resolveProxy',
+                    fn (array $params, CancellationToken $token) => $this->resolveNetworkProxy($params, $token),
+                );
+            }
+
+            if ($this->network !== null && $this->network['authenticateNegotiate'] !== null) {
+                $this->rpcClient->setRequestHandler(
+                    'network.authenticateNegotiate',
+                    fn (array $params, CancellationToken $token) => $this->authenticateNetworkNegotiate($params, $token),
                 );
             }
 
@@ -516,11 +535,23 @@ class Client implements CopilotClient
                 $this->rpc()->registerExtensionLaunchProvider();
             }
 
-            if ($this->kerberosAuth !== null) {
-                $this->rpc()->kerberosAuth()->setProvider(new KerberosAuthSetProviderRequest(
-                    mode: $this->kerberosAuth['mode'],
-                    scope: $this->kerberosAuth['scope'],
-                ));
+            if ($this->network !== null) {
+                try {
+                    $this->rpc()->network()->setProvider(new NetworkSetProviderRequest(
+                        scope: $this->network['scope'],
+                        resolveProxy: $this->network['resolveProxy'] !== null,
+                        authenticateNegotiate: $this->network['authenticateNegotiate'] !== null,
+                    ));
+                } catch (JsonRpcException $exception) {
+                    if ($exception->code !== -32601) {
+                        throw $exception;
+                    }
+
+                    throw new RuntimeException(
+                        'The Copilot runtime does not support network.setProvider. Upgrade the runtime to enable network callbacks.',
+                        previous: $exception,
+                    );
+                }
             }
 
             if ($this->builtinPluginDirectories !== []) {
@@ -1495,17 +1526,34 @@ class Client implements CopilotClient
         return (new ProviderTokenAcquireResult(token: $token))->toArray();
     }
 
-    private function acquireKerberosToken(array $params, CancellationToken $token): array
+    private function resolveNetworkProxy(array $params, CancellationToken $token): array|stdClass
     {
-        $request = KerberosAuthAcquireRequest::fromArray($params);
-        $callback = $this->kerberosAuth['callback'];
-        $result = $callback($request, $token);
+        $request = NetworkResolveProxyRequest::fromArray($params);
+        $result = $this->network['resolveProxy']($request, $token);
 
         if ($result !== null && ! is_string($result)) {
-            throw new UnexpectedValueException('Kerberos auth callback must return a string or null.');
+            throw new UnexpectedValueException('network.resolveProxy callback must return a string or null.');
         }
 
-        return (new KerberosAuthAcquireResult(token: $result))->toArray();
+        return $result === null
+            ? new stdClass
+            : (new NetworkResolveProxyResult(proxy: $result))->toArray();
+    }
+
+    private function authenticateNetworkNegotiate(array $params, CancellationToken $token): array|stdClass
+    {
+        $request = NetworkAuthenticateNegotiateRequest::fromArray($params);
+        $result = $this->network['authenticateNegotiate']($request, $token);
+
+        if ($result !== null && ! is_string($result)) {
+            throw new UnexpectedValueException(
+                'network.authenticateNegotiate callback must return a string or null.',
+            );
+        }
+
+        return $result === null
+            ? new stdClass
+            : (new NetworkAuthenticateNegotiateResult(token: $result))->toArray();
     }
 
     protected function forgetGitHubTokenProviderForSession(string $sessionId): void

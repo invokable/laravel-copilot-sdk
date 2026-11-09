@@ -6,9 +6,6 @@ use Revolution\Copilot\Enums\AuthInfoType;
 use Revolution\Copilot\Enums\PermissionsSetApproveAllSource;
 use Revolution\Copilot\Types\Rpc\AccountGetQuotaRequest;
 use Revolution\Copilot\Types\Rpc\AuthInfo;
-use Revolution\Copilot\Types\Rpc\KerberosAuthAcquireRequest;
-use Revolution\Copilot\Types\Rpc\KerberosAuthAcquireResult;
-use Revolution\Copilot\Types\Rpc\KerberosAuthSetProviderRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpOauthLoginRequest;
@@ -199,54 +196,6 @@ describe('PermissionsClearResumeEscalationResult', function () {
 
         expect($result->success)->toBeTrue()
             ->and($result->toArray())->toBe(['success' => true]);
-    });
-});
-
-describe('KerberosAuthSetProviderRequest', function () {
-    it('round-trips the required mode and optional scope', function () {
-        $request = KerberosAuthSetProviderRequest::fromArray([
-            'mode' => 'fallback',
-            'scope' => 'runtime',
-        ]);
-
-        expect($request->mode)->toBe('fallback')
-            ->and($request->scope)->toBe('runtime')
-            ->and($request->toArray())->toBe([
-                'mode' => 'fallback',
-                'scope' => 'runtime',
-            ]);
-    });
-
-    it('omits the optional scope when absent', function () {
-        $request = KerberosAuthSetProviderRequest::fromArray(['mode' => 'always']);
-
-        expect($request->scope)->toBeNull()
-            ->and($request->toArray())->toBe(['mode' => 'always']);
-    });
-});
-
-describe('KerberosAuthAcquireRequest', function () {
-    it('round-trips the requested SPN', function () {
-        $request = KerberosAuthAcquireRequest::fromArray(['spn' => 'HTTP/service.example']);
-
-        expect($request->spn)->toBe('HTTP/service.example')
-            ->and($request->toArray())->toBe(['spn' => 'HTTP/service.example']);
-    });
-});
-
-describe('KerberosAuthAcquireResult', function () {
-    it('round-trips the acquired token', function () {
-        $result = KerberosAuthAcquireResult::fromArray(['token' => 'spnego-token']);
-
-        expect($result->token)->toBe('spnego-token')
-            ->and($result->toArray())->toBe(['token' => 'spnego-token']);
-    });
-
-    it('omits a missing token', function () {
-        $result = KerberosAuthAcquireResult::fromArray([]);
-
-        expect($result->token)->toBeNull()
-            ->and($result->toArray())->toBe([]);
     });
 });
 

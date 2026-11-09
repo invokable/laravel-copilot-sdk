@@ -8,25 +8,27 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 
 /**
- * Kerberos credential returned to the runtime.
+ * Inbound request for a Kerberos Negotiate token.
  *
  * @experimental
  */
-readonly class KerberosAuthAcquireResult implements Arrayable
+readonly class NetworkAuthenticateNegotiateRequest implements Arrayable
 {
     public function __construct(
-        public ?string $token = null,
+        public string $spn,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            token: isset($data['token']) ? Arr::string($data, 'token') : null,
+            spn: Arr::string($data, 'spn'),
         );
     }
 
     public function toArray(): array
     {
-        return $this->token === null ? [] : ['token' => $this->token];
+        return [
+            'spn' => $this->spn,
+        ];
     }
 }
