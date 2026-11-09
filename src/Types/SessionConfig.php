@@ -237,6 +237,7 @@ readonly class SessionConfig implements Arrayable
      * @param  ?array  $excludedManagedSettings  Managed setting paths to exclude from runtime-fetched policy. Does not affect host-injected `$managedSettings`.
      * @param  ?bool  $allowMultipleToolCalls  Whether the model may request multiple tool calls per response. Defaults to true. False is a provider hint, not an execution guarantee.
      * @param  PermissionMode|string|null  $permissionMode  Permission mode for the session. Omission leaves the runtime default unchanged. Not supported for cloud sessions.
+     * @param  ?bool  $autoModeRecovery  Enables runtime recovery of eligible active requests; requires an auto-mode-switch handler.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -348,6 +349,7 @@ readonly class SessionConfig implements Arrayable
         public ?array $excludedManagedSettings = null,
         public ?bool $allowMultipleToolCalls = null,
         public PermissionMode|string|null $permissionMode = null,
+        public ?bool $autoModeRecovery = null,
     ) {}
 
     /**
@@ -578,6 +580,7 @@ readonly class SessionConfig implements Arrayable
                     ? (WorkingDirectoryTrust::tryFrom($data['trustWorkingDirectory']) ?? $data['trustWorkingDirectory'])
                     : $data['trustWorkingDirectory'])
                 : null,
+            autoModeRecovery: $data['autoModeRecovery'] ?? null,
         );
     }
 
@@ -782,6 +785,7 @@ readonly class SessionConfig implements Arrayable
             'allowedModels' => $this->allowedModels,
             'name' => $this->name,
             'interactiveUser' => $this->interactiveUser,
+            'autoModeRecovery' => $this->autoModeRecovery,
         ], fn ($value) => $value !== null);
     }
 }

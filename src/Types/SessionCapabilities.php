@@ -12,7 +12,7 @@ use Illuminate\Contracts\Support\Arrayable;
 readonly class SessionCapabilities implements Arrayable
 {
     /**
-     * @param  ?array{elicitation?: bool, canvases?: bool}  $ui  UI capabilities
+     * @param  ?array{elicitation?: bool, canvases?: bool, autoModeRecovery?: bool}  $ui  UI capabilities
      */
     public function __construct(
         public ?array $ui = null,
@@ -34,6 +34,14 @@ readonly class SessionCapabilities implements Arrayable
     public function supportsCanvases(): bool
     {
         return (bool) ($this->ui['canvases'] ?? false);
+    }
+
+    /**
+     * Whether the host supports Auto mode recovery consent.
+     */
+    public function supportsAutoModeRecovery(): bool
+    {
+        return ($this->ui['autoModeRecovery'] ?? false) === true;
     }
 
     public static function fromArray(array $data): self

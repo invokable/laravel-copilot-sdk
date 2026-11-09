@@ -103,6 +103,12 @@ describe('SessionEventType', function () {
             ->and(SessionEventType::from('auto_mode_switch.completed'))->toBe(SessionEventType::AUTO_MODE_SWITCH_COMPLETED);
     });
 
+    it('can create auto mode recovery event types from string', function () {
+        expect(SessionEventType::from('auto_mode_recovery_consent.requested'))->toBe(SessionEventType::AUTO_MODE_RECOVERY_CONSENT_REQUESTED)
+            ->and(SessionEventType::from('auto_mode_recovery_consent.completed'))->toBe(SessionEventType::AUTO_MODE_RECOVERY_CONSENT_COMPLETED)
+            ->and(SessionEventType::from('auto_mode_recovery.outcome'))->toBe(SessionEventType::AUTO_MODE_RECOVERY_OUTCOME);
+    });
+
     it('has session limits changed event type', function () {
         expect(SessionEventType::SESSION_SESSION_LIMITS_CHANGED->value)->toBe('session.session_limits_changed');
     });

@@ -119,6 +119,9 @@ enum SessionEventType: string
     case COMMAND_COMPLETED = 'command.completed';
     case AUTO_MODE_SWITCH_REQUESTED = 'auto_mode_switch.requested';
     case AUTO_MODE_SWITCH_COMPLETED = 'auto_mode_switch.completed';
+    case AUTO_MODE_RECOVERY_CONSENT_REQUESTED = 'auto_mode_recovery_consent.requested';
+    case AUTO_MODE_RECOVERY_CONSENT_COMPLETED = 'auto_mode_recovery_consent.completed';
+    case AUTO_MODE_RECOVERY_OUTCOME = 'auto_mode_recovery.outcome';
     case SESSION_LIMITS_EXHAUSTED_REQUESTED = 'session_limits_exhausted.requested';
     case SESSION_LIMITS_EXHAUSTED_COMPLETED = 'session_limits_exhausted.completed';
     case AUTO_MODE_RESOLVED = 'session.auto_mode_resolved';

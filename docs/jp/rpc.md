@@ -1708,6 +1708,9 @@ $result = $session->rpc()->ui()->handlePendingAutoModeSwitch(new UIHandlePending
     response: UIAutoModeSwitchResponse::Yes,
 ));
 
+// auto_mode_recovery_consent.requested の data.requestId にも同じ RPC で応答する。
+// 回復の再試行や巻き戻しはランタイムが行うため、アプリ側でプロンプトを再送しない。
+
 $result = $session->rpc()->ui()->handlePendingSampling(new UIHandlePendingSamplingRequest(
     requestId: '...',
     response: ['result' => '...'],

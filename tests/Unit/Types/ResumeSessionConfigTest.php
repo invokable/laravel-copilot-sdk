@@ -229,6 +229,7 @@ describe('ResumeSessionConfig', function () {
             'customAgentsLocalOnly' => true,
             'coauthorEnabled' => false,
             'manageScheduleEnabled' => true,
+            'autoModeRecovery' => true,
             'infiniteSessions' => new InfiniteSessionConfig(enabled: true, backgroundCompactionThreshold: 0.80, bufferExhaustionThreshold: 0.95),
             'suppressResumeEvent' => true,
             'agent' => 'reviewer',
@@ -260,6 +261,7 @@ describe('ResumeSessionConfig', function () {
             ->and($config->onUserInputRequest)->toBe($userInputHandler)
             ->and($config->onExitPlanModeRequest)->toBe($exitPlanModeHandler)
             ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler)
+            ->and($config->autoModeRecovery)->toBeTrue()
             ->and($config->onMcpAuthRequest)->toBe($mcpAuthHandler)
             ->and($config->hooks)->toBeInstanceOf(SessionHooks::class)
             ->and($config->hooks->onPreToolUse)->toBe($preToolUseHook)
@@ -401,6 +403,7 @@ describe('ResumeSessionConfig', function () {
             enableSessionStore: true,
             enableSkills: true,
             displayPrompt: 'Displayed prompt',
+            autoModeRecovery: true,
         );
 
         $array = $config->toArray();
@@ -415,6 +418,7 @@ describe('ResumeSessionConfig', function () {
             ->and($array['onUserInputRequest'])->toBe($userInputHandler)
             ->and($array['onExitPlanModeRequest'])->toBe($exitPlanModeHandler)
             ->and($array['onAutoModeSwitchRequest'])->toBe($autoModeSwitchHandler)
+            ->and($array['autoModeRecovery'])->toBeTrue()
             ->and($array['hooks'])->toBe(['onPreToolUse' => $preToolUseHook])
             ->and($array['workingDirectory'])->toBe('/home/user')
             ->and($array['disableResume'])->toBeFalse()
