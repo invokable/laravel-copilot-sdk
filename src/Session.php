@@ -55,6 +55,7 @@ use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\OpenCanvasInstance;
+use Revolution\Copilot\Types\Rpc\PermissionsSetModeResult;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\SessionManagementConfigureRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
@@ -130,6 +131,8 @@ class Session implements CopilotSession
 
     protected ?TranscriptRecovery $transcriptRecovery = null;
 
+    protected ?PermissionsSetModeResult $permissionModeResult = null;
+
     protected ?CanvasHandler $canvasHandler = null;
 
     /**
@@ -200,6 +203,18 @@ class Session implements CopilotSession
     public function setTranscriptRecovery(?TranscriptRecovery $recovery): void
     {
         $this->transcriptRecovery = $recovery;
+    }
+
+    /** Result of applying the requested permission mode at session creation or resume, or null when none was reported. */
+    public function permissionModeResult(): ?PermissionsSetModeResult
+    {
+        return $this->permissionModeResult;
+    }
+
+    /** @internal */
+    public function setPermissionModeResult(?PermissionsSetModeResult $result): void
+    {
+        $this->permissionModeResult = $result;
     }
 
     /** @internal */

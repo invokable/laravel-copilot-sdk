@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\MemoryMode;
+use Revolution\Copilot\Enums\PermissionMode;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Support\ToolSet;
 use Revolution\Copilot\Types\CanvasProviderIdentity;
@@ -637,5 +638,24 @@ describe('ResumeSessionConfig', function () {
         $config = new ResumeSessionConfig;
 
         expect($config->toArray())->not->toHaveKey('featureFlags');
+    });
+
+    it('round-trips permission mode and omits an unset mode', function () {
+        foreach ([
+            [PermissionMode::Manual, 'manual'],
+            [PermissionMode::Assisted, 'assisted'],
+            [PermissionMode::AllowAll, 'allow-all'],
+        ] as [$mode, $value]) {
+            $config = new ResumeSessionConfig(permissionMode: $mode);
+            $fromArray = ResumeSessionConfig::fromArray(['permissionMode' => $value]);
+
+            expect($config->toArray())->toHaveKey('permissionMode', $value)
+                ->and($fromArray->permissionMode)->toBe($mode)
+                ->and($fromArray->toArray())->toHaveKey('permissionMode', $value);
+        }
+
+        expect((new ResumeSessionConfig)->toArray())->not->toHaveKey('permissionMode')
+            ->and(ResumeSessionConfig::fromArray(['permissionMode' => 'assisted'])->permissionMode)->toBe(PermissionMode::Assisted)
+            ->and((new ResumeSessionConfig(permissionMode: 'assisted'))->toArray())->toHaveKey('permissionMode', 'assisted');
     });
 });

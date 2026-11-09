@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Contracts\SessionFsProvider;
 use Revolution\Copilot\Contracts\SkillProvider;
 use Revolution\Copilot\Enums\AskUserVariant;
+use Revolution\Copilot\Enums\PermissionMode;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\Verbosity;
 use Revolution\Copilot\Enums\WorkingDirectoryTrust;
@@ -235,6 +236,7 @@ readonly class SessionConfig implements Arrayable
      * @param  AutopilotOptions|array|null  $autopilot  Automatic continuation policy. Re-supply after runtime restart.
      * @param  ?array  $excludedManagedSettings  Managed setting paths to exclude from runtime-fetched policy. Does not affect host-injected `$managedSettings`.
      * @param  ?bool  $allowMultipleToolCalls  Whether the model may request multiple tool calls per response. Defaults to true. False is a provider hint, not an execution guarantee.
+     * @param  PermissionMode|string|null  $permissionMode  Permission mode for the session. Omission leaves the runtime default unchanged. Not supported for cloud sessions.
      *
      * @phpstan-param  (Closure(McpAuthRequest, array{sessionId: string}): McpAuthToken|McpAuthResult|array|null)|null  $onMcpAuthRequest
      */
@@ -345,6 +347,7 @@ readonly class SessionConfig implements Arrayable
         public AutopilotOptions|array|null $autopilot = null,
         public ?array $excludedManagedSettings = null,
         public ?bool $allowMultipleToolCalls = null,
+        public PermissionMode|string|null $permissionMode = null,
     ) {}
 
     /**
@@ -536,6 +539,9 @@ readonly class SessionConfig implements Arrayable
             enforceManagedModelDefaults: $data['enforceManagedModelDefaults'] ?? null,
             excludedManagedSettings: $data['excludedManagedSettings'] ?? null,
             allowMultipleToolCalls: $data['allowMultipleToolCalls'] ?? null,
+            permissionMode: isset($data['permissionMode'])
+                ? (is_string($data['permissionMode']) ? (PermissionMode::tryFrom($data['permissionMode']) ?? $data['permissionMode']) : $data['permissionMode'])
+                : null,
             imageGeneration: isset($data['imageGeneration'])
                 ? ($data['imageGeneration'] instanceof ImageGenerationConfig ? $data['imageGeneration'] : ImageGenerationConfig::fromArray($data['imageGeneration']))
                 : null,
@@ -747,6 +753,7 @@ readonly class SessionConfig implements Arrayable
             'enforceManagedModelDefaults' => $this->enforceManagedModelDefaults,
             'excludedManagedSettings' => $this->excludedManagedSettings,
             'allowMultipleToolCalls' => $this->allowMultipleToolCalls,
+            'permissionMode' => $this->permissionMode instanceof PermissionMode ? $this->permissionMode->value : $this->permissionMode,
             'imageGeneration' => $this->imageGeneration instanceof ImageGenerationConfig
                 ? $this->imageGeneration->toArray()
                 : $this->imageGeneration,

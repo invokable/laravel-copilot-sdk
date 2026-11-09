@@ -15,6 +15,7 @@ use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\OpenCanvasInstance;
+use Revolution\Copilot\Types\Rpc\PermissionsSetModeResult;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateResult;
@@ -54,6 +55,9 @@ interface CopilotSession
 
     /** Recovery details reported while resuming this session, or null when none occurred. */
     public function transcriptRecovery(): ?TranscriptRecovery;
+
+    /** Result of applying the requested permission mode at session creation or resume, or null when none was reported. */
+    public function permissionModeResult(): ?PermissionsSetModeResult;
 
     /**
      * Get open canvas instances currently known to this session.

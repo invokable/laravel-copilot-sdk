@@ -62,6 +62,7 @@ use Revolution\Copilot\Types\Rpc\NetworkAuthenticateNegotiateResult;
 use Revolution\Copilot\Types\Rpc\NetworkResolveProxyRequest;
 use Revolution\Copilot\Types\Rpc\NetworkResolveProxyResult;
 use Revolution\Copilot\Types\Rpc\NetworkSetProviderRequest;
+use Revolution\Copilot\Types\Rpc\PermissionsSetModeResult;
 use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireRequest;
 use Revolution\Copilot\Types\Rpc\ProviderTokenAcquireResult;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
@@ -818,6 +819,9 @@ class Client implements CopilotClient
                 'model' => $config['model'] ?? null,
                 'reasoningEffort' => $config['reasoningEffort'] ?? null,
                 'allowMultipleToolCalls' => $config['allowMultipleToolCalls'] ?? null,
+                'permissionMode' => ($config['permissionMode'] ?? null) instanceof \BackedEnum
+                    ? $config['permissionMode']->value
+                    : ($config['permissionMode'] ?? null),
                 'reasoningSummary' => $config['reasoningSummary'] ?? null,
                 'isExperimentalMode' => $config['enableExperimentalMode'] ?? null,
                 'contextTier' => $config['contextTier'] ?? null,
@@ -972,6 +976,9 @@ class Client implements CopilotClient
             });
         }
         $session->setCapabilities($capabilities);
+        if (isset($response['permissionModeResult']) && is_array($response['permissionModeResult'])) {
+            $session->setPermissionModeResult(PermissionsSetModeResult::fromArray($response['permissionModeResult']));
+        }
         $session->registerSkillProvider($skillProvider);
         $session->registerSessionFsProvider($sessionFsProvider);
         if ($preRegisteredSessionId === null && $bearerTokenProviders !== []) {
@@ -1107,6 +1114,9 @@ class Client implements CopilotClient
                 'model' => $config['model'] ?? null,
                 'reasoningEffort' => $config['reasoningEffort'] ?? null,
                 'allowMultipleToolCalls' => $config['allowMultipleToolCalls'] ?? null,
+                'permissionMode' => ($config['permissionMode'] ?? null) instanceof \BackedEnum
+                    ? $config['permissionMode']->value
+                    : ($config['permissionMode'] ?? null),
                 'reasoningSummary' => $config['reasoningSummary'] ?? null,
                 'isExperimentalMode' => $config['enableExperimentalMode'] ?? null,
                 'contextTier' => $config['contextTier'] ?? null,
@@ -1248,6 +1258,9 @@ class Client implements CopilotClient
             });
         }
         $session->setCapabilities($capabilities);
+        if (isset($response['permissionModeResult']) && is_array($response['permissionModeResult'])) {
+            $session->setPermissionModeResult(PermissionsSetModeResult::fromArray($response['permissionModeResult']));
+        }
         $this->sessions[$resumedSessionId] = $session;
 
         try {

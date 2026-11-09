@@ -19,6 +19,7 @@ use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
+use Revolution\Copilot\Types\Rpc\PermissionsSetModeResult;
 use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\SessionManagementPolicy;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
@@ -70,6 +71,11 @@ class FakeSession implements CopilotSession
     }
 
     public function transcriptRecovery(): ?TranscriptRecovery
+    {
+        return null;
+    }
+
+    public function permissionModeResult(): ?PermissionsSetModeResult
     {
         return null;
     }
