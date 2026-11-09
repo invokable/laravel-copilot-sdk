@@ -120,7 +120,7 @@ Copilot::client()->rpc()->network()->setProvider(
 );
 ```
 
-`scope`は省略すると`connection`です。`runtime`は共有バックグラウンド通信も対象にしますが、同時にこのscopeを登録できる接続は1つだけです。旧`kerberosAuth()->setProvider()`はソース互換エイリアスとして残っていますが、内部では`network.setProvider`を呼び出します。旧`mode: always`は受け付けますが、`fallback`は新RPCで表現できないため移行エラーになります。Kerberos専用RPCのみをサポートする古いランタイムとは互換性がありません。
+`scope`は省略すると`connection`です。`runtime`は共有バックグラウンド通信も対象にしますが、同時にこのscopeを登録できる接続は1つだけです。
 
 ### 内部・実験的な RPC
 

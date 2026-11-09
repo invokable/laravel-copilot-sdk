@@ -10,145 +10,11 @@ use Revolution\Copilot\Process\ProcessManager;
 use Revolution\Copilot\Protocol;
 use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Transport\StdioTransport;
-use Revolution\Copilot\Types\Rpc\KerberosAuthAcquireRequest;
 use Revolution\Copilot\Types\Rpc\NetworkAuthenticateNegotiateRequest;
 use Revolution\Copilot\Types\Rpc\NetworkResolveProxyRequest;
 
-describe('Client Kerberos authentication', function () {
-    it('validates Kerberos options for both aliases', function () {
-        $invalidConfigs = [
-            'not-an-array',
-            ['mode' => 'invalid', 'callback' => fn () => null],
-            ['mode' => 'fallback', 'scope' => 'invalid', 'callback' => fn () => null],
-            ['mode' => 'fallback', 'scope' => null, 'callback' => fn () => null],
-            ['mode' => 'fallback', 'callback' => 'not-callable'],
-            ['mode' => 'fallback'],
-        ];
-
-        foreach (['kerberosAuth', 'kerberos_auth'] as $option) {
-            foreach ($invalidConfigs as $config) {
-                expect(fn () => new Client([$option => $config]))
-                    ->toThrow(InvalidArgumentException::class);
-            }
-        }
-    });
-
-    it('registers the configured provider after protocol verification', function () {
-        $result = startClientWithNetworkOptions([
-            'kerberosAuth' => [
-                'mode' => 'always',
-                'scope' => 'runtime',
-                'callback' => fn () => 'token',
-            ],
-        ]);
-
-        expect(array_column($result['requests'], 0))
-            ->toBe(['connect', 'network.setProvider'])
-            ->and($result['requests'][1][1])
-            ->toEqual([
-                'scope' => 'runtime',
-                'authenticateNegotiate' => (object) [],
-            ])
-            ->and($result['handlers'])
-            ->toHaveKey('network.authenticateNegotiate');
-    });
-
-    it('omits the default scope from registration and accepts the snake-case alias', function () {
-        $result = startClientWithNetworkOptions([
-            'kerberos_auth' => [
-                'mode' => 'always',
-                'callback' => fn () => null,
-            ],
-        ]);
-
-        expect($result['requests'][1])
-            ->toEqual([
-                'network.setProvider',
-                ['authenticateNegotiate' => (object) []],
-            ])
-            ->and($result['handlers'])
-            ->toHaveKey('network.authenticateNegotiate');
-    });
-
-    it('does not register Kerberos RPCs when the option is absent', function () {
-        $result = startClientWithNetworkOptions([]);
-
-        expect(array_column($result['requests'], 0))
-            ->toBe(['connect'])
-            ->and($result['handlers'])
-            ->not->toHaveKey('network.authenticateNegotiate');
-    });
-
-    it('requires migration from legacy fallback mode', function () {
-        foreach (['kerberosAuth', 'kerberos_auth'] as $option) {
-            expect(fn () => new Client([
-                $option => [
-                    'mode' => 'fallback',
-                    'callback' => fn () => null,
-                ],
-            ]))->toThrow(InvalidArgumentException::class, 'network.authenticateNegotiate');
-        }
-    });
-
-    it('requires a runtime that supports the network registration RPC', function () {
-        expect(fn () => startClientWithNetworkOptions(
-            ['network' => ['authenticateNegotiate' => fn () => null]],
-            new JsonRpcException(-32601, 'Method not found'),
-        ))->toThrow(RuntimeException::class, 'network.setProvider');
-    });
-
-    it('passes the SPN and cancellation token to the callback and returns its token', function () {
-        $received = null;
-        $callback = function (KerberosAuthAcquireRequest $request, CancellationToken $token) use (&$received): string {
-            $received = [$request, $token];
-
-            return 'spnego-token';
-        };
-        $result = startClientWithNetworkOptions([
-            'kerberosAuth' => ['mode' => 'always', 'callback' => $callback],
-        ]);
-        $cancellationToken = new CancellationToken;
-
-        $response = ($result['handlers']['network.authenticateNegotiate'])(
-            ['spn' => 'HTTP/service.example'],
-            $cancellationToken,
-        );
-
-        expect($received[0])
-            ->toBeInstanceOf(KerberosAuthAcquireRequest::class)
-            ->and($received[0]->spn)->toBe('HTTP/service.example')
-            ->and($received[1])->toBe($cancellationToken)
-            ->and($response)->toBe(['token' => 'spnego-token']);
-    });
-
-    it('omits a null token returned by the callback', function () {
-        $result = startClientWithNetworkOptions([
-            'kerberos_auth' => ['mode' => 'always', 'callback' => fn () => null],
-        ]);
-
-        $response = ($result['handlers']['network.authenticateNegotiate'])(
-            ['spn' => 'HTTP/service.example'],
-            new CancellationToken,
-        );
-
-        expect($response)->toBeInstanceOf(stdClass::class)
-            ->and(json_encode($response))->toBe('{}');
-    });
-
-    it('rejects callback results that are not strings or null', function () {
-        $result = startClientWithNetworkOptions([
-            'kerberosAuth' => ['mode' => 'always', 'callback' => fn () => 123],
-        ]);
-
-        expect(fn () => ($result['handlers']['network.authenticateNegotiate'])(
-            ['spn' => 'HTTP/service.example'],
-            new CancellationToken,
-        ))->toThrow(UnexpectedValueException::class);
-    });
-});
-
 describe('Client network callbacks', function () {
-    it('validates network config and callback aliases', function () {
+    it('validates the network config', function () {
         $invalidConfigs = [
             'not-an-array',
             ['scope' => 'invalid', 'resolveProxy' => fn () => null],
@@ -161,6 +27,13 @@ describe('Client network callbacks', function () {
             expect(fn () => new Client(['network' => $config]))
                 ->toThrow(InvalidArgumentException::class);
         }
+    });
+
+    it('requires a runtime that supports the network registration RPC', function () {
+        expect(fn () => startClientWithNetworkOptions(
+            ['network' => ['authenticateNegotiate' => fn () => null]],
+            new JsonRpcException(-32601, 'Method not found'),
+        ))->toThrow(RuntimeException::class, 'network.setProvider');
     });
 
     it('registers only configured callbacks and their scope', function () {
@@ -290,35 +163,6 @@ describe('Client network callbacks', function () {
             new CancellationToken,
         ))->toThrow(RuntimeException::class, 'credential provider failed');
     });
-
-    it('prefers network callbacks over the legacy Kerberos option', function () {
-        $legacyCalled = false;
-        $result = startClientWithNetworkOptions([
-            'kerberosAuth' => [
-                'mode' => 'fallback',
-                'callback' => function () use (&$legacyCalled): string {
-                    $legacyCalled = true;
-
-                    return 'legacy-token';
-                },
-            ],
-            'network' => [
-                'scope' => 'connection',
-                'authenticateNegotiate' => fn () => 'network-token',
-            ],
-        ]);
-
-        expect($result['requests'][1][0])->toBe('network.setProvider')
-            ->and($result['requests'][1][1])->toEqual([
-                'scope' => 'connection',
-                'authenticateNegotiate' => (object) [],
-            ])
-            ->and(($result['handlers']['network.authenticateNegotiate'])(
-                ['spn' => 'HTTP/proxy.example'],
-                new CancellationToken,
-            ))->toBe(['token' => 'network-token'])
-            ->and($legacyCalled)->toBeFalse();
-    });
 });
 
 /**
@@ -333,12 +177,10 @@ function startClientWithNetworkOptions(array $options, ?JsonRpcException $regist
     $handlers = [];
     $requests = [];
     $network = $options['network'] ?? null;
-    $legacyKerberosAuth = $options['kerberosAuth'] ?? $options['kerberos_auth'] ?? null;
     $networkOptionSet = $network !== null;
     $resolveProxyConfigured = $networkOptionSet && is_callable($network['resolveProxy'] ?? null);
     $authenticateNegotiateConfigured = $networkOptionSet
-        ? is_callable($network['authenticateNegotiate'] ?? null)
-        : $legacyKerberosAuth !== null;
+        && is_callable($network['authenticateNegotiate'] ?? null);
 
     $processManager = Mockery::mock(ProcessManager::class);
     $processManager->shouldReceive('start')->once();

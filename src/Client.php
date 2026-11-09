@@ -56,7 +56,6 @@ use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\Rpc\GitHubTelemetryNotification;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
-use Revolution\Copilot\Types\Rpc\KerberosAuthAcquireRequest;
 use Revolution\Copilot\Types\Rpc\NetworkAuthenticateNegotiateRequest;
 use Revolution\Copilot\Types\Rpc\NetworkAuthenticateNegotiateResult;
 use Revolution\Copilot\Types\Rpc\NetworkResolveProxyRequest;
@@ -199,39 +198,6 @@ class Client implements CopilotClient
         $this->extensionLaunchProvider = $extensionLaunchProvider === null
             ? null
             : Closure::fromCallable($extensionLaunchProvider);
-        $kerberosAuthOption = array_key_exists('kerberosAuth', $options)
-            ? 'kerberosAuth'
-            : (array_key_exists('kerberos_auth', $options) ? 'kerberos_auth' : null);
-        $kerberosAuth = $kerberosAuthOption === null ? null : $options[$kerberosAuthOption];
-        $legacyKerberosMode = null;
-        $legacyKerberosCallback = null;
-        $legacyKerberosScope = null;
-        if ($kerberosAuth !== null) {
-            if (! is_array($kerberosAuth)) {
-                throw new InvalidArgumentException('kerberosAuth must be an array.');
-            }
-
-            $kerberosMode = $kerberosAuth['mode'] ?? null;
-            if (! is_string($kerberosMode) || ! in_array($kerberosMode, ['fallback', 'always'], true)) {
-                throw new InvalidArgumentException('kerberosAuth.mode must be either "fallback" or "always".');
-            }
-
-            $kerberosScope = $kerberosAuth['scope'] ?? null;
-            if (array_key_exists('scope', $kerberosAuth)
-                && (! is_string($kerberosScope) || ! in_array($kerberosScope, ['connection', 'runtime'], true))) {
-                throw new InvalidArgumentException('kerberosAuth.scope must be either "connection" or "runtime".');
-            }
-
-            $kerberosCallback = $kerberosAuth['callback'] ?? null;
-            if (! is_callable($kerberosCallback)) {
-                throw new InvalidArgumentException('kerberosAuth.callback must be callable.');
-            }
-
-            $legacyKerberosMode = $kerberosMode;
-            $legacyKerberosCallback = Closure::fromCallable($kerberosCallback);
-            $legacyKerberosScope = $kerberosScope === null ? null : NetworkScope::from($kerberosScope);
-        }
-
         $network = $options['network'] ?? null;
         if ($network !== null) {
             if (! is_array($network)) {
@@ -270,24 +236,6 @@ class Client implements CopilotClient
                     'authenticateNegotiate' => $authenticateNegotiate,
                 ];
             }
-        } elseif ($legacyKerberosCallback !== null) {
-            if ($legacyKerberosMode === 'fallback') {
-                throw new InvalidArgumentException(
-                    'kerberosAuth.mode "fallback" cannot be represented by the network API; configure network.authenticateNegotiate explicitly.',
-                );
-            }
-
-            $this->network = [
-                'scope' => $legacyKerberosScope,
-                'resolveProxy' => null,
-                'authenticateNegotiate' => static fn (
-                    NetworkAuthenticateNegotiateRequest $request,
-                    CancellationToken $token,
-                ) => $legacyKerberosCallback(
-                    new KerberosAuthAcquireRequest(spn: $request->spn),
-                    $token,
-                ),
-            ];
         }
 
         $requestHandler = array_key_exists('requestHandler', $options)

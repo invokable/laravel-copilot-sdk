@@ -67,8 +67,6 @@ Copilot::stop();
 
 `scope`は省略すると`connection`です。`connection`はこのクライアントが作成または再開したセッションのリクエストだけを対象にします。`runtime`は共有のバックグラウンド通信も対象にしますが、同時にこのscopeを保持できる接続は1つだけです。
 
-旧形式の`kerberosAuth`と`kerberos_auth`もソース互換用に受け付け、`network`が未指定なら`authenticateNegotiate`コールバックに変換します。旧`mode: always`は利用できますが、`mode: fallback`は新しいネットワークAPIでは表現できないため、`network.authenticateNegotiate`への移行を促す`InvalidArgumentException`になります。旧形式も新しい`network.setProvider` RPCを使うため、Kerberos専用RPCだけを実装する古いランタイムでは利用できません。新旧の両方を指定した場合は`network`が優先され、旧設定は使われません。
-
 ## GitHubログイン（CLI）
 
 `copilot` もしくは `gh` CLIでログイン済みの場合は、何も指定しなければ保存済みの認証情報が使われます。

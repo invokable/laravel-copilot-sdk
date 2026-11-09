@@ -134,16 +134,6 @@ class ServerRpc
     }
 
     /**
-     * Legacy Kerberos RPC alias.
-     *
-     * @deprecated Use network() instead.
-     */
-    public function kerberosAuth(): PendingServerKerberosAuth
-    {
-        return new PendingServerKerberosAuth($this->client);
-    }
-
-    /**
      * MCP configuration RPC operations.
      */
     public function mcp(): PendingServerMcpConfig
