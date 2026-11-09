@@ -508,7 +508,7 @@ describe('CopilotManager', function () {
             ->and($receivedOptions[2]['extension_launch_provider'])->toBe($handler);
     });
 
-    it('forwards Kerberos authentication options from manager and transport configuration', function () {
+    it('forwards network and legacy Kerberos options from manager and transport configuration', function () {
         $kerberosAuth = [
             'mode' => 'fallback',
             'callback' => fn () => null,

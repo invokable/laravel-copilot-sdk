@@ -102,18 +102,25 @@ Fetchの`allocateRequestId()`、`request()`、`executeOperation()`と、Release�
 
 `azureMl()`はローカルモデルのカタログ・解決・ダウンロードと、その状態確認・キャンセル・削除を提供します。`llmInference()`はモデル層のHTTPリクエストをクライアント側へ中継する実験的APIです。`sessionFs()`はセッションのファイルシステム／SQLiteコールバックプロバイダーを登録します。
 
-### Kerberos認証（experimental）
+### ネットワークコールバック（experimental）
 
-`kerberosAuth()->setProvider()`でKerberos認証プロバイダーを登録します。`mode`にはネイティブ認証情報の取得に失敗した場合だけコールバックを使う`fallback`、または常にコールバックを使う`always`を指定します。`scope`は省略すると`connection`となり、`runtime`を指定するとランタイム共通のバックグラウンド通信も対象になります。このスコープを指定できる接続は同時に1つだけです。登録RPCの戻り値はありません。
+`network()->setProvider()`で、クライアント側に登録したプロキシ解決・Kerberos認証コールバックをランタイムに通知します。通常は`Client`の`network`オプションから自動登録されるため、直接呼び出す必要はありません。`NetworkSetProviderRequest`のコールバック項目は、対応するハンドラーが登録済みであることを示します。RPCの戻り値はありません。利用するランタイムは`network.setProvider` RPCをサポートしている必要があり、未対応の場合はクライアント起動時に更新を案内する例外が発生します。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
-use Revolution\Copilot\Types\Rpc\KerberosAuthSetProviderRequest;
+use Revolution\Copilot\Enums\NetworkScope;
+use Revolution\Copilot\Types\Rpc\NetworkSetProviderRequest;
 
-Copilot::client()->rpc()->kerberosAuth()->setProvider(
-    new KerberosAuthSetProviderRequest(mode: 'fallback', scope: 'connection'),
+Copilot::client()->rpc()->network()->setProvider(
+    new NetworkSetProviderRequest(
+        scope: NetworkScope::Runtime,
+        resolveProxy: true,
+        authenticateNegotiate: true,
+    ),
 );
 ```
+
+`scope`は省略すると`connection`です。`runtime`は共有バックグラウンド通信も対象にしますが、同時にこのscopeを登録できる接続は1つだけです。旧`kerberosAuth()->setProvider()`はソース互換エイリアスとして残っていますが、内部では`network.setProvider`を呼び出します。旧`mode: always`は受け付けますが、`fallback`は新RPCで表現できないため移行エラーになります。Kerberos専用RPCのみをサポートする古いランタイムとは互換性がありません。
 
 ### 内部・実験的な RPC
 

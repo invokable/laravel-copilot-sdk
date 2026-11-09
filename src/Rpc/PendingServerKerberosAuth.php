@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Rpc;
 
+use InvalidArgumentException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\KerberosAuthSetProviderRequest;
 use Revolution\Copilot\Types\Rpc\NetworkSetProviderRequest;
@@ -26,11 +27,15 @@ class PendingServerKerberosAuth
      */
     public function setProvider(KerberosAuthSetProviderRequest|array $params): void
     {
-        $legacyParams = ($params instanceof KerberosAuthSetProviderRequest
+        $legacyRequest = ($params instanceof KerberosAuthSetProviderRequest
             ? $params
-            : KerberosAuthSetProviderRequest::fromArray($params))->toArray();
+            : KerberosAuthSetProviderRequest::fromArray($params));
 
-        $legacyRequest = KerberosAuthSetProviderRequest::fromArray($legacyParams);
+        if ($legacyRequest->mode === 'fallback') {
+            throw new InvalidArgumentException(
+                'kerberosAuth.mode "fallback" cannot be represented by the network API; use network() instead.',
+            );
+        }
 
         (new PendingServerNetwork($this->client))->setProvider(new NetworkSetProviderRequest(
             scope: $legacyRequest->scope,

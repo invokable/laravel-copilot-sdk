@@ -72,6 +72,7 @@ use Revolution\Copilot\Types\SessionFsConfig;
 use Revolution\Copilot\Types\TranscriptRecovery;
 use RuntimeException;
 use SensitiveParameter;
+use stdClass;
 use Throwable;
 use UnexpectedValueException;
 
@@ -202,6 +203,7 @@ class Client implements CopilotClient
             ? 'kerberosAuth'
             : (array_key_exists('kerberos_auth', $options) ? 'kerberos_auth' : null);
         $kerberosAuth = $kerberosAuthOption === null ? null : $options[$kerberosAuthOption];
+        $legacyKerberosMode = null;
         $legacyKerberosCallback = null;
         $legacyKerberosScope = null;
         if ($kerberosAuth !== null) {
@@ -225,6 +227,7 @@ class Client implements CopilotClient
                 throw new InvalidArgumentException('kerberosAuth.callback must be callable.');
             }
 
+            $legacyKerberosMode = $kerberosMode;
             $legacyKerberosCallback = Closure::fromCallable($kerberosCallback);
             $legacyKerberosScope = $kerberosScope === null ? null : NetworkScope::from($kerberosScope);
         }
@@ -235,8 +238,12 @@ class Client implements CopilotClient
                 throw new InvalidArgumentException('network must be an array.');
             }
 
-            $networkScope = $network['scope'] ?? null;
+            $networkScopeOption = $network['scope'] ?? null;
+            $networkScope = $networkScopeOption instanceof NetworkScope
+                ? $networkScopeOption->value
+                : $networkScopeOption;
             if (array_key_exists('scope', $network)
+                && ! ($networkScopeOption instanceof NetworkScope)
                 && (! is_string($networkScope) || NetworkScope::tryFrom($networkScope) === null)) {
                 throw new InvalidArgumentException('network.scope must be either "connection" or "runtime".');
             }
@@ -264,6 +271,12 @@ class Client implements CopilotClient
                 ];
             }
         } elseif ($legacyKerberosCallback !== null) {
+            if ($legacyKerberosMode === 'fallback') {
+                throw new InvalidArgumentException(
+                    'kerberosAuth.mode "fallback" cannot be represented by the network API; configure network.authenticateNegotiate explicitly.',
+                );
+            }
+
             $this->network = [
                 'scope' => $legacyKerberosScope,
                 'resolveProxy' => null,
@@ -575,11 +588,22 @@ class Client implements CopilotClient
             }
 
             if ($this->network !== null) {
-                $this->rpc()->network()->setProvider(new NetworkSetProviderRequest(
-                    scope: $this->network['scope'],
-                    resolveProxy: $this->network['resolveProxy'] !== null,
-                    authenticateNegotiate: $this->network['authenticateNegotiate'] !== null,
-                ));
+                try {
+                    $this->rpc()->network()->setProvider(new NetworkSetProviderRequest(
+                        scope: $this->network['scope'],
+                        resolveProxy: $this->network['resolveProxy'] !== null,
+                        authenticateNegotiate: $this->network['authenticateNegotiate'] !== null,
+                    ));
+                } catch (JsonRpcException $exception) {
+                    if ($exception->code !== -32601) {
+                        throw $exception;
+                    }
+
+                    throw new RuntimeException(
+                        'The Copilot runtime does not support network.setProvider. Upgrade the runtime to enable network callbacks.',
+                        previous: $exception,
+                    );
+                }
             }
 
             if ($this->builtinPluginDirectories !== []) {
@@ -1554,7 +1578,7 @@ class Client implements CopilotClient
         return (new ProviderTokenAcquireResult(token: $token))->toArray();
     }
 
-    private function resolveNetworkProxy(array $params, CancellationToken $token): array
+    private function resolveNetworkProxy(array $params, CancellationToken $token): array|stdClass
     {
         $request = NetworkResolveProxyRequest::fromArray($params);
         $result = $this->network['resolveProxy']($request, $token);
@@ -1563,10 +1587,12 @@ class Client implements CopilotClient
             throw new UnexpectedValueException('network.resolveProxy callback must return a string or null.');
         }
 
-        return (new NetworkResolveProxyResult(proxy: $result))->toArray();
+        return $result === null
+            ? new stdClass
+            : (new NetworkResolveProxyResult(proxy: $result))->toArray();
     }
 
-    private function authenticateNetworkNegotiate(array $params, CancellationToken $token): array
+    private function authenticateNetworkNegotiate(array $params, CancellationToken $token): array|stdClass
     {
         $request = NetworkAuthenticateNegotiateRequest::fromArray($params);
         $result = $this->network['authenticateNegotiate']($request, $token);
@@ -1577,7 +1603,9 @@ class Client implements CopilotClient
             );
         }
 
-        return (new NetworkAuthenticateNegotiateResult(token: $result))->toArray();
+        return $result === null
+            ? new stdClass
+            : (new NetworkAuthenticateNegotiateResult(token: $result))->toArray();
     }
 
     protected function forgetGitHubTokenProviderForSession(string $sessionId): void

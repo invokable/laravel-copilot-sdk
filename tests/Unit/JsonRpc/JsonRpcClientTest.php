@@ -313,7 +313,7 @@ describe('JsonRpcClient', function () {
             ->and($response['error']['message'])->toContain('maximum JSON nesting depth');
     });
 
-    it('returns JSON-RPC cancellation when an inbound request token is cancelled', function () {
+    it('discards a network callback result when its inbound request is cancelled', function () {
         ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
 
@@ -323,7 +323,7 @@ describe('JsonRpcClient', function () {
         });
 
         $client = new JsonRpcClient($transport);
-        $client->setRequestHandler('skillProvider.list', function (array $params, CancellationToken $token) use ($simulateReceive) {
+        $client->setRequestHandler('network.resolveProxy', function (array $params, CancellationToken $token) use ($simulateReceive) {
             $suspension = EventLoop::getSuspension();
             $token->onCancellationRequested(fn () => $suspension->resume());
             EventLoop::delay(0.01, fn () => $simulateReceive(
@@ -331,11 +331,11 @@ describe('JsonRpcClient', function () {
             ));
             $suspension->suspend();
 
-            return ['skills' => []];
+            return ['proxy' => 'DIRECT'];
         });
         $client->start();
 
-        $simulateReceive(JsonRpcMessage::request('skill-request', 'skillProvider.list')->toJson());
+        $simulateReceive(JsonRpcMessage::request('skill-request', 'network.resolveProxy')->toJson());
         EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
         EventLoop::run();
 

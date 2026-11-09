@@ -32,6 +32,15 @@ describe('PendingServerKerberosAuth compatibility alias', function () {
             ->with('network.setProvider', ['authenticateNegotiate' => (object) []])
             ->andReturnNull();
 
-        (new PendingServerKerberosAuth($client))->setProvider(['mode' => 'fallback']);
+        (new PendingServerKerberosAuth($client))->setProvider(['mode' => 'always']);
+    });
+
+    it('requires migration from the legacy fallback mode', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldNotReceive('request');
+
+        expect(fn () => (new PendingServerKerberosAuth($client))->setProvider([
+            'mode' => 'fallback',
+        ]))->toThrow(InvalidArgumentException::class, 'network API');
     });
 });

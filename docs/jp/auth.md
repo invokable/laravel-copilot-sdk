@@ -39,36 +39,35 @@ Copilot::stop();
 
 設定したIDは`server.connect`ハンドシェイクでランタイムに渡されます。Entra設定を指定した場合、`connect`に対応しない古いランタイムでは設定を黙って破棄せず、`This runtime does not support Entra client configuration.`例外を送出します。ランタイムを更新してください。他の認証方法は引き続き利用できます。
 
-## Kerberos資格情報コールバック
+## ネットワークコールバック
 
-Kerberos認証が必要な環境では、`kerberosAuth`に資格情報コールバックを設定します。コールバックにはSPNを持つ`KerberosAuthAcquireRequest`と、リクエストのキャンセルを確認できる`CancellationToken`が渡されます。
+`network`設定で、ランタイムのプロキシ解決とKerberos Negotiate認証をホスト側のコールバックに委譲できます。利用するCopilotランタイムは`network.setProvider` RPCをサポートしている必要があります。未対応の場合、クライアント起動時にランタイムの更新を案内する例外が発生します。コールバックにはリクエスト型と、キャンセルを確認できる`CancellationToken`が渡されます。
 
 ```php
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Support\CancellationToken;
-use Revolution\Copilot\Types\Rpc\KerberosAuthAcquireRequest;
+use Revolution\Copilot\Types\Rpc\NetworkAuthenticateNegotiateRequest;
+use Revolution\Copilot\Types\Rpc\NetworkResolveProxyRequest;
 
 Copilot::useStdio([
-    'kerberosAuth' => [
-        'mode' => 'fallback',
-        'callback' => function (KerberosAuthAcquireRequest $request, CancellationToken $token) use ($credentials): ?string {
-            if ($token->isCancellationRequested()) {
-                return null;
-            }
-
-            return $credentials->acquire($request->spn, $token);
+    'network' => [
+        'scope' => 'runtime',
+        'resolveProxy' => function (NetworkResolveProxyRequest $request, CancellationToken $signal) use ($proxyResolver): ?string {
+            return $proxyResolver->resolve($request->url, $signal);
+        },
+        'authenticateNegotiate' => function (NetworkAuthenticateNegotiateRequest $request, CancellationToken $signal) use ($credentials): ?string {
+            return $credentials->acquire($request->spn, $signal);
         },
     ],
 ])->run(prompt: 'Hello');
 Copilot::stop();
 ```
 
-コールバックは`Negotiate `プレフィックスを含まない、単回使用のbase64 SPNEGOトークンを返します。資格情報を取得できない場合は`null`を返します。`kerberos_auth`も同じ設定のエイリアスです。
-SPNはランタイムから渡されるため、資格情報を発行する前に検証してください。
+`resolveProxy`は`PROXY proxy.example:8080; DIRECT`のようなPAC形式の文字列、または直接接続する`DIRECT`を返します。`null`はランタイム自身にプロキシを解決させます。認証コールバックは`Negotiate `プレフィックスを含まない、単回使用のbase64 SPNEGOトークンを返し、資格情報がなければ`null`を返します。コールバックが例外を投げた場合はRPCが失敗し、直接接続にはフォールバックしません。SPNは資格情報を発行する前に検証してください。
 
-`mode`には`fallback`または`always`を指定します。`fallback`はランタイムのネイティブな資格情報取得に失敗した場合だけコールバックを使い、`always`はネイティブな取得を行いません。
+`scope`は省略すると`connection`です。`connection`はこのクライアントが作成または再開したセッションのリクエストだけを対象にします。`runtime`は共有のバックグラウンド通信も対象にしますが、同時にこのscopeを保持できる接続は1つだけです。
 
-`scope`は省略すると`connection`です。`connection`はこのクライアントが作成または再開したセッションのリクエストだけを認証します。`runtime`はランタイム共有のバックグラウンド通信にもコールバックを使いますが、同時にこのscopeを保持できる接続は1つだけです。
+旧形式の`kerberosAuth`と`kerberos_auth`もソース互換用に受け付け、`network`が未指定なら`authenticateNegotiate`コールバックに変換します。旧`mode: always`は利用できますが、`mode: fallback`は新しいネットワークAPIでは表現できないため、`network.authenticateNegotiate`への移行を促す`InvalidArgumentException`になります。旧形式も新しい`network.setProvider` RPCを使うため、Kerberos専用RPCだけを実装する古いランタイムでは利用できません。新旧の両方を指定した場合は`network`が優先され、旧設定は使われません。
 
 ## GitHubログイン（CLI）
 
