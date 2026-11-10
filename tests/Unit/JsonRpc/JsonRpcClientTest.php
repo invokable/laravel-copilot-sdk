@@ -96,6 +96,60 @@ describe('JsonRpcClient', function () {
         expect($result)->toBe(['status' => 'ok']);
     });
 
+    it('sends a standard cancellation notification for an active request', function () {
+        ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
+        $transport->shouldReceive('start')->once();
+        $signal = new CancellationToken;
+        $sentMessages = [];
+        $transport->shouldReceive('send')->twice()->andReturnUsing(
+            function (string $content) use (&$sentMessages, $simulateReceive, $signal): void {
+                $messageStart = strpos($content, "\r\n\r\n") + 4;
+                $message = json_decode(substr($content, $messageStart), true);
+                $sentMessages[] = $message;
+
+                if ($message['method'] === 'localModels.watch') {
+                    EventLoop::queue(fn () => $signal->cancel());
+
+                    return;
+                }
+
+                $simulateReceive(JsonRpcMessage::errorResponse(
+                    $message['params']['id'],
+                    -32800,
+                    'Request cancelled',
+                )->toJson());
+            },
+        );
+
+        $client = new JsonRpcClient($transport);
+        $client->start();
+
+        expect(fn () => $client->request(
+            'localModels.watch',
+            ['afterRevision' => 7],
+            timeout: null,
+            signal: $signal,
+        ))->toThrow(JsonRpcException::class, 'Request cancelled');
+
+        expect($sentMessages[1])->toBe([
+            'jsonrpc' => '2.0',
+            'method' => '$/cancelRequest',
+            'params' => ['id' => $sentMessages[0]['id']],
+        ]);
+    });
+
+    it('does not send a request when its cancellation signal was already cancelled', function () {
+        $transport = Mockery::mock(Transport::class);
+        $signal = new CancellationToken;
+        $signal->cancel();
+        $client = new JsonRpcClient($transport);
+
+        expect(fn () => $client->request('localModels.watch', signal: $signal))
+            ->toThrow(JsonRpcException::class, 'Request cancelled');
+
+        $transport->shouldNotHaveReceived('send');
+    });
+
     it('request throws JsonRpcException on error response', function () {
         ['transport' => $transport, 'simulateReceive' => $simulateReceive] = createMockTransport();
         $transport->shouldReceive('start')->once();
