@@ -31,17 +31,48 @@ describe('ModelList', function () {
             ->and($result->models[0]->id)->toBe('gpt-4');
     });
 
-    it('preserves absent and empty image model catalogs distinctly', function () {
+    it('preserves absent and empty optional model catalogs distinctly', function () {
         $result = ModelList::fromArray(['models' => []]);
 
         expect($result->models)->toBe([])
             ->and($result->imageModels)->toBeNull()
-            ->and($result->toArray())->not->toHaveKey('imageModels');
+            ->and($result->decisionModels)->toBeNull()
+            ->and($result->toArray())->not->toHaveKey('imageModels')
+            ->and($result->toArray())->not->toHaveKey('decisionModels');
 
-        $withEmptyCatalog = ModelList::fromArray(['models' => [], 'imageModels' => []]);
+        $withEmptyCatalog = ModelList::fromArray([
+            'models' => [],
+            'imageModels' => [],
+            'decisionModels' => [],
+        ]);
 
         expect($withEmptyCatalog->imageModels)->toBe([])
-            ->and($withEmptyCatalog->toArray())->toHaveKey('imageModels', []);
+            ->and($withEmptyCatalog->decisionModels)->toBe([])
+            ->and($withEmptyCatalog->toArray())->toHaveKey('imageModels', [])
+            ->and($withEmptyCatalog->toArray())->toHaveKey('decisionModels', []);
+    });
+
+    it('parses and serializes decision model metadata', function () {
+        $result = ModelList::fromArray([
+            'models' => [],
+            'decisionModels' => [[
+                'id' => 'decision-model',
+                'name' => 'Decision Model',
+                'isDefault' => true,
+                'limits' => ['maxQuestions' => 5],
+                'supportsRefusals' => false,
+            ]],
+        ]);
+
+        expect($result->decisionModels[0]->id)->toBe('decision-model')
+            ->and($result->decisionModels[0]->supportsRefusals)->toBeFalse()
+            ->and($result->toArray()['decisionModels'])->toBe([[
+                'id' => 'decision-model',
+                'name' => 'Decision Model',
+                'isDefault' => true,
+                'limits' => ['maxQuestions' => 5],
+                'supportsRefusals' => false,
+            ]]);
     });
 
     it('parses and serializes image model metadata separately from chat models', function () {

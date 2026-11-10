@@ -62,6 +62,16 @@ class ServerRpc
     }
 
     /**
+     * Experimental decision RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function decisions(): PendingServerDecisions
+    {
+        return new PendingServerDecisions($this->client);
+    }
+
+    /**
      * Experimental Azure ML local-model lifecycle RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.
