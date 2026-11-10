@@ -62,6 +62,16 @@ class ServerRpc
     }
 
     /**
+     * Process-wide language-server inventory operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function lsp(): PendingServerLsp
+    {
+        return new PendingServerLsp($this->client);
+    }
+
+    /**
      * Experimental decision RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.
