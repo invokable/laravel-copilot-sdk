@@ -102,6 +102,8 @@ Fetchの`allocateRequestId()`、`request()`、`executeOperation()`と、Release�
 
 `azureMl()`はローカルGPUメモリ情報の取得、モデルのカタログ・解決・ダウンロードと、その状態確認・キャンセル・削除を提供します。また、ファミリーリースを使ってAzure MLモデルのプロバイダー設定を登録・削除・復元できます。`llmInference()`はモデル層のHTTPリクエストをクライアント側へ中継する実験的APIです。`sessionFs()`はセッションのファイルシステム／SQLiteコールバックプロバイダーを登録します。
 
+`localModels()`は接続単位の実験的APIで、モデル管理の設定・状態確認・変更監視、カタログ更新、モデルの準備・ダウンロード・更新・修復・削除、ジョブのキャンセル、通知の消去を行います。`configure()`、`inspect()`、`watch()`は`LocalModelsView`と`LocalModelsEvent[]`を含む型付き結果を返します。`watch()`には`CancellationToken`を渡せます。トークンをキャンセルするとJSON-RPCのキャンセル通知を送信し、接続は維持されます。`configure()`の`sessionId`は`null`の場合に送信されません。
+
 ### ネットワークコールバック（experimental）
 
 `network()->setProvider()`で、クライアント側に登録したプロキシ解決・Kerberos認証コールバックをランタイムに通知します。通常は`Client`の`network`オプションから自動登録されるため、直接呼び出す必要はありません。`NetworkSetProviderRequest`のコールバック項目は、対応するハンドラーが登録済みであることを示します。RPCの戻り値はありません。利用するランタイムは`network.setProvider` RPCをサポートしている必要があり、未対応の場合はクライアント起動時に更新を案内する例外が発生します。

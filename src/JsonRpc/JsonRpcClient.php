@@ -115,10 +115,18 @@ class JsonRpcClient
      *
      * @throws JsonRpcException
      */
-    public function request(string $method, array $params = [], ?float $timeout = 30.0): mixed
-    {
+    public function request(
+        string $method,
+        array $params = [],
+        ?float $timeout = 30.0,
+        ?CancellationToken $signal = null,
+    ): mixed {
         if (! Copilot::isAllowedMethod($method)) {
             throw new StrayRequestException($method);
+        }
+
+        if ($signal?->isCancellationRequested()) {
+            throw new JsonRpcException(-32800, 'Request cancelled');
         }
 
         $requestId = Str::uuid()->toString();
@@ -131,9 +139,19 @@ class JsonRpcClient
             );
         }
 
-        $this->sendMessage($message);
+        $removeCancellationListener = $signal?->onCancellationRequested(
+            fn () => $this->notify('$/cancelRequest', ['id' => $requestId]),
+        );
 
-        return $this->waitForResponse($requestId, $timeout);
+        try {
+            $this->sendMessage($message);
+
+            return $this->waitForResponse($requestId, $timeout);
+        } finally {
+            if ($removeCancellationListener !== null) {
+                $removeCancellationListener();
+            }
+        }
     }
 
     /**

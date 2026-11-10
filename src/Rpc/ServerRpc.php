@@ -92,6 +92,16 @@ class ServerRpc
     }
 
     /**
+     * Experimental connection-owned local model management RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function localModels(): PendingServerLocalModels
+    {
+        return new PendingServerLocalModels($this->client);
+    }
+
+    /**
      * Server-scoped slash command RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.

@@ -8,7 +8,7 @@ use Closure;
 use Throwable;
 
 /**
- * Cooperative cancellation signal for inbound JSON-RPC provider callbacks.
+ * Cooperative cancellation signal for JSON-RPC requests.
  */
 final class CancellationToken
 {
