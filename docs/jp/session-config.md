@@ -394,6 +394,8 @@ $config = new SessionConfig(
 
 セッション再開時には`ResumeSessionConfig`クラスを使用します。`SessionConfig`とほとんど同じですが少しだけ違います。ResumeSessionConfigは設定を変えたい項目のみ指定します。他は新規セッション開始時の設定が引き継がれます。
 
+再開時のビルトインサブエージェントの許可リストは`includedBuiltinAgents`で指定できます。セッション作成時またはcold resumeで省略した場合は既定の許可リストが使われ、warm resumeでは現在の許可リストが維持されます。この設定は永続化されないため、runtime再起動後に同じ許可リストを使う場合は再指定してください。
+
 `ResumeSessionConfig`特有のフィールドとして`openCanvases`があります。セッションが中断された時に既に開いていたキャンバスのスナップショットを提供すると、ランタイムはキャンバスの状態を再ハイドレートできるため、以前のシャットダウン前にアクティブだったキャンバスを再度開く必要がありません。（実験的機能）
 
 Canvas を再開する場合も、`canvases` と `canvasHandler` を再度指定します。`canvasHandler` は PHP プロセス内でのみ使用され、RPC payload には宣言メタデータだけが送られます。開いている状態は `$session->openCanvases()` で取得でき、`session.canvas.opened` / `session.canvas.closed` イベントに合わせて更新されます。

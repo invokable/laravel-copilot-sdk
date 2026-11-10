@@ -89,6 +89,20 @@ describe('ResumeSessionConfig', function () {
             ->and($empty->toArray())->toHaveKey('excludedManagedSettings', []);
     });
 
+    it('round-trips included built-in agents and omits them when unset', function () {
+        $agents = ['explainer'];
+        $default = new ResumeSessionConfig;
+        $fromArray = ResumeSessionConfig::fromArray(['includedBuiltinAgents' => $agents]);
+        $typed = new ResumeSessionConfig(includedBuiltinAgents: $agents);
+        $empty = new ResumeSessionConfig(includedBuiltinAgents: []);
+
+        expect($default->toArray())->not->toHaveKey('includedBuiltinAgents')
+            ->and($fromArray->includedBuiltinAgents)->toBe($agents)
+            ->and($fromArray->toArray())->toHaveKey('includedBuiltinAgents', $agents)
+            ->and($typed->toArray())->toHaveKey('includedBuiltinAgents', $agents)
+            ->and($empty->toArray())->toHaveKey('includedBuiltinAgents', []);
+    });
+
     it('ignores the removed GitHub cache store setting', function () {
         $config = ResumeSessionConfig::fromArray(['enableGitHubCacheStore' => true]);
 
