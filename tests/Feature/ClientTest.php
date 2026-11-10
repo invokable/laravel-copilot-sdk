@@ -659,7 +659,15 @@ describe('Client', function () {
             name: 'lookup_fruit',
             description: 'Looks up fruit.',
             parameters: null,
+            handler: fn () => ['result' => 'fruit'],
+            title: 'Fruit lookup',
+            idempotent: true,
             namespace: ['name' => 'fruit', 'description' => 'Fruit lookups'],
+        );
+        $declarationOnlyTool = Tool::define(
+            name: 'lookup_weather',
+            description: 'Looks up weather.',
+            parameters: null,
         );
         $mockRpcClient->shouldReceive('request')
             ->with('session.create', Mockery::on(fn ($params) => ($params['askUserVariant'] ?? null) === 'elicitation'
@@ -677,8 +685,16 @@ describe('Client', function () {
                 && ($params['tools'] ?? null) === [[
                     'name' => 'lookup_fruit',
                     'description' => 'Looks up fruit.',
+                    'title' => 'Fruit lookup',
+                    'hasHandler' => true,
+                    'idempotent' => true,
                     'defer' => 'auto',
                     'namespace' => ['name' => 'fruit', 'description' => 'Fruit lookups'],
+                ], [
+                    'name' => 'lookup_weather',
+                    'description' => 'Looks up weather.',
+                    'hasHandler' => false,
+                    'defer' => 'auto',
                 ]]
                 && ($params['name'] ?? null) === 'startup-check'
                 && ! array_key_exists('requestMcpApps', $params)
@@ -690,7 +706,7 @@ describe('Client', function () {
         $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
         $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
         $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
-        $mockSession->shouldReceive('registerTools')->once()->with([$tool]);
+        $mockSession->shouldReceive('registerTools')->once()->with([$tool, $declarationOnlyTool]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once();
         $mockSession->shouldReceive('registerPermissionHandler')->once();
@@ -717,7 +733,7 @@ describe('Client', function () {
             diagnostics: ['sources' => ['mcp' => ['level' => 'debug']]],
             enableMcpApps: false,
             name: 'startup-check',
-            tools: [$tool],
+            tools: [$tool, $declarationOnlyTool],
         ));
 
         expect($session)->toBe($mockSession);
@@ -1916,7 +1932,15 @@ describe('Client', function () {
             name: 'lookup_fruit',
             description: 'Looks up fruit.',
             parameters: null,
+            handler: fn () => ['result' => 'fruit'],
+            title: 'Fruit lookup',
+            idempotent: true,
             namespace: ['name' => 'fruit', 'description' => 'Fruit lookups'],
+        );
+        $declarationOnlyTool = Tool::define(
+            name: 'lookup_weather',
+            description: 'Looks up weather.',
+            parameters: null,
         );
         $mockRpcClient->shouldReceive('request')
             ->with('session.resume', Mockery::on(fn ($params) => ($params['toolSearch'] ?? null) === ['enabled' => true, 'deferThreshold' => 6]
@@ -1931,8 +1955,16 @@ describe('Client', function () {
                 && ($params['tools'] ?? null) === [[
                     'name' => 'lookup_fruit',
                     'description' => 'Looks up fruit.',
+                    'title' => 'Fruit lookup',
+                    'hasHandler' => true,
+                    'idempotent' => true,
                     'defer' => 'auto',
                     'namespace' => ['name' => 'fruit', 'description' => 'Fruit lookups'],
+                ], [
+                    'name' => 'lookup_weather',
+                    'description' => 'Looks up weather.',
+                    'hasHandler' => false,
+                    'defer' => 'auto',
                 ]]
                 && ($params['enableCitations'] ?? null) === true
                 && ($params['excludedBuiltinAgents'] ?? null) === ['explainer']
@@ -1957,7 +1989,7 @@ describe('Client', function () {
         $mockSession->shouldReceive('setWorkspacePath')->once()->with(null);
         $mockSession->shouldReceive('registerSkillProvider')->once()->with(null);
         $mockSession->shouldReceive('registerSessionFsProvider')->once()->with(null);
-        $mockSession->shouldReceive('registerTools')->once()->with([$tool]);
+        $mockSession->shouldReceive('registerTools')->once()->with([$tool, $declarationOnlyTool]);
         $mockSession->shouldReceive('registerCommands')->once()->with([]);
         $mockSession->shouldReceive('setCapabilities')->once();
         $mockSession->shouldReceive('registerPermissionHandler')->once();
@@ -1987,7 +2019,7 @@ describe('Client', function () {
             excludedBuiltinAgents: ['explainer'],
             excludedManagedSettings: ['permissions'],
             sessionLimits: new SessionLimitsConfig(maxAiCredits: 5),
-            tools: [$tool],
+            tools: [$tool, $declarationOnlyTool],
         ));
 
         expect($session)->toBe($mockSession);

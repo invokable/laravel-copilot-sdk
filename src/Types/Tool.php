@@ -25,6 +25,8 @@ readonly class Tool implements Arrayable
      * @param  ?array  $metadata  Opaque, host-defined metadata associated with the tool definition. Keys are namespaced and are not part of the stable public API.
      * @param  bool  $isTerminal  Whether a successful call ends the current agent turn.
      * @param  ToolNamespace|array|null  $namespace  Experimental grouping for model tool discovery.
+     * @param  ?string  $title  Optional display title for the tool.
+     * @param  bool  $idempotent  Whether the tool has no side effects.
      */
     public function __construct(
         public string $name,
@@ -37,6 +39,8 @@ readonly class Tool implements Arrayable
         public ?array $metadata = null,
         public bool $isTerminal = false,
         public ToolNamespace|array|null $namespace = null,
+        public ?string $title = null,
+        public bool $idempotent = false,
     ) {}
 
     /**
@@ -53,6 +57,8 @@ readonly class Tool implements Arrayable
         ?array $metadata = null,
         bool $isTerminal = false,
         ToolNamespace|array|null $namespace = null,
+        ?string $title = null,
+        bool $idempotent = false,
     ): array {
         return new self(
             name: $name,
@@ -65,13 +71,15 @@ readonly class Tool implements Arrayable
             metadata: $metadata,
             isTerminal: $isTerminal,
             namespace: $namespace,
+            title: $title,
+            idempotent: $idempotent,
         )->toArray();
     }
 
     /**
      * Create from array.
      *
-     * @param  array{name: string, description?: string, parameters?: array, handler?: callable, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string, metadata?: array, isTerminal?: bool, namespace?: ToolNamespace|array}  $data
+     * @param  array{name: string, description?: string, parameters?: array, handler?: callable, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string, metadata?: array, isTerminal?: bool, namespace?: ToolNamespace|array, title?: string, idempotent?: bool}  $data
      */
     public static function fromArray(array $data): self
     {
@@ -88,13 +96,15 @@ readonly class Tool implements Arrayable
             namespace: isset($data['namespace'])
                 ? ($data['namespace'] instanceof ToolNamespace ? $data['namespace'] : ToolNamespace::fromArray($data['namespace']))
                 : null,
+            title: $data['title'] ?? null,
+            idempotent: Arr::boolean($data, 'idempotent', false),
         );
     }
 
     /**
      * Convert to array.
      *
-     * @return array{name: string, description: string|null, parameters: array|null, handler: Closure|null, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string, metadata?: array, isTerminal?: bool, namespace?: array}
+     * @return array{name: string, description: string|null, parameters: array|null, handler: Closure|null, overridesBuiltInTool?: bool, skipPermission?: bool, defer?: string, metadata?: array, isTerminal?: bool, namespace?: array, title?: string, idempotent?: bool}
      */
     public function toArray(): array
     {
@@ -129,6 +139,14 @@ readonly class Tool implements Arrayable
             $array['namespace'] = $this->namespace instanceof ToolNamespace
                 ? $this->namespace->toArray()
                 : $this->namespace;
+        }
+
+        if ($this->title !== null) {
+            $array['title'] = $this->title;
+        }
+
+        if ($this->idempotent) {
+            $array['idempotent'] = true;
         }
 
         return $array;

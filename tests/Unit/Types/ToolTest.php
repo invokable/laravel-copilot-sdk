@@ -199,6 +199,32 @@ describe('Tool', function () {
             ->and(Tool::fromArray($tool)->isTerminal)->toBeTrue();
     });
 
+    it('serializes title and idempotent metadata', function () {
+        $tool = Tool::define(
+            name: 'lookup_fact',
+            description: 'Looks up a fact.',
+            parameters: null,
+            title: 'Fact lookup',
+            idempotent: true,
+        );
+
+        expect($tool['title'])->toBe('Fact lookup')
+            ->and($tool['idempotent'])->toBeTrue()
+            ->and(Tool::fromArray($tool)->title)->toBe('Fact lookup')
+            ->and(Tool::fromArray($tool)->idempotent)->toBeTrue();
+    });
+
+    it('omits unset title and false idempotent metadata', function () {
+        $tool = Tool::define(
+            name: 'lookup_fact',
+            description: 'Looks up a fact.',
+            parameters: null,
+        );
+
+        expect($tool)->not->toHaveKey('title')
+            ->and($tool)->not->toHaveKey('idempotent');
+    });
+
     it('can be created without a handler for declaration-only tools', function () {
         $tool = new Tool(
             name: 'declaration_tool',
