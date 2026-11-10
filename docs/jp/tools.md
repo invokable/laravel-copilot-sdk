@@ -9,6 +9,8 @@ SessionConfigの `tools` にツールの定義を指定します。
 `Tool::define()`は他言語版の`defineTool`と同様のヘルパーです。  
 parametersにはLaravel自身がLaravel MCPで使っているJsonSchemaを使用可能です。JsonSchemaを使わず直接配列を指定も可能です。
 
+`title` でツールの表示名を指定できます。`idempotent: true` は、そのツールに副作用がないことをランタイムに伝えます。どちらも省略可能です。
+
 ```php
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\JsonSchema\JsonSchema;
@@ -65,6 +67,8 @@ Artisan::command('copilot:tools', function () {
                 skipPermission: false, // trueにするとパーミッションプロンプトなしで実行
                 defer: 'auto', // ツールを常にプリロードするのではなく、遅延ロード（ツール検索による遅延ロード）するかどうかを制御します。`"auto"` の場合、ツールは遅延ロードされ、ツール検索によって表示されます。`"never"` の場合、ツールは常にプリロードされます。オプション。デフォルトは `"auto" です。
                 isTerminal: false, // trueにすると成功した呼び出しで現在のエージェントターンを終了
+                title: 'Fact lookup',
+                idempotent: true,
             ),
         ],
     );
