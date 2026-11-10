@@ -3,10 +3,14 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\AzureMlCatalogRetryMode;
+use Revolution\Copilot\Enums\AzureMlRegistrationKind;
+use Revolution\Copilot\Enums\AzureMlRegistrationOperation;
 use Revolution\Copilot\Enums\AzureMlRegistry;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerAzureMl;
 use Revolution\Copilot\Rpc\ServerRpc;
+use Revolution\Copilot\Types\NamedProviderConfig;
+use Revolution\Copilot\Types\ProviderModelConfig;
 use Revolution\Copilot\Types\Rpc\AzureMlAcquireFamilyRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlAcquireFamilyResult;
 use Revolution\Copilot\Types\Rpc\AzureMlCancelRequest;
@@ -18,10 +22,13 @@ use Revolution\Copilot\Types\Rpc\AzureMlDownloadResult;
 use Revolution\Copilot\Types\Rpc\AzureMlDownloadStatus;
 use Revolution\Copilot\Types\Rpc\AzureMlLatestRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlLatestResult;
+use Revolution\Copilot\Types\Rpc\AzureMlRegistrationRequest;
+use Revolution\Copilot\Types\Rpc\AzureMlRegistrationResult;
 use Revolution\Copilot\Types\Rpc\AzureMlReleaseFamilyRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlResolveRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlResolveResult;
 use Revolution\Copilot\Types\Rpc\AzureMlStatusRequest;
+use Revolution\Copilot\Types\Rpc\ModelProviderSaveConfigurationRequest;
 
 describe('PendingServerAzureMl', function () {
     it('dispatches every Azure ML operation with typed and array parameters', function () {
@@ -132,6 +139,38 @@ describe('PendingServerAzureMl', function () {
                 null,
                 null,
             ],
+            [
+                'registration',
+                'azureMl.registration',
+                [
+                    'registry' => 'azureml',
+                    'name' => 'phi',
+                    'leaseId' => 'lease-1',
+                    'operation' => 'upsert',
+                    'entries' => [
+                        'provider' => ['name' => 'local', 'baseUrl' => 'http://localhost'],
+                        'model' => ['id' => 'phi', 'provider' => 'local', 'modelId' => 'phi-4'],
+                    ],
+                    'before' => ['providers' => []],
+                ],
+                new AzureMlRegistrationRequest(
+                    registry: AzureMlRegistry::AzureMl,
+                    name: 'phi',
+                    leaseId: 'lease-1',
+                    operation: AzureMlRegistrationOperation::Upsert,
+                    entries: new ModelProviderSaveConfigurationRequest(
+                        provider: new NamedProviderConfig(name: 'local', baseUrl: 'http://localhost'),
+                        model: new ProviderModelConfig(id: 'phi', provider: 'local', modelId: 'phi-4'),
+                    ),
+                    before: ['providers' => []],
+                ),
+                [
+                    'kind' => 'written',
+                    'path' => '/home/user/providers.json',
+                    'before' => ['providers' => []],
+                ],
+                AzureMlRegistrationResult::class,
+            ],
         ];
         $client = Mockery::mock(JsonRpcClient::class);
 
@@ -187,6 +226,61 @@ describe('PendingServerAzureMl', function () {
         $result = (new PendingServerAzureMl($client))->status(new AzureMlStatusRequest('request-1'));
 
         expect($result)->toBeNull();
+    });
+
+    it('returns measured GPU memory and handles unavailable hardware', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('azureMl.hardware', [])
+            ->andReturn([
+                'gpuMemory' => [
+                    'totalBytes' => 16_000,
+                    'dedicatedBytes' => 12_000,
+                    'sharedBytes' => 4_000,
+                    'description' => 'Local adapter',
+                ],
+            ]);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('azureMl.hardware', [])
+            ->andReturn([]);
+
+        $azureMl = new PendingServerAzureMl($client);
+        $hardware = $azureMl->hardware();
+        $unknownHardware = $azureMl->hardware();
+
+        expect($hardware->gpuMemory?->dedicatedBytes)->toBe(12_000)
+            ->and($hardware->gpuMemory?->sharedBytes)->toBe(4_000)
+            ->and($unknownHardware->gpuMemory)->toBeNull();
+    });
+
+    it('returns a typed failure when registration does not write', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('azureMl.registration', [
+                'registry' => 'azureml',
+                'name' => 'phi',
+                'leaseId' => 'lease-1',
+                'operation' => 'remove',
+            ])
+            ->andReturn([
+                'kind' => 'failed',
+                'path' => '/home/user/providers.json',
+                'detail' => 'Write failed',
+            ]);
+
+        $result = (new PendingServerAzureMl($client))->registration([
+            'registry' => 'azureml',
+            'name' => 'phi',
+            'leaseId' => 'lease-1',
+            'operation' => 'remove',
+        ]);
+
+        expect($result->kind)->toBe(AzureMlRegistrationKind::Failed)
+            ->and($result->path)->toBe('/home/user/providers.json')
+            ->and($result->detail)->toBe('Write failed');
     });
 
     it('allows an explicit timeout for a long-running download', function () {

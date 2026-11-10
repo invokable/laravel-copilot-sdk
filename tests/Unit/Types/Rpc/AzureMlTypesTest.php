@@ -3,7 +3,11 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\AzureMlCatalogRetryMode;
+use Revolution\Copilot\Enums\AzureMlRegistrationKind;
+use Revolution\Copilot\Enums\AzureMlRegistrationOperation;
 use Revolution\Copilot\Enums\AzureMlRegistry;
+use Revolution\Copilot\Types\NamedProviderConfig;
+use Revolution\Copilot\Types\ProviderModelConfig;
 use Revolution\Copilot\Types\Rpc\AzureMlAcquireFamilyRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlAcquireFamilyResult;
 use Revolution\Copilot\Types\Rpc\AzureMlCancelRequest;
@@ -13,12 +17,17 @@ use Revolution\Copilot\Types\Rpc\AzureMlDiscardRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlDownloadRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlDownloadResult;
 use Revolution\Copilot\Types\Rpc\AzureMlDownloadStatus;
+use Revolution\Copilot\Types\Rpc\AzureMlGpuMemory;
+use Revolution\Copilot\Types\Rpc\AzureMlHardwareResult;
 use Revolution\Copilot\Types\Rpc\AzureMlLatestRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlLatestResult;
+use Revolution\Copilot\Types\Rpc\AzureMlRegistrationRequest;
+use Revolution\Copilot\Types\Rpc\AzureMlRegistrationResult;
 use Revolution\Copilot\Types\Rpc\AzureMlReleaseFamilyRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlResolveRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlResolveResult;
 use Revolution\Copilot\Types\Rpc\AzureMlStatusRequest;
+use Revolution\Copilot\Types\Rpc\ModelProviderSaveConfigurationRequest;
 
 describe('Azure ML RPC types', function () {
     it('round trips typed requests and preserves unknown enum values', function () {
@@ -94,6 +103,80 @@ describe('Azure ML RPC types', function () {
         expect($unknownRegistry->registry)->toBe('future-registry')
             ->and($unknownRetryMode->retryMode)->toBe('future-mode')
             ->and(AzureMlRegistry::AzureMlDev->value)->toBe('azureml-dev');
+    });
+
+    it('round trips Azure ML hardware and registration types', function () {
+        $gpuMemory = AzureMlGpuMemory::fromArray([
+            'totalBytes' => 16_000,
+            'dedicatedBytes' => 12_000,
+            'sharedBytes' => 4_000,
+            'description' => 'Local adapter',
+        ]);
+        $hardware = AzureMlHardwareResult::fromArray(['gpuMemory' => $gpuMemory->toArray()]);
+        $entries = new ModelProviderSaveConfigurationRequest(
+            provider: new NamedProviderConfig(name: 'local', baseUrl: 'http://localhost'),
+            model: new ProviderModelConfig(id: 'phi', provider: 'local', modelId: 'phi-4'),
+        );
+        $registration = new AzureMlRegistrationRequest(
+            registry: AzureMlRegistry::AzureMlDev,
+            name: 'phi',
+            leaseId: 'lease-1',
+            operation: AzureMlRegistrationOperation::Upsert,
+            entries: $entries,
+            before: ['providers' => []],
+        );
+        $registrationResult = AzureMlRegistrationResult::fromArray([
+            'kind' => 'written',
+            'path' => '/home/user/providers.json',
+            'before' => ['providers' => []],
+        ]);
+        $failedRegistrationResult = AzureMlRegistrationResult::fromArray([
+            'kind' => 'failed',
+            'path' => '/home/user/providers.json',
+            'detail' => 'Write failed',
+        ]);
+
+        expect($hardware->gpuMemory)->toBeInstanceOf(AzureMlGpuMemory::class)
+            ->and($hardware->toArray())->toBe([
+                'gpuMemory' => [
+                    'totalBytes' => 16_000,
+                    'dedicatedBytes' => 12_000,
+                    'sharedBytes' => 4_000,
+                    'description' => 'Local adapter',
+                ],
+            ])
+            ->and(AzureMlHardwareResult::fromArray([])->gpuMemory)->toBeNull()
+            ->and(AzureMlHardwareResult::fromArray([])->toArray())->toBe([])
+            ->and(AzureMlRegistrationRequest::fromArray($registration->toArray())->toArray())
+            ->toBe($registration->toArray())
+            ->and($registrationResult->kind)->toBe(AzureMlRegistrationKind::Written)
+            ->and($registrationResult->toArray())->toBe([
+                'kind' => 'written',
+                'path' => '/home/user/providers.json',
+                'before' => ['providers' => []],
+            ])
+            ->and($failedRegistrationResult->kind)->toBe(AzureMlRegistrationKind::Failed)
+            ->and($failedRegistrationResult->toArray())->toBe([
+                'kind' => 'failed',
+                'path' => '/home/user/providers.json',
+                'detail' => 'Write failed',
+            ]);
+
+        $unknownValues = AzureMlRegistrationRequest::fromArray([
+            'registry' => 'future-registry',
+            'name' => 'phi',
+            'leaseId' => 'lease-1',
+            'operation' => 'future-operation',
+        ]);
+
+        expect($unknownValues->registry)->toBe('future-registry')
+            ->and($unknownValues->operation)->toBe('future-operation')
+            ->and($unknownValues->toArray())->toBe([
+                'registry' => 'future-registry',
+                'name' => 'phi',
+                'leaseId' => 'lease-1',
+                'operation' => 'future-operation',
+            ]);
     });
 
     it('round trips the catalog and nested Azure ML model metadata', function () {
