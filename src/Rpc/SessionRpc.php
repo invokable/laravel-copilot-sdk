@@ -38,6 +38,16 @@ class SessionRpc
     }
 
     /**
+     * Session feature-flag RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function featureFlags(): PendingFeatureFlags
+    {
+        return new PendingFeatureFlags($this->client, $this->sessionId);
+    }
+
+    /**
      * Name RPC operations.
      */
     public function name(): PendingName
