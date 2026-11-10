@@ -13,7 +13,7 @@ timeout-minutes: 30
 
 engine:
     id: copilot
-    #copilot-sdk: true
+    copilot-sdk: true
     model-routing:
         goal: cost
         mode: auto
