@@ -195,6 +195,24 @@ describe('SessionEvent', function () {
             ->not->toHaveKey('compactionAttemptId');
     });
 
+    it('preserves compaction summarized payloads without normalizing them', function () {
+        $summarizedData = [
+            'applyPending' => true,
+            'compactionAttemptId' => 'attempt-1',
+            'execution' => 'background',
+            'failureReason' => 'future_failure_reason',
+            'outcome' => 'future_outcome',
+            'success' => false,
+        ];
+        $summarized = SessionEvent::fromArray([
+            'type' => 'session.compaction_summarized',
+            'data' => $summarizedData,
+        ]);
+
+        expect($summarized->type)->toBe(SessionEventType::SESSION_COMPACTION_SUMMARIZED)
+            ->and($summarized->toArray()['data'])->toBe($summarizedData);
+    });
+
     it('preserves separate tool usage and runtime deduplication metadata', function () {
         $conversationUsage = [
             'inputTokens' => 40,

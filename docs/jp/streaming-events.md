@@ -181,6 +181,9 @@ BYOKの場合、`providerType` には `openai` / `azure` / `anthropic` / `local_
 ### `session.compaction_start`
 コンテキスト圧縮開始（`data`は空オブジェクト）。
 
+### `session.compaction_summarized`
+バックグラウンド圧縮の要約処理が完了した通知（ephemeral: セッションログには保存されません）。要約はまだ会話に適用されていないため、`applyPending`は常に`true`です。対応する`session.compaction_complete`が適用（または破棄）後に届き、そちらが正式な結果になります。`outcome`（`succeeded` / `failed` / `cancelled`）と`success`、`execution`（`background`）、`compactionAttemptId`などを含みます。`outcome`や`failureReason`は将来値が追加される文字列なので、固定のEnumとして扱わず未知の値もそのまま保持してください。
+
 ### `session.compaction_complete`
 コンテキスト圧縮完了。
 
@@ -395,6 +398,7 @@ session.idle (ephemeral)
 | `session.idle` | ✅ | Session |
 | `session.error` |  | Session |
 | `session.compaction_start` |  | Session |
+| `session.compaction_summarized` | ✅ | Session |
 | `session.compaction_complete` |  | Session |
 | `session.title_changed` | ✅ | Session |
 | `session.context_changed` |  | Session |

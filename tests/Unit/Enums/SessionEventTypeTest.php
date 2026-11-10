@@ -261,4 +261,12 @@ describe('SessionEventType', function () {
         expect(SessionEventType::from('permission.assentDetected'))->toBe(SessionEventType::PERMISSION_ASSENT_DETECTED)
             ->and(SessionEventType::from('permission.contextualAuthorization'))->toBe(SessionEventType::PERMISSION_CONTEXTUAL_AUTHORIZATION);
     });
+
+    it('has the compaction summarized event type', function () {
+        expect(SessionEventType::SESSION_COMPACTION_SUMMARIZED->value)->toBe('session.compaction_summarized');
+    });
+
+    it('can create compaction summarized from string', function () {
+        expect(SessionEventType::from('session.compaction_summarized'))->toBe(SessionEventType::SESSION_COMPACTION_SUMMARIZED);
+    });
 });
