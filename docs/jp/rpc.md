@@ -2189,6 +2189,34 @@ Canvas provider の reverse-RPC (`canvas.open` / `canvas.close` /
 `canvas.action.invoke`) は `SessionConfig` / `ResumeSessionConfig` の
 `canvasHandler` で処理します。Canvas の描画はホスト UI の責務です。
 
+### セッション Feature Flags（experimental）
+
+`$session->rpc()->featureFlags()`からセッションに紐づくFeature Flagサービスを設定・読み取り・更新できます。`configure()`と`update()`は現在のサービス状態を、`read()`はスナップショットと指定したフラグの評価結果を型付きDTOで返します。各呼び出しにはセッションIDが自動で追加されます。
+
+```php
+use Revolution\Copilot\Types\Rpc\SessionFeatureFlagsConfigureRequest;
+use Revolution\Copilot\Types\Rpc\SessionFeatureFlagsReadRequest;
+use Revolution\Copilot\Types\Rpc\SessionFeatureFlagsUpdateRequest;
+
+$featureFlags = $session->rpc()->featureFlags();
+
+$snapshot = $featureFlags->configure(new SessionFeatureFlagsConfigureRequest(
+    isStaff: false,
+    isExperimental: false,
+    isTeam: false,
+    online: true,
+    streamerMode: false,
+));
+
+$read = $featureFlags->read(new SessionFeatureFlagsReadRequest(
+    flags: ['example-feature'],
+));
+
+$updated = $featureFlags->update(new SessionFeatureFlagsUpdateRequest(
+    secondaryAssignmentContext: 'workspace',
+));
+```
+
 ### workflow
 
 Copilot CLI 1.0.89 系で追加されたワークフロー、コネクター、診断などの実験的RPC APIも、`SessionRpc`から利用できます。これらの可変プロトコルpayloadはJSON互換の配列で渡し、レスポンスも配列として返します。各呼び出しには現在の`sessionId`が自動で追加されます。
