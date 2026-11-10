@@ -324,6 +324,16 @@ class SessionRpc
     }
 
     /**
+     * Session dynamic-context RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function dynamicContext(): PendingSessionDynamicContext
+    {
+        return new PendingSessionDynamicContext($this->client, $this->sessionId);
+    }
+
+    /**
      * Event log RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.
