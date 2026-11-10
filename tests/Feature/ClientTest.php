@@ -881,7 +881,8 @@ describe('Client', function () {
             ->andReturn(['sessionId' => 'created-session']);
         $rpc->shouldReceive('request')
             ->with('session.resume', Mockery::on(fn (array $params) => array_key_exists('interactiveUser', $params)
-                && $params['interactiveUser'] === false))
+                && $params['interactiveUser'] === false
+                && ! array_key_exists('includedBuiltinAgents', $params)))
             ->once()
             ->andReturn(['sessionId' => 'resumed-session']);
 
@@ -1968,6 +1969,7 @@ describe('Client', function () {
                 ]]
                 && ($params['enableCitations'] ?? null) === true
                 && ($params['excludedBuiltinAgents'] ?? null) === ['explainer']
+                && ($params['includedBuiltinAgents'] ?? null) === ['researcher']
                 && ($params['excludedManagedSettings'] ?? null) === ['permissions']
                 && ($params['sessionLimits'] ?? null) === ['maxAiCredits' => 5.0]
                 && ! array_key_exists('requestMcpApps', $params)
@@ -2017,6 +2019,7 @@ describe('Client', function () {
             diagnostics: ['sources' => ['mcp' => ['level' => 'debug']]],
             enableCitations: true,
             excludedBuiltinAgents: ['explainer'],
+            includedBuiltinAgents: ['researcher'],
             excludedManagedSettings: ['permissions'],
             sessionLimits: new SessionLimitsConfig(maxAiCredits: 5),
             tools: [$tool, $declarationOnlyTool],

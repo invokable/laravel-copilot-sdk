@@ -165,6 +165,9 @@ readonly class ResumeSessionConfig implements Arrayable
      * @param  ?string  $displayPrompt  If provided, shown in the timeline instead of the original prompt.
      * @param  ?bool  $enableCitations  Experimental: enable native model citations, normalized onto the `assistant.message` event.
      * @param  ?array  $excludedBuiltinAgents  Names of built-in agents to exclude from the session.
+     * @param  ?array  $includedBuiltinAgents  Built-in subagent names to include in this session. When specified, only
+     *                                         these built-ins are available, subject to runtime availability and exclusions.
+     *                                         Custom agents with the same name remain available.
      * @param  SessionLimitsConfig|array|null  $sessionLimits  Limits applied to this session's current accounting window.
      * @param  ?array  $featureFlags  Feature-flag values resolved by the host for this session. Re-supply them when resuming after a runtime restart.
      * @param  CopilotExpAssignmentResponse|array|null  $expAssignments  ExP assignment data injected by a trusted integrator. Feeds into the same feature-flag
@@ -301,6 +304,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public ?bool $allowMultipleToolCalls = null,
         public PermissionMode|string|null $permissionMode = null,
         public ?bool $autoModeRecovery = null,
+        public ?array $includedBuiltinAgents = null,
     ) {}
 
     /**
@@ -482,6 +486,7 @@ readonly class ResumeSessionConfig implements Arrayable
             displayPrompt: $data['displayPrompt'] ?? null,
             enableCitations: $data['enableCitations'] ?? null,
             excludedBuiltinAgents: $data['excludedBuiltinAgents'] ?? null,
+            includedBuiltinAgents: $data['includedBuiltinAgents'] ?? null,
             sessionLimits: $sessionLimits,
             autopilot: $autopilot,
             featureFlags: $data['featureFlags'] ?? null,
@@ -682,6 +687,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'displayPrompt' => $this->displayPrompt,
             'enableCitations' => $this->enableCitations,
             'excludedBuiltinAgents' => $this->excludedBuiltinAgents,
+            'includedBuiltinAgents' => $this->includedBuiltinAgents,
             'sessionLimits' => $sessionLimits,
             'autopilot' => $autopilot,
             'featureFlags' => $this->featureFlags,
