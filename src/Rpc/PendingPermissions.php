@@ -25,6 +25,8 @@ use Revolution\Copilot\Types\Rpc\PermissionsSetModeRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetModeResult;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredResult;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsGetAllowAllResult;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsManagedReviewRequiredRequest;
 
 /**
  * Pending session-scoped permissions RPC operations.
@@ -89,6 +91,57 @@ class PendingPermissions
                 'sessionId' => $this->sessionId,
             ]),
         );
+    }
+
+    /**
+     * Read the effective permission escalation and the original launch baseline.
+     *
+     * @experimental
+     */
+    public function getAllowAll(): SessionPermissionsGetAllowAllResult
+    {
+        return SessionPermissionsGetAllowAllResult::fromArray(
+            $this->client->request('session.permissions.getAllowAll', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Read whether permission prompts must produce session events.
+     *
+     * @experimental
+     */
+    public function getRequired(): bool
+    {
+        return (bool) $this->client->request('session.permissions.getRequired', [
+            'sessionId' => $this->sessionId,
+        ]);
+    }
+
+    /**
+     * Check whether the managed policy requires review of a permission request.
+     *
+     * @experimental
+     */
+    public function managedReviewRequired(SessionPermissionsManagedReviewRequiredRequest|array $params): bool
+    {
+        $paramsArray = ($params instanceof SessionPermissionsManagedReviewRequiredRequest
+            ? $params
+            : SessionPermissionsManagedReviewRequiredRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return (bool) $this->client->request('session.permissions.managedReviewRequired', $paramsArray);
+    }
+
+    /**
+     * Additional model-context directories RPC operations.
+     *
+     * @experimental
+     */
+    public function additionalDirectories(): PendingPermissionsAdditionalDirectories
+    {
+        return new PendingPermissionsAdditionalDirectories($this->client, $this->sessionId);
     }
 
     /**

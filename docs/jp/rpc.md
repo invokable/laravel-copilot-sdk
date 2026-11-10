@@ -1092,7 +1092,7 @@ $session->rpc()->autopilotObjective()->setStayInAutopilot(['value' => true]);
 
 ### Tools・Permissions・Commands・UI
 
-`tools()`と`permissions()`はイベントで届いた保留中リクエストへの応答や設定を扱います。`permissions()->clearResumeEscalation()`は再開時に履歴から復元された権限昇格をメモリ内で解除し、成否を型付きで返します。`commands()`はコマンド一覧・実行・イベント応答、`ui()`はユーザー入力・elicitation・プラン承認などの要求への応答を提供します。`completions()`は入力候補を取得します。
+`tools()`と`permissions()`はイベントで届いた保留中リクエストへの応答や設定を扱います。権限の読み取りには`getAllowAll()`、`getRequired()`、`managedReviewRequired()`、`additionalDirectories()->list()`を利用できます。`permissions()->clearResumeEscalation()`は再開時に履歴から復元された権限昇格をメモリ内で解除し、成否を型付きで返します。`commands()`はコマンド一覧・実行・イベント応答、`ui()`はユーザー入力・elicitation・プラン承認などの要求への応答を提供します。`completions()`は入力候補を取得します。
 
 ```php
 $result = $session->rpc()->permissions()->clearResumeEscalation();
@@ -1562,6 +1562,7 @@ use Revolution\Copilot\Types\Rpc\PermissionLocationAddToolApprovalParams;
 use Revolution\Copilot\Types\Rpc\PermissionLocationApplyParams;
 use Revolution\Copilot\Types\Rpc\PermissionLocationResolveParams;
 use Revolution\Copilot\Types\Rpc\PermissionsLocationsAddToolApprovalDetailsCommands;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsManagedReviewRequiredRequest;
 
 $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(
     requestId: '...',
@@ -1581,6 +1582,17 @@ $result = $session->permissionModeResult();
 $capabilities = $session->rpc()->permissions()->getCapabilities();
 // $capabilities->assistedApproval - LLM支援の承認が有効か
 // $capabilities->bypassPermissions - 管理ポリシーが無条件承認を許可しているか
+// 有効な権限昇格と起動時のベースラインを取得
+$allowAll = $session->rpc()->permissions()->getAllowAll();
+// $allowAll->active / $allowAll->baseline->tools
+// 権限要求イベントが必須かを取得
+$required = $session->rpc()->permissions()->getRequired();
+// 管理ポリシーが指定した権限要求のレビューを必要とするかを取得
+$reviewRequired = $session->rpc()->permissions()->managedReviewRequired(
+    new SessionPermissionsManagedReviewRequiredRequest(request: ['kind' => 'tool', 'toolName' => 'bash'])
+);
+// モデルコンテキストに含まれる追加ディレクトリを取得
+$additionalDirectories = $session->rpc()->permissions()->additionalDirectories()->list();
 // セッションスコープの権限承認をリセット
 $session->rpc()->permissions()->resetSessionApprovals();
 // 現在pending中の権限リクエスト一覧を取得

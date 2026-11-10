@@ -38,6 +38,8 @@ use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredResult;
 use Revolution\Copilot\Types\Rpc\PermissionsUrlsSetUnrestrictedModeResult;
 use Revolution\Copilot\Types\Rpc\PermissionUrlsSetUnrestrictedModeParams;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsGetAllowAllResult;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsManagedReviewRequiredRequest;
 
 /**
  * Build a started JsonRpcClient backed by a mock transport.
@@ -65,6 +67,15 @@ function makePermissionsClient(array &$sentMessages): JsonRpcClient
                     'session.permissions.setMode' => ['success' => true, 'mode' => 'allow-all'],
                     'session.permissions.getMode' => ['mode' => 'manual'],
                     'session.permissions.getCapabilities' => ['assistedApproval' => true, 'bypassPermissions' => false],
+                    'session.permissions.getAllowAll' => [
+                        'active' => true,
+                        'autoApproval' => true,
+                        'storedAutoApproval' => false,
+                        'runtimeOverride' => true,
+                        'baseline' => ['tools' => false, 'paths' => true, 'urls' => false],
+                    ],
+                    'session.permissions.getRequired' => false,
+                    'session.permissions.managedReviewRequired' => true,
                     default => ['success' => true],
                 };
                 $response = JsonRpcMessage::response($request['id'], $result);
@@ -247,6 +258,68 @@ describe('PendingSessionPermissions', function () {
             ->and($result->bypassPermissions)->toBeFalse()
             ->and($decoded['method'])->toBe('session.permissions.getCapabilities')
             ->and($decoded['params']['sessionId'])->toBe('session-abc');
+    });
+
+    it('reads allow-all state and its launch baseline', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $result = (new PendingPermissions($client, 'session-abc'))->getAllowAll();
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+
+        expect($result)->toBeInstanceOf(SessionPermissionsGetAllowAllResult::class)
+            ->and($result->active)->toBeTrue()
+            ->and($result->autoApproval)->toBeTrue()
+            ->and($result->storedAutoApproval)->toBeFalse()
+            ->and($result->runtimeOverride)->toBeTrue()
+            ->and($result->baseline->toArray())->toBe(['tools' => false, 'paths' => true, 'urls' => false]);
+
+        expect($decoded['method'])->toBe('session.permissions.getAllowAll')
+            ->and($decoded['params'])->toBe(['sessionId' => 'session-abc']);
+    });
+
+    it('reads whether permission events are required as a boolean', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $result = (new PendingPermissions($client, 'session-abc'))->getRequired();
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+
+        expect($result)->toBeFalse();
+
+        expect($decoded['method'])->toBe('session.permissions.getRequired')
+            ->and($decoded['params'])->toBe(['sessionId' => 'session-abc']);
+    });
+
+    it('checks managed review requirements for the supplied permission request', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+        $pending = new PendingPermissions($client, 'session-abc');
+
+        $request = ['kind' => 'tool', 'toolName' => 'bash'];
+        $typedResult = $pending->managedReviewRequired(new SessionPermissionsManagedReviewRequiredRequest(
+            request: $request,
+        ));
+        $arrayResult = $pending->managedReviewRequired([
+            'request' => $request,
+        ]);
+        $typedDecoded = decodePermissionsJsonMessage($sentMessages[0]);
+        $arrayDecoded = decodePermissionsJsonMessage($sentMessages[1]);
+
+        expect($typedResult)->toBeTrue()
+            ->and($arrayResult)->toBeTrue();
+
+        expect($typedDecoded['method'])->toBe('session.permissions.managedReviewRequired')
+            ->and($typedDecoded['params'])->toBe([
+                'request' => $request,
+                'sessionId' => 'session-abc',
+            ]);
+
+        expect($arrayDecoded['method'])->toBe('session.permissions.managedReviewRequired')
+            ->and($arrayDecoded['params'])->toBe([
+                'request' => $request,
+                'sessionId' => 'session-abc',
+            ]);
     });
 
     it('resetSessionApprovals sends correct method and returns result', function () {
