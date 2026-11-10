@@ -1067,7 +1067,23 @@ Copilot::start(function (CopilotSession $session) {
 
 ### ワークスペース・インストラクション・LSP
 
-`workspaces()`はファイルの一覧・読み取り・書き込み・移動・削除やディレクトリ操作を提供します。`instructions()`でインストラクションの取得・再読み込み・探索、`lsp()`で言語サーバー設定の初期化を行えます。
+`workspaces()`はファイルの一覧・読み取り・書き込み・移動・削除やディレクトリ操作を提供します。`instructions()`でインストラクションの取得・再読み込み・探索、`lsp()`で言語サーバー設定の初期化・一覧取得・起動・停止・診断・有効状態の切り替えを行えます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+$lsp = $session->rpc()->lsp();
+
+$configs = $lsp->list(['workingDirectory' => base_path()]);
+$started = $lsp->start();
+$diagnosis = $lsp->diagnose(['serverId' => 'php']);
+$lsp->set(['serverId' => 'php', 'enabled' => true]);
+$lsp->stop();
+
+$serverConfigs = Copilot::client()->rpc()->lsp()->list([
+    'workingDirectory' => base_path(),
+]);
+```
 
 ### Autopilot objective
 
