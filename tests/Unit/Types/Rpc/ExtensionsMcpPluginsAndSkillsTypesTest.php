@@ -336,6 +336,18 @@ describe('ExtensionInfo', function () {
             ->and($info->pid)->toBe(12345);
     });
 
+    it('can be created from array with the dormant status', function () {
+        $info = ExtensionInfo::fromArray([
+            'id' => 'user:lazy-helper',
+            'name' => 'lazy-helper',
+            'source' => 'user',
+            'status' => 'dormant',
+        ]);
+
+        expect($info->status)->toBe(ExtensionStatus::DORMANT)
+            ->and($info->toArray()['status'])->toBe('dormant');
+    });
+
     it('can be created from array without pid', function () {
         $info = ExtensionInfo::fromArray([
             'id' => 'user:auth-helper',

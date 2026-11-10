@@ -242,6 +242,8 @@ if ($event->is(SessionEventType::SESSION_AUTO_TIER_SWITCH_FAILED)) {
 
 完了イベントには `initialModel`、`model`、`outcome`、`outcomeReason`、`failureReason`、`tokenAccountingBasis` などが含まれることがあります。`outcome` や理由は将来追加される値を含む文字列なので、固定のEnumとして扱わず、未知の値もそのまま保持してください。これらのフィールドがない場合は値が提供されていないことを表し、既定値を推測しないでください。
 
+`session.compaction_summarized` は、バックグラウンド圧縮の要約処理が完了したが、まだ会話に適用されていないことを示すイベントです（`data.applyPending` は常に `true`）。適用または破棄の結果は後続の `session.compaction_complete` が正式な結果になります。
+
 ### ツール実行の使用量
 
 `tool.execution_complete` の `data.toolUsage` は、ランタイムが所有するツール操作についてプロバイダーから報告された使用量です。会話モデルの `assistant.usage` とは別の使用量であり、ツール実行が失敗しても報告済みの使用量が含まれることがあります。`toolUsage.model` はツール操作で要求されたモデルで、会話モデルを示すものではありません。

@@ -12,6 +12,7 @@ namespace Revolution\Copilot\Enums;
 enum ExtensionStatus: string
 {
     case RUNNING = 'running';
+    case DORMANT = 'dormant';
     case DISABLED = 'disabled';
     case FAILED = 'failed';
     case STARTING = 'starting';
