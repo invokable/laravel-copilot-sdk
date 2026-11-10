@@ -50,7 +50,31 @@ describe('PendingServerModels', function () {
         $result = $pending->list();
 
         expect($result)->toBeInstanceOf(ModelList::class)
-            ->and($result->models)->toBeEmpty();
+            ->and($result->models)->toBeEmpty()
+            ->and($result->decisionModels)->toBeNull();
+    });
+
+    it('returns decision models from models.list', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('models.list', [])
+            ->andReturn([
+                'models' => [],
+                'decisionModels' => [[
+                    'id' => 'decision-model',
+                    'name' => 'Decision Model',
+                    'isDefault' => true,
+                    'limits' => ['maxQuestions' => 5],
+                    'supportsRefusals' => false,
+                ]],
+            ]);
+
+        $result = (new PendingServerModels($client))->list();
+
+        expect($result->decisionModels)->toHaveCount(1)
+            ->and($result->decisionModels[0]->id)->toBe('decision-model')
+            ->and($result->decisionModels[0]->limits)->toBe(['maxQuestions' => 5]);
     });
 
     it('calls models.list with gitHubToken param', function () {

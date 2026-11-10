@@ -10,6 +10,7 @@ use Revolution\Copilot\Rpc\PendingServerCatalog;
 use Revolution\Copilot\Rpc\PendingServerCloudTasks;
 use Revolution\Copilot\Rpc\PendingServerCommands;
 use Revolution\Copilot\Rpc\PendingServerConnectors;
+use Revolution\Copilot\Rpc\PendingServerDecisions;
 use Revolution\Copilot\Rpc\PendingServerGit;
 use Revolution\Copilot\Rpc\PendingServerGitHubFetch;
 use Revolution\Copilot\Rpc\PendingServerGitHubOwners;
@@ -35,6 +36,12 @@ describe('ServerRpc', function () {
         $rpc = new ServerRpc(createMockRpcClient());
 
         expect($rpc->models())->toBeInstanceOf(PendingServerModels::class);
+    });
+
+    it('returns PendingServerDecisions from decisions()', function () {
+        $rpc = new ServerRpc(createMockRpcClient());
+
+        expect($rpc->decisions())->toBeInstanceOf(PendingServerDecisions::class);
     });
 
     it('returns PendingServerAzureMl from azureMl()', function () {

@@ -15,10 +15,12 @@ readonly class ModelList implements Arrayable
     /**
      * @param  array<ModelInfo>  $models  List of available models with full metadata
      * @param  ?array<ImageToolModel>  $imageModels  Runtime image-model catalog, separate from conversation models
+     * @param  ?array<DecisionModelInfo>  $decisionModels  Decision models, separate from conversation models
      */
     public function __construct(
         public array $models,
         public ?array $imageModels = null,
+        public ?array $decisionModels = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -31,6 +33,9 @@ readonly class ModelList implements Arrayable
             imageModels: isset($data['imageModels'])
                 ? array_map(fn (array $model) => ImageToolModel::fromArray($model), $data['imageModels'])
                 : null,
+            decisionModels: isset($data['decisionModels'])
+                ? array_map(fn (array $model) => DecisionModelInfo::fromArray($model), $data['decisionModels'])
+                : null,
         );
     }
 
@@ -40,6 +45,9 @@ readonly class ModelList implements Arrayable
             'models' => array_map(fn (ModelInfo $model) => $model->toArray(), $this->models),
             'imageModels' => $this->imageModels !== null
                 ? array_map(fn (ImageToolModel $model) => $model->toArray(), $this->imageModels)
+                : null,
+            'decisionModels' => $this->decisionModels !== null
+                ? array_map(fn (DecisionModelInfo $model) => $model->toArray(), $this->decisionModels)
                 : null,
         ], fn ($value) => $value !== null);
     }
