@@ -100,7 +100,7 @@ Fetchの`allocateRequestId()`、`request()`、`executeOperation()`と、Release�
 
 ### ローカルモデル・HTTP推論・ファイルシステム
 
-`azureMl()`はローカルモデルのカタログ・解決・ダウンロードと、その状態確認・キャンセル・削除を提供します。`llmInference()`はモデル層のHTTPリクエストをクライアント側へ中継する実験的APIです。`sessionFs()`はセッションのファイルシステム／SQLiteコールバックプロバイダーを登録します。
+`azureMl()`はローカルGPUメモリ情報の取得、モデルのカタログ・解決・ダウンロードと、その状態確認・キャンセル・削除を提供します。また、ファミリーリースを使ってAzure MLモデルのプロバイダー設定を登録・削除・復元できます。`llmInference()`はモデル層のHTTPリクエストをクライアント側へ中継する実験的APIです。`sessionFs()`はセッションのファイルシステム／SQLiteコールバックプロバイダーを登録します。
 
 ### ネットワークコールバック（experimental）
 
@@ -279,6 +279,9 @@ Copilot::client()->rpc()->models()->getBuiltInCatalog();
 
 // Azure ML ローカルモデル管理（experimental）
 $azureMl = Copilot::client()->rpc()->azureMl();
+$hardware = $azureMl->hardware();
+// gpuMemory は計測できない環境では null
+$gpuMemory = $hardware->gpuMemory;
 $catalog = $azureMl->catalog(new AzureMlCatalogRequest(includeDev: false));
 $latest = $azureMl->latest(new AzureMlLatestRequest(
     registry: AzureMlRegistry::AzureMl,
@@ -324,6 +327,8 @@ $azureMl->discard(new AzureMlDiscardRequest(destination: 'models/phi/previous-ve
 
 // resolve() と download() の型には署名付き URL の専用フィールドはない
 // download() は既定でタイムアウトなし。秒数を指定する場合は第2引数に渡す
+// registration() は同じファミリーの leaseId を使い、upsert/remove/restore を実行する
+// 結果の kind/path/detail と、補償用の before を確認する
 
 // 新規セッションで利用可能な組み込みスラッシュコマンド一覧（experimental）
 Copilot::client()->rpc()->commands()->list();

@@ -14,8 +14,11 @@ use Revolution\Copilot\Types\Rpc\AzureMlDiscardRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlDownloadRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlDownloadResult;
 use Revolution\Copilot\Types\Rpc\AzureMlDownloadStatus;
+use Revolution\Copilot\Types\Rpc\AzureMlHardwareResult;
 use Revolution\Copilot\Types\Rpc\AzureMlLatestRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlLatestResult;
+use Revolution\Copilot\Types\Rpc\AzureMlRegistrationRequest;
+use Revolution\Copilot\Types\Rpc\AzureMlRegistrationResult;
 use Revolution\Copilot\Types\Rpc\AzureMlReleaseFamilyRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlResolveRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlResolveResult;
@@ -31,6 +34,24 @@ class PendingServerAzureMl
     public function __construct(
         protected JsonRpcClient $client,
     ) {}
+
+    public function hardware(): AzureMlHardwareResult
+    {
+        return AzureMlHardwareResult::fromArray(
+            $this->client->request('azureMl.hardware', []),
+        );
+    }
+
+    public function registration(AzureMlRegistrationRequest|array $params): AzureMlRegistrationResult
+    {
+        $paramsArray = ($params instanceof AzureMlRegistrationRequest
+            ? $params
+            : AzureMlRegistrationRequest::fromArray($params))->toArray();
+
+        return AzureMlRegistrationResult::fromArray(
+            $this->client->request('azureMl.registration', $paramsArray),
+        );
+    }
 
     public function catalog(AzureMlCatalogRequest|array $params): AzureMlCatalogResult
     {
