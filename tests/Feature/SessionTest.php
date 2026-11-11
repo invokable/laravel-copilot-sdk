@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use Revolt\EventLoop;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\AutoTier;
+use Revolution\Copilot\Enums\FusionTier;
 use Revolution\Copilot\Enums\ModelSwitchAutoTierStatus;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Exceptions\SessionErrorException;
@@ -1020,6 +1021,39 @@ describe('Session', function () {
 
         expect($result)->toBeInstanceOf(ModelSwitchAutoTierResult::class)
             ->and($result->status)->toBe(ModelSwitchAutoTierStatus::PENDING);
+    });
+
+    it('setModel passes fusionTier through to session.model.switchTo', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.model.switchTo', [
+                'modelId' => 'fusion',
+                'sessionId' => 'test-session',
+                'fusionTier' => 'high',
+            ])
+            ->once()
+            ->andReturn(['modelId' => 'fusion']);
+
+        $session = new Session('test-session', $mockClient);
+        $session->setModel('fusion', fusionTier: FusionTier::HIGH);
+    });
+
+    it('setFusionTier calls session.model.switchFusionTier via rpc', function () {
+        $mockClient = Mockery::mock(JsonRpcClient::class);
+        $mockClient->shouldReceive('request')
+            ->with('session.model.switchFusionTier', [
+                'fusionTier' => 'max',
+                'sessionId' => 'test-session',
+            ])
+            ->once()
+            ->andReturn(['status' => 'pending', 'effectiveAutoTier' => 'intelligence', 'pendingFusionTier' => 'max']);
+
+        $session = new Session('test-session', $mockClient);
+        $result = $session->setFusionTier(FusionTier::MAX);
+
+        expect($result)->toBeInstanceOf(ModelSwitchAutoTierResult::class)
+            ->and($result->status)->toBe(ModelSwitchAutoTierStatus::PENDING)
+            ->and($result->pendingFusionTier)->toBe('max');
     });
 
     it('handlePermissionRequest uses registered handler', function () {

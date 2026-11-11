@@ -19,6 +19,7 @@ readonly class CurrentModel implements Arrayable
      * @param  AutoTier|string|null  $autoTier  Auto preference currently committed for the session.
      * @param  AutoTier|string|null  $activatingAutoTier  Auto preference currently claimed by an in-progress activation.
      * @param  AutoTier|string|null  $pendingAutoTier  Latest unclaimed Auto preference waiting for a future user turn.
+     * @param  ?string  $fusionTier  Copilot Fusion tier that the committed $autoTier serves. Omitted when Auto metadata has not been discovered.
      */
     public function __construct(
         public ?string $modelId = null,
@@ -29,6 +30,7 @@ readonly class CurrentModel implements Arrayable
         public AutoTier|string|null $pendingAutoTier = null,
         public ?string $providerId = null,
         public ?string $planBaseProviderId = null,
+        public ?string $fusionTier = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -42,6 +44,7 @@ readonly class CurrentModel implements Arrayable
             pendingAutoTier: isset($data['pendingAutoTier']) ? (AutoTier::tryFrom($data['pendingAutoTier']) ?? $data['pendingAutoTier']) : null,
             providerId: $data['providerId'] ?? null,
             planBaseProviderId: $data['planBaseProviderId'] ?? null,
+            fusionTier: $data['fusionTier'] ?? null,
         );
     }
 
@@ -56,6 +59,7 @@ readonly class CurrentModel implements Arrayable
             'pendingAutoTier' => $this->pendingAutoTier instanceof AutoTier ? $this->pendingAutoTier->value : $this->pendingAutoTier,
             'providerId' => $this->providerId,
             'planBaseProviderId' => $this->planBaseProviderId,
+            'fusionTier' => $this->fusionTier,
         ], fn ($v) => $v !== null);
     }
 }

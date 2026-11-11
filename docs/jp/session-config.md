@@ -454,11 +454,12 @@ $session = $client->createSession(new SessionConfig(
 
 ## 高度なセッションオプション
 
-組み込みの`ask_user`ツールでは構造化エリシテーション形式を使用できます。また、CAPI tierを指定してモデルの自動選択を調整できます。
+組み込みの`ask_user`ツールでは構造化エリシテーション形式を使用できます。また、CAPI tierを指定してモデルの自動選択を調整できます。Copilot Fusionを使う場合は`fusionTier`で tier（`standard` / `high` / `max`）を指定します（`autoTier`とは併用できません）。
 
 ```php
 use Revolution\Copilot\Enums\AskUserVariant;
 use Revolution\Copilot\Enums\AutoTier;
+use Revolution\Copilot\Enums\FusionTier;
 use Revolution\Copilot\Types\CapiSessionOptions;
 use Revolution\Copilot\Types\Rpc\EnqueueCommandParams;
 use Revolution\Copilot\Types\SessionConfig;
@@ -466,6 +467,11 @@ use Revolution\Copilot\Types\SessionConfig;
 $config = new SessionConfig(
     askUserVariant: AskUserVariant::ELICITATION,
     capi: new CapiSessionOptions(autoTier: AutoTier::BALANCE),
+);
+
+// Copilot Fusion を使う場合（experimental）
+$fusionConfig = new SessionConfig(
+    capi: new CapiSessionOptions(fusionTier: FusionTier::HIGH),
 );
 ```
 

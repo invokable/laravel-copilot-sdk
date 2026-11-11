@@ -27,6 +27,7 @@ use Revolution\Copilot\Concerns\Session\HasUserInputHandler;
 use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\AutoTier;
+use Revolution\Copilot\Enums\FusionTier;
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
@@ -53,6 +54,7 @@ use Revolution\Copilot\Types\Rpc\LogRequest;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
+use Revolution\Copilot\Types\Rpc\ModelSwitchFusionTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\OpenCanvasInstance;
 use Revolution\Copilot\Types\Rpc\PermissionsSetModeResult;
@@ -1104,10 +1106,11 @@ class Session implements CopilotSession
      * Switch the model for this session.
      *
      * @param  AutoTier|string|null  $autoTier  Auto routing preference to apply when $model is "auto". Rejected when $model is not "auto".
+     * @param  FusionTier|string|null  $fusionTier  Copilot Fusion tier to apply when $model is "fusion" or "auto". Cannot be combined with $autoTier.
      *
      * @throws JsonRpcException
      */
-    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null, AutoTier|string|null $autoTier = null): void
+    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null, AutoTier|string|null $autoTier = null, FusionTier|string|null $fusionTier = null): void
     {
         $caps = match (true) {
             $modelCapabilities instanceof ModelCapabilitiesOverride => $modelCapabilities,
@@ -1115,7 +1118,7 @@ class Session implements CopilotSession
             default => null,
         };
 
-        $this->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: $model, reasoningEffort: $reasoningEffort, modelCapabilities: $caps, autoTier: $autoTier));
+        $this->rpc()->model()->switchTo(new ModelSwitchToRequest(modelId: $model, reasoningEffort: $reasoningEffort, modelCapabilities: $caps, autoTier: $autoTier, fusionTier: $fusionTier));
     }
 
     /**
@@ -1128,6 +1131,18 @@ class Session implements CopilotSession
     public function setAutoTier(AutoTier|string|null $autoTier): ModelSwitchAutoTierResult
     {
         return $this->rpc()->model()->switchAutoTier(new ModelSwitchAutoTierRequest(autoTier: $autoTier));
+    }
+
+    /**
+     * Change the Copilot Fusion tier without changing the selected model.
+     *
+     * @experimental Part of an experimental Auto routing surface and may change or be removed in a future release.
+     *
+     * @throws JsonRpcException
+     */
+    public function setFusionTier(FusionTier|string $fusionTier): ModelSwitchAutoTierResult
+    {
+        return $this->rpc()->model()->switchFusionTier(new ModelSwitchFusionTierRequest(fusionTier: $fusionTier));
     }
 
     /**

@@ -21,6 +21,8 @@ readonly class ModelSwitchAutoTierResult implements Arrayable
      * @param  AutoTier|string|null  $effectiveAutoTier  Auto preference currently committed for the session.
      * @param  AutoTier|string|null  $pendingAutoTier  Latest unclaimed Auto preference waiting for a future user turn.
      * @param  AutoTier|string|null  $supersededAutoTier  Auto preference this request replaced, if any.
+     * @param  ?string  $effectiveFusionTier  Copilot Fusion tier that $effectiveAutoTier serves, when Auto metadata has been discovered.
+     * @param  ?string  $pendingFusionTier  Copilot Fusion tier that $pendingAutoTier serves, when Auto metadata has been discovered.
      */
     public function __construct(
         public ModelSwitchAutoTierStatus|string $status,
@@ -28,6 +30,8 @@ readonly class ModelSwitchAutoTierResult implements Arrayable
         public AutoTier|string|null $effectiveAutoTier = null,
         public AutoTier|string|null $pendingAutoTier = null,
         public AutoTier|string|null $supersededAutoTier = null,
+        public ?string $effectiveFusionTier = null,
+        public ?string $pendingFusionTier = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -38,6 +42,8 @@ readonly class ModelSwitchAutoTierResult implements Arrayable
             effectiveAutoTier: isset($data['effectiveAutoTier']) ? (AutoTier::tryFrom($data['effectiveAutoTier']) ?? $data['effectiveAutoTier']) : null,
             pendingAutoTier: isset($data['pendingAutoTier']) ? (AutoTier::tryFrom($data['pendingAutoTier']) ?? $data['pendingAutoTier']) : null,
             supersededAutoTier: isset($data['supersededAutoTier']) ? (AutoTier::tryFrom($data['supersededAutoTier']) ?? $data['supersededAutoTier']) : null,
+            effectiveFusionTier: $data['effectiveFusionTier'] ?? null,
+            pendingFusionTier: $data['pendingFusionTier'] ?? null,
         );
     }
 
@@ -49,6 +55,8 @@ readonly class ModelSwitchAutoTierResult implements Arrayable
             'effectiveAutoTier' => $this->effectiveAutoTier instanceof AutoTier ? $this->effectiveAutoTier->value : $this->effectiveAutoTier,
             'pendingAutoTier' => $this->pendingAutoTier instanceof AutoTier ? $this->pendingAutoTier->value : $this->pendingAutoTier,
             'supersededAutoTier' => $this->supersededAutoTier instanceof AutoTier ? $this->supersededAutoTier->value : $this->supersededAutoTier,
+            'effectiveFusionTier' => $this->effectiveFusionTier,
+            'pendingFusionTier' => $this->pendingFusionTier,
         ], fn ($v) => $v !== null);
     }
 }

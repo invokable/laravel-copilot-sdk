@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Revolution\Copilot\Enums\AutoTier;
+use Revolution\Copilot\Enums\FusionTier;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\Verbosity;
 
@@ -25,6 +26,7 @@ readonly class ModelSwitchToRequest implements Arrayable
      * @param  string|null  $contextTier  Explicit context tier ("default" or "long_context"). Null clears any previous choice.
      * @param  ?bool  $deferIfModelChangeQueued  Defer the switch when a model change is already queued rather than applying it immediately.
      * @param  AutoTier|string|null  $autoTier  Optional Auto routing preference to stage atomically with selecting `auto`. Rejected when `modelId` is not `auto`.
+     * @param  FusionTier|string|null  $fusionTier  Optional Copilot Fusion tier to stage atomically with selecting `fusion` or `auto`. Cannot be combined with $autoTier, and is rejected when `modelId` is not `fusion` or `auto`.
      */
     public function __construct(
         public string $modelId,
@@ -36,6 +38,7 @@ readonly class ModelSwitchToRequest implements Arrayable
         public ?bool $deferIfModelChangeQueued = null,
         public AutoTier|string|null $autoTier = null,
         public ?string $providerId = null,
+        public FusionTier|string|null $fusionTier = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -56,6 +59,7 @@ readonly class ModelSwitchToRequest implements Arrayable
             deferIfModelChangeQueued: $data['deferIfModelChangeQueued'] ?? null,
             autoTier: isset($data['autoTier']) ? (AutoTier::tryFrom($data['autoTier']) ?? $data['autoTier']) : null,
             providerId: $data['providerId'] ?? null,
+            fusionTier: isset($data['fusionTier']) ? (FusionTier::tryFrom($data['fusionTier']) ?? $data['fusionTier']) : null,
         );
     }
 
@@ -83,6 +87,7 @@ readonly class ModelSwitchToRequest implements Arrayable
             'deferIfModelChangeQueued' => $this->deferIfModelChangeQueued,
             'autoTier' => $this->autoTier instanceof AutoTier ? $this->autoTier->value : $this->autoTier,
             'providerId' => $this->providerId,
+            'fusionTier' => $this->fusionTier instanceof FusionTier ? $this->fusionTier->value : $this->fusionTier,
         ], fn ($v) => $v !== null);
     }
 }
