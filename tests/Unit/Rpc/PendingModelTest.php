@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\AutoTier;
+use Revolution\Copilot\Enums\FusionTier;
 use Revolution\Copilot\Enums\ModelSwitchAutoTierStatus;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
@@ -17,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
+use Revolution\Copilot\Types\Rpc\ModelSwitchFusionTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
 
@@ -223,6 +225,43 @@ describe('PendingModel', function () {
 
         expect($result)->toBeInstanceOf(ModelSwitchAutoTierResult::class)
             ->and($result->status)->toBe(ModelSwitchAutoTierStatus::UNCHANGED);
+    });
+
+    it('calls session.model.switchFusionTier with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.model.switchFusionTier',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-xyz'
+                    && $params['fusionTier'] === 'max'),
+            )
+            ->andReturn(['status' => 'pending', 'effectiveAutoTier' => 'intelligence', 'pendingFusionTier' => 'max']);
+
+        $pending = new PendingModel($client, 'session-xyz');
+        $result = $pending->switchFusionTier(new ModelSwitchFusionTierRequest(fusionTier: FusionTier::MAX));
+
+        expect($result)->toBeInstanceOf(ModelSwitchAutoTierResult::class)
+            ->and($result->status)->toBe(ModelSwitchAutoTierStatus::PENDING)
+            ->and($result->effectiveAutoTier)->toBe(AutoTier::INTELLIGENCE)
+            ->and($result->pendingFusionTier)->toBe('max');
+    });
+
+    it('calls session.model.switchFusionTier with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.model.switchFusionTier',
+                Mockery::on(fn ($params) => $params['sessionId'] === 'session-xyz'
+                    && $params['fusionTier'] === 'high'),
+            )
+            ->andReturn(['status' => 'unchanged']);
+
+        $pending = new PendingModel($client, 'session-xyz');
+        $result = $pending->switchFusionTier(['fusionTier' => 'high']);
+
+        expect($result->status)->toBe(ModelSwitchAutoTierStatus::UNCHANGED);
     });
 
     it('clears a matching startup model seed through the internal typed RPC', function () {

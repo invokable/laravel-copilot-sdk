@@ -1260,6 +1260,9 @@ $session->rpc()->model()->list(new ModelListRequest(skipCache: true)); // キャ
 $session->rpc()->model()->switchAutoTier(new ModelSwitchAutoTierRequest(autoTier: AutoTier::BALANCE));
 $session->rpc()->model()->switchAutoTier(new ModelSwitchAutoTierRequest(autoTier: null)); // provider-defaultのAuto routingへ戻す
 
+// Copilot Fusion tier を変更する（selected modelは変えない、experimental）
+$session->rpc()->model()->switchFusionTier(new ModelSwitchFusionTierRequest(fusionTier: FusionTier::MAX));
+
 // ホスト側でセッションのモデル許可リストを設定・解除する（experimental）
 $session->rpc()->model()->setAllowedModels(new ModelSetAllowedModelsRequest(allowedModels: ['gpt-5']));
 $session->rpc()->model()->setAllowedModels(new ModelSetAllowedModelsRequest(allowedModels: null)); // 制限を解除
@@ -1270,9 +1273,14 @@ $session->setModel('claude-opus-4.7', 'high'); // 文字列でも指定可能
 $session->setModel('gpt-4', modelCapabilities: ['supports' => ['vision' => true]]); // 配列でも指定可能
 // autoTierを指定する場合（modelIdが'auto'の場合のみ有効）
 $session->setModel('auto', autoTier: AutoTier::INTELLIGENCE);
+// fusionTierを指定する場合（modelIdが'fusion'または'auto'の場合のみ有効、autoTierとは併用不可）
+$session->setModel('fusion', fusionTier: FusionTier::HIGH);
 
 // setAutoTier()ヘルパーでmodelを変更せずにAuto routing preferenceのみ変更（experimental）
 $session->setAutoTier(AutoTier::EFFICIENCY);
+
+// setFusionTier()ヘルパーでmodelを変更せずにCopilot Fusion tierのみ変更（experimental）
+$session->setFusionTier(FusionTier::STANDARD);
 
 // mode
 $session->rpc()->mode()->get();

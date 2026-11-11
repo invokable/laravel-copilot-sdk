@@ -9,6 +9,7 @@ use Revolution\Copilot\Contracts\CopilotSession;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\AutoTier;
 use Revolution\Copilot\Enums\ElicitationAction;
+use Revolution\Copilot\Enums\FusionTier;
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ModelSwitchAutoTierStatus;
 use Revolution\Copilot\Enums\ReasoningEffort;
@@ -122,12 +123,18 @@ class FakeSession implements CopilotSession
         return null;
     }
 
-    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null, AutoTier|string|null $autoTier = null): void
+    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null, AutoTier|string|null $autoTier = null, FusionTier|string|null $fusionTier = null): void
     {
         // No-op in fake
     }
 
     public function setAutoTier(AutoTier|string|null $autoTier): ModelSwitchAutoTierResult
+    {
+        // No-op in fake
+        return new ModelSwitchAutoTierResult(status: ModelSwitchAutoTierStatus::UNCHANGED);
+    }
+
+    public function setFusionTier(FusionTier|string $fusionTier): ModelSwitchAutoTierResult
     {
         // No-op in fake
         return new ModelSwitchAutoTierResult(status: ModelSwitchAutoTierStatus::UNCHANGED);

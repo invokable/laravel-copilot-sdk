@@ -18,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
+use Revolution\Copilot\Types\Rpc\ModelSwitchFusionTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
 use Revolution\Copilot\Types\Rpc\SessionModelList;
@@ -118,6 +119,21 @@ class PendingModel
 
         return ModelSwitchAutoTierResult::fromArray(
             $this->client->request('session.model.switchAutoTier', $paramsArray),
+        );
+    }
+
+    /**
+     * Change the Copilot Fusion tier without changing the selected model.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function switchFusionTier(ModelSwitchFusionTierRequest|array $params): ModelSwitchAutoTierResult
+    {
+        $paramsArray = ($params instanceof ModelSwitchFusionTierRequest ? $params : ModelSwitchFusionTierRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ModelSwitchAutoTierResult::fromArray(
+            $this->client->request('session.model.switchFusionTier', $paramsArray),
         );
     }
 

@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Contracts;
 use Closure;
 use Revolution\Copilot\Enums\AgentMode;
 use Revolution\Copilot\Enums\AutoTier;
+use Revolution\Copilot\Enums\FusionTier;
 use Revolution\Copilot\Enums\LogLevel;
 use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
@@ -106,10 +107,11 @@ interface CopilotSession
      * Switch the model for this session.
      *
      * @param  AutoTier|string|null  $autoTier  Auto routing preference to apply when $model is "auto". Rejected when $model is not "auto".
+     * @param  FusionTier|string|null  $fusionTier  Copilot Fusion tier to apply when $model is "fusion" or "auto". Cannot be combined with $autoTier.
      *
      * @throws JsonRpcException
      */
-    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null, AutoTier|string|null $autoTier = null): void;
+    public function setModel(string $model, ReasoningEffort|string|null $reasoningEffort = null, ModelCapabilitiesOverride|array|null $modelCapabilities = null, AutoTier|string|null $autoTier = null, FusionTier|string|null $fusionTier = null): void;
 
     /**
      * Change the Auto routing preference without changing the selected model.
@@ -119,6 +121,15 @@ interface CopilotSession
      * @throws JsonRpcException
      */
     public function setAutoTier(AutoTier|string|null $autoTier): ModelSwitchAutoTierResult;
+
+    /**
+     * Change the Copilot Fusion tier without changing the selected model.
+     *
+     * @experimental Part of an experimental Auto routing surface and may change or be removed in a future release.
+     *
+     * @throws JsonRpcException
+     */
+    public function setFusionTier(FusionTier|string $fusionTier): ModelSwitchAutoTierResult;
 
     /**
      * Log a message to the session timeline.
