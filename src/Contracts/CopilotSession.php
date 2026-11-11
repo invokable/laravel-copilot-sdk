@@ -13,6 +13,7 @@ use Revolution\Copilot\Enums\ReasoningEffort;
 use Revolution\Copilot\Enums\SessionEventType;
 use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\Rpc\SessionRpc;
+use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\OpenCanvasInstance;
@@ -21,6 +22,8 @@ use Revolution\Copilot\Types\Rpc\ResponseFormat;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementPolicy;
+use Revolution\Copilot\Types\Rpc\ShellAuthenticationRequest;
+use Revolution\Copilot\Types\Rpc\ShellAuthenticationResponse;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\SessionCapabilities;
 use Revolution\Copilot\Types\SessionEvent;
@@ -69,6 +72,13 @@ interface CopilotSession
 
     /** Replace the complete set of tools supplied by this connection. */
     public function setTools(array $tools): void;
+
+    /**
+     * Register the host callback for shell authentication requests.
+     *
+     * @param  Closure(ShellAuthenticationRequest, array{sessionId: string, signal: CancellationToken}): ShellAuthenticationResponse|array|null  $handler
+     */
+    public function registerShellAuthenticationHandler(?Closure $handler): void;
 
     /**
      * Send a raw elicitation request to the CLI host.

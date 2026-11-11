@@ -119,7 +119,7 @@ function startClientWithExtensionLaunchProvider(array $options): array
 
             return true;
         })
-        ->times(32);
+        ->times(34);
     $rpcClient->shouldReceive('request')
         ->andReturnUsing(function (string $method, array $params) use (&$requests): array {
             $requests[] = [$method, $params];

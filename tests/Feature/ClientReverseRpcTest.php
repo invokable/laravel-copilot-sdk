@@ -24,6 +24,8 @@ use Revolution\Copilot\Types\MemoryStoreCallOptions;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateResult;
+use Revolution\Copilot\Types\Rpc\ShellAuthenticationRequest;
+use Revolution\Copilot\Types\Rpc\ShellAuthenticationResponse;
 use Revolution\Copilot\Types\SessionConfig;
 use Revolution\Copilot\Types\StoredMemory;
 
@@ -565,6 +567,144 @@ describe('Client reverse requests', function () {
         expect($transport->responseFor('memory-after-disconnect')['error']['message'])
             ->toBe('Memory store handler is unavailable')
             ->and($calls)->toBe(0);
+    });
+
+    it('sends shell authentication opt-in and returns answers for created and resumed sessions', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $handler = fn (ShellAuthenticationRequest $request, array $invocation): ShellAuthenticationResponse => new ShellAuthenticationResponse(
+            action: 'accept',
+            value: $request->program.' answer',
+        );
+        $createdSession = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            onShellAuthenticationRequest: $handler,
+        ));
+        $resumedSession = $client->resumeSession('shell-auth-resumed', new ResumeSessionConfig(
+            onPermissionRequest: fn () => true,
+            onShellAuthenticationRequest: $handler,
+        ));
+
+        foreach ([
+            'shell-auth-created' => $createdSession->id(),
+            'shell-auth-resumed' => $resumedSession->id(),
+        ] as $requestId => $sessionId) {
+            $transport->injectRequest($requestId, 'shellAuthentication.request', [
+                'sessionId' => $sessionId,
+                'requestId' => $requestId,
+                'program' => 'git',
+                'prompt' => 'Username:',
+                'inputKind' => 'text',
+                'command' => 'git fetch',
+                'cwd' => '/workspace',
+            ]);
+        }
+
+        $createRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.create',
+        ))[0];
+        $resumeRequest = array_values(array_filter(
+            $transport->messages,
+            fn (array $message): bool => ($message['method'] ?? null) === 'session.resume',
+        ))[0];
+
+        expect($createRequest['params']['requestShellAuthentication'])->toBeTrue()
+            ->and($resumeRequest['params']['requestShellAuthentication'])->toBeTrue()
+            ->and($transport->responseFor('shell-auth-created')['result'])->toBe([
+                'action' => 'accept',
+                'value' => 'git answer',
+            ])
+            ->and($transport->responseFor('shell-auth-resumed')['result'])->toBe([
+                'action' => 'accept',
+                'value' => 'git answer',
+            ]);
+    });
+
+    it('cancels shell authentication requests with no handler or an invalid answer', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $withoutHandler = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+        ));
+        $invalidHandler = $client->resumeSession('shell-auth-invalid', new ResumeSessionConfig(
+            onPermissionRequest: fn () => true,
+            onShellAuthenticationRequest: fn () => ['action' => 'accept', 'value' => 123],
+        ));
+
+        $transport->injectRequest('shell-auth-no-handler', 'shellAuthentication.request', [
+            'sessionId' => $withoutHandler->id(),
+            'requestId' => 'no-handler',
+            'program' => 'sudo',
+            'prompt' => 'Password:',
+            'inputKind' => 'secret',
+            'command' => 'sudo -A',
+            'cwd' => '/workspace',
+        ]);
+        $transport->injectRequest('shell-auth-invalid', 'shellAuthentication.request', [
+            'sessionId' => $invalidHandler->id(),
+            'requestId' => 'invalid-answer',
+            'program' => 'ssh',
+            'prompt' => 'Password:',
+            'inputKind' => 'secret',
+            'command' => 'ssh example.com',
+            'cwd' => '/workspace',
+        ]);
+
+        expect($transport->responseFor('shell-auth-no-handler')['result'])->toBe(['action' => 'cancel'])
+            ->and($transport->responseFor('shell-auth-invalid')['result'])->toBe(['action' => 'cancel']);
+    });
+
+    it('cancels the handler signal when shell authentication is cancelled', function () {
+        [$client, $transport] = createReverseRpcTestClient();
+        $signals = [];
+        $session = $client->createSession(new SessionConfig(
+            onPermissionRequest: fn () => true,
+            onShellAuthenticationRequest: function (ShellAuthenticationRequest $request, array $invocation) use ($transport, &$signals): array {
+                $signal = $invocation['signal'];
+                $signals[$request->requestId] = $signal;
+                $suspension = EventLoop::getSuspension();
+                $signal->onCancellationRequested(fn () => $suspension->resume());
+
+                EventLoop::delay(0.01, function () use ($request, $invocation, $transport): void {
+                    $params = [
+                        'sessionId' => $invocation['sessionId'],
+                        'requestId' => $request->requestId,
+                    ];
+
+                    if ($request->requestId === 'cancel-with-notification') {
+                        $transport->injectNotification('shellAuthentication.cancel', $params);
+                    } else {
+                        $transport->injectRequest('shell-auth-cancel', 'shellAuthentication.cancel', $params);
+                    }
+                });
+                $suspension->suspend();
+
+                return ['action' => 'accept', 'value' => 'must be discarded'];
+            },
+        ));
+
+        foreach ([
+            'shell-auth-cancel-request' => 'cancel-with-request',
+            'shell-auth-cancel-notification' => 'cancel-with-notification',
+        ] as $requestId => $authenticationRequestId) {
+            $transport->injectRequest($requestId, 'shellAuthentication.request', [
+                'sessionId' => $session->id(),
+                'requestId' => $authenticationRequestId,
+                'program' => 'ssh',
+                'prompt' => 'Password:',
+                'inputKind' => 'secret',
+                'command' => 'ssh example.com',
+                'cwd' => '/workspace',
+            ]);
+        }
+
+        EventLoop::delay(0.05, fn () => EventLoop::getDriver()->stop());
+        EventLoop::run();
+
+        expect($signals['cancel-with-request']->isCancellationRequested())->toBeTrue()
+            ->and($signals['cancel-with-notification']->isCancellationRequested())->toBeTrue()
+            ->and($transport->responseFor('shell-auth-cancel-request')['result'])->toBe(['action' => 'cancel'])
+            ->and($transport->responseFor('shell-auth-cancel-notification')['result'])->toBe(['action' => 'cancel'])
+            ->and($transport->responseFor('shell-auth-cancel')['result'])->toBe([]);
     });
 });
 

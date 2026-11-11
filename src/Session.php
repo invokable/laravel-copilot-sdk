@@ -20,6 +20,7 @@ use Revolution\Copilot\Concerns\Session\HasMemoryStoreHandler;
 use Revolution\Copilot\Concerns\Session\HasPermissionHandler;
 use Revolution\Copilot\Concerns\Session\HasSessionCreationHandler;
 use Revolution\Copilot\Concerns\Session\HasSessionFs;
+use Revolution\Copilot\Concerns\Session\HasShellAuthenticationHandler;
 use Revolution\Copilot\Concerns\Session\HasSkillProvider;
 use Revolution\Copilot\Concerns\Session\HasToolHandlers;
 use Revolution\Copilot\Concerns\Session\HasUiApi;
@@ -85,6 +86,7 @@ class Session implements CopilotSession
     use HasPermissionHandler;
     use HasSessionCreationHandler;
     use HasSessionFs;
+    use HasShellAuthenticationHandler;
     use HasSkillProvider;
     use HasToolHandlers;
     use HasUiApi;
@@ -1059,6 +1061,8 @@ class Session implements CopilotSession
         if ($this->disconnected) {
             return;
         }
+
+        $this->cancelPendingShellAuthenticationRequests();
 
         $deadline = $timeout === null ? null : microtime(true) + $timeout;
         $response = ['success' => false];

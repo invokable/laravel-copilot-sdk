@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Revolution\Copilot\Concerns\Client;
 
+use Revolution\Copilot\Enums\ShellAuthenticationInputKind;
 use Revolution\Copilot\Events\Client\ToolCall;
 use Revolution\Copilot\Support\CancellationToken;
 use Revolution\Copilot\Types\AutoModeSwitchRequest;
@@ -11,6 +12,8 @@ use Revolution\Copilot\Types\ExitPlanModeRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionLaunchProviderResolveResult;
 use Revolution\Copilot\Types\Rpc\SessionManagementCreateHostRequest;
+use Revolution\Copilot\Types\Rpc\ShellAuthenticationRequest;
+use Revolution\Copilot\Types\Rpc\ShellAuthenticationResponse;
 use Revolution\Copilot\Types\StoredMemory;
 use Revolution\Copilot\Types\ToolResultObject;
 use Revolution\Copilot\Types\UserInputRequest;
@@ -147,6 +150,54 @@ trait HandlesServerRequests
         $response = $session->handleUserInputRequest($request);
 
         return $response->toArray();
+    }
+
+    /**
+     * Handle a shell authentication request from a shell command.
+     */
+    protected function handleShellAuthenticationRequest(array $params, CancellationToken $token): array
+    {
+        $sessionId = $params['sessionId'] ?? null;
+        $requestId = $params['requestId'] ?? null;
+        $program = $params['program'] ?? null;
+        $prompt = $params['prompt'] ?? null;
+        $inputKind = $params['inputKind'] ?? null;
+
+        if (
+            ! is_string($sessionId)
+            || ! is_string($requestId)
+            || ! is_string($program)
+            || ! is_string($prompt)
+            || ! is_string($inputKind)
+            || ShellAuthenticationInputKind::tryFrom($inputKind) === null
+        ) {
+            return (new ShellAuthenticationResponse(action: 'cancel'))->toArray();
+        }
+
+        $session = $this->sessions[$sessionId] ?? null;
+        if ($session === null) {
+            return (new ShellAuthenticationResponse(action: 'cancel'))->toArray();
+        }
+
+        return $session->handleShellAuthenticationRequest(
+            ShellAuthenticationRequest::fromArray($params),
+            $token,
+        )->toArray();
+    }
+
+    /**
+     * Cancel a pending shell authentication request.
+     */
+    protected function cancelShellAuthenticationRequest(array $params): array
+    {
+        $sessionId = $params['sessionId'] ?? null;
+        $requestId = $params['requestId'] ?? null;
+
+        if (is_string($sessionId) && is_string($requestId)) {
+            ($this->sessions[$sessionId] ?? null)?->cancelShellAuthenticationRequest($requestId);
+        }
+
+        return [];
     }
 
     /**
