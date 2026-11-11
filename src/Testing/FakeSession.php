@@ -91,6 +91,11 @@ class FakeSession implements CopilotSession
         // No-op in fake
     }
 
+    public function registerShellAuthenticationHandler(?Closure $handler): void
+    {
+        // No-op in fake
+    }
+
     public function setSessionCreationHandler(?Closure $handler): SessionManagementPolicy
     {
         return new SessionManagementPolicy(

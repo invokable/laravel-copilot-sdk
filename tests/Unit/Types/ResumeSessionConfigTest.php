@@ -203,6 +203,7 @@ describe('ResumeSessionConfig', function () {
     it('can be created from array with all fields', function () {
         $handler = fn () => true;
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];
+        $shellAuthenticationHandler = fn () => ['action' => 'cancel'];
         $exitPlanModeHandler = fn () => ['approved' => true];
         $autoModeSwitchHandler = fn () => ['approved' => true];
         $mcpAuthHandler = fn () => null;
@@ -223,6 +224,7 @@ describe('ResumeSessionConfig', function () {
             'provider' => ['baseUrl' => 'https://api.example.com'],
             'onPermissionRequest' => $handler,
             'onUserInputRequest' => $userInputHandler,
+            'onShellAuthenticationRequest' => $shellAuthenticationHandler,
             'onExitPlanModeRequest' => $exitPlanModeHandler,
             'onAutoModeSwitchRequest' => $autoModeSwitchHandler,
             'onMcpAuthRequest' => $mcpAuthHandler,
@@ -273,6 +275,7 @@ describe('ResumeSessionConfig', function () {
             ->and($config->provider)->toBeInstanceOf(ProviderConfig::class)
             ->and($config->onPermissionRequest)->toBe($handler)
             ->and($config->onUserInputRequest)->toBe($userInputHandler)
+            ->and($config->onShellAuthenticationRequest)->toBe($shellAuthenticationHandler)
             ->and($config->onExitPlanModeRequest)->toBe($exitPlanModeHandler)
             ->and($config->onAutoModeSwitchRequest)->toBe($autoModeSwitchHandler)
             ->and($config->autoModeRecovery)->toBeTrue()
@@ -361,6 +364,7 @@ describe('ResumeSessionConfig', function () {
     it('can convert to array with all fields', function () {
         $handler = fn () => true;
         $userInputHandler = fn () => ['answer' => 'test', 'wasFreeform' => false];
+        $shellAuthenticationHandler = fn () => ['action' => 'cancel'];
         $exitPlanModeHandler = fn () => ['approved' => true];
         $autoModeSwitchHandler = fn () => ['approved' => true];
         $mcpAuthHandler = fn () => null;
@@ -381,6 +385,7 @@ describe('ResumeSessionConfig', function () {
             provider: new ProviderConfig(baseUrl: 'https://api.test.com'),
             onPermissionRequest: $handler,
             onUserInputRequest: $userInputHandler,
+            onShellAuthenticationRequest: $shellAuthenticationHandler,
             onExitPlanModeRequest: $exitPlanModeHandler,
             onAutoModeSwitchRequest: $autoModeSwitchHandler,
             onMcpAuthRequest: $mcpAuthHandler,
@@ -430,6 +435,7 @@ describe('ResumeSessionConfig', function () {
             ->and($array['provider'])->toBe(['baseUrl' => 'https://api.test.com'])
             ->and($array['onPermissionRequest'])->toBe($handler)
             ->and($array['onUserInputRequest'])->toBe($userInputHandler)
+            ->and($array['onShellAuthenticationRequest'])->toBe($shellAuthenticationHandler)
             ->and($array['onExitPlanModeRequest'])->toBe($exitPlanModeHandler)
             ->and($array['onAutoModeSwitchRequest'])->toBe($autoModeSwitchHandler)
             ->and($array['autoModeRecovery'])->toBeTrue()

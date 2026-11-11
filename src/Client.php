@@ -422,6 +422,16 @@ class Client implements CopilotClient
             );
 
             $this->rpcClient->setRequestHandler(
+                'shellAuthentication.request',
+                fn (array $params, CancellationToken $token) => $this->handleShellAuthenticationRequest($params, $token),
+            );
+
+            $this->rpcClient->setRequestHandler(
+                'shellAuthentication.cancel',
+                fn (array $params) => $this->cancelShellAuthenticationRequest($params),
+            );
+
+            $this->rpcClient->setRequestHandler(
                 'exitPlanMode.request',
                 fn (array $params) => $this->handleExitPlanModeRequest($params),
             );
@@ -856,6 +866,7 @@ class Client implements CopilotClient
                 'capi' => $this->normalizeCapiSessionOptions($config['capi'] ?? null),
                 'requestPermission' => isset($config['onPermissionRequest']),
                 'requestUserInput' => isset($config['onUserInputRequest']),
+                'requestShellAuthentication' => isset($config['onShellAuthenticationRequest']),
                 'requestElicitation' => isset($config['onElicitationRequest']),
                 'askUserVariant' => ($config['askUserVariant'] ?? null) instanceof \BackedEnum
                     ? $config['askUserVariant']->value
@@ -1161,6 +1172,7 @@ class Client implements CopilotClient
                 'capi' => $this->normalizeCapiSessionOptions($config['capi'] ?? null),
                 'requestPermission' => isset($config['onPermissionRequest']),
                 'requestUserInput' => isset($config['onUserInputRequest']),
+                'requestShellAuthentication' => isset($config['onShellAuthenticationRequest']),
                 'requestElicitation' => isset($config['onElicitationRequest']),
                 'askUserVariant' => ($config['askUserVariant'] ?? null) instanceof \BackedEnum
                     ? $config['askUserVariant']->value
@@ -1499,6 +1511,7 @@ class Client implements CopilotClient
 
         foreach ([
             'onUserInputRequest' => 'registerUserInputHandler',
+            'onShellAuthenticationRequest' => 'registerShellAuthenticationHandler',
             'onElicitationRequest' => 'registerElicitationHandler',
             'onExitPlanModeRequest' => 'registerExitPlanModeHandler',
             'onAutoModeSwitchRequest' => 'registerAutoModeSwitchHandler',
@@ -2038,6 +2051,10 @@ class Client implements CopilotClient
 
         if ($method === 'host.exited' && is_string($params['hostId'] ?? null)) {
             $this->releaseAhpHost($params['hostId']);
+        }
+
+        if ($method === 'shellAuthentication.cancel') {
+            $this->cancelShellAuthenticationRequest($params);
         }
 
         if ($method === 'session.event') {

@@ -18,6 +18,10 @@ use Revolution\Copilot\Types\InfiniteSessionConfig;
 use Revolution\Copilot\Types\UserInputRequest;
 use Revolution\Copilot\Types\McpAuthRequest;
 use Revolution\Copilot\Types\McpAuthToken;
+use Revolution\Copilot\Enums\ShellAuthenticationInputKind;
+use Revolution\Copilot\Support\CancellationToken;
+use Revolution\Copilot\Types\Rpc\ShellAuthenticationRequest;
+use Revolution\Copilot\Types\Rpc\ShellAuthenticationResponse;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverride;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverrideSupports;
 use Revolution\Copilot\Types\Rpc\ModelCapabilitiesOverrideLimits;
@@ -172,6 +176,25 @@ $config = new SessionConfig(
 
     onUserInputRequest: function (UserInputRequest $request) {
         // ユーザーインプットリクエストを処理。ask_user
+    },
+
+    // 回答は要求したプログラムだけに渡され、モデルやセッションイベントには記録されない。
+    // シェルコマンドのパスワードや確認プロンプトを処理（secret はマスクして入力）
+    onShellAuthenticationRequest: function (
+        ShellAuthenticationRequest $request,
+        array $invocation,
+    ): ShellAuthenticationResponse {
+        /** @var CancellationToken $signal */
+        $signal = $invocation['signal'];
+        $value = $credentials->request(
+            $request->prompt,
+            mask: $request->inputKind === ShellAuthenticationInputKind::Secret,
+            signal: $signal,
+        );
+
+        return is_string($value)
+            ? new ShellAuthenticationResponse(action: 'accept', value: $value)
+            : new ShellAuthenticationResponse(action: 'cancel');
     },
 
     // エリシテーションリクエストのハンドラー

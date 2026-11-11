@@ -75,6 +75,8 @@ readonly class ResumeSessionConfig implements Arrayable
      *                                           When provided, enables `exitPlanMode.request` callbacks.
      * @param  ?Closure  $onAutoModeSwitchRequest  Handler for auto-mode-switch requests from the agent.
      *                                             When provided, enables `autoModeSwitch.request` callbacks.
+     * @param  ?Closure  $onShellAuthenticationRequest  Handler for prompts from shell commands run by the agent.
+     *                                                  When provided, enables `shellAuthentication.request` callbacks.
      * @param  AskUserVariant|string|null  $askUserVariant  Variant of the built-in ask_user tool.
      * @param  ?bool  $enableSessionTelemetry  Enables or disables internal session telemetry.
      *                                         When false, disables session telemetry. When omitted or true,
@@ -305,6 +307,7 @@ readonly class ResumeSessionConfig implements Arrayable
         public PermissionMode|string|null $permissionMode = null,
         public ?bool $autoModeRecovery = null,
         public ?array $includedBuiltinAgents = null,
+        public ?Closure $onShellAuthenticationRequest = null,
     ) {}
 
     /**
@@ -426,6 +429,7 @@ readonly class ResumeSessionConfig implements Arrayable
             capi: $capi,
             onPermissionRequest: $data['onPermissionRequest'] ?? null,
             onUserInputRequest: $data['onUserInputRequest'] ?? null,
+            onShellAuthenticationRequest: $data['onShellAuthenticationRequest'] ?? null,
             onElicitationRequest: $data['onElicitationRequest'] ?? null,
             onExitPlanModeRequest: $data['onExitPlanModeRequest'] ?? $data['onExitPlanMode'] ?? null,
             onAutoModeSwitchRequest: $data['onAutoModeSwitchRequest'] ?? $data['onAutoModeSwitch'] ?? null,
@@ -623,6 +627,7 @@ readonly class ResumeSessionConfig implements Arrayable
             'capi' => $capi,
             'onPermissionRequest' => $this->onPermissionRequest,
             'onUserInputRequest' => $this->onUserInputRequest,
+            'onShellAuthenticationRequest' => $this->onShellAuthenticationRequest,
             'createSessionFsProvider' => $this->createSessionFsProvider,
             'onElicitationRequest' => $this->onElicitationRequest,
             'onExitPlanModeRequest' => $this->onExitPlanModeRequest,

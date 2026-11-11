@@ -197,7 +197,7 @@ function startClientWithNetworkOptions(array $options, ?JsonRpcException $regist
 
             return true;
         })
-        ->times(32 + (int) $resolveProxyConfigured + (int) $authenticateNegotiateConfigured);
+        ->times(34 + (int) $resolveProxyConfigured + (int) $authenticateNegotiateConfigured);
     $rpcClient->shouldReceive('request')
         ->andReturnUsing(function (string $method, array $params) use (&$requests, $registrationFailure): array {
             $requests[] = [$method, $params];
