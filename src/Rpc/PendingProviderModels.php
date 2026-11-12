@@ -10,6 +10,8 @@ use Revolution\Copilot\Types\Rpc\DiscoveredModelList;
 use Revolution\Copilot\Types\Rpc\ModelProviderConfigurationPlan;
 use Revolution\Copilot\Types\Rpc\ModelProviderInstance;
 use Revolution\Copilot\Types\Rpc\ModelProviderInstanceReference;
+use Revolution\Copilot\Types\Rpc\SessionProvidersModelsDiagnoseRequest;
+use Revolution\Copilot\Types\Rpc\SessionProvidersModelsDiagnoseResult;
 
 /**
  * Model listing and configuration planning for discovered provider instances.
@@ -52,6 +54,18 @@ class PendingProviderModels
                 'instance' => $instanceArray,
                 'model' => $modelArray,
             ]),
+        );
+    }
+
+    public function diagnose(SessionProvidersModelsDiagnoseRequest|array $params): SessionProvidersModelsDiagnoseResult
+    {
+        $paramsArray = ($params instanceof SessionProvidersModelsDiagnoseRequest
+            ? $params
+            : SessionProvidersModelsDiagnoseRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SessionProvidersModelsDiagnoseResult::fromArray(
+            $this->client->request('session.providers.models.diagnose', $paramsArray),
         );
     }
 }

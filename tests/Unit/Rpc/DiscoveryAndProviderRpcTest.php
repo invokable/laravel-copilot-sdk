@@ -23,6 +23,8 @@ use Revolution\Copilot\Types\Rpc\ProviderGetEndpointRequest;
 use Revolution\Copilot\Types\Rpc\ProviderStatus;
 use Revolution\Copilot\Types\Rpc\ServerAgentList;
 use Revolution\Copilot\Types\Rpc\ServerInstructionSourceList;
+use Revolution\Copilot\Types\Rpc\SessionProvidersModelsDiagnoseRequest;
+use Revolution\Copilot\Types\Rpc\SessionProvidersModelsDiagnoseResult;
 
 describe('PendingServerAgents', function () {
     it('calls agents.discover and returns ServerAgentList', function () {
@@ -314,5 +316,54 @@ describe('PendingProviders', function () {
 
         expect($status->status)->toBe('ready')
             ->and($models->models[0]->id)->toBe('model-x');
+    });
+});
+
+describe('PendingProviderModels', function () {
+    it('diagnoses cached model availability with the session and provider ids', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.providers.models.diagnose', [
+                'selectionId' => 'ollama/model-x',
+                'providerId' => 'ollama',
+                'sessionId' => 'session-3',
+            ])
+            ->andReturn(['available' => true]);
+
+        $result = (new PendingProviderModels($client, 'session-3'))->diagnose(
+            new SessionProvidersModelsDiagnoseRequest(
+                selectionId: 'ollama/model-x',
+                providerId: 'ollama',
+            ),
+        );
+
+        expect($result)->toBeInstanceOf(SessionProvidersModelsDiagnoseResult::class)
+            ->and($result->available)->toBeTrue();
+    });
+
+    it('omits the provider id and returns null availability when no cached row exists', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.providers.models.diagnose', [
+                'selectionId' => 'ollama/model-x',
+                'sessionId' => 'session-4',
+            ])
+            ->andReturn([]);
+
+        $result = (new PendingProviderModels($client, 'session-4'))->diagnose([
+            'selectionId' => 'ollama/model-x',
+        ]);
+
+        expect($result->available)->toBeNull()
+            ->and($result->toArray())->toBe([]);
+    });
+
+    it('preserves false availability when serializing the result', function () {
+        $result = SessionProvidersModelsDiagnoseResult::fromArray(['available' => false]);
+
+        expect($result->available)->toBeFalse()
+            ->and($result->toArray())->toBe(['available' => false]);
     });
 });
