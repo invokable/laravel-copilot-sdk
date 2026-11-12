@@ -4,7 +4,7 @@ description: Find actionable SDK sync omissions and open separate, deduplicated 
 intent: Help maintainers track meaningful SDK compatibility gaps and implementation opportunities without duplicating known work.
 
 on:
-    schedule: weekly on saturday
+    #schedule: weekly on saturday
     workflow_dispatch:
     report-blocked-version: false
 
