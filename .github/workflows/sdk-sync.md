@@ -3,11 +3,11 @@ name: SDK Sync
 description: Automatically tracks official github/copilot-sdk changes and creates PRs to update the Laravel implementation.
 
 on:
-    schedule: # すぐに同期が必要な時は手動実行。
+    #schedule: # すぐに同期が必要な時は手動実行。
         #- cron: weekly on monday around 4:00 utc+9
         #- cron: weekly on wednesday around 4:00 utc+9
         #- cron: weekly on friday around 4:00 utc+9
-        - cron: daily around 12:00 utc+9 on weekdays
+        #- cron: daily around 12:00 utc+9 on weekdays
 
     workflow_dispatch:
 
