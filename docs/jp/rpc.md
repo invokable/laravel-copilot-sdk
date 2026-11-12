@@ -10,6 +10,22 @@ Clientに紐づくRPCクラス。
 
 `ping()`と`connect()`で接続を確認・開始し、`registerExtensionLaunchProvider()`で拡張機能の起動プロバイダーを登録します。モデル一覧・価格単位・組み込みカタログは`models()`、利用可能なツール一覧は`tools()`から取得できます。`account()`ではクォータ、認証状態、ログインユーザーの一覧、ログイン・ログアウトを扱い、`accounts()`ではMicrosoft Entra IDのトークン取得を行います。
 
+`providersConfig()->addModel()`はサーバーの保存済みプロバイダー設定にモデルを追加する実験的なRPCです。プロバイダーが未保存の場合は作成され、`providerAdded`で確認できます。永続的な操作ですが、実行中のセッションは変更しません。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+$result = Copilot::client()->rpc()->providersConfig()->addModel([
+    'provider' => ['name' => 'my-provider', 'baseUrl' => 'https://example.com/v1'],
+    'model' => ['id' => 'my-model', 'provider' => 'my-provider'],
+    // 'credential' => $apiKey,
+]);
+
+// $result->providerAdded
+```
+
+配列の代わりに`ProvidersConfigAddModelRequest`を渡せます。任意の`credential`はCLIによってOSキーチェーンに保存され、結果には返されません。
+
 ### MCP・コネクター・Secrets
 
 `mcp()`はMCP設定の一覧・追加・更新・削除、有効化、検出、レジストリ検索、インストール計画と適用を提供します。`connectors()`ではコネクター機能とアカウント、カタログを確認できます。サーバー側でのコネクター操作はアカウント単位の一覧取得・更新が中心です。実験的な`secrets()->addFilterValues()`は、ホストが生成した動的シークレットをCLIのredaction filterに登録し、session logsやexportsでマスクします。
