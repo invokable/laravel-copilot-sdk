@@ -62,6 +62,16 @@ class ServerRpc
     }
 
     /**
+     * Saved provider configuration operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function providersConfig(): PendingServerProvidersConfig
+    {
+        return new PendingServerProvidersConfig($this->client);
+    }
+
+    /**
      * Process-wide language-server inventory operations.
      *
      * @experimental This API group is experimental and may change or be removed.
