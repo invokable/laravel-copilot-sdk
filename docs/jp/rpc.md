@@ -2123,9 +2123,22 @@ $installable = $proxyCa->checkInstallationSupport();
 
 use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionRequest;
 use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestRequest;
+use Revolution\Copilot\Types\Rpc\SessionSandboxGetRemoteMcpEgressRequest;
 
 // サンドボックス強制状態を取得
 $status = $session->rpc()->sandbox()->getEnforcementStatus();
+
+// 新しいサンドボックス admission に対して強制適用可能か確認
+$session->rpc()->sandbox()->ensureEnforcementAvailable();
+
+// リモートMCPエンドポイントのegressを判定
+$egress = $session->rpc()->sandbox()->getRemoteMcpEgress(
+    new SessionSandboxGetRemoteMcpEgressRequest(
+        secretConfigDir: '/path/to/mcp-secrets',
+        url: 'https://mcp.example.com',
+    ),
+);
+// deniedReason は拒否時のみ、proxyUrl は許可されたプロキシ経由の場合のみ設定される
 
 // サンドボックスの新規shellで利用できる可能性がある認証情報（値は返されない）
 $credentials = $session->rpc()->sandbox()->getCredentialSuggestions();
