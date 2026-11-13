@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\PluginList;
 use Revolution\Copilot\Types\Rpc\PluginsReloadRequest;
+use Revolution\Copilot\Types\Rpc\SessionPluginDefaults;
 use Revolution\Copilot\Types\Rpc\SessionPluginsRetryManagedRequest;
 use Revolution\Copilot\Types\Rpc\SessionPluginsRetryManagedResult;
 
@@ -29,6 +30,20 @@ class PendingPlugins
     {
         return PluginList::fromArray(
             $this->client->request('session.plugins.list', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Get the session's soft plugin defaults.
+     *
+     * @experimental
+     */
+    public function getDefaults(): SessionPluginDefaults
+    {
+        return SessionPluginDefaults::fromArray(
+            $this->client->request('session.plugins.getDefaults', [
                 'sessionId' => $this->sessionId,
             ]),
         );

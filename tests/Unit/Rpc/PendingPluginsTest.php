@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingPlugins;
 use Revolution\Copilot\Types\Rpc\PluginList;
+use Revolution\Copilot\Types\Rpc\SessionPluginDefaults;
+use Revolution\Copilot\Types\Rpc\TeamPluginMarketplace;
 
 describe('PendingPlugins', function () {
     it('calls session.plugins.list and returns result', function () {
@@ -43,6 +45,36 @@ describe('PendingPlugins', function () {
 
         expect($result)->toBeInstanceOf(PluginList::class)
             ->and($result->plugins)->toBe([]);
+    });
+
+    it('gets typed session plugin defaults with only the session id', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.plugins.getDefaults', ['sessionId' => 'session-abc'])
+            ->andReturn([
+                'generation' => 'generation-1',
+                'defaultEnabledPlugins' => ['team/plugin@marketplace' => true],
+                'teamDefaultEnabledPlugins' => ['team/plugin@marketplace' => false],
+                'extraKnownMarketplaces' => [
+                    'team-marketplace' => [
+                        'source' => [
+                            'source' => 'github',
+                            'repo' => 'team/plugins',
+                        ],
+                    ],
+                ],
+            ]);
+
+        $pending = new PendingPlugins($client, 'session-abc');
+        $result = $pending->getDefaults();
+
+        expect($result)->toBeInstanceOf(SessionPluginDefaults::class)
+            ->and($result->generation)->toBe('generation-1')
+            ->and($result->defaultEnabledPlugins)->toBe(['team/plugin@marketplace' => true])
+            ->and($result->teamDefaultEnabledPlugins)->toBe(['team/plugin@marketplace' => false])
+            ->and($result->extraKnownMarketplaces['team-marketplace'])->toBeInstanceOf(TeamPluginMarketplace::class)
+            ->and($result->extraKnownMarketplaces['team-marketplace']->source->repo)->toBe('team/plugins');
     });
 
     it('passes directSourceId values through session plugin enable and disable', function () {
