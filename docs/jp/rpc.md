@@ -1521,6 +1521,11 @@ $session->rpc()->plugins()->reload(new PluginsReloadRequest(
     reloadHooks: true,    // フックを再読み込み
     reloadCustomAgents: false, // カスタムエージェントを再読み込みしない
 ));
+// セッションのソフトなプラグイン既定値を取得（設定の永続化やインストールは行わない）
+$defaults = $session->rpc()->plugins()->getDefaults(); // SessionPluginDefaults
+// $defaults->defaultEnabledPlugins はマネージド既定値がTeam既定値を上書きした結果
+// $defaults->teamDefaultEnabledPlugins はTeamのみの既定値
+// $defaults->extraKnownMarketplaces はインストール時のフォールバック
 
 // extensions (experimental: エクステンションの管理)
 $policy = $session->rpc()->extensions()->getPolicy(); // ExtensionManagedPolicy
