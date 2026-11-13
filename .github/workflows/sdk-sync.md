@@ -8,7 +8,6 @@ on:
         #- cron: weekly on wednesday around 4:00 utc+9
         #- cron: weekly on friday around 4:00 utc+9
         #- cron: daily around 12:00 utc+9 on weekdays
-
     workflow_dispatch:
 
 max-ai-credits: 500
@@ -17,13 +16,8 @@ timeout-minutes: 30
 
 engine:
     id: copilot
-    #copilot-sdk: true
-    model-routing:
-        goal: cost
-        mode: auto
-        allowed-models:
-            - gpt-6-luna
-            - claude-haiku-5.5
+    copilot-sdk: true
+    model: router
 
 skills:
     - .github/skills/sdk-sync-implementation
