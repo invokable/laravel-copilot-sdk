@@ -15,6 +15,10 @@ use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
+use Revolution\Copilot\Types\Rpc\SkillsInstallSourceRequest;
+use Revolution\Copilot\Types\Rpc\SkillsInstallSourceResult;
+use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceOutcome;
+use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceRequest;
 
 /**
  * Pending server-level skills RPC operations.
@@ -77,6 +81,38 @@ class PendingServerSkills
 
         return SkillDiscoveryPathList::fromArray(
             $this->client->request('skills.getDiscoveryPaths', $paramsArray),
+        );
+    }
+
+    /**
+     * Installs a user-selected skill source without catalog plan semantics.
+     *
+     * @experimental
+     */
+    public function installSource(SkillsInstallSourceRequest|array $params): SkillsInstallSourceResult
+    {
+        $paramsArray = ($params instanceof SkillsInstallSourceRequest
+            ? $params
+            : SkillsInstallSourceRequest::fromArray($params))->toArray();
+
+        return SkillsInstallSourceResult::fromArray(
+            $this->client->request('skills.installSource', $paramsArray),
+        );
+    }
+
+    /**
+     * Removes a user-selected skill source without catalog plan semantics.
+     *
+     * @experimental
+     */
+    public function removeSource(SkillsRemoveSourceRequest|array $params): SkillsRemoveSourceOutcome
+    {
+        $paramsArray = ($params instanceof SkillsRemoveSourceRequest
+            ? $params
+            : SkillsRemoveSourceRequest::fromArray($params))->toArray();
+
+        return SkillsRemoveSourceOutcome::fromArray(
+            $this->client->request('skills.removeSource', $paramsArray),
         );
     }
 
