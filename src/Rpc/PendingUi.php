@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\SessionUiRegisterDirectAutoModeSwitchHandlerRequest;
+use Revolution\Copilot\Types\Rpc\SessionUiRegisterDirectAutoModeSwitchHandlerResult;
 use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\Rpc\UIElicitationResult;
@@ -17,6 +19,8 @@ use Revolution\Copilot\Types\Rpc\UIHandlePendingResult;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingSamplingRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingSessionLimitsExhaustedRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingUserInputRequest;
+use Revolution\Copilot\Types\Rpc\UIUnregisterDirectAutoModeSwitchHandlerRequest;
+use Revolution\Copilot\Types\Rpc\UIUnregisterDirectAutoModeSwitchHandlerResult;
 
 /**
  * Pending UI RPC operations for a session.
@@ -103,6 +107,40 @@ class PendingUi
 
         return UIHandlePendingResult::fromArray(
             $this->client->request('session.ui.handlePendingAutoModeSwitch', $paramsArray),
+        );
+    }
+
+    /**
+     * Register an in-process handler for Auto mode switch requests.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function registerDirectAutoModeSwitchHandler(SessionUiRegisterDirectAutoModeSwitchHandlerRequest|array|null $params = null): SessionUiRegisterDirectAutoModeSwitchHandlerResult
+    {
+        $paramsArray = $params === null
+            ? []
+            : ($params instanceof SessionUiRegisterDirectAutoModeSwitchHandlerRequest
+                ? $params
+                : SessionUiRegisterDirectAutoModeSwitchHandlerRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SessionUiRegisterDirectAutoModeSwitchHandlerResult::fromArray(
+            $this->client->request('session.ui.registerDirectAutoModeSwitchHandler', $paramsArray),
+        );
+    }
+
+    /**
+     * Unregister an in-process handler for Auto mode switch requests.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function unregisterDirectAutoModeSwitchHandler(UIUnregisterDirectAutoModeSwitchHandlerRequest|array $params): UIUnregisterDirectAutoModeSwitchHandlerResult
+    {
+        $paramsArray = ($params instanceof UIUnregisterDirectAutoModeSwitchHandlerRequest ? $params : UIUnregisterDirectAutoModeSwitchHandlerRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return UIUnregisterDirectAutoModeSwitchHandlerResult::fromArray(
+            $this->client->request('session.ui.unregisterDirectAutoModeSwitchHandler', $paramsArray),
         );
     }
 

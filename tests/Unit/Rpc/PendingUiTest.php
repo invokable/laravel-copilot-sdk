@@ -6,6 +6,8 @@ use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\Enums\UIAutoModeSwitchResponse;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingUi;
+use Revolution\Copilot\Types\Rpc\SessionUiRegisterDirectAutoModeSwitchHandlerRequest;
+use Revolution\Copilot\Types\Rpc\SessionUiRegisterDirectAutoModeSwitchHandlerResult;
 use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\Rpc\UIElicitationResult;
@@ -18,6 +20,8 @@ use Revolution\Copilot\Types\Rpc\UIHandlePendingExitPlanModeRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingResult;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingSamplingRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingUserInputRequest;
+use Revolution\Copilot\Types\Rpc\UIUnregisterDirectAutoModeSwitchHandlerRequest;
+use Revolution\Copilot\Types\Rpc\UIUnregisterDirectAutoModeSwitchHandlerResult;
 use Revolution\Copilot\Types\Rpc\UIUserInputResponse;
 
 describe('PendingUi', function () {
@@ -261,6 +265,94 @@ describe('PendingUi', function () {
 
         expect($typedResult->success)->toBeTrue()
             ->and($arrayResult->success)->toBeFalse();
+    });
+
+    it('registers a direct auto mode switch handler with typed params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.ui.registerDirectAutoModeSwitchHandler',
+                [
+                    'autoModeRecovery' => true,
+                    'sessionId' => 'session-abc',
+                ],
+            )
+            ->andReturn(['handle' => 'handler-123', 'autoModeRecovery' => true]);
+
+        $pending = new PendingUi($client, 'session-abc');
+        $result = $pending->registerDirectAutoModeSwitchHandler(
+            new SessionUiRegisterDirectAutoModeSwitchHandlerRequest(autoModeRecovery: true),
+        );
+
+        expect($result)->toBeInstanceOf(SessionUiRegisterDirectAutoModeSwitchHandlerResult::class)
+            ->and($result->handle)->toBe('handler-123')
+            ->and($result->autoModeRecovery)->toBeTrue();
+    });
+
+    it('registers a direct auto mode switch handler with array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.ui.registerDirectAutoModeSwitchHandler',
+                [
+                    'autoModeRecovery' => false,
+                    'sessionId' => 'session-abc',
+                ],
+            )
+            ->andReturn(['handle' => 'handler-456', 'autoModeRecovery' => false]);
+
+        $pending = new PendingUi($client, 'session-abc');
+        $result = $pending->registerDirectAutoModeSwitchHandler([
+            'autoModeRecovery' => false,
+        ]);
+
+        expect($result->handle)->toBe('handler-456')
+            ->and($result->autoModeRecovery)->toBeFalse();
+    });
+
+    it('registers a direct auto mode switch handler without options', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with(
+                'session.ui.registerDirectAutoModeSwitchHandler',
+                ['sessionId' => 'session-abc'],
+            )
+            ->andReturn(['handle' => 'handler-789']);
+
+        $pending = new PendingUi($client, 'session-abc');
+        $result = $pending->registerDirectAutoModeSwitchHandler();
+
+        expect($result->handle)->toBe('handler-789')
+            ->and($result->autoModeRecovery)->toBeNull();
+    });
+
+    it('unregisters a direct auto mode switch handler with typed and array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with(
+                'session.ui.unregisterDirectAutoModeSwitchHandler',
+                [
+                    'handle' => 'handler-123',
+                    'sessionId' => 'session-abc',
+                ],
+            )
+            ->andReturn(['unregistered' => true], ['unregistered' => false]);
+
+        $pending = new PendingUi($client, 'session-abc');
+        $typedResult = $pending->unregisterDirectAutoModeSwitchHandler(
+            new UIUnregisterDirectAutoModeSwitchHandlerRequest(handle: 'handler-123'),
+        );
+        $arrayResult = $pending->unregisterDirectAutoModeSwitchHandler([
+            'handle' => 'handler-123',
+        ]);
+
+        expect($typedResult)->toBeInstanceOf(UIUnregisterDirectAutoModeSwitchHandlerResult::class)
+            ->and($typedResult->unregistered)->toBeTrue()
+            ->and($arrayResult->unregistered)->toBeFalse();
     });
 
     it('calls session.ui.handlePendingSampling with typed and array params', function () {
