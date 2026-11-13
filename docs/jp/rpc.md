@@ -26,6 +26,19 @@ $result = Copilot::client()->rpc()->providersConfig()->addModel([
 
 配列の代わりに`ProvidersConfigAddModelRequest`を渡せます。任意の`credential`はCLIによってOSキーチェーンに保存され、結果には返されません。
 
+### 記録済みトラジェクトリの分類（experimental）
+
+`taskAnalytics()->classifyTrajectory()`はセッションを作成せず、記録済みのCopilotイベントまたはATIFデータを分類します。アーカイブされたツールは実行されず、会話履歴や分類テレメトリにも追加されません。`events`は入力順のまま渡し、`classifiers`、`maxConcurrentRequests`、`judge`、`previousResult`を指定できます。`validateOnly: true`なら推論せず、ローカル検証結果だけを取得できます。
+
+通常の分類では、イベント内容はGitHub CAPIの認証情報を使ったモデル処理に送られます。自動的な秘匿化やプロンプトインジェクション対策はないため、送信を承認したうえでアーカイブの出所を検証し、必要な機密情報を事前に除去してください。分類結果は信頼できる事実ではなく、認可やセキュリティ判断には使用しないでください。
+
+```php
+$result = Copilot::client()->rpc()->taskAnalytics()->classifyTrajectory([
+    'events' => $events,
+    'validateOnly' => true,
+]);
+```
+
 ### MCP・コネクター・Secrets
 
 `mcp()`はMCP設定の一覧・追加・更新・削除、有効化、検出、レジストリ検索、インストール計画と適用を提供します。`connectors()`ではコネクター機能とアカウント、カタログを確認できます。サーバー側でのコネクター操作はアカウント単位の一覧取得・更新が中心です。実験的な`secrets()->addFilterValues()`は、ホストが生成した動的シークレットをCLIのredaction filterに登録し、session logsやexportsでマスクします。
