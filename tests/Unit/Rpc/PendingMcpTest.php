@@ -22,6 +22,7 @@ use Revolution\Copilot\Types\Rpc\McpRestartServerRequest;
 use Revolution\Copilot\Types\Rpc\McpServerList;
 use Revolution\Copilot\Types\Rpc\McpSetEnvValueModeParams;
 use Revolution\Copilot\Types\Rpc\McpStartServerRequest;
+use Revolution\Copilot\Types\Rpc\McpToolTokenBreakdownResult;
 use Revolution\Copilot\Types\Rpc\MoveMcpLoadingToBackgroundResult;
 use Revolution\Copilot\Types\Rpc\SessionMcpOauthCancelLoginRequest;
 use Revolution\Copilot\Types\Rpc\SessionMcpOauthPrepareLoginRequest;
@@ -62,6 +63,39 @@ describe('PendingMcp', function () {
 
         expect($result)->toBeInstanceOf(McpServerList::class)
             ->and($result->servers)->toBe([]);
+    });
+
+    it('returns typed MCP tool token costs for the session', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.mcp.getToolTokenBreakdown', ['sessionId' => 'session-abc'])
+            ->andReturn([
+                'servers' => [
+                    [
+                        'serverName' => 'github',
+                        'totalTokens' => 42,
+                        'tools' => [
+                            [
+                                'name' => 'github_search',
+                                'mcpToolName' => 'search',
+                                'tokens' => 42,
+                                'deferred' => false,
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $result = (new PendingMcp($client, 'session-abc'))->getToolTokenBreakdown();
+
+        expect($result)->toBeInstanceOf(McpToolTokenBreakdownResult::class)
+            ->and($result->servers[0]->serverName)->toBe('github')
+            ->and($result->servers[0]->totalTokens)->toBe(42)
+            ->and($result->servers[0]->tools[0]->name)->toBe('github_search')
+            ->and($result->servers[0]->tools[0]->mcpToolName)->toBe('search')
+            ->and($result->servers[0]->tools[0]->tokens)->toBe(42)
+            ->and($result->servers[0]->tools[0]->deferred)->toBeFalse();
     });
 
     it('calls session.mcp.enable with typed params', function () {

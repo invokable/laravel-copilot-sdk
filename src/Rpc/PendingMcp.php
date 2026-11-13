@@ -35,6 +35,7 @@ use Revolution\Copilot\Types\Rpc\McpSetEnvValueModeParams;
 use Revolution\Copilot\Types\Rpc\McpSetEnvValueModeResult;
 use Revolution\Copilot\Types\Rpc\McpStartServerRequest;
 use Revolution\Copilot\Types\Rpc\McpStopServerRequest;
+use Revolution\Copilot\Types\Rpc\McpToolTokenBreakdownResult;
 use Revolution\Copilot\Types\Rpc\MoveMcpLoadingToBackgroundResult;
 
 /**
@@ -297,6 +298,20 @@ class PendingMcp
 
         return McpListToolsResult::fromArray(
             $this->client->request('session.mcp.listTools', $paramsArray),
+        );
+    }
+
+    /**
+     * Get the context token cost of the session's MCP tool definitions.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function getToolTokenBreakdown(): McpToolTokenBreakdownResult
+    {
+        return McpToolTokenBreakdownResult::fromArray(
+            $this->client->request('session.mcp.getToolTokenBreakdown', [
+                'sessionId' => $this->sessionId,
+            ]),
         );
     }
 
