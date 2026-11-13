@@ -225,6 +225,7 @@ use Revolution\Copilot\Enums\McpInstallationSecretStorage;
 use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
 use Revolution\Copilot\Enums\SkillInstallationManagementOutcomeKind;
 use Revolution\Copilot\Enums\SkillInstallationManagementResultKind;
+use Revolution\Copilot\Enums\SkillsRemoveSourceOutcomeKind;
 use Revolution\Copilot\Enums\AzureMlRegistry;
 use Revolution\Copilot\Types\Rpc\AzureMlAcquireFamilyRequest;
 use Revolution\Copilot\Types\Rpc\AzureMlCancelRequest;
@@ -285,6 +286,8 @@ use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
+use Revolution\Copilot\Types\Rpc\SkillsInstallSourceRequest;
+use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceRequest;
 use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\UIEphemeralQueryRequest;
 use Revolution\Copilot\Types\SessionListFilter;
@@ -671,6 +674,31 @@ Copilot::client()->rpc()->skills()->config()->setDisabledSkills(
 Copilot::client()->rpc()->skills()->config()->setSkillDisabled(
     new SkillsConfigSetSkillDisabledRequest(name: 'skill-name', disabled: true)
 );
+
+// HTTPS URLまたはローカルファイルから直接インストール (experimental)
+$skills = Copilot::client()->rpc()->skills();
+$installed = $skills->installSource(new SkillsInstallSourceRequest(
+    source: 'https://example.test/skills/review/SKILL.md',
+    cwd: '/workspace',
+    personalSkillsDir: '/home/user/.copilot/skills',
+    projectSkillsDir: '/workspace/.copilot/skills',
+    project: false,
+    skillDirectories: ['/custom/skills'],
+    userAgent: 'my-app/1.0',
+));
+// 戻り値のskillDirectoriesを呼び出し側で保存する
+$skillDirectories = $installed->skillDirectories;
+
+// discovery directoryの登録解除。ディレクトリの内容は削除されない
+$removed = $skills->removeSource(new SkillsRemoveSourceRequest(
+    target: '/custom/skills',
+    cwd: '/workspace',
+    skillDirectories: $skillDirectories,
+));
+if ($removed->kind === SkillsRemoveSourceOutcomeKind::Removed) {
+    $skillDirectories = $removed->result->skillDirectories;
+}
+// ファイル削除にinventoryが必要な場合、指定しないとneeds-inventoryが返り変更されない
 
 // catalog.search → catalog.select でスキル候補を選択 (experimental)
 

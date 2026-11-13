@@ -17,10 +17,17 @@ use Revolution\Copilot\Types\Rpc\SkillInstallationsRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillRemoveSourceEntry;
 use Revolution\Copilot\Types\Rpc\SkillsConfigSetDisabledSkillsRequest;
 use Revolution\Copilot\Types\Rpc\SkillsConfigSetSkillDisabledRequest;
 use Revolution\Copilot\Types\Rpc\SkillsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
+use Revolution\Copilot\Types\Rpc\SkillsInstallSourceRequest;
+use Revolution\Copilot\Types\Rpc\SkillsInstallSourceResult;
+use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceInventory;
+use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceOutcome;
+use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceRequest;
+use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceResult;
 
 describe('ServerSkill', function () {
     it('can be created from array with all fields', function () {
@@ -264,6 +271,106 @@ describe('PendingServerSkills', function () {
 
         expect($result)->toBeInstanceOf(ServerSkillList::class)
             ->and($result->skills)->toBeEmpty();
+    });
+
+    it('installs a direct source from typed or array params and returns updated directories', function () {
+        $params = [
+            'source' => 'https://example.test/skills/review/SKILL.md',
+            'cwd' => '/workspace',
+            'personalSkillsDir' => '/home/user/.copilot/skills',
+            'projectSkillsDir' => '/workspace/.copilot/skills',
+            'project' => false,
+            'skillDirectories' => ['/custom/skills'],
+            'userAgent' => 'example-app/1.0',
+        ];
+        $response = [
+            'kind' => 'file',
+            'path' => '/home/user/.copilot/skills/review',
+            'name' => 'review',
+            'scope' => 'personal',
+            'skillDirectories' => ['/custom/skills', '/home/user/.copilot/skills'],
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('skills.installSource', $params)
+            ->andReturn($response, $response);
+
+        $skills = new PendingServerSkills($client);
+        $arrayResult = $skills->installSource($params);
+        $typedResult = $skills->installSource(SkillsInstallSourceRequest::fromArray($params));
+
+        expect($arrayResult)->toBeInstanceOf(SkillsInstallSourceResult::class)
+            ->and($arrayResult->toArray())->toBe($response)
+            ->and($typedResult->toArray())->toBe($response);
+    });
+
+    it('returns needs-inventory without changing directories when removal inventory is missing', function () {
+        $params = [
+            'target' => 'review',
+            'cwd' => '/workspace',
+            'skillDirectories' => ['/custom/skills'],
+        ];
+        $response = ['kind' => 'needs-inventory'];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('skills.removeSource', $params)
+            ->andReturn($response);
+
+        $result = (new PendingServerSkills($client))->removeSource($params);
+
+        expect($result)->toBeInstanceOf(SkillsRemoveSourceOutcome::class)
+            ->and($result->toArray())->toBe($response)
+            ->and($result->result)->toBeNull();
+    });
+
+    it('removes a direct source and returns the nested result and updated directories', function () {
+        $inventory = [
+            'skills' => [
+                ['name' => 'review', 'source' => 'personal', 'baseDir' => '/home/user/.copilot/skills'],
+            ],
+            'personalSkillsDirs' => ['/home/user/.copilot/skills'],
+            'projectSkillsDir' => '/workspace/.copilot/skills',
+        ];
+        $params = [
+            'target' => 'review',
+            'cwd' => '/workspace',
+            'skillDirectories' => ['/custom/skills'],
+            'inventory' => $inventory,
+        ];
+        $response = [
+            'kind' => 'removed',
+            'result' => [
+                'kind' => 'personal',
+                'path' => '/home/user/.copilot/skills/review',
+                'name' => 'review',
+                'skillDirectories' => ['/custom/skills'],
+            ],
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->twice()
+            ->with('skills.removeSource', $params)
+            ->andReturn($response, $response);
+
+        $skills = new PendingServerSkills($client);
+        $arrayResult = $skills->removeSource($params);
+        $typedResult = $skills->removeSource(new SkillsRemoveSourceRequest(
+            target: 'review',
+            cwd: '/workspace',
+            skillDirectories: ['/custom/skills'],
+            inventory: new SkillsRemoveSourceInventory(
+                skills: [new SkillRemoveSourceEntry('review', 'personal', '/home/user/.copilot/skills')],
+                personalSkillsDirs: ['/home/user/.copilot/skills'],
+                projectSkillsDir: '/workspace/.copilot/skills',
+            ),
+        ));
+
+        expect($arrayResult)->toBeInstanceOf(SkillsRemoveSourceOutcome::class)
+            ->and($arrayResult->result)->toBeInstanceOf(SkillsRemoveSourceResult::class)
+            ->and($arrayResult->toArray())->toBe($response)
+            ->and($typedResult->toArray())->toBe($response);
     });
 
     it('dispatches skill installation and removal RPCs with typed or array requests', function () {
