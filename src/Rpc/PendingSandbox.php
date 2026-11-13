@@ -11,6 +11,8 @@ use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionResult;
 use Revolution\Copilot\Types\Rpc\SandboxEnforcementStatus;
 use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestRequest;
 use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestResult;
+use Revolution\Copilot\Types\Rpc\SessionSandboxGetRemoteMcpEgressRequest;
+use Revolution\Copilot\Types\Rpc\SessionSandboxGetRemoteMcpEgressResult;
 
 /**
  * Pending sandbox RPC operations for a session.
@@ -47,6 +49,33 @@ class PendingSandbox
             $this->client->request('session.sandbox.getCredentialSuggestions', [
                 'sessionId' => $this->sessionId,
             ]),
+        );
+    }
+
+    /**
+     * Ensure sandbox enforcement is available for a new admission in this session.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function ensureEnforcementAvailable(): void
+    {
+        $this->client->request('session.sandbox.ensureEnforcementAvailable', [
+            'sessionId' => $this->sessionId,
+        ]);
+    }
+
+    /**
+     * Resolve sandbox egress for a remote MCP endpoint.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function getRemoteMcpEgress(SessionSandboxGetRemoteMcpEgressRequest|array $params): SessionSandboxGetRemoteMcpEgressResult
+    {
+        $paramsArray = ($params instanceof SessionSandboxGetRemoteMcpEgressRequest ? $params : SessionSandboxGetRemoteMcpEgressRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SessionSandboxGetRemoteMcpEgressResult::fromArray(
+            $this->client->request('session.sandbox.getRemoteMcpEgress', $paramsArray),
         );
     }
 
