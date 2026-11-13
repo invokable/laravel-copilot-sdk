@@ -1533,6 +1533,11 @@ $session->rpc()->extensions()->reconcile(); // host-only: 実効membershipを再
 $session->rpc()->extensions()->reload();
 
 // managedSettings (experimental: セッションの管理設定)
+// 現在保持されているスナップショットを取得（適用待ちや新しい取得は行わない）
+$snapshot = $session->rpc()->managedSettings()->getCurrentSnapshot(); // ManagedSettingsResolvedData|null
+// 現在のポリシー適用完了を待つ / ポリシーの公開完了だけを待つ
+$session->rpc()->managedSettings()->awaitApplied();
+$session->rpc()->managedSettings()->awaitPublished();
 // Policy Helperを再評価し、適用後の実効設定を返す
 $settings = $session->rpc()->managedSettings()->recheckPolicyHelper(); // ManagedSettingsResolvedData
 
