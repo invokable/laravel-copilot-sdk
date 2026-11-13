@@ -1773,7 +1773,18 @@ use Revolution\Copilot\Types\Rpc\UIHandlePendingAutoModeSwitchRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingExitPlanModeRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingSamplingRequest;
 use Revolution\Copilot\Types\Rpc\UIHandlePendingUserInputRequest;
+use Revolution\Copilot\Types\Rpc\SessionUiRegisterDirectAutoModeSwitchHandlerRequest;
+use Revolution\Copilot\Types\Rpc\UIUnregisterDirectAutoModeSwitchHandlerRequest;
 use Revolution\Copilot\Types\Rpc\UIUserInputResponse;
+
+$registration = $session->rpc()->ui()->registerDirectAutoModeSwitchHandler(
+    new SessionUiRegisterDirectAutoModeSwitchHandlerRequest(autoModeRecovery: true),
+);
+// autoModeRecovery が true の場合、返された値が true であることを確認してから回復対応を有効にする。
+// 実際のイベントリスナーは別途登録する。ハンドラーを削除する時は同じ handle を使って解除する。
+$session->rpc()->ui()->unregisterDirectAutoModeSwitchHandler(
+    new UIUnregisterDirectAutoModeSwitchHandlerRequest(handle: $registration->handle),
+);
 
 $result = $session->rpc()->ui()->handlePendingUserInput(new UIHandlePendingUserInputRequest(
     requestId: '...',
