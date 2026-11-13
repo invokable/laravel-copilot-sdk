@@ -1252,9 +1252,16 @@ $diagnostics = $apps->diagnose(new MCPAppsDiagnoseRequest(serverName: 'my-server
 
 以下に、上記の機能の代表的な呼び出し例をまとめています。
 
+`model()->startupAdmission()`は、カタログの取得や認証情報の解決を行わず、キャッシュ済みの起動時モデル状態を取得する実験的RPCです。起動時設定を適用したあと、対話型ホストが`claimEnablement: true`を指定すると、カタログが準備済みの場合に限り、セッション内で1回限りの有効化プロンプトを要求できます。要求は所有ホストと共有され、セッションの存続期間に限定されます。結果の`selectedModel`、`catalogReady`、`requiresEnablement`で状態を確認でき、今回要求を消費した場合は`claimedEnablement`が`true`になり、`modelToEnable`に対象モデルが入ります。
+
 ```php
 // model
 $session->rpc()->model()->getCurrent();
+// 起動時の状態を読むだけの場合は引数を省略
+$admission = $session->rpc()->model()->startupAdmission();
+// 有効化プロンプトの表示権を要求（配列またはModelStartupAdmissionRequest）
+$admission = $session->rpc()->model()->startupAdmission(['claimEnablement' => true]);
+// $admission->claimedEnablement が true のとき $admission->modelToEnable を確認
 // 現在のモデルにおける reasoning summary の表示ポリシーを取得する（experimental）
 $policy = $session->rpc()->model()->getReasoningSummaries(new ModelGetReasoningSummariesRequest(
     persistedShowReasoning: true, // 未設定なら省略
