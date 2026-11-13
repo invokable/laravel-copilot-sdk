@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\HostType;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingMetadata;
 use Revolution\Copilot\Types\Rpc\MetadataContextInfoRequest;
@@ -14,6 +15,8 @@ use Revolution\Copilot\Types\Rpc\MetadataRecordContextChangeResult;
 use Revolution\Copilot\Types\Rpc\MetadataSetWorkingDirectoryRequest;
 use Revolution\Copilot\Types\Rpc\MetadataSetWorkingDirectoryResult;
 use Revolution\Copilot\Types\Rpc\SessionActivity;
+use Revolution\Copilot\Types\Rpc\SessionMetadataGetWorkingDirectoryContextRequest;
+use Revolution\Copilot\Types\Rpc\SessionMetadataGetWorkingDirectoryContextResult;
 use Revolution\Copilot\Types\Rpc\SessionMetadataSnapshot;
 use Revolution\Copilot\Types\Rpc\SessionWorkingDirectoryContext;
 
@@ -143,6 +146,70 @@ describe('PendingMetadata', function () {
 
         expect($result)->toBeInstanceOf(MetadataSetWorkingDirectoryResult::class)
             ->and($result->workingDirectory)->toBe('/new/path');
+    });
+
+    it('returns typed repository context for a working directory', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.metadata.getWorkingDirectoryContext', [
+                'cwd' => '/workspace',
+                'includeDefaultBranch' => true,
+                'sessionId' => 'test-session',
+            ])
+            ->andReturn([
+                'cwd' => '/workspace',
+                'gitRoot' => '/workspace',
+                'repository' => 'owner/repo',
+                'hostType' => 'github',
+                'repositoryHost' => 'github.com',
+                'branch' => 'feature/context',
+                'defaultBranch' => 'main',
+                'headCommit' => 'abc123',
+                'baseCommit' => 'def456',
+            ]);
+
+        $pending = new PendingMetadata($client, 'test-session');
+        $result = $pending->getWorkingDirectoryContext(new SessionMetadataGetWorkingDirectoryContextRequest(
+            cwd: '/workspace',
+            includeDefaultBranch: true,
+        ));
+
+        expect($result)->toBeInstanceOf(SessionMetadataGetWorkingDirectoryContextResult::class)
+            ->and($result->cwd)->toBe('/workspace')
+            ->and($result->gitRoot)->toBe('/workspace')
+            ->and($result->repository)->toBe('owner/repo')
+            ->and($result->hostType)->toBe(HostType::GITHUB)
+            ->and($result->repositoryHost)->toBe('github.com')
+            ->and($result->branch)->toBe('feature/context')
+            ->and($result->defaultBranch)->toBe('main')
+            ->and($result->headCommit)->toBe('abc123')
+            ->and($result->baseCommit)->toBe('def456');
+    });
+
+    it('accepts array parameters and preserves unknown host types', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.metadata.getWorkingDirectoryContext', [
+                'cwd' => '/workspace/subdir',
+                'includeDefaultBranch' => false,
+                'sessionId' => 'test-session',
+            ])
+            ->andReturn([
+                'cwd' => '/workspace/subdir',
+                'hostType' => 'future-host',
+            ]);
+
+        $pending = new PendingMetadata($client, 'test-session');
+        $result = $pending->getWorkingDirectoryContext([
+            'cwd' => '/workspace/subdir',
+            'includeDefaultBranch' => false,
+        ]);
+
+        expect($result->cwd)->toBe('/workspace/subdir')
+            ->and($result->hostType)->toBe('future-host')
+            ->and($result->defaultBranch)->toBeNull();
     });
 
     it('calls session.metadata.recomputeContextTokens', function () {

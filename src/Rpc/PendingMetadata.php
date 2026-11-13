@@ -19,6 +19,8 @@ use Revolution\Copilot\Types\Rpc\MetadataSetWorkingDirectoryRequest;
 use Revolution\Copilot\Types\Rpc\MetadataSetWorkingDirectoryResult;
 use Revolution\Copilot\Types\Rpc\MetadataUpdateClientMetadataRequest;
 use Revolution\Copilot\Types\Rpc\SessionActivity;
+use Revolution\Copilot\Types\Rpc\SessionMetadataGetWorkingDirectoryContextRequest;
+use Revolution\Copilot\Types\Rpc\SessionMetadataGetWorkingDirectoryContextResult;
 use Revolution\Copilot\Types\Rpc\SessionMetadataSnapshot;
 
 /**
@@ -87,6 +89,21 @@ class PendingMetadata
 
         return MetadataSetWorkingDirectoryResult::fromArray(
             $this->client->request('session.metadata.setWorkingDirectory', $paramsArray),
+        );
+    }
+
+    /**
+     * Returns the repository context recognized for a working directory.
+     *
+     * @experimental
+     */
+    public function getWorkingDirectoryContext(SessionMetadataGetWorkingDirectoryContextRequest|array $params): SessionMetadataGetWorkingDirectoryContextResult
+    {
+        $paramsArray = ($params instanceof SessionMetadataGetWorkingDirectoryContextRequest ? $params : SessionMetadataGetWorkingDirectoryContextRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SessionMetadataGetWorkingDirectoryContextResult::fromArray(
+            $this->client->request('session.metadata.getWorkingDirectoryContext', $paramsArray),
         );
     }
 
