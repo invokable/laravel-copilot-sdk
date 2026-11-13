@@ -16,6 +16,8 @@ use Revolution\Copilot\Types\Rpc\ModelSetAllowedModelsRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetAllowedModelsResult;
 use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortResult;
+use Revolution\Copilot\Types\Rpc\ModelStartupAdmissionRequest;
+use Revolution\Copilot\Types\Rpc\ModelStartupAdmissionResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchFusionTierRequest;
@@ -166,6 +168,23 @@ class PendingModel
 
         return ModelSwitchToResult::fromArray(
             $this->client->request('session.model.applyStartupOverlay', $paramsArray),
+        );
+    }
+
+    /**
+     * Read cached startup model admission state and optionally claim the enablement prompt.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function startupAdmission(ModelStartupAdmissionRequest|array $params = []): ModelStartupAdmissionResult
+    {
+        $paramsArray = ($params instanceof ModelStartupAdmissionRequest
+            ? $params
+            : ModelStartupAdmissionRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return ModelStartupAdmissionResult::fromArray(
+            $this->client->request('session.model.startupAdmission', $paramsArray),
         );
     }
 

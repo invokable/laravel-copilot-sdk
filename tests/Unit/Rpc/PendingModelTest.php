@@ -16,6 +16,8 @@ use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesRequest;
 use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesResult;
 use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortResult;
+use Revolution\Copilot\Types\Rpc\ModelStartupAdmissionRequest;
+use Revolution\Copilot\Types\Rpc\ModelStartupAdmissionResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchFusionTierRequest;
@@ -23,6 +25,52 @@ use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
 
 describe('PendingModel', function () {
+    it('claims startup admission with typed parameters and returns the cached model state', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.model.startupAdmission', ['claimEnablement' => true, 'sessionId' => 'session-xyz'])
+            ->andReturn([
+                'selectedModel' => 'model-a',
+                'catalogReady' => true,
+                'requiresEnablement' => true,
+                'claimedEnablement' => true,
+                'modelToEnable' => 'model-a',
+            ]);
+
+        $result = (new SessionRpc($client, 'session-xyz'))->model()->startupAdmission(
+            new ModelStartupAdmissionRequest(claimEnablement: true),
+        );
+
+        expect($result)->toBeInstanceOf(ModelStartupAdmissionResult::class)
+            ->and($result->selectedModel)->toBe('model-a')
+            ->and($result->catalogReady)->toBeTrue()
+            ->and($result->requiresEnablement)->toBeTrue()
+            ->and($result->claimedEnablement)->toBeTrue()
+            ->and($result->modelToEnable)->toBe('model-a');
+    });
+
+    it('sends an optional startup admission claim without overriding the session', function ($params, $expected) {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.model.startupAdmission', $expected)
+            ->andReturn(['catalogReady' => false, 'requiresEnablement' => false, 'claimedEnablement' => false]);
+
+        $model = (new SessionRpc($client, 'session-xyz'))->model();
+        $result = $params === null ? $model->startupAdmission() : $model->startupAdmission($params);
+
+        expect($result->selectedModel)->toBeNull()
+            ->and($result->catalogReady)->toBeFalse()
+            ->and($result->requiresEnablement)->toBeFalse()
+            ->and($result->claimedEnablement)->toBeFalse()
+            ->and($result->modelToEnable)->toBeNull();
+    })->with([
+        [null, ['sessionId' => 'session-xyz']],
+        [['claimEnablement' => false, 'sessionId' => 'other'], ['claimEnablement' => false, 'sessionId' => 'session-xyz']],
+        [['claimEnablement' => true], ['claimEnablement' => true, 'sessionId' => 'session-xyz']],
+    ]);
+
     it('calls session.model.getCurrent and returns result', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
