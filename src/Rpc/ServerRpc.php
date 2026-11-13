@@ -425,4 +425,14 @@ class ServerRpc
     {
         return new PendingServerAgentRegistry($this->client);
     }
+
+    /**
+     * Experimental recorded-trajectory analytics operations.
+     *
+     * @experimental This API may send supplied content to GitHub CAPI for model processing.
+     */
+    public function taskAnalytics(): PendingServerTaskAnalytics
+    {
+        return new PendingServerTaskAnalytics($this->client);
+    }
 }
