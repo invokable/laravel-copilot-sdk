@@ -290,6 +290,16 @@ class ServerRpc
     }
 
     /**
+     * Experimental connection-owned HTTP request operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function fetch(): PendingServerFetch
+    {
+        return new PendingServerFetch($this->client);
+    }
+
+    /**
      * Experimental GitHub release lookup and asset download operations.
      *
      * @experimental This API group is experimental and may change or be removed.

@@ -127,6 +127,8 @@ $lookup = $repository->lookupBranchPullRequest([
 
 Fetchの`allocateRequestId()`、`request()`、`executeOperation()`と、Releaseの`abandonRequest()`、`getSnapshot()`、`downloadAsset()`はExtensionsから呼び出せません。現在のLaravel SDKは両グループの`cancel` RPCを公開していないため、実行中の操作をSDKからキャンセルできません。`abandonRequest()`は未使用のRelease request IDを破棄する操作であり、実行中の操作を停止するものではありません。
 
+`fetch()`は共有ネットワークトランスポートを使う汎用HTTPリクエスト用の実験的APIです。`create()`で接続所有のハンドルを作成し、必須の`responseMode`を指定して`send()`します。`stream`では`read()`で本文をチャンク単位に読み、`text`では本文全体をUTF-8テキストとして取得し、`file`ではランタイムホスト上の`destinationPath`へ本文を書き込みます。不要になったハンドルは`cancel()`で破棄します。認証情報を使わない場合、またはファイルをストリーミングする場合にも利用できます。
+
 ### ローカルモデル・HTTP推論・ファイルシステム
 
 `azureMl()`はローカルGPUメモリ情報の取得、モデルのカタログ・解決・ダウンロードと、その状態確認・キャンセル・削除を提供します。また、ファミリーリースを使ってAzure MLモデルのプロバイダー設定を登録・削除・復元できます。`llmInference()`はモデル層のHTTPリクエストをクライアント側へ中継する実験的APIです。`sessionFs()`はセッションのファイルシステム／SQLiteコールバックプロバイダーを登録します。
