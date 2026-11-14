@@ -9,6 +9,7 @@ Use this skill whenever a change adds or updates RPC documentation in `docs/jp/`
 
 ## Structure
 
+- `references/docs-list.md`
 - `docs/jp/rpc.md` is an index and overview only. It holds the ServerRpc and SessionRpc method lists, the basic calling example, the array-arguments note, and the Testing note. Do not add usage examples to `rpc.md`.
 - Usage examples live in feature pages under `docs/jp/rpc/`. Each page covers one feature area for one scope. Organize by feature, the way the official SDK docs do; do not organize pages around RPC plumbing.
 - Every feature page starts with this header, with the scope line naming its RPC class:
