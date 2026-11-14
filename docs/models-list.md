@@ -9,6 +9,7 @@ The available models may change depending on Copilot CLI updates and your organi
  │ auto                 │ Auto                        │ 0                  │ No             │ No                        │ No                          │
  │ claude-sonnet-5.5    │ Claude Sonnet 5.5           │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-sonnet-5      │ Claude Sonnet 5             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ claude-fable-5.2     │ Claude Fable 5.2            │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-fable-5.1     │ Claude Fable 5.1            │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-fable-5       │ Claude Fable 5              │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-opus-5.5      │ Claude Opus 5.5             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
@@ -18,6 +19,7 @@ The available models may change depending on Copilot CLI updates and your organi
  │ claude-haiku-5.5     │ Claude Haiku 5.5            │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-haiku-4.5     │ Claude Haiku 4.5            │ 144000             │ Yes            │ No                        │ No                          │
  │ gpt-6.1-sol          │ GPT-6.1 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-6.1-terra        │ GPT-6.1 Terra               │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-sol            │ GPT-6 Sol                   │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-luna           │ GPT-6 Luna                  │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-astra          │ GPT-6 Astra                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
@@ -29,6 +31,7 @@ The available models may change depending on Copilot CLI updates and your organi
  │ grok-4.7             │ Grok 4.7                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ grok-4.6             │ Grok 4.6                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ kimi-k3              │ Kimi K3                     │ 1048576            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-6.1-terra        │ GPT-6.1 Terra               │ 1000000            │ Yes            │ Yes                       │ Yes                         │
+ │ gemini-4-carbon      │ Gemini 4 Carbon             │ 1000000            │ Yes            │ Yes                       │ No                          │
+ │ gemini-4-hydrogen    │ Gemini 4 Hydrogen           │ 1048576            │ Yes            │ Yes                       │ No                          │
  └──────────────────────┴─────────────────────────────┴────────────────────┴────────────────┴───────────────────────────┴─────────────────────────────┘
 ```
