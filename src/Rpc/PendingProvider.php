@@ -12,6 +12,8 @@ use Revolution\Copilot\Types\Rpc\ProviderGetEndpointRequest;
 use Revolution\Copilot\Types\Rpc\ProviderStatus;
 use Revolution\Copilot\Types\Rpc\ProviderWithdrawRequest;
 use Revolution\Copilot\Types\Rpc\ProviderWithdrawResult;
+use Revolution\Copilot\Types\Rpc\SessionProviderUpdateModelRequest;
+use Revolution\Copilot\Types\Rpc\SessionProviderUpdateProviderRequest;
 
 /**
  * Pending session-scoped provider RPC operations.
@@ -60,6 +62,36 @@ class PendingProvider
         return ProviderAddResult::fromArray(
             $this->client->request('session.provider.add', $paramsArray),
         );
+    }
+
+    /**
+     * Update a session provider's connection settings, preserving credentials and models.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function updateProvider(SessionProviderUpdateProviderRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof SessionProviderUpdateProviderRequest
+            ? $params
+            : SessionProviderUpdateProviderRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.provider.updateProvider', $paramsArray);
+    }
+
+    /**
+     * Update one model in the session's BYOK registry.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function updateModel(SessionProviderUpdateModelRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof SessionProviderUpdateModelRequest
+            ? $params
+            : SessionProviderUpdateModelRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.provider.updateModel', $paramsArray);
     }
 
     /**
