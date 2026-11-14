@@ -42,6 +42,6 @@ Use the Python RPC implementation as a readable reference when JS-generated RPC 
 
 - Add or update focused Pest coverage for each changed type, RPC method, enum, and affected behavior. Exercise serialization round trips and defaults for types, and regression behavior for public API wiring.
 - Keep tests in the corresponding existing test areas: `tests/Unit/Types/Rpc/`, `tests/Unit/Types/`, `tests/Unit/Rpc/`, and `tests/Unit/Enums/`.
-- Update only directly affected documentation under `docs/jp/`: RPC methods in `rpc.md`, event types in `session-event.md`, and other behavior in its existing relevant guide.
+- Update only directly affected documentation under `docs/jp/`: RPC usage examples in the matching feature page under `docs/jp/rpc/` and the method lists in `rpc.md` (follow the `sdk-sync-docs` skill for placement), event types in `session-event.md`, and other behavior in its existing relevant guide.
 - Run the narrow relevant tests, then `vendor/bin/pint --dirty`. For scheduled sync runs, also run `vendor/bin/pest --dirty`. If PHP extensions are unavailable, try enabling them with `-d extension=`; if memory is insufficient, add `-d memory_limit=512M`.
 - Review the final diff to confirm the issue's observable behavior is implemented, tests cover it, and no unrelated files or submodule changes are included.
