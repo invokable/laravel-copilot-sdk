@@ -199,14 +199,15 @@ describe('PendingProvider', function () {
     });
 
     it('updates a session model using typed or array input', function () {
-        $model = ProviderModelConfig::fromArray([
+        $modelPayload = [
             'id' => 'model',
             'provider' => 'example',
             'wireModel' => 'wire-model',
             'maxOutputTokens' => 100,
             'capabilities' => ['supports' => ['vision' => true]],
-        ]);
-        $payload = ['model' => $model->toArray()];
+        ];
+        $model = ProviderModelConfig::fromArray($modelPayload);
+        $payload = ['model' => $modelPayload];
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')->twice()
             ->with('session.provider.updateModel', [...$payload, 'sessionId' => 'session-xyz'])

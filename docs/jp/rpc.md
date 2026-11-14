@@ -1962,6 +1962,19 @@ $endpoint = $session->rpc()->provider()->getEndpoint(
     new ProviderGetEndpointRequest(model: 'gpt-5')
 );
 
+// provider: セッション内のプロバイダー接続設定を更新 (experimental)
+$session->rpc()->provider()->updateProvider([
+    'provider' => ['name' => 'example', 'baseUrl' => 'https://example.com/v1'],
+]);
+
+// provider: セッション内の1モデルをproviderとidで指定して更新 (experimental)
+$session->rpc()->provider()->updateModel([
+    'model' => ['provider' => 'example', 'id' => 'model', 'maxOutputTokens' => 4096],
+]);
+// どちらも保存済み設定や他のモデルを変更しません。
+// updateProviderは既存の認証情報を維持し、認証情報やカスタムヘッダーは受け付けません。
+// 配列の代わりにSessionProviderUpdateProviderRequest / SessionProviderUpdateModelRequestも使用できます。
+
 // provider: ホスト管理モデルをBYOKレジストリから取り下げる (experimental)
 $result = $session->rpc()->provider()->withdraw(['models' => ['provider/model']]);
 // $result->withdrawn, $result->providersRemoved, $result->modelDeselected
