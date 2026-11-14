@@ -42,7 +42,7 @@ Artisan::command('copilot:mcp', function () {
 
 `getHostContext()` / `setHostContext()`では、テーマやロケールなどホストコンテキストを読み書きできます。`diagnose()`はサーバーのMCP Apps対応状態を返します。
 
-SDKはデータ取得・設定用のRPCを提供しますが、取得したHTMLの描画やiframeの管理は行いません。これらはLivewireやInertiaなど呼び出し側アプリケーションで実装してください。詳細なコード例は[RPCドキュメント](./rpc.md#mcp-apps-experimental)を参照してください。
+SDKはデータ取得・設定用のRPCを提供しますが、取得したHTMLの描画やiframeの管理は行いません。これらはLivewireやInertiaなど呼び出し側アプリケーションで実装してください。詳細なコード例は[RPCドキュメント](./rpc/session-mcp.md#mcp-apps-experimental)を参照してください。
 
 ## MCP OAuthトークンをホストから渡す
 
