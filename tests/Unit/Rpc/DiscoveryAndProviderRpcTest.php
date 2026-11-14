@@ -8,6 +8,8 @@ use Revolution\Copilot\Rpc\PendingProviderModels;
 use Revolution\Copilot\Rpc\PendingProviders;
 use Revolution\Copilot\Rpc\PendingServerAgents;
 use Revolution\Copilot\Rpc\PendingServerInstructions;
+use Revolution\Copilot\Rpc\SessionRpc;
+use Revolution\Copilot\Types\ProviderModelConfig;
 use Revolution\Copilot\Types\Rpc\AgentDiscoveryPathList;
 use Revolution\Copilot\Types\Rpc\AgentsCustomAgentInitialModelDecisionRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetAvailableBuiltinsRequest;
@@ -21,10 +23,13 @@ use Revolution\Copilot\Types\Rpc\ModelProviderInstanceReference;
 use Revolution\Copilot\Types\Rpc\ProviderEndpoint;
 use Revolution\Copilot\Types\Rpc\ProviderGetEndpointRequest;
 use Revolution\Copilot\Types\Rpc\ProviderStatus;
+use Revolution\Copilot\Types\Rpc\SavedProviderConfigurationProviderInput;
 use Revolution\Copilot\Types\Rpc\ServerAgentList;
 use Revolution\Copilot\Types\Rpc\ServerInstructionSourceList;
 use Revolution\Copilot\Types\Rpc\SessionProvidersModelsDiagnoseRequest;
 use Revolution\Copilot\Types\Rpc\SessionProvidersModelsDiagnoseResult;
+use Revolution\Copilot\Types\Rpc\SessionProviderUpdateModelRequest;
+use Revolution\Copilot\Types\Rpc\SessionProviderUpdateProviderRequest;
 
 describe('PendingServerAgents', function () {
     it('calls agents.discover and returns ServerAgentList', function () {
@@ -168,6 +173,53 @@ describe('PendingServerInstructions', function () {
 });
 
 describe('PendingProvider', function () {
+    it('updates session provider settings using typed or array input without credentials', function () {
+        $provider = new SavedProviderConfigurationProviderInput(
+            name: 'example',
+            baseUrl: 'https://example.test/v1',
+            wireApi: 'chat',
+            azure: ['apiVersion' => '2024-01-01'],
+        );
+        $payload = ['provider' => $provider->toArray()];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->twice()
+            ->with('session.provider.updateProvider', [...$payload, 'sessionId' => 'session-xyz'])
+            ->andReturnNull();
+
+        $rpc = (new SessionRpc($client, 'session-xyz'))->provider();
+        $rpc->updateProvider(new SessionProviderUpdateProviderRequest($provider));
+        $rpc->updateProvider([
+            'provider' => [...$provider->toArray(), 'apiKey' => 'ignored', 'headers' => ['x-test' => 'ignored']],
+            'credential' => 'ignored',
+            'sessionId' => 'other-session',
+        ]);
+
+        expect(SessionProviderUpdateProviderRequest::fromArray($payload)->toArray())->toBe($payload)
+            ->and(SessionProviderUpdateProviderRequest::fromArray(['provider' => $provider])->toArray())->toBe($payload);
+    });
+
+    it('updates a session model using typed or array input', function () {
+        $model = ProviderModelConfig::fromArray([
+            'id' => 'model',
+            'provider' => 'example',
+            'wireModel' => 'wire-model',
+            'maxOutputTokens' => 100,
+            'capabilities' => ['supports' => ['vision' => true]],
+        ]);
+        $payload = ['model' => $model->toArray()];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->twice()
+            ->with('session.provider.updateModel', [...$payload, 'sessionId' => 'session-xyz'])
+            ->andReturnNull();
+
+        $rpc = (new SessionRpc($client, 'session-xyz'))->provider();
+        $rpc->updateModel(new SessionProviderUpdateModelRequest($model));
+        $rpc->updateModel([...$payload, 'sessionId' => 'other-session']);
+
+        expect(SessionProviderUpdateModelRequest::fromArray($payload)->toArray())->toBe($payload)
+            ->and(SessionProviderUpdateModelRequest::fromArray(['model' => $model])->toArray())->toBe($payload);
+    });
+
     it('calls session.provider.getStatus and returns ProviderStatus', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
