@@ -39,7 +39,7 @@ $connected = $session->rpc()->remote()->connectRemoteSession(new ConnectRemoteSe
 // $connected->metadata - ConnectedRemoteSessionMetadata オブジェクト
 ```
 
-詳細は [Remote Sessions](./remote-sessions.md) を参照してください.
+詳細は [Remote Sessions](../remote-sessions.md) を参照してください.
 
 ## sandbox (experimental: サンドボックス制御)
 

@@ -1,0 +1,78 @@
+# SessionRpc 概要
+
+対象: SessionRpc（Session に紐づくセッション単位の操作）
+
+RPC 全体の概要とページ一覧は [RPC](../rpc.md) を参照してください。
+
+SessionRpc のメソッドをカテゴリー別にまとめた概要です。使用例は rpc.md の索引から機能別ページを参照してください。
+
+## モデル・モード・名前・プラン
+
+`model()`で現在のモデル確認や切り替え、reasoning effort・Auto tier・許可モデルの設定を行えます。`mode()`はモード、`name()`はセッション名、`plan()`はプラン本文とSQLite todoの読み書きを扱います。
+
+## ワークスペース・インストラクション・LSP
+
+`workspaces()`はファイルの一覧・読み取り・書き込み・移動・削除やディレクトリ操作を提供します。`instructions()`でインストラクションの取得・再読み込み・探索、`lsp()`で言語サーバー設定の初期化・一覧取得・起動・停止・診断・有効状態の切り替えを行えます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+$lsp = $session->rpc()->lsp();
+
+$configs = $lsp->list(['workingDirectory' => base_path()]);
+$started = $lsp->start();
+$diagnosis = $lsp->diagnose(['serverId' => 'php']);
+$lsp->set(['serverId' => 'php', 'enabled' => true]);
+$lsp->stop();
+
+$serverConfigs = Copilot::client()->rpc()->lsp()->list([
+    'workingDirectory' => base_path(),
+]);
+```
+
+## Autopilot objective
+
+`autopilotObjective()->getState()`はセッションの現在のAutopilot objective状態を型付きで返します。objectiveが存在しない場合、`state`は`null`です。Workspaceに保存されたobjectiveの有無を確認する`workspaces()->autopilotObjectiveExists()`とは異なるAPIです。
+
+```php
+$state = $session->rpc()->autopilotObjective()->getState()->state;
+
+if ($state !== null) {
+    dump($state->objective, $state->status, $state->turnCount, $state->creditLimit);
+}
+```
+
+`setStayInAutopilot()`でobjectiveの完了・一時停止時にinteractive modeへ戻る要求を抑制できます。この設定はクライアントのメモリ内に保持され、既定値は`true`です。`value`に`false`を渡すと抑制を解除できます。接続し直した場合は再設定してください。
+
+```php
+$session->rpc()->autopilotObjective()->setStayInAutopilot(['value' => true]);
+```
+
+## エージェント・Fleet・バックグラウンドタスク
+
+`agent()`でエージェントの一覧・選択・再読み込み、`fleet()`でFleetを開始します。`tasks()`ではバックグラウンドエージェントやクライアント所有タスクの登録、進捗取得・更新、移行、メッセージ送信、キャンセル、削除を扱います。
+
+## MCP・Plugins・Extensions・Workflow
+
+`mcp()`はサーバーの一覧・起動・停止・再読み込み、ツール・プロンプト・リソース、OAuth、sampling、動的ヘッダーの更新を扱います。`plugins()`と`extensions()`はセッション内の状態を管理し、`customizations()`はカスタマイズの再読み込みを行います。`workflow()`でワークフローを実行・照会し、`diagnostics()`と`connectors()`で診断情報やコネクターを取得できます。
+
+## Tools・Permissions・Commands・UI
+
+`tools()`と`permissions()`はイベントで届いた保留中リクエストへの応答や設定を扱います。権限の読み取りには`getAllowAll()`、`getRequired()`、`managedReviewRequired()`、`additionalDirectories()->list()`を利用できます。`permissions()->clearResumeEscalation()`は再開時に履歴から復元された権限昇格をメモリ内で解除し、成否を型付きで返します。`commands()`はコマンド一覧・実行・イベント応答、`ui()`はユーザー入力・elicitation・プラン承認などの要求への応答を提供します。`completions()`は入力候補を取得します。
+
+```php
+$result = $session->rpc()->permissions()->clearResumeEscalation();
+// $result->success
+```
+
+## Accounts・認証・Providers
+
+`accounts()`は`enumerate()`によるアカウント／プロバイダー／ログインアカウントの列挙、`get()`・`set()`、`begin()`・`advance()`・`cancel()`による対話型ログインを扱います。`gitHubAuth()`はセッションの認証状態と資格情報、`provider()`と`providers()`はモデル接続先やプロバイダーアダプター、`connectors()`はセッションのコネクター接続を扱います。
+
+## 履歴・キュー・ログ・使用量
+
+`history()`は会話の圧縮（圧縮設定を含む）・中断・引き継ぎ要約・切り詰め、`queue()`は保留項目の挿入・移動・編集・削除・即時送信を提供します。`log()`、`eventLog()`、`usage()`、`quota()`、`limitPrediction()`でログやイベント、使用量と上限情報を扱います。`schedule()`ではスケジュール済みプロンプトを確認・停止できます。
+
+## ライフサイクル・リモート・ホスト連携
+
+`sendMessages()`は複数メッセージを1ターンで実行し、`suspend()`・`shutdown()`でセッションを停止します。`interruptMainTurn()`はメインターン、`cancelAllBackgroundAgents()`はバックグラウンドエージェントを個別に制御します。`remote()`と`visibility()`はリモート公開・共有状態、`sandbox()`はセッションのサンドボックス、`managedSettings()`はセッションスコープの管理設定、`contentExclusion()`はパス判定、`metadata()`はクライアント所有メタデータ、`canvas()`はCanvas連携を扱います。
