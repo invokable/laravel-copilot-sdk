@@ -52,7 +52,7 @@ $client->rpc()->sessionFs()->setProvider(new SessionFsSetProviderRequest(
 ));
 ```
 
-通常はこのRPCを直接呼ばず、Clientオプション`sessionFs`（または`config/copilot.php`の`session_fs`）を指定すると`Client::start()`が`sessionFs.setProvider`を1回だけ送信します。セッションには`createSessionFsProvider`が必要です（[SessionConfig](./session-config.md)を参照）。
+通常はこのRPCを直接呼ばず、Clientオプション`sessionFs`（または`config/copilot.php`の`session_fs`）を指定すると`Client::start()`が`sessionFs.setProvider`を1回だけ送信します。セッションには`createSessionFsProvider`が必要です（[SessionConfig](../session-config.md)を参照）。
 
 `SessionFsSqliteQueryType` enum（`src/Enums/`）はクエリ種別を表します:
 - `Exec`: DDL/複数ステートメント（結果なし）

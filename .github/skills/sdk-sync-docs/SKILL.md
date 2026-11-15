@@ -10,7 +10,8 @@ Use this skill whenever a change adds or updates RPC documentation in `docs/jp/`
 ## Structure
 
 - `references/docs-list.md`
-- `docs/jp/rpc.md` is an index and overview only. It holds the ServerRpc and SessionRpc method lists, the basic calling example, the array-arguments note, and the Testing note. Do not add usage examples to `rpc.md`.
+- `docs/jp/rpc.md` is an index and overview only. It holds the basic calling example, the array-arguments note, and the Testing note, and links to the overview pages and the feature pages. Do not add usage examples or category overviews to `rpc.md`.
+- Category overviews (prose summaries of each RPC group) live in `docs/jp/rpc/server-overview.md` and `docs/jp/rpc/session-overview.md`, one category per `##` section. A new RPC group gets a new category section in the matching overview page, not in `rpc.md`.
 - Usage examples live in feature pages under `docs/jp/rpc/`. Each page covers one feature area for one scope. Organize by feature, the way the official SDK docs do; do not organize pages around RPC plumbing.
 - Every feature page starts with this header, with the scope line naming its RPC class:
 
@@ -32,6 +33,7 @@ ServerRpc pages (`Copilot::client()->rpc()`):
 
 | Page | Covers |
 |---|---|
+| `server-overview.md` | category overviews for all ServerRpc groups |
 | `server-models.md` | models, tools, account |
 | `server-local-models.md` | Azure ML local model management |
 | `server-mcp.md` | MCP server config, registry search, catalog install/uninstall, discovery |
@@ -44,6 +46,7 @@ SessionRpc pages (`$session->rpc()`):
 
 | Page | Covers |
 |---|---|
+| `session-overview.md` | category overviews for all SessionRpc groups |
 | `session-model.md` | model, mode, name, plan |
 | `session-workspace.md` | workspaces, instructions, LSP, fleet, agent, session skills |
 | `session-mcp.md` | in-session MCP servers, MCP Apps |
@@ -62,7 +65,7 @@ SessionRpc pages (`$session->rpc()`):
 ## Update rules
 
 - Add examples to the matching feature page, next to the examples for the same RPC group. Examples are PHP code blocks whose groups are introduced by a `// <feature>` comment, following the page's existing style; prose sections use `##` headings.
-- When a change adds a new RPC method, also add it to the method list of the matching group in `rpc.md`'s ServerRpc or SessionRpc overview. The overview stays in `rpc.md`; the example goes to the feature page.
+- When a change adds a new RPC method, also add it to the matching category section of `server-overview.md` or `session-overview.md`. The overview stays in the overview pages; the example goes to the feature page.
 - If no existing page fits, create `docs/jp/rpc/server-<feature>.md` or `docs/jp/rpc/session-<feature>.md` with the standard header above, and add it to the matching index list in `rpc.md` in the same change. A new page without an index entry is incomplete.
 - Write docs in Japanese, preserving exact API, class, and path identifiers. Match the terminology and level of detail of neighboring examples instead of restating the implementation.
 - When moving or renaming a documented section, update inbound links from other docs (for example `docs/jp/mcp.md` links to `rpc/session-mcp.md#mcp-apps-experimental`).
