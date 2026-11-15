@@ -10,7 +10,7 @@
 - `bare-usage.md`: Laravel流ではない公式SDKに沿った使い方
 - `bundle-cli.md`: Laravelプロジェクト内でCopilot CLIをバンドルして管理する方法
 - `cloud-sessions.md`: クラウドセッションの使い方
-- `currency.md`: Laravel の Concurrency を使った並行実行
+- `concurrency.md`: Laravel の Concurrency を使った並行実行
 - `custom-agents.md`: カスタムエージェント。公式から翻訳。
 - `custom-providers.md`: カスタムプロバイダー（BYOK - Bring Your Own Key）の使い方。公式から翻訳。
 - `events.md`: Laravel Event
@@ -23,7 +23,7 @@
 - `laravel-cloud.md`: Laravel Cloudでの使い方
 - `mcp.md`: MCPサーバーの使い方
 - `models.md`: 利用可能なモデル一覧
-- `permission-requests.md`: Permission Requests
+- `permission-request.md`: Permission Requests
 - `plugin-directories.md`: プラグインディレクトリの使い方
 - `remote-sessions.md`: リモートセッション
 - `resume.md`: セッションの再開方法
@@ -34,6 +34,8 @@
 - `session-event.md`: Laravel用に強化したSessionEventクラスの詳細
 - `session-lifecycle-event.md`: セッションライフサイクルイベント
 - `session-limits.md`: セッションのAIクレジット制限に関するドキュメント
+- `skills.md`: Skills の使い方
+- `steering.md`: ステアリングとキューイング
 - `streaming.md`: Streamingの使い方
 - `streaming-events.md`: 公式から翻訳。
 - `tcp-mode.md`: TCPモードの使い方
