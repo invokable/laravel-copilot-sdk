@@ -65,7 +65,7 @@ $telemetry->setFeatureOverrides(new TelemetrySetFeatureOverridesRequest(
 // SessionConfig::$enableSessionTelemetry（内部テレメトリーの有効化）とは別の機能です。
 
 // auth: セッションの認証状態を取得
-$status = $session->rpc()->auth()->getStatus();
+$status = $session->rpc()->gitHubAuth()->getStatus();
 // $status->isAuthenticated - 認証済みかどうか
 // $status->authType - 認証タイプ（AuthInfoType enum: gh-cli, token, env など）
 // $status->login - GitHubログイン名
