@@ -58,6 +58,8 @@ $content = $response->throw()->content();
 
 JSON-RPCのエラーでは`Revolution\Copilot\Exceptions\JsonRpcException`。
 
+例外の一覧と捕捉方法は[例外・エラー処理](exceptions.md)を参照してください。
+
 ## Conditionable
 
 `when()`や`unless()`メソッドが使えます。
