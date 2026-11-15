@@ -40,6 +40,15 @@ describe('SessionFSError', function () {
         expect($error->toArray())->toBe(['code' => 'ENOENT']);
     });
 
+    it('keeps an empty message when converted to array', function () {
+        $error = new SessionFSError(code: SessionFSErrorCode::ENOENT, message: '');
+
+        expect($error->toArray())->toBe([
+            'code' => 'ENOENT',
+            'message' => '',
+        ]);
+    });
+
     it('rejects an unknown error code', function () {
         expect(fn () => SessionFSError::fromArray(['code' => 'EUNKNOWN']))
             ->toThrow(ValueError::class);
