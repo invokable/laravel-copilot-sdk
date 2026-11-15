@@ -40,7 +40,7 @@ ServerRpc pages (`Copilot::client()->rpc()`):
 | `server-settings.md` | user settings, contentExclusion, managedSettings, settings files, providersConfig |
 | `server-inference.md` | llmInference HTTP hooks, sessionFs provider registration, extension launch resolution, network callbacks |
 | `server-sessions.md` | persisted sessions, host support, environments, runtime/host lifecycle, cloudTasks, taskAnalytics |
-| `server-skills-plugins.md` | skills, catalog, plugins, agents, instructions, extensions, agentRegistry |
+| `server-skills-plugins.md` | skills, catalog, plugins, agents, instructions, extensions, agentRegistry, lsp |
 | `server-git.md` | git, GitHub repository/owners, fetch, release |
 
 SessionRpc pages (`$session->rpc()`):

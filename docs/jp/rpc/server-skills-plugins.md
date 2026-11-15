@@ -411,3 +411,15 @@ $registry->removeEntry(new AgentRegistryRemoveEntryRequest(
     pid: 1234,
 ));
 ```
+## LSP（サーバー全体の言語サーバー設定）
+
+`lsp()`でサーバー全体の言語サーバー設定の一覧を取得できます。セッション単位の初期化・起動・停止などは SessionRpc の `lsp()` を使います（使用例は [ワークスペース・Agent・Fleet・Skills](session-workspace.md) を参照してください）。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+// サーバー全体の言語サーバー設定一覧
+$serverConfigs = Copilot::client()->rpc()->lsp()->list([
+    'workingDirectory' => base_path(),
+]);
+```

@@ -28,7 +28,9 @@ secrets の使用例は [MCP・コネクター](server-mcp.md) を参照して�
 
 ## Skills・Plugins・Agents・Instructions・Extensions
 
-各グループから探索や利用可能なパスの取得、設定変更、再読み込みを行えます。`commands()`は組み込みコマンド一覧、`hooks()`はセッション開始前のフック探索を提供します。SkillsとPluginsは有効化・無効化やインストール管理に対応し、Agentsは組み込みエージェント情報も取得できます。Extensionsは永続化された拡張機能を探索・有効化・無効化します。
+各グループから探索や利用可能なパスの取得、設定変更、再読み込みを行えます。`commands()`は組み込みコマンド一覧、`hooks()`はセッション開始前のフック探索を提供します。SkillsとPluginsは有効化・無効化やインストール管理に対応し、Agentsは組み込みエージェント情報も取得できます。Extensionsは永続化された拡張機能を探索・有効化・無効化します。`lsp()`ではサーバー全体の言語サーバー設定の一覧を取得できます。
+
+使用例は [Skills・Plugins・Agents・Instructions・Extensions](server-skills-plugins.md) を参照してください。
 
 ## カタログとインストール
 

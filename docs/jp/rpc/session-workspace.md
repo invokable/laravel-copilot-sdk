@@ -27,6 +27,14 @@ $session->rpc()->lsp()->initialize([
     'force' => true,
 ]);
 
+// LSPサーバーの一覧・起動・診断・有効状態の切り替え・停止
+$lsp = $session->rpc()->lsp();
+$configs = $lsp->list(['workingDirectory' => base_path()]);
+$started = $lsp->start();
+$diagnosis = $lsp->diagnose(['serverId' => 'php']);
+$lsp->set(['serverId' => 'php', 'enabled' => true]);
+$lsp->stop();
+
 // instructions discover (インストラクションファイルを検出)
 use Revolution\Copilot\Types\Rpc\InstructionsDiscoverRequest;
 
