@@ -14,6 +14,7 @@
 - `custom-agents.md`: カスタムエージェント。公式から翻訳。
 - `custom-providers.md`: カスタムプロバイダー（BYOK - Bring Your Own Key）の使い方。公式から翻訳。
 - `events.md`: Laravel Event
+- `exceptions.md`: 例外・エラー処理
 - `fake.md`: テスト用機能の使い方
 - `fleet-mode.md`: フリートモード
 - `github-actions.md`: GitHub Actionsでの使い方
