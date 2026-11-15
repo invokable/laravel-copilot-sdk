@@ -117,6 +117,9 @@ $session->rpc()->permissions()->modifyRules(new PermissionsModifyRulesParams(
 ));
 // 権限プロンプトを表示したことを通知
 $session->rpc()->permissions()->notifyPromptShown(new PermissionPromptShownNotification(message: 'tool permission prompt'));
+// 再開時に履歴から復元された権限昇格をメモリ内で解除
+$result = $session->rpc()->permissions()->clearResumeEscalation();
+// $result->success
 // パス権限
 $paths = $session->rpc()->permissions()->paths()->list();
 $session->rpc()->permissions()->paths()->add(new PermissionPathsAddParams(path: '/path/to/allow'));

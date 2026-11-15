@@ -36,11 +36,12 @@ ServerRpc pages (`Copilot::client()->rpc()`):
 | `server-overview.md` | category overviews for all ServerRpc groups |
 | `server-models.md` | models, tools, account |
 | `server-local-models.md` | Azure ML local model management |
-| `server-mcp.md` | MCP server config, registry search, catalog install/uninstall, discovery |
-| `server-settings.md` | user settings, contentExclusion, managedSettings, settings files |
-| `server-inference.md` | llmInference HTTP hooks, sessionFs provider registration, extension launch resolution |
-| `server-sessions.md` | persisted sessions, host support, environments, runtime/host lifecycle |
-| `server-skills-plugins.md` | skills, catalog, plugins, agents, instructions, extensions |
+| `server-mcp.md` | MCP server config, registry search, catalog install/uninstall, discovery, secrets |
+| `server-settings.md` | user settings, contentExclusion, managedSettings, settings files, providersConfig |
+| `server-inference.md` | llmInference HTTP hooks, sessionFs provider registration, extension launch resolution, network callbacks |
+| `server-sessions.md` | persisted sessions, host support, environments, runtime/host lifecycle, cloudTasks, taskAnalytics |
+| `server-skills-plugins.md` | skills, catalog, plugins, agents, instructions, extensions, agentRegistry |
+| `server-git.md` | git, GitHub repository/owners, fetch, release |
 
 SessionRpc pages (`$session->rpc()`):
 
@@ -48,7 +49,7 @@ SessionRpc pages (`$session->rpc()`):
 |---|---|
 | `session-overview.md` | category overviews for all SessionRpc groups |
 | `session-model.md` | model, mode, name, plan |
-| `session-workspace.md` | workspaces, instructions, LSP, fleet, agent, session skills |
+| `session-workspace.md` | workspaces, instructions, LSP, fleet, agent, session skills, autopilotObjective |
 | `session-mcp.md` | in-session MCP servers, MCP Apps |
 | `session-plugins.md` | plugins, extensions |
 | `session-settings.md` | managedSettings, debug, contentExclusion, history/compaction |

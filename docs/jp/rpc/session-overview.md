@@ -34,19 +34,7 @@ $serverConfigs = Copilot::client()->rpc()->lsp()->list([
 
 `autopilotObjective()->getState()`はセッションの現在のAutopilot objective状態を型付きで返します。objectiveが存在しない場合、`state`は`null`です。Workspaceに保存されたobjectiveの有無を確認する`workspaces()->autopilotObjectiveExists()`とは異なるAPIです。
 
-```php
-$state = $session->rpc()->autopilotObjective()->getState()->state;
-
-if ($state !== null) {
-    dump($state->objective, $state->status, $state->turnCount, $state->creditLimit);
-}
-```
-
-`setStayInAutopilot()`でobjectiveの完了・一時停止時にinteractive modeへ戻る要求を抑制できます。この設定はクライアントのメモリ内に保持され、既定値は`true`です。`value`に`false`を渡すと抑制を解除できます。接続し直した場合は再設定してください。
-
-```php
-$session->rpc()->autopilotObjective()->setStayInAutopilot(['value' => true]);
-```
+使用例は [ワークスペース・Agent・Fleet・Skills](session-workspace.md) を参照してください。
 
 ## エージェント・Fleet・バックグラウンドタスク
 
@@ -60,10 +48,7 @@ $session->rpc()->autopilotObjective()->setStayInAutopilot(['value' => true]);
 
 `tools()`と`permissions()`はイベントで届いた保留中リクエストへの応答や設定を扱います。権限の読み取りには`getAllowAll()`、`getRequired()`、`managedReviewRequired()`、`additionalDirectories()->list()`を利用できます。`permissions()->clearResumeEscalation()`は再開時に履歴から復元された権限昇格をメモリ内で解除し、成否を型付きで返します。`commands()`はコマンド一覧・実行・イベント応答、`ui()`はユーザー入力・elicitation・プラン承認などの要求への応答を提供します。`completions()`は入力候補を取得します。
 
-```php
-$result = $session->rpc()->permissions()->clearResumeEscalation();
-// $result->success
-```
+使用例は [Tools・Permissions・Commands・UI](session-tools.md) を参照してください。
 
 ## Accounts・認証・Providers
 

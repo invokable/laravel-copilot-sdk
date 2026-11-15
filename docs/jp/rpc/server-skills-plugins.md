@@ -390,3 +390,24 @@ if ($planned->kind === CatalogReferenceInstallationResultKind::Outcome
     ));
 }
 ```
+
+## agentRegistry (experimental: エージェントレジストリ)
+
+エージェントレジストリの作成・一覧・削除を行います。一覧結果には接続資格情報は含まれません。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\AgentRegistryEnsureDirRequest;
+use Revolution\Copilot\Types\Rpc\AgentRegistryListEntriesRequest;
+use Revolution\Copilot\Types\Rpc\AgentRegistryRemoveEntryRequest;
+
+$homeDir = '/home/user';
+
+$registry = Copilot::client()->rpc()->agentRegistry();
+$registry->ensureDir(new AgentRegistryEnsureDirRequest(homeDir: $homeDir));
+$entries = $registry->listEntries(new AgentRegistryListEntriesRequest(homeDir: $homeDir));
+$registry->removeEntry(new AgentRegistryRemoveEntryRequest(
+    homeDir: $homeDir,
+    pid: 1234,
+));
+```

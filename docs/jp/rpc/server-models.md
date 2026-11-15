@@ -46,4 +46,7 @@ $enrollment = Copilot::client()->rpc()->account()->subscribeCopilotFree([
     ],
 ]);
 // $enrollment->kind / $enrollment->status / $enrollment->message
+
+// tools largeOutput (experimental: 期限切れの大きなツール出力の整理)
+Copilot::client()->rpc()->tools()->largeOutput()->cleanup();
 ```

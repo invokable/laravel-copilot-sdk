@@ -163,3 +163,60 @@ Copilot::client()->rpc()->host()->setSessionCreationPolicy(
 SDKが起動したstdioランタイムでは、`Client::stop()` がセッションを切断した後、JSON-RPC接続とプロセスを閉じる前に `runtime.shutdown` を呼び出します。セッションの切断（`session.detach`）は全セッションで合計10秒の期限を共有し、期限を過ぎた切断はエラーとして戻り値に含めたうえで停止処理を続けます。ランタイムのクリーンアップ完了も最大10秒待ち、失敗時はエラーを戻り値に含めたうえで残りの停止処理を続けます。`cli_url` など外部ランタイムへの接続では、共有ランタイムを終了しないようこのRPCを呼び出しません。
 
 CLIが対応するリクエストを特定できず`id: null`のJSON-RPCエラーを返した場合、実行中のリクエストはすべて、引用値を除去して長さを制限した診断メッセージを含む`JsonRpcException`で失敗します。接続は維持されますが、CLIがリクエストを処理済みの可能性もあるため、安全性を確認せずに自動再試行しないでください。CLIが読み取れない127階層を超える送信リクエストは送信前に拒否し、深すぎるハンドラー応答はJSON-RPCエラーに置き換えます。
+
+## cloudTasks (experimental: クラウドエージェントタスク)
+
+`cloudTasks()`はクラウドコーディングエージェントのタスク作成・削除・取得、セッションログやリプレイの取得、共有状態の変更、タスクIDから開くセッションの解決を行います。各メソッドは対応するParams型または配列を受け取り、結果を型付きDTOで返します。作成結果の`ok`が`false`の場合、サービスによる拒否理由は`reason`と`message`、実行されたHTTPリクエストの失敗情報は`statusCode`、`errorMessage`、`errorPayloadJson`で確認できます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\CloudTasksCreateParams;
+
+$result = Copilot::client()->rpc()->cloudTasks()->create(
+    new CloudTasksCreateParams(
+        authInfo: $authInfo,
+        integrationId: 'my-app',
+        repositoryOwner: 'octo',
+        repositoryName: 'example',
+    ),
+);
+
+if (! $result->ok) {
+    // $result->reason and $result->message describe a declined request.
+    // $result->statusCode and $result->errorMessage describe an attempted HTTP request.
+}
+```
+
+## taskAnalytics (experimental: 記録済みトラジェクトリの分類)
+
+`taskAnalytics()->classifyTrajectory()`はセッションを作成せず、記録済みのCopilotイベントまたはATIFデータを分類します。アーカイブされたツールは実行されず、会話履歴や分類テレメトリにも追加されません。`events`は入力順のまま渡し、`classifiers`、`maxConcurrentRequests`、`judge`、`previousResult`を指定できます。`validateOnly: true`なら推論せず、ローカル検証結果だけを取得できます。
+
+通常の分類では、イベント内容はGitHub CAPIの認証情報を使ったモデル処理に送られます。自動的な秘匿化やプロンプトインジェクション対策はないため、送信を承認したうえでアーカイブの出所を検証し、必要な機密情報を事前に除去してください。分類結果は信頼できる事実ではなく、認可やセキュリティ判断には使用しないでください。
+
+```php
+$result = Copilot::client()->rpc()->taskAnalytics()->classifyTrajectory([
+    'events' => $events,
+    'validateOnly' => true,
+]);
+```
+
+認証URLのブラウザ起動には `runtime()->openBrowser()` を使います。
+
+```php
+use Revolution\Copilot\Types\Rpc\RuntimeOpenBrowserRequest;
+
+Copilot::client()->rpc()->runtime()->openBrowser(new RuntimeOpenBrowserRequest(
+    url: 'https://example.com/authorize',
+));
+```
+
+サンドボックスのパス許可警告は `sandbox()->getPathGrantWarning()` で取得します。
+
+```php
+use Revolution\Copilot\Types\Rpc\SandboxPathGrantWarningParams;
+
+$warning = Copilot::client()->rpc()->sandbox()->getPathGrantWarning(new SandboxPathGrantWarningParams(
+    resolvedPath: '/workspace/project',
+    readOnly: false,
+));
+```

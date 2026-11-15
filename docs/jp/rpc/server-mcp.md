@@ -134,3 +134,24 @@ Copilot::client()->rpc()->mcp()->discover(new McpDiscoverRequest(
 $result = Copilot::client()->rpc()->mcp()->discover();
 // $result->servers は DiscoveredMcpServer の配列
 ```
+
+## secrets (experimental: 動的シークレットのマスク登録)
+
+実験的な`secrets()->addFilterValues()`は、ホストが生成した動的シークレットをCLIのredaction filterに登録し、session logsやexportsでマスクします。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\SecretsAddFilterValuesRequest;
+
+$result = Copilot::client()->rpc()->secrets()->addFilterValues(
+    new SecretsAddFilterValuesRequest(values: [$accessToken]),
+);
+// $result->ok
+
+// 配列でも指定できます
+Copilot::client()->rpc()->secrets()->addFilterValues([
+    'values' => [$accessToken],
+]);
+```
+
+このRPCはOAuthトークンを取得するものではなく、値はSDK内で永続化・追加ログ出力されません。ホスト側で取得した値を明示的に登録してください。
