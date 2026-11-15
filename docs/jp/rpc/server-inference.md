@@ -52,3 +52,23 @@ $client = Copilot::client([
 
 $sessions = Copilot::client()->rpc()->sessions();
 ```
+
+## network (experimental: ネットワークコールバック)
+
+`network()->setProvider()`で、クライアント側に登録したプロキシ解決・Kerberos認証コールバックをランタイムに通知します。通常は`Client`の`network`オプションから自動登録されるため、直接呼び出す必要はありません。`NetworkSetProviderRequest`のコールバック項目は、対応するハンドラーが登録済みであることを示します。RPCの戻り値はありません。利用するランタイムは`network.setProvider` RPCをサポートしている必要があり、未対応の場合はクライアント起動時に更新を案内する例外が発生します。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Enums\NetworkScope;
+use Revolution\Copilot\Types\Rpc\NetworkSetProviderRequest;
+
+Copilot::client()->rpc()->network()->setProvider(
+    new NetworkSetProviderRequest(
+        scope: NetworkScope::Runtime,
+        resolveProxy: true,
+        authenticateNegotiate: true,
+    ),
+);
+```
+
+`scope`は省略すると`connection`です。`runtime`は共有バックグラウンド通信も対象にしますが、同時にこのscopeを登録できる接続は1つだけです。

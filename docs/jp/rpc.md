@@ -40,6 +40,7 @@ Copilot::client()->listModels();
 - [HTTP推論・ファイルシステム](rpc/server-inference.md)
 - [セッション・ホスト・環境](rpc/server-sessions.md)
 - [Skills・Plugins・Agents・Instructions・Extensions](rpc/server-skills-plugins.md)
+- [Git・GitHub](rpc/server-git.md)
 
 ## SessionRpc
 

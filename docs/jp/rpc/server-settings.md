@@ -62,3 +62,44 @@ $redacted = $client->rpc()->settings()->redactValueForDisplay([
 ]);
 // $redacted->value のうち秘匿値はプレースホルダーに置き換えられています
 ```
+
+## providersConfig (experimental: プロバイダー設定)
+
+`providersConfig()->addModel()`はサーバーの保存済みプロバイダー設定にモデルを追加する実験的なRPCです。プロバイダーが未保存の場合は作成され、`providerAdded`で確認できます。永続的な操作ですが、実行中のセッションは変更しません。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+$result = Copilot::client()->rpc()->providersConfig()->addModel([
+    'provider' => ['name' => 'my-provider', 'baseUrl' => 'https://example.com/v1'],
+    'model' => ['id' => 'my-model', 'provider' => 'my-provider'],
+    // 'credential' => $apiKey,
+]);
+
+// $result->providerAdded
+```
+
+配列の代わりに`ProvidersConfigAddModelRequest`を渡せます。任意の`credential`はCLIによってOSキーチェーンに保存され、結果には返されません。
+
+同じ`providersConfig()`から、保存済みの設定を読み取り・更新・削除できます。これらも実験的なAPIであり、実行中のセッションは変更しません。
+
+```php
+$config = Copilot::client()->rpc()->providersConfig();
+$saved = $config->read(); // $saved->providers と $saved->models
+
+$provider = $config->updateProvider([
+    'provider' => ['name' => 'my-provider', 'baseUrl' => 'https://example.com/v2'],
+    // 'credential' => $apiKey,
+]); // $provider->providerName
+
+$model = $config->updateModel([
+    'model' => ['id' => 'my-model', 'provider' => 'my-provider', 'maxOutputTokens' => 4096],
+]); // $model->providerName と $model->modelId
+
+$removed = $config->removeModel([
+    'providerName' => 'my-provider',
+    'modelId' => 'my-model',
+]); // $removed->providerRemoved
+```
+
+`read()`は保存順の設定を返しますが、認証情報、ヘッダー、コマンドなどの秘密情報は返しません。各プロバイダーの`credentialStatus`は`present`、`absent`、`unavailable`のいずれかです。`updateProvider()`は共通設定を差し替え、省略された認証情報、カスタムヘッダー、ローカルモデル設定を維持します。`updateModel()`は指定されたプロバイダー名とモデルIDのモデル定義を差し替えます。`removeModel()`が最後のモデルを削除した場合はプロバイダーと管理対象の認証情報も削除され、`providerRemoved`が`true`になります。各更新・削除には対応する`ProvidersConfigUpdateProviderRequest`、`ProvidersConfigUpdateModelRequest`、`ProvidersConfigRemoveModelRequest`も使用できます。

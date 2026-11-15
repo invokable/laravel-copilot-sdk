@@ -57,3 +57,21 @@ $session->rpc()->skills()->ensureLoaded(); // 未読込のスキルを読み込�
 $invoked = $session->rpc()->skills()->getInvoked();
 // $invoked->skills - セッション中に呼び出されたスキルの履歴
 ```
+
+## autopilotObjective
+
+`autopilotObjective()->getState()`はセッションの現在のAutopilot objective状態を型付きで返します。objectiveが存在しない場合、`state`は`null`です。Workspaceに保存されたobjectiveの有無を確認する`workspaces()->autopilotObjectiveExists()`とは異なるAPIです。
+
+```php
+$state = $session->rpc()->autopilotObjective()->getState()->state;
+
+if ($state !== null) {
+    dump($state->objective, $state->status, $state->turnCount, $state->creditLimit);
+}
+```
+
+`setStayInAutopilot()`でobjectiveの完了・一時停止時にinteractive modeへ戻る要求を抑制できます。この設定はクライアントのメモリ内に保持され、既定値は`true`です。`value`に`false`を渡すと抑制を解除できます。接続し直した場合は再設定してください。
+
+```php
+$session->rpc()->autopilotObjective()->setStayInAutopilot(['value' => true]);
+```
