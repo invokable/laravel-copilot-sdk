@@ -155,3 +155,27 @@ Copilot::client()->rpc()->secrets()->addFilterValues([
 ```
 
 このRPCはOAuthトークンを取得するものではなく、値はSDK内で永続化・追加ログ出力されません。ホスト側で取得した値を明示的に登録してください。
+
+## mcp oauth（MCP OAuth の事前確認）
+
+リモートMCPサーバーがOAuth認証を要求した後、Dynamic Client Registration（DCR）に対応しているかを調べられます。`authorizationServerUrl`はメタデータから認可サーバーを発見できた場合に返ります。`supportsDcr`が`false`なら動的登録は利用できません。認可サーバーがMicrosoftかどうかも確認できます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\McpOauthCheckDcrSupportRequest;
+use Revolution\Copilot\Types\Rpc\McpOauthIsMicrosoftAuthorizationServerRequest;
+
+$oauth = Copilot::client()->rpc()->mcp()->oauth();
+
+$dcr = $oauth->checkDcrSupport(new McpOauthCheckDcrSupportRequest(
+    serverUrl: 'https://mcp.example.com',
+    resourceMetadataText: $challengeMetadata,
+    sessionId: $session->id(),
+));
+
+$isMicrosoft = $dcr->authorizationServerUrl === null
+    ? false
+    : $oauth->isMicrosoftAuthorizationServer(new McpOauthIsMicrosoftAuthorizationServerRequest(
+        authorizationServerUrl: $dcr->authorizationServerUrl,
+    ))->isMicrosoftAuthorizationServer;
+```

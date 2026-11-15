@@ -160,3 +160,18 @@ $cancelled = $session->rpc()->mcp()->oauth()->cancelLogin(new SessionMcpOauthCan
     loginId: $prepared->loginId,
 ));
 ```
+
+## mcp reloadWithConfig（再読み込み時の無効化設定）
+
+`reloadWithConfig()`で設定を渡す場合、`configuredDisabledServers`は呼び出し側が解決した設定由来の無効化リストです。セッション単位の`disabledServers`やCLIの`cliEnabledServers`とは別に指定してください。設定由来の無効化はCLIによる有効化と明示的なセッション無効化より優先度が低いため、`configuredDisabledServers`を`disabledServers`へまとめないでください。
+
+```php
+$session->rpc()->mcp()->reloadWithConfig([
+    'config' => [
+        'mcpServers' => $mcpServers,
+        'disabledServers' => ['session-disabled'],
+        'cliEnabledServers' => ['cli-enabled'],
+        'configuredDisabledServers' => ['settings-disabled'],
+    ],
+]);
+```

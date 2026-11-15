@@ -39,6 +39,12 @@ $connected = $session->rpc()->remote()->connectRemoteSession(new ConnectRemoteSe
 // $connected->metadata - ConnectedRemoteSessionMetadata オブジェクト
 ```
 
+セッションのリモート操作可否が変わったことをランタイムに知らせるには、`notifySteerableChanged()`を使います。
+
+```php
+$session->rpc()->remote()->notifySteerableChanged(['remoteSteerable' => true]);
+```
+
 詳細は [Remote Sessions](../remote-sessions.md) を参照してください.
 
 ## sandbox (experimental: サンドボックス制御)
