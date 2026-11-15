@@ -220,3 +220,58 @@ $warning = Copilot::client()->rpc()->sandbox()->getPathGrantWarning(new SandboxP
     readOnly: false,
 ));
 ```
+
+## sessions connect・Remote Control（TCP モード）
+
+CLIサーバーから既存のリモートセッションに接続する場合は、`sessions()->connect()`を使います。接続先のリモート`sessionId`を渡すと、SDK側の`sessionId`とリモートセッションのmetadataを含む結果が返ります。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\ConnectRemoteSessionParams;
+
+$client = Copilot::useTcp(url: 'tcp://127.0.0.1:12345')->client();
+
+$connected = $client->rpc()->sessions()->connect(
+    new ConnectRemoteSessionParams(sessionId: 'remote-session-id'),
+);
+
+echo $connected->sessionId;
+// $connected->metadata - ConnectedRemoteSessionMetadata オブジェクト
+```
+
+TCPモードでは`sessions()`からランタイム全体で1つのRemote Controlも管理できます。セッション単位の`remote()->enable()`とは異なり、操作対象セッションの開始・停止・移譲や、現在の状態の取得ができます。
+
+```php
+use Revolution\Copilot\Types\Rpc\RemoteControlConfig;
+use Revolution\Copilot\Types\Rpc\SessionsStartRemoteControlRequest;
+
+$result = $client->rpc()->sessions()->startRemoteControl(
+    new SessionsStartRemoteControlRequest(
+        sessionId: $sessionId,
+        config: new RemoteControlConfig(
+            remote: true,
+            steerable: true,
+            explicit: true,
+            silent: false,
+        ),
+    ),
+);
+
+if ($result->status->frontendUrl !== null) {
+    echo 'Remote URL: '.$result->status->frontendUrl.PHP_EOL;
+}
+
+$status = $client->rpc()->sessions()->getRemoteControlStatus();
+// 状態は off / connecting / active / error のいずれか。active では frontendUrl や isSteerable も参照できる
+
+$client->rpc()->sessions()->setRemoteControlSteering(['enabled' => true]);
+$client->rpc()->sessions()->transferRemoteControl([
+    'toSessionId' => $nextSessionId,
+    'expectedFromSessionId' => $sessionId,
+]);
+$client->rpc()->sessions()->stopRemoteControl([
+    'expectedSessionId' => $nextSessionId,
+]);
+```
+
+詳細は [Remote Sessions](../remote-sessions.md) を参照してください。

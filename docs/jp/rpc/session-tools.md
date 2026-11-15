@@ -257,3 +257,33 @@ $result = $session->rpc()->ui()->handlePendingSampling(new UIHandlePendingSampli
 // SessionConfig の onExitPlanModeRequest / onAutoModeSwitchRequest は reverse-RPC で自動応答する。
 // 同じリクエストをイベント経由で手動応答する場合は、両方の経路を重ねて使わないこと。
 ```
+
+## ui handlePendingSessionLimitsExhausted（上限到達時の確認への応答）
+
+セッションのAIクレジット上限に到達したときのユーザーの選択は、`ui()->handlePendingSessionLimitsExhausted()`でランタイムに返します。`action`には`SessionLimitsExhaustedResponseAction`を指定します（`Add`: 上限へ指定クレジットを追加、`Set`: 上限を絶対値に変更、`Unset`: 上限を解除、`Cancel`: 上限を変更せずブロックされたリクエストをキャンセル）。
+
+```php
+use Revolution\Copilot\Enums\SessionLimitsExhaustedResponseAction;
+use Revolution\Copilot\Types\Rpc\UIHandlePendingSessionLimitsExhaustedRequest;
+use Revolution\Copilot\Types\Rpc\UISessionLimitsExhaustedResponse;
+
+$session->rpc()->ui()->handlePendingSessionLimitsExhausted(
+    new UIHandlePendingSessionLimitsExhaustedRequest(
+        requestId: $requestId,
+        response: new UISessionLimitsExhaustedResponse(
+            action: SessionLimitsExhaustedResponseAction::Add,
+            additionalAiCredits: 10.0,
+        ),
+    ),
+);
+```
+
+詳細は [セッションのAIクレジット制限](../session-limits.md) を参照してください。
+
+## commands enqueue（コマンドのキュー登録）
+
+```php
+use Revolution\Copilot\Types\Rpc\EnqueueCommandParams;
+
+$session->rpc()->commands()->enqueue(new EnqueueCommandParams('/compact'));
+```

@@ -13,6 +13,7 @@ Use this skill whenever a change adds or updates RPC documentation in `docs/jp/`
 - `docs/jp/rpc.md` is an index and overview only. It holds the basic calling example, the array-arguments note, and the Testing note, and links to the overview pages and the feature pages. Do not add usage examples or category overviews to `rpc.md`.
 - Category overviews (prose summaries of each RPC group) live in `docs/jp/rpc/server-overview.md` and `docs/jp/rpc/session-overview.md`, one category per `##` section. A new RPC group gets a new category section in the matching overview page, not in `rpc.md`.
 - Usage examples live in feature pages under `docs/jp/rpc/`. Each page covers one feature area for one scope. Organize by feature, the way the official SDK docs do; do not organize pages around RPC plumbing.
+- The feature pages are the canonical home for RPC usage examples (decided 2026-11-15). An example that exists only in a top-level guide (for example `docs/jp/auth.md`, `docs/jp/mcp.md`, `docs/jp/remote-sessions.md`) counts as missing: add it to the matching feature page as well. Top-level guides may keep their contextual examples; coverage is judged by the feature pages.
 - Every feature page starts with this header, with the scope line naming its RPC class:
 
   ```markdown
@@ -54,7 +55,7 @@ SessionRpc pages (`$session->rpc()`):
 | `session-plugins.md` | plugins, extensions |
 | `session-settings.md` | managedSettings, debug, contentExclusion, history/compaction |
 | `session-tools.md` | tools, permissions, commands, UI elicitation |
-| `session-activity.md` | log, shell, usage, telemetry, auth |
+| `session-activity.md` | log, shell, usage, telemetry, auth, accounts |
 | `session-provider.md` | provider endpoint/status, BYOK registry updates and withdraw |
 | `session-queue-tasks.md` | queue, schedule, background tasks |
 | `session-remote.md` | remote sessions, sandbox |
