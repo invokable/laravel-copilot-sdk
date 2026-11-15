@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\SessionEventType;
 
-describe('SessionEventType command events', function () {
+describe('SessionEventType command and exit plan mode events', function () {
     it('has command event types', function () {
         expect(SessionEventType::COMMAND_EXECUTE->value)->toBe('command.execute')
             ->and(SessionEventType::COMMAND_QUEUED->value)->toBe('command.queued')
