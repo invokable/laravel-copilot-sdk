@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Types\UiInputOptions;
 
-describe('InputOptions', function () {
+describe('UiInputOptions', function () {
     it('can be created with all fields', function () {
         $opts = new UiInputOptions(
             title: 'Release Name',
