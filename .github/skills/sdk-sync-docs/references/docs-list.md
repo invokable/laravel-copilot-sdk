@@ -9,6 +9,7 @@
 - `auth.md`: 認証方法。公式を元に作成。
 - `bare-usage.md`: Laravel流ではない公式SDKに沿った使い方
 - `bundle-cli.md`: Laravelプロジェクト内でCopilot CLIをバンドルして管理する方法
+- `client-options.md`: クライアントオプション一覧
 - `cloud-sessions.md`: クラウドセッションの使い方
 - `concurrency.md`: Laravel の Concurrency を使った並行実行
 - `custom-agents.md`: カスタムエージェント。公式から翻訳。

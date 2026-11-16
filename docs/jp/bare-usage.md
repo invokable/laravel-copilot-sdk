@@ -38,3 +38,5 @@ $done();
 $session->disconnect();
 $client->stop();
 ```
+
+指定できるオプションの一覧は [クライアントオプション一覧](client-options.md) を参照してください。
