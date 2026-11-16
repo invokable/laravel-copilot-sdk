@@ -54,6 +54,9 @@ foreach ($listed->sessions as $session) {
 $sessions->findByTaskId(['taskId' => 'task-id']);
 $sessions->findByPrefix(['prefix' => 'session-id-prefix']);
 $sessions->getLastForContext(['context' => ['cwd' => '/path/to/project']]);
+// セッションを開かずローカルのイベントログの有無を確認（空のログも true）
+$hasEvents = Copilot::client()->rpc()->sessions()->hasEvents(['sessionId' => 'session-id']);
+// $hasEvents->exists は、ログがなくメタデータのみの場合 false
 $sizes = $sessions->getSizes(); // $sizes->sizes は session ID => byte 数
 $inUse = $sessions->checkInUse(['sessionIds' => ['session-id']]);
 $deleted = $sessions->bulkDelete(['sessionIds' => ['session-id']]);
