@@ -31,6 +31,8 @@ use Revolution\Copilot\Types\Rpc\SessionsFindByTaskIdResult;
 use Revolution\Copilot\Types\Rpc\SessionsForkRequest;
 use Revolution\Copilot\Types\Rpc\SessionsForkResult;
 use Revolution\Copilot\Types\Rpc\SessionsGetLastForContextResult;
+use Revolution\Copilot\Types\Rpc\SessionsHasEventsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsHasEventsResult;
 use Revolution\Copilot\Types\Rpc\SessionSizes;
 use Revolution\Copilot\Types\Rpc\SessionsListRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadDeferredRepoHooksRequest;
@@ -228,6 +230,26 @@ describe('PendingServerSessions', function () {
             ->and($result->cursor)->toBe('previous-page')
             ->and($result->hasMore)->toBeTrue();
     });
+
+    it('checks whether a local session has a persisted event log', function (bool $exists, bool $typed) {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('sessions.hasEvents', ['sessionId' => 'session-id'])
+            ->andReturn(['exists' => $exists]);
+
+        $pending = new PendingServerSessions($client);
+        $params = $typed ? new SessionsHasEventsRequest(sessionId: 'session-id') : ['sessionId' => 'session-id'];
+        $result = $pending->hasEvents($params);
+
+        expect($result)->toBeInstanceOf(SessionsHasEventsResult::class)
+            ->and($result->exists)->toBe($exists);
+    })->with([
+        'event log exists with array request' => [true, false],
+        'metadata only with array request' => [false, false],
+        'event log exists with typed request' => [true, true],
+        'metadata only with typed request' => [false, true],
+    ]);
 
     it('returns null session IDs when lookup RPCs find no match', function () {
         $client = Mockery::mock(JsonRpcClient::class);
