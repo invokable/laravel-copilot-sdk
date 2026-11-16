@@ -15,6 +15,8 @@ use Revolution\Copilot\Types\Rpc\SessionsFindByTaskIdRequest;
 use Revolution\Copilot\Types\Rpc\SessionsFindByTaskIdResult;
 use Revolution\Copilot\Types\Rpc\SessionsGetLastForContextRequest;
 use Revolution\Copilot\Types\Rpc\SessionsGetLastForContextResult;
+use Revolution\Copilot\Types\Rpc\SessionsHasEventsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsHasEventsResult;
 use Revolution\Copilot\Types\Rpc\SessionSizes;
 use Revolution\Copilot\Types\Rpc\SessionsListRequest;
 use Revolution\Copilot\Types\Rpc\SessionsPruneOldRequest;
@@ -63,6 +65,9 @@ it('round trips persisted session RPC types through arrays', function () {
         new SessionsGetLastForContextRequest,
         new SessionsGetLastForContextResult(sessionId: 'session-id'),
         new SessionsGetLastForContextResult,
+        new SessionsHasEventsRequest(sessionId: 'session-id'),
+        new SessionsHasEventsResult(exists: true),
+        new SessionsHasEventsResult(exists: false),
         new SessionSizes(sizes: ['session-id' => 1024]),
         new SessionsCheckInUseRequest(sessionIds: ['session-id']),
         new SessionsCheckInUseResult(inUse: ['session-id']),
@@ -89,4 +94,8 @@ it('round trips persisted session RPC types through arrays', function () {
 
         expect($typeClass::fromArray($serialized)->toArray())->toBe($serialized);
     }
+});
+
+it('defaults a missing event log existence result to false', function () {
+    expect(SessionsHasEventsResult::fromArray([])->toArray())->toBe(['exists' => false]);
 });

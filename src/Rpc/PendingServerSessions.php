@@ -33,6 +33,8 @@ use Revolution\Copilot\Types\Rpc\SessionsForkResult;
 use Revolution\Copilot\Types\Rpc\SessionsGetClientMetadataRequest;
 use Revolution\Copilot\Types\Rpc\SessionsGetLastForContextRequest;
 use Revolution\Copilot\Types\Rpc\SessionsGetLastForContextResult;
+use Revolution\Copilot\Types\Rpc\SessionsHasEventsRequest;
+use Revolution\Copilot\Types\Rpc\SessionsHasEventsResult;
 use Revolution\Copilot\Types\Rpc\SessionSizes;
 use Revolution\Copilot\Types\Rpc\SessionsListRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadDeferredRepoHooksRequest;
@@ -106,6 +108,20 @@ class PendingServerSessions
 
         return EventsReadResult::fromArray(
             $this->client->request('sessions.readPersistedEvents', $paramsArray),
+        );
+    }
+
+    /**
+     * Check whether a local session's persisted event log exists.
+     */
+    public function hasEvents(SessionsHasEventsRequest|array $params): SessionsHasEventsResult
+    {
+        $paramsArray = ($params instanceof SessionsHasEventsRequest
+            ? $params
+            : SessionsHasEventsRequest::fromArray($params))->toArray();
+
+        return SessionsHasEventsResult::fromArray(
+            $this->client->request('sessions.hasEvents', $paramsArray),
         );
     }
 
