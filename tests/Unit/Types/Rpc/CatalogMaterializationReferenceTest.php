@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\CatalogCapability;
 use Revolution\Copilot\Enums\SkillInstallationFailureReason;
-use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogMaterializationReference;
 use Revolution\Copilot\Types\Rpc\CatalogNegotiatedContract;
-use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
 
 it('round-trips a materialisation reference', function () {
     $data = [
@@ -21,29 +19,6 @@ it('round-trips a materialisation reference', function () {
     $reference = CatalogMaterializationReference::fromArray($data);
 
     expect($reference->toArray())->toBe($data);
-});
-
-it('round-trips a request with its nested contract and reference', function () {
-    $data = [
-        'contract' => [
-            'protocolVersion' => 3,
-            'requiredCapabilities' => ['skill-confirmed-installation', 'skill-reference-installation'],
-        ],
-        'reference' => [
-            'resourceId' => '12345',
-            'revisionId' => '67890',
-            'schemaVersion' => '1.0.0',
-            'descriptorDigest' => 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-            'bundleDigest' => 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-        ],
-        'policySessionId' => 'session-1',
-    ];
-
-    $request = SkillPlanInstallFromReferenceRequest::fromArray($data);
-
-    expect($request->contract)->toBeInstanceOf(CatalogClientContract::class)
-        ->and($request->reference)->toBeInstanceOf(CatalogMaterializationReference::class)
-        ->and($request->toArray())->toBe($data);
 });
 
 it('exposes reference-installation capabilities and refusal reasons', function () {

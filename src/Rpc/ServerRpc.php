@@ -156,14 +156,6 @@ class ServerRpc
     }
 
     /**
-     * Experimental account broker operations.
-     */
-    public function accounts(): PendingServerAccounts
-    {
-        return new PendingServerAccounts($this->client);
-    }
-
-    /**
      * Experimental network callback RPC operations.
      *
      * @experimental
