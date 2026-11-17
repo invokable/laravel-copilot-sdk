@@ -34,7 +34,7 @@ final class SdkSyncAudit
     public function report(): array
     {
         $typescript = $this->read('copilot-sdk/nodejs/src/generated/rpc.ts');
-        $python = $this->read('copilot-sdk/python/copilot/generated/rpc.py');
+        $python = $this->read('copilot-sdk/python/copilot/_generated/rpc.py');
         $types = $this->read('copilot-sdk/nodejs/src/types.ts');
         $rpcMethodAnalysis = $this->rpcMethods($typescript, $python);
         $rpcApis = $this->missingRpcApis(
@@ -43,16 +43,16 @@ final class SdkSyncAudit
             $rpcMethodAnalysis['method_scopes'],
         );
         return [
-            'schema_version' => 4,
-            'scope' => 'Current upstream snapshot vs Laravel; RPC APIs, wire methods, configuration options, and hooks are compared structurally. Type and enum parity is assessed by the workflow.',
+            'schema_version' => 5,
+            'scope' => 'Current upstream snapshot vs Laravel; RPC APIs, wire methods, configuration options, and hooks are compared structurally. Type and enum parity is assessed by the workflow. Since SDK 2.0.0 the upstream options are grouped: session options are compared as CreateSessionOptions/ResumeSessionOptions (extending SessionOptionsBase) against the local SessionConfig/ResumeSessionConfig, and top-level upstream option names are group names whose members live in nested option interfaces.',
             'rpc_method_exclusions' => SDK_SYNC_RPC_METHOD_EXCLUSIONS,
             'rpc_method_inclusions' => SDK_SYNC_RPC_METHOD_INCLUSIONS,
             'client_option_exclusions' => SDK_SYNC_CLIENT_OPTION_EXCLUSIONS,
             'rpc_api_coverage' => $rpcApis['coverage'],
             'missing_rpc_apis' => $rpcApis['missing'],
             'rpc_methods' => $rpcMethodAnalysis['methods'],
-            'session_config' => $this->config($types, 'SessionConfig'),
-            'resume_session_config' => $this->config($types, 'ResumeSessionConfig'),
+            'session_config' => $this->config($types, 'CreateSessionOptions', 'SessionConfig'),
+            'resume_session_config' => $this->config($types, 'ResumeSessionOptions', 'ResumeSessionConfig'),
             'client_options' => $this->clientOptions($types),
             'hooks' => $this->hooks($types),
         ];
@@ -210,20 +210,20 @@ final class SdkSyncAudit
         return $this->names($this->phpCode($path), '/\bpublic\s+(?:readonly\s+)?[\w\\\\|?]+\s+\$(\w+)/');
     }
 
-    private function config(string $types, string $name): array
+    private function config(string $types, string $upstreamName, string $localName): array
     {
-        $path = "src/Types/$name.php";
+        $path = "src/Types/$localName.php";
 
         return [
-            'upstream' => 'copilot-sdk/nodejs/src/types.ts#'.$name,
+            'upstream' => 'copilot-sdk/nodejs/src/types.ts#'.$upstreamName,
             'local' => $path,
-            ...$this->difference($this->interfaceProperties($types, $name), $this->phpProperties($path)),
+            ...$this->difference($this->interfaceProperties($types, $upstreamName), $this->phpProperties($path)),
         ];
     }
 
     private function missingRpcApis(array $apiMethodsByFile, array $methodLocations, array $methodScopes): array
     {
-        $javaDirectory = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
+        $javaDirectory = 'copilot-sdk/java/sdk/src/generated/java/com/microsoft/copilot/generated/rpc';
         $missing = [];
         $coverage = [];
         $trackedMethods = array_fill_keys($methodScopes['tracked'], true);
@@ -431,7 +431,7 @@ final class SdkSyncAudit
 
     private function javaRpcMethodsByApi(): array
     {
-        $directory = 'copilot-sdk/java/sdk/src/generated/java/com/github/copilot/generated/rpc';
+        $directory = 'copilot-sdk/java/sdk/src/generated/java/com/microsoft/copilot/generated/rpc';
         $apiMethods = [];
         $javaFiles = $this->files($directory, 'java');
 
