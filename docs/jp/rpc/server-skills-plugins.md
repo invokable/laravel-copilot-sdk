@@ -38,7 +38,6 @@ use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillInstallationOperationRequest;
 use Revolution\Copilot\Types\Rpc\SkillInstallationsRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
-use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
 use Revolution\Copilot\Types\Rpc\SkillsInstallSourceRequest;
@@ -174,32 +173,6 @@ if ($selection['kind'] === 'selected') {
         ));
     }
 }
-
-// Agent Finder の materialisation reference からスキルのインストールを計画
-$referenceContract = new CatalogClientContract(3, [
-    'skill-confirmed-installation',
-    'skill-reference-installation',
-]);
-$referencePlan = $skills->planInstallFromReference(new SkillPlanInstallFromReferenceRequest(
-    contract: $referenceContract,
-    reference: new CatalogMaterializationReference(
-        resourceId: '12345',
-        revisionId: '67890',
-        schemaVersion: '1.0.0',
-        descriptorDigest: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        bundleDigest: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-    ),
-    policySessionId: $sessionId,
-));
-// 成功時は $referencePlan->kind === SkillInstallationManagementResultKind::Outcome、
-// $referencePlan->outcome->kind === SkillInstallationManagementOutcomeKind::InstallPlanned。
-// 計画自体は副作用を起こさず、固定のAgent Finder authorityからdescriptorを取得し、
-// descriptorとbundleのdigestを照合する。内容を確認し、既存の確認フローを完了してからapplyInstall()する。
-// invalid-reference、descriptor-not-found、descriptor-withdrawn、digest-mismatch、
-// unsupported-resource は計画結果の拒否理由として返る。
-// GitHubの拒否理由 source-rate-limited、no-credential、credential-rejected は
-// SkillInstallationFailureReason で区別され、retryAfterSecondsはsource-rate-limitedの場合だけ返る。
-// network-failureのmessageはURL、検索クエリ、ハンドル、secretを含まない安全な説明です。
 
 // インストール済みスキルと進行中の操作
 $installations = $skills->installations();
@@ -365,13 +338,23 @@ use Revolution\Copilot\Enums\CatalogCapability;
 use Revolution\Copilot\Enums\CatalogReferenceInstallationOutcomeKind;
 use Revolution\Copilot\Enums\CatalogReferenceInstallationResultKind;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
+use Revolution\Copilot\Types\Rpc\CatalogMaterializationReference;
 use Revolution\Copilot\Types\Rpc\CatalogPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\PluginApplyInstallRequest;
+use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
 
 $referenceContract = new CatalogClientContract(3, [
     CatalogCapability::CatalogReferenceInstallation->value,
     CatalogCapability::AgentPluginConfirmedInstallation->value,
+    CatalogCapability::SkillConfirmedInstallation->value,
 ]);
+$reference = new CatalogMaterializationReference(
+    resourceId: '12345',
+    revisionId: '67890',
+    schemaVersion: '1.0.0',
+    descriptorDigest: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    bundleDigest: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+);
 $planned = Copilot::client()->rpc()->catalog()->planInstallFromReference(
     new CatalogPlanInstallFromReferenceRequest(
         contract: $referenceContract,
@@ -386,6 +369,13 @@ if ($planned->kind === CatalogReferenceInstallationResultKind::Outcome
     $plugins->applyInstall(new PluginApplyInstallRequest(
         contract: $referenceContract,
         planHandle: $planned->outcome->plan->planHandle,
+        policySessionId: $sessionId,
+    ));
+} elseif ($planned->kind === CatalogReferenceInstallationResultKind::Outcome
+    && $planned->outcome?->kind === CatalogReferenceInstallationOutcomeKind::SkillInstallPlanned) {
+    Copilot::client()->rpc()->skills()->applyInstall(new SkillApplyInstallRequest(
+        contract: $referenceContract,
+        planHandle: $planned->outcome->plan['planHandle'],
         policySessionId: $sessionId,
     ));
 }

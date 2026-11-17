@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\DiscoveredExtensionMode;
-use Revolution\Copilot\Enums\EntraTokenInteraction;
 use Revolution\Copilot\Enums\EventsReadDirection;
 use Revolution\Copilot\Enums\InstallationDecision;
 use Revolution\Copilot\Enums\ModelChangeSource;
@@ -15,7 +14,6 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingAgent;
 use Revolution\Copilot\Rpc\PendingHistory;
 use Revolution\Copilot\Rpc\PendingMcp;
-use Revolution\Copilot\Rpc\PendingServerAccounts;
 use Revolution\Copilot\Rpc\PendingServerExtensions;
 use Revolution\Copilot\Rpc\PendingSessionAccounts;
 use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookInput;
@@ -25,7 +23,6 @@ use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\AgentSetPromptRequest;
 use Revolution\Copilot\Types\Rpc\AuthReadValue;
 use Revolution\Copilot\Types\Rpc\ConnectClientInfo;
-use Revolution\Copilot\Types\Rpc\EntraTokenAcquireRequest;
 use Revolution\Copilot\Types\Rpc\EventLogReadRequest;
 use Revolution\Copilot\Types\Rpc\HistoryClearContextResult;
 use Revolution\Copilot\Types\Rpc\InstallationConfirmationRequest;
@@ -260,27 +257,6 @@ test('session events preserve new workflow correlation fields', function () {
     expect($event->workflowRunId())->toBe('run-1')
         ->and($event->parentToolCallId())->toBe('tool-1')
         ->and($event->toArray()['data'])->toHaveKey('activeWorkflowSummary', 'Running');
-});
-
-test('server account broker RPC maps the official Entra token request', function () {
-    $client = Mockery::mock(JsonRpcClient::class);
-    $client->shouldReceive('request')->once()->with('accounts.acquireEntraToken', [
-        'clientId' => 'client-1',
-        'tenantId' => 'organizations',
-        'redirectUri' => 'app://callback',
-        'scopes' => ['scope.read'],
-        'interaction' => 'silent',
-    ])->andReturn(['status' => 'interaction-required']);
-
-    $result = (new PendingServerAccounts($client))->acquireEntraToken(new EntraTokenAcquireRequest(
-        clientId: 'client-1',
-        tenantId: 'organizations',
-        redirectUri: 'app://callback',
-        scopes: ['scope.read'],
-        interaction: EntraTokenInteraction::SILENT,
-    ));
-
-    expect($result->status)->toBe('interaction-required');
 });
 
 test('server extension RPCs discover and persist enablement', function () {

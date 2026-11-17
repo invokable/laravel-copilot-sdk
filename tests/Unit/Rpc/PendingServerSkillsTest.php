@@ -14,7 +14,6 @@ use Revolution\Copilot\Types\Rpc\SkillApplyUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillInstallationManagementResult;
 use Revolution\Copilot\Types\Rpc\SkillInstallationOperationRequest;
 use Revolution\Copilot\Types\Rpc\SkillInstallationsRequest;
-use Revolution\Copilot\Types\Rpc\SkillPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillRemoveSourceEntry;
@@ -383,33 +382,6 @@ describe('PendingServerSkills', function () {
                 SkillPlanInstallRequest::class,
                 [
                     'kind' => 'outcome',
-                    'outcome' => ['kind' => 'install-planned', 'plan' => ['planHandle' => 'plan-1']],
-                ],
-            ],
-            [
-                'planInstallFromReference',
-                'skills.planInstallFromReference',
-                [
-                    'contract' => [
-                        'protocolVersion' => 3,
-                        'requiredCapabilities' => ['skill-confirmed-installation', 'skill-reference-installation'],
-                    ],
-                    'reference' => [
-                        'resourceId' => '12345',
-                        'revisionId' => '67890',
-                        'schemaVersion' => '1.0.0',
-                        'descriptorDigest' => 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-                        'bundleDigest' => 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-                    ],
-                    'policySessionId' => 'session-1',
-                ],
-                SkillPlanInstallFromReferenceRequest::class,
-                [
-                    'kind' => 'outcome',
-                    'negotiated' => [
-                        'runtimeProtocolVersion' => 3,
-                        'grantedCapabilities' => ['skill-confirmed-installation', 'skill-reference-installation'],
-                    ],
                     'outcome' => ['kind' => 'install-planned', 'plan' => ['planHandle' => 'plan-1']],
                 ],
             ],
