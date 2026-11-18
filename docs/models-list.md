@@ -13,25 +13,27 @@ The available models may change depending on Copilot CLI updates and your organi
  │ claude-fable-5.1     │ Claude Fable 5.1            │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-fable-5       │ Claude Fable 5              │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-opus-5.5      │ Claude Opus 5.5             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ claude-opus-5        │ Claude Opus 5               │ 1000000            │ Yes            │ Yes                       │ Yes                         │
- │ claude-opus-4.8      │ Claude Opus 4.8             │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-opus-4.8-fast │ Claude Opus 4.8 (fast mode) │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-haiku-5.5     │ Claude Haiku 5.5            │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ claude-haiku-4.5     │ Claude Haiku 4.5            │ 144000             │ Yes            │ No                        │ No                          │
+ │ gpt-6.2-sol          │ GPT-6.2 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
+ │ gpt-6.2-astra        │ GPT-6.2 Astra               │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6.1-sol          │ GPT-6.1 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6.1-terra        │ GPT-6.1 Terra               │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-sol            │ GPT-6 Sol                   │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-luna           │ GPT-6 Luna                  │ 1000000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-6-astra          │ GPT-6 Astra                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.6-sol          │ GPT-5.6 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
- │ gpt-5.6-terra        │ GPT-5.6 Terra               │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.6-luna         │ GPT-5.6 Luna                │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.3-codex        │ GPT-5.3-Codex               │ 400000             │ Yes            │ Yes                       │ Yes                         │
  │ mai-code-1.1-flash   │ MAI-Code-1.1-Flash          │ 256000             │ Yes            │ Yes                       │ Yes                         │
+ │ gemini-4-carbon      │ Gemini 4 Carbon             │ 1000000            │ Yes            │ Yes                       │ No                          │
+ │ gemini-4-argon       │ Gemini 4 Argon              │ 1048576            │ Yes            │ Yes                       │ No                          │
  │ grok-4.7             │ Grok 4.7                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ grok-4.6             │ Grok 4.6                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ kimi-k3              │ Kimi K3                     │ 1048576            │ Yes            │ Yes                       │ Yes                         │
- │ gemini-4-carbon      │ Gemini 4 Carbon             │ 1000000            │ Yes            │ Yes                       │ No                          │
  │ gemini-4-hydrogen    │ Gemini 4 Hydrogen           │ 1048576            │ Yes            │ Yes                       │ No                          │
+ │ mai-code-2-flash     │ MAI Code 2 Flash            │ 1050000            │ Yes            │ Yes                       │ Yes                         │
+ │ mai-code-2           │ MAI Code 2                  │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  └──────────────────────┴─────────────────────────────┴────────────────────┴────────────────┴───────────────────────────┴─────────────────────────────┘
 ```
