@@ -5,7 +5,7 @@
 [![Code Coverage](https://qlty.sh/badges/ef9130cf-a953-4d14-ac02-9eafb4c40a0c/coverage.svg)](https://qlty.sh/gh/invokable/projects/laravel-copilot-sdk)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/invokable/laravel-copilot-sdk)
 
-This package is Laravel version of [Copilot SDK](https://github.com/github/copilot-sdk), which allows you to interact with GitHub Copilot CLI programmatically from your Laravel applications.
+This package is Laravel version of [Copilot SDK](https://github.com/microsoft/copilot-sdk), which allows you to interact with GitHub Copilot CLI programmatically from your Laravel applications.
 
 > [!NOTE]
 > This is the Community SDK.
