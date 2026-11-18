@@ -59,7 +59,7 @@
     "minimum-stability": "stable",
     "scripts": {
         "test": "pest --compact --parallel",
-        "test:coverage": "pest --compact --parallel --coverage --coverage-clover build/logs/clover.xml",
+        "test:coverage": "pest --testsuite Main,E2E --compact --parallel --coverage --coverage-clover build/logs/clover.xml",
         "lint": [
             "pint --parallel"
         ],
