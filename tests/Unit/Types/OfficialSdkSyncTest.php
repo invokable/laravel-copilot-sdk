@@ -21,7 +21,6 @@ use Revolution\Copilot\Types\Hooks\UserPromptTransformedHookOutput;
 use Revolution\Copilot\Types\ModelInfo;
 use Revolution\Copilot\Types\ResumeSessionConfig;
 use Revolution\Copilot\Types\Rpc\AgentSetPromptRequest;
-use Revolution\Copilot\Types\Rpc\AuthReadValue;
 use Revolution\Copilot\Types\Rpc\ConnectClientInfo;
 use Revolution\Copilot\Types\Rpc\EventLogReadRequest;
 use Revolution\Copilot\Types\Rpc\HistoryClearContextResult;
@@ -224,28 +223,26 @@ test('new history, agent, and MCP RPC methods use official method names', functi
     $mcp->authenticationStateChanged(new McpOauthAuthenticationStateChangedRequest('github', true));
 });
 
-test('session accounts RPC maps the 1.0.90 account and login methods', function () {
+test('session accounts RPC maps the account and login methods', function () {
     $client = Mockery::mock(JsonRpcClient::class);
-    $client->shouldReceive('request')->once()->with('session.accounts.enumerate', [
-        'sessionId' => 'session-1', 'query' => ['kind' => 'accounts'],
-    ])->andReturn(['kind' => 'accounts', 'items' => [[
-        'host' => 'github.com', 'login' => 'octocat', 'kind' => 'githubDotCom', 'active' => true, 'selectionId' => 'a1',
-    ]]]);
+    $client->shouldReceive('request')->once()->with('session.accounts.list', [
+        'sessionId' => 'session-1',
+    ])->andReturn([[
+        'host' => 'github.com', 'login' => 'octocat', 'kind' => 'gitHub', 'active' => true, 'selectionId' => 'a1',
+    ]]);
     $client->shouldReceive('request')->once()->with('session.accounts.login.advance', [
         'sessionId' => 'session-1', 'flowId' => 'flow-1', 'input' => 'github.com',
     ])->andReturn(['kind' => 'completed', 'result' => ['status' => 'completed']]);
 
     $accounts = new PendingSessionAccounts($client, 'session-1');
-    expect($accounts->enumerate()[0]->login)->toBe('octocat')
+    expect($accounts->list()[0]->login)->toBe('octocat')
         ->and($accounts->advance(['flowId' => 'flow-1', 'input' => 'github.com'])->kind->value)->toBe('completed');
 
-    $client->shouldReceive('request')->once()->with('session.accounts.get', [
-        'sessionId' => 'session-1', 'query' => ['kind' => 'lastErrors'],
-    ])->andReturn(['kind' => 'lastErrors', 'errors' => [['message' => 'Expired', 'githubMessage' => 'Token expired']]]);
+    $client->shouldReceive('request')->once()->with('session.accounts.lastErrors', [
+        'sessionId' => 'session-1',
+    ])->andReturn([['message' => 'Expired', 'githubMessage' => 'Token expired']]);
 
-    $read = $accounts->get('lastErrors');
-    expect($read)->toBeInstanceOf(AuthReadValue::class)
-        ->and($read->errors[0]->githubMessage)->toBe('Token expired');
+    expect($accounts->lastErrors()[0]->githubMessage)->toBe('Token expired');
 });
 
 test('session events preserve new workflow correlation fields', function () {

@@ -7,16 +7,21 @@ namespace Revolution\Copilot\Types\Rpc;
 use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\AccountKind;
 
-readonly class AccountStatus implements Arrayable
+readonly class Account implements Arrayable
 {
     public function __construct(
         public string $host,
         public string $login,
         public AccountKind|string $kind,
         public bool $active,
-        public string $selectionId,
+        public ?string $selectionId = null,
         public ?string $derivedFrom = null,
         public ?string $authSource = null,
+        public ?string $accountId = null,
+        public ?string $label = null,
+        public ?bool $switchable = null,
+        public ?string $health = null,
+        public ?string $statusMessage = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -26,9 +31,14 @@ readonly class AccountStatus implements Arrayable
             login: $data['login'] ?? '',
             kind: AccountKind::tryFrom($data['kind'] ?? '') ?? ($data['kind'] ?? ''),
             active: (bool) ($data['active'] ?? false),
-            selectionId: $data['selectionId'] ?? '',
+            selectionId: $data['selectionId'] ?? null,
             derivedFrom: $data['derivedFrom'] ?? null,
             authSource: $data['authSource'] ?? null,
+            accountId: $data['accountId'] ?? null,
+            label: $data['label'] ?? null,
+            switchable: $data['switchable'] ?? null,
+            health: $data['health'] ?? null,
+            statusMessage: $data['statusMessage'] ?? null,
         );
     }
 
@@ -42,6 +52,11 @@ readonly class AccountStatus implements Arrayable
             'active' => $this->active,
             'selectionId' => $this->selectionId,
             'authSource' => $this->authSource,
+            'accountId' => $this->accountId,
+            'label' => $this->label,
+            'switchable' => $this->switchable,
+            'health' => $this->health,
+            'statusMessage' => $this->statusMessage,
         ], fn ($value) => $value !== null);
     }
 }

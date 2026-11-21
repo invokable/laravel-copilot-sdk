@@ -74,23 +74,31 @@ $status = $session->rpc()->gitHubAuth()->getStatus();
 // $status->statusMessage - 認証状態のメッセージ
 ```
 
-## accounts（対話型ログインのアカウント選択）
+## accounts（experimental: アカウントと対話型ログイン）
 
-`accounts()`でログインに使える保存済みアカウントを列挙し、対話型ログインを開始できます。各項目の`label`は表示用、`active`はそのIDが現在のセッションの有効なアカウントに対応するかを示します。`accountId`はプロバイダーが所有する不透明なIDです。内容を解析・加工せず、そのままログイン開始時に渡してください。
+`accounts()`でアカウントの一覧と現在選択中のアカウントを取得し、ログインに再利用できる保存済みIDから対話型ログインを開始できます。`authProviders()`では利用可能な認証プロバイダーを取得できます。これらのRPCはexperimentalです。
 
 ```php
 use Revolution\Copilot\Enums\AuthLoginMode;
 use Revolution\Copilot\Enums\LoginProviderKind;
 use Revolution\Copilot\Types\Rpc\AuthLoginBeginRequest;
+use Revolution\Copilot\Types\Rpc\AuthLoginListRequest;
 
+// accounts: アカウント一覧と現在選択中のアカウント
 $accounts = $session->rpc()->accounts();
-$identities = $accounts->enumerate(
-    'loginAccounts',
-    provider: LoginProviderKind::ENTRA,
-);
+$accountList = $accounts->list();
+$active = $accounts->getActive();
+// $active->account - 選択中のアカウント。存在しない場合はnull
+// $active->authInfo - 認証情報のメタデータ
+
+// authProviders: 利用可能な認証プロバイダー
+$providers = $session->rpc()->authProviders()->list();
+
+// accounts: ログインに再利用できる保存済みID
+$identities = $accounts->loginList(new AuthLoginListRequest(provider: LoginProviderKind::ENTRA));
 
 if (isset($identities[0])) {
-    $accounts->begin(new AuthLoginBeginRequest(
+    $login = $accounts->begin(new AuthLoginBeginRequest(
         kind: LoginProviderKind::ENTRA,
         mode: AuthLoginMode::Default,
         accountId: $identities[0]->accountId,
@@ -98,4 +106,6 @@ if (isset($identities[0])) {
 }
 ```
 
-通常のプロバイダー動作で保存済みIDを使う場合は`mode: 'default'`を指定します。プロバイダーのアカウント選択UIを明示的に表示したい場合は`mode: 'selectAccount'`を使い、この場合は`accountId`を渡しません。詳細は[認証方法](../auth.md)を参照してください。
+保存済みIDの`label`は表示用、`active`はそのIDが現在のセッションの有効なアカウントに対応するかを示します。`accountId`はプロバイダーが所有する不透明なIDです。内容を解析・加工せず、そのままログイン開始時に渡してください。
+
+通常のプロバイダー動作で保存済みIDを使う場合は`mode: 'default'`を指定します。プロバイダーのアカウント選択UIを明示的に表示したい場合は`mode: 'selectAccount'`を使い、この場合は`accountId`を渡しません。ログインフローの進行とキャンセルには`advance()`と`cancel()`を使います。詳細は[認証方法](../auth.md)を参照してください。

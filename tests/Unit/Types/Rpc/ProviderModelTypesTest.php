@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\AiCreditsStatus;
 use Revolution\Copilot\Enums\ModelProviderKind;
 use Revolution\Copilot\Types\ModelInfo;
-use Revolution\Copilot\Types\Rpc\AccountStatus;
+use Revolution\Copilot\Types\Rpc\Account;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
 use Revolution\Copilot\Types\Rpc\MetadataContextInfoRequest;
 use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
@@ -26,7 +26,7 @@ it('round trips model provider selection, auth source, and AI-credit status', fu
         'planBaseProviderId' => 'copilot',
     ]);
     $switch = new ModelSwitchToRequest(modelId: 'gpt-5', providerId: 'loki');
-    $account = AccountStatus::fromArray([
+    $account = Account::fromArray([
         'host' => 'github.com',
         'login' => 'octocat',
         'kind' => 'githubDotCom',
