@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolt\EventLoop;
 use Revolution\Copilot\Transport\TcpTransport;
 
 describe('TcpTransport', function () {
@@ -94,6 +95,70 @@ describe('TcpTransport', function () {
         $transport->stop();
 
         expect($transport->isConnected())->toBeFalse();
+    });
+
+    it('closes the socket and cancels pending reads when stopped', function () {
+        [$socket, $peer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        $transport = new TcpTransport;
+        $callbackId = EventLoop::onReadable($socket, fn () => null);
+        (new ReflectionProperty(TcpTransport::class, 'socket'))->setValue($transport, $socket);
+        (new ReflectionProperty(TcpTransport::class, 'callbackId'))->setValue($transport, $callbackId);
+
+        $transport->stop();
+        fclose($peer);
+
+        expect($transport->isConnected())->toBeFalse()
+            ->and(is_resource($socket))->toBeFalse();
+    });
+
+    it('can send messages over an established connection', function () {
+        [$socket, $peer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        $transport = new TcpTransport;
+        (new ReflectionProperty(TcpTransport::class, 'socket'))->setValue($transport, $socket);
+
+        $transport->send('hello');
+        $message = fread($peer, 5);
+        $transport->stop();
+        fclose($peer);
+
+        expect($message)->toBe('hello');
+    });
+
+    it('returns empty content when no connection is established', function () {
+        $transport = new TcpTransport;
+        $readContent = new ReflectionMethod(TcpTransport::class, 'readContent');
+
+        expect($readContent->invoke($transport))->toBe('');
+    });
+
+    it('returns empty content for invalid or empty content-length headers', function () {
+        $readContent = new ReflectionMethod(TcpTransport::class, 'readContent');
+
+        foreach (["Invalid header\r\n", "Content-Length: 0\r\n"] as $header) {
+            [$socket, $peer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+            fwrite($peer, $header);
+            (new ReflectionProperty(TcpTransport::class, 'socket'))->setValue($transport = new TcpTransport, $socket);
+
+            expect($readContent->invoke($transport))->toBe('');
+
+            $transport->stop();
+            fclose($peer);
+        }
+    });
+
+    it('reads content-length framed messages from an established connection', function () {
+        [$socket, $peer] = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        fwrite($peer, "Content-Length: 5\r\n\r\nhello");
+        $transport = new TcpTransport;
+        (new ReflectionProperty(TcpTransport::class, 'socket'))->setValue($transport, $socket);
+
+        $message = (new ReflectionMethod(TcpTransport::class, 'readContent'))->invoke($transport);
+        $isBlocking = stream_get_meta_data($socket)['blocked'];
+        $transport->stop();
+        fclose($peer);
+
+        expect($message)->toBe('hello')
+            ->and($isBlocking)->toBeFalse();
     });
 
     it('can set onReceive handler', function () {
