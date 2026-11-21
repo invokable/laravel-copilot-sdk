@@ -28,7 +28,7 @@ providersConfig の使用例は [設定・管理設定](server-settings.md) を�
 
 ## MCP・コネクター・Secrets
 
-`mcp()`はMCP設定の一覧・追加・更新・削除、有効化、検出、レジストリ検索、インストール計画と適用を提供します。`connectors()`ではコネクター機能とアカウント、カタログを確認できます。サーバー側でのコネクター操作はアカウント単位の一覧取得・更新が中心です。実験的な`secrets()->addFilterValues()`は、ホストが生成した動的シークレットをCLIのredaction filterに登録し、session logsやexportsでマスクします。
+`mcp()`はMCP設定の一覧・追加・更新・削除、有効化、検出、レジストリ検索、インストール計画と適用を提供します。`connectors()`ではコネクター機能とアカウント、カタログを確認できます。サーバー側でのコネクター操作はアカウント単位の一覧取得・更新が中心です。実験的な`secrets()`では、`addFilterValues()`でホスト生成のシークレットをredaction filterに登録し、`filter()`でテキストやJSONをマスクし、`removeFilterValues()`で登録を解除できます。
 
 secrets の使用例は [MCP・コネクター](server-mcp.md) を参照してください。
 
