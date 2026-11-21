@@ -6,7 +6,7 @@ namespace Revolution\Copilot\Enums;
 
 enum LoginProviderKind: string
 {
-    case GITHUB_DOT_COM = 'githubDotCom';
-    case PROXIMA = 'proxima';
+    case GITHUB_DOT_COM = 'gitHub';
+    case PROXIMA = 'gitHubEnterpriseCloud';
     case ENTRA = 'entra';
 }

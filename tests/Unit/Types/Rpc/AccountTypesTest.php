@@ -11,6 +11,7 @@ use Revolution\Copilot\Types\Rpc\AccountsLogoutRequest;
 use Revolution\Copilot\Types\Rpc\AccountsSetCredentialsRequest;
 use Revolution\Copilot\Types\Rpc\AccountsSwitchActiveRequest;
 use Revolution\Copilot\Types\Rpc\AuthIdentity;
+use Revolution\Copilot\Types\Rpc\AuthLoginBeginRequest;
 use Revolution\Copilot\Types\Rpc\AuthLoginListRequest;
 use Revolution\Copilot\Types\Rpc\AuthProviderDescriptor;
 use Revolution\Copilot\Types\Rpc\AuthReadValue;
@@ -84,5 +85,40 @@ describe('account RPC types', function () {
             ->and(AuthLoginListRequest::fromArray(['provider' => 'future-provider'])->toArray())->toBe(['provider' => 'future-provider'])
             ->and(AuthProviderDescriptor::fromArray(['kind' => 'future-provider', 'label' => 'Future', 'available' => true])->toArray())
             ->toBe(['kind' => 'future-provider', 'label' => 'Future', 'available' => true]);
+    });
+
+    it('hydrates and round trips current account kinds', function (string $wireKind, AccountKind $kind) {
+        $data = ['host' => 'github.com', 'login' => 'octocat', 'kind' => $wireKind, 'active' => false];
+        $account = Account::fromArray($data);
+
+        expect($account->kind)->toBe($kind)
+            ->and($account->toArray())->toBe($data);
+    })->with([
+        ['gitHub', AccountKind::GITHUB_DOT_COM],
+        ['gitHubEnterpriseCloud', AccountKind::PROXIMA],
+        ['entraEmu', AccountKind::ENTRA_EMU],
+        ['entra', AccountKind::ENTRA],
+        ['microsoft365Copilot', AccountKind::LOKI],
+    ]);
+
+    it('hydrates provider kinds and serializes them for both login requests', function (string $wireKind, LoginProviderKind $kind) {
+        $descriptor = AuthProviderDescriptor::fromArray(['kind' => $wireKind, 'label' => 'Provider', 'available' => false]);
+        $request = AuthLoginListRequest::fromArray(['provider' => $wireKind]);
+
+        expect($descriptor->kind)->toBe($kind)
+            ->and($descriptor->toArray())->toBe(['kind' => $wireKind, 'label' => 'Provider', 'available' => false])
+            ->and($request->provider)->toBe($kind)
+            ->and($request->toArray())->toBe(['provider' => $wireKind])
+            ->and((new AuthLoginListRequest($kind))->toArray())->toBe(['provider' => $wireKind])
+            ->and((new AuthLoginBeginRequest($kind))->toArray())->toBe(['kind' => $wireKind]);
+    })->with([
+        ['gitHub', LoginProviderKind::GITHUB_DOT_COM],
+        ['gitHubEnterpriseCloud', LoginProviderKind::PROXIMA],
+        ['entra', LoginProviderKind::ENTRA],
+    ]);
+
+    it('preserves unknown provider strings in both login requests', function () {
+        expect((new AuthLoginListRequest('future-provider'))->toArray())->toBe(['provider' => 'future-provider'])
+            ->and((new AuthLoginBeginRequest('future-provider'))->toArray())->toBe(['kind' => 'future-provider']);
     });
 });

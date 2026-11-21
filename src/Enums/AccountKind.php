@@ -6,9 +6,9 @@ namespace Revolution\Copilot\Enums;
 
 enum AccountKind: string
 {
-    case GITHUB_DOT_COM = 'githubDotCom';
-    case PROXIMA = 'proxima';
+    case GITHUB_DOT_COM = 'gitHub';
+    case PROXIMA = 'gitHubEnterpriseCloud';
     case ENTRA_EMU = 'entraEmu';
     case ENTRA = 'entra';
-    case LOKI = 'loki';
+    case LOKI = 'microsoft365Copilot';
 }

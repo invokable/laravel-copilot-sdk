@@ -29,7 +29,7 @@ it('round trips model provider selection, auth source, and AI-credit status', fu
     $account = Account::fromArray([
         'host' => 'github.com',
         'login' => 'octocat',
-        'kind' => 'githubDotCom',
+        'kind' => 'gitHub',
         'active' => true,
         'selectionId' => 'account-1',
         'authSource' => 'gh',

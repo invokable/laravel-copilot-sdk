@@ -126,6 +126,25 @@ describe('PendingSessionAccounts', function () {
         expect($result->flowId)->toBe('flow-2');
     });
 
+    it('sends current provider values for login list and begin', function (LoginProviderKind $kind, string $wireKind) {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('session.accounts.login.list', ['provider' => $wireKind, 'sessionId' => 'session-1'])
+            ->andReturn([]);
+        $client->shouldReceive('request')->once()
+            ->with('session.accounts.login.begin', ['sessionId' => 'session-1', 'kind' => $wireKind])
+            ->andReturn(['flowId' => 'flow-1', 'step' => ['kind' => 'awaiting']]);
+
+        $accounts = new PendingSessionAccounts($client, 'session-1');
+
+        expect($accounts->loginList(new AuthLoginListRequest($kind)))->toBe([])
+            ->and($accounts->begin($kind)->flowId)->toBe('flow-1');
+    })->with([
+        [LoginProviderKind::GITHUB_DOT_COM, 'gitHub'],
+        [LoginProviderKind::PROXIMA, 'gitHubEnterpriseCloud'],
+        [LoginProviderKind::ENTRA, 'entra'],
+    ]);
+
     it('sends the device-code method and returns its typed login step', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

@@ -76,7 +76,7 @@ $status = $session->rpc()->gitHubAuth()->getStatus();
 
 ## accounts（experimental: アカウントと対話型ログイン）
 
-`accounts()`でアカウントの一覧と現在選択中のアカウントを取得し、ログインに再利用できる保存済みIDから対話型ログインを開始できます。`authProviders()`では利用可能な認証プロバイダーを取得できます。これらのRPCはexperimentalです。
+`accounts()`でアカウントの一覧と現在選択中のアカウントを取得し、ログインに再利用できる保存済みIDから対話型ログインを開始できます。`authProviders()`では認証プロバイダーとその利用可否を取得できます。これらのRPCはexperimentalです。
 
 ```php
 use Revolution\Copilot\Enums\AuthLoginMode;
@@ -91,7 +91,7 @@ $active = $accounts->getActive();
 // $active->account - 選択中のアカウント。存在しない場合はnull
 // $active->authInfo - 認証情報のメタデータ
 
-// authProviders: 利用可能な認証プロバイダー
+// authProviders: 認証プロバイダーとその利用可否
 $providers = $session->rpc()->authProviders()->list();
 
 // accounts: ログインに再利用できる保存済みID
