@@ -135,13 +135,17 @@ $result = Copilot::client()->rpc()->mcp()->discover();
 // $result->servers は DiscoveredMcpServer の配列
 ```
 
-## secrets (experimental: 動的シークレットのマスク登録)
+## secrets (experimental: シークレットのマスク)
 
 実験的な`secrets()->addFilterValues()`は、ホストが生成した動的シークレットをCLIのredaction filterに登録し、session logsやexportsでマスクします。
+`addFilterValues()`と`filter()`には、ランタイムの環境変数`COPILOT_ENABLE_SECRET_FILTERING=true`が必要です。
 
 ```php
+use Revolution\Copilot\Enums\SecretFilterFormat;
 use Revolution\Copilot\Facades\Copilot;
 use Revolution\Copilot\Types\Rpc\SecretsAddFilterValuesRequest;
+use Revolution\Copilot\Types\Rpc\SecretsFilterRequest;
+use Revolution\Copilot\Types\Rpc\SecretsRemoveFilterValuesRequest;
 
 $result = Copilot::client()->rpc()->secrets()->addFilterValues(
     new SecretsAddFilterValuesRequest(values: [$accessToken]),
@@ -152,9 +156,23 @@ $result = Copilot::client()->rpc()->secrets()->addFilterValues(
 Copilot::client()->rpc()->secrets()->addFilterValues([
     'values' => [$accessToken],
 ]);
+
+// ランタイムのフィルタでJSONをマスク
+$filtered = Copilot::client()->rpc()->secrets()->filter(
+    new SecretsFilterRequest(text: $json, format: SecretFilterFormat::Json),
+);
+// $filtered->value: マスク後の文字列、$filtered->changed: 変更の有無
+
+// 以後ログに出る可能性が低くなったら、このクライアントの登録を解除
+Copilot::client()->rpc()->secrets()->removeFilterValues(
+    new SecretsRemoveFilterValuesRequest(values: [$accessToken]),
+);
 ```
 
 このRPCはOAuthトークンを取得するものではなく、値はSDK内で永続化・追加ログ出力されません。ホスト側で取得した値を明示的に登録してください。
+`filter()`は登録済みの値と現在の環境変数由来のシークレットを対象とします。`format`の省略時は`text`で、`json`ではデコードしたJSON値をマスクします。不正なJSONはプレーンテキストとして扱われます。
+
+解除対象が未登録または解除済みの場合は何も行われず、他の有効な登録は残ります。解除後は過去の出力や遅れて届くエコーがマスクされなくなる可能性があるため、値が再びログに出る可能性が低くなってから解除してください。
 
 ## mcp oauth（MCP OAuth の事前確認）
 
