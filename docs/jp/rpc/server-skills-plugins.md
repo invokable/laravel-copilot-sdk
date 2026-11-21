@@ -28,6 +28,7 @@ use Revolution\Copilot\Types\Rpc\CatalogSearchRequest;
 use Revolution\Copilot\Types\Rpc\CatalogSelectionRequest;
 use Revolution\Copilot\Types\Rpc\InstructionsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\InstructionsGetDiscoveryPathsRequest;
+use Revolution\Copilot\Types\Rpc\PluginsActivateRequest;
 use Revolution\Copilot\Types\Rpc\PluginsBuiltinSetRequest;
 use Revolution\Copilot\Types\Rpc\PluginsDisableRequest;
 use Revolution\Copilot\Types\Rpc\PluginsEnableRequest;
@@ -231,6 +232,11 @@ $plugins->disable(new PluginsDisableRequest(names: ['eslint@official']));
 $plugins->enable(new PluginsEnableRequest(names: ['opaque-direct-source-id']));
 $plugins->disable(new PluginsDisableRequest(names: ['opaque-direct-source-id']));
 
+// experimental: セッション作成前にビルトインプラグインの sessionStart フックを実行
+$activation = $plugins->activate(new PluginsActivateRequest(name: 'browser-use'));
+$activation->status; // PluginActivationStatus
+$activation->message; // failed の場合のフックエラー、それ以外は null
+
 // ビルトインプラグインのディレクトリ設定
 $plugins->builtin()->set(new PluginsBuiltinSetRequest(paths: ['/opt/copilot/plugins']));
 
@@ -241,6 +247,10 @@ $plugins->builtin()->set(new PluginsBuiltinSetRequest(paths: ['/opt/copilot/plug
 // マーケットプレイス管理
 $marketplaces = $plugins->marketplaces();
 $marketplaces->list();
+// experimental: 保持されたプラグインに必要な廃止済み既定マーケットプレイスを復元
+$migration = $marketplaces->migrateRetiredDefault();
+$migration->status; // MarketplaceMigrationStatus
+$migration->marketplace; // migrated の場合に登録された名前、それ以外は null
 $marketplaces->add(new PluginsMarketplacesAddRequest(source: 'github/copilot-plugins'));
 $marketplaces->remove(new PluginsMarketplacesRemoveRequest(name: 'official', force: true));
 $marketplaces->browse(new PluginsMarketplacesBrowseRequest(name: 'official'));
@@ -329,6 +339,10 @@ $result = Copilot::client()->rpc()->extensions()->discover();
 Copilot::client()->rpc()->extensions()->enable(['ids' => ['user:demo']]);
 Copilot::client()->rpc()->extensions()->disable(['ids' => ['plugin:demo']]);
 ```
+
+`activate()` のフックはセッションのサンドボックスではなくホスト上で実行されます。プラグインやフックを無効にする設定・管理ポリシーが適用され、サンドボックスを有効にする管理ポリシーがある場合は活性化されません。管理ポリシーを判定できない場合は呼び出しが失敗し、拡張機能の呼び出し元は利用できません。
+
+`migrateRetiredDefault()` はカタログやポリシーを取得せず、保持済みの管理ポリシーを使います。移行はプロセス内でプロファイルごとに一度だけ実行され、不正な設定や書き込み失敗はエラーになります。返された結果は永続化された設定変更の報告に利用できます。
 
 ## Agent Plugin catalog候補
 
