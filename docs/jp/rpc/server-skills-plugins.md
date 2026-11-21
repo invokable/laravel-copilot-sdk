@@ -5,6 +5,8 @@
 RPC 全体の概要とページ一覧は [RPC](../rpc.md) を参照してください。
 
 ```php
+use Revolution\Copilot\Enums\AgentFileLocation;
+use Revolution\Copilot\Enums\AgentToolCategoryId;
 use Revolution\Copilot\Enums\CatalogCandidateKind;
 use Revolution\Copilot\Enums\CatalogCapability;
 use Revolution\Copilot\Enums\CatalogSelectionDecision;
@@ -12,8 +14,11 @@ use Revolution\Copilot\Enums\CatalogTrustTier;
 use Revolution\Copilot\Enums\SkillInstallationManagementOutcomeKind;
 use Revolution\Copilot\Enums\SkillInstallationManagementResultKind;
 use Revolution\Copilot\Enums\SkillsRemoveSourceOutcomeKind;
+use Revolution\Copilot\Types\Rpc\AgentsCreateFileRequest;
 use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
+use Revolution\Copilot\Types\Rpc\AgentsGenerateFileContentRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateNameRequest;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogGetGeneratedFeedRequest;
 use Revolution\Copilot\Types\Rpc\CatalogGetSavedFeedRequest;
@@ -261,6 +266,42 @@ $result = Copilot::client()->rpc()->agents()->getDiscoveryPaths();
 $result = Copilot::client()->rpc()->agents()->getDiscoveryPaths(
     new AgentsGetDiscoveryPathsRequest(scope: 'user')
 );
+
+// エージェント名の検証と利用可能なツール分類の取得 (experimental)
+
+$agents = Copilot::client()->rpc()->agents();
+$validation = $agents->validateName(new AgentsValidateNameRequest(name: 'Code Review'));
+if ($validation->valid) {
+    $categories = $agents->listToolCategories();
+    // $categories->categories は AgentToolCategory の配列
+}
+
+// エージェント定義のMarkdownを生成 (experimental)
+
+$content = $agents->generateFileContent(new AgentsGenerateFileContentRequest(
+    name: 'Code Review',
+    description: 'コード変更をレビューします',
+    instructions: '変更点とリスクを確認してください。',
+    tools: ['read_file', 'grep_search'],
+));
+// $content->content はMarkdown全文
+
+// エージェント定義ファイルを作成 (experimental)
+
+$created = $agents->createFile(new AgentsCreateFileRequest(
+    name: 'Code Review',
+    description: 'コード変更をレビューします',
+    instructions: '変更点とリスクを確認してください。',
+    enabledCategories: [AgentToolCategoryId::Read, AgentToolCategoryId::Edit],
+    location: AgentFileLocation::Project,
+    projectPath: '/path/to/project',
+    userConfigDir: '/home/user/.copilot',
+));
+if ($created->kind->value === 'success') {
+    $filePath = $created->filePath;
+} else {
+    $errorMessage = $created->message;
+}
 
 // instructions (experimental: インストラクション管理)
 // インストラクションの探索

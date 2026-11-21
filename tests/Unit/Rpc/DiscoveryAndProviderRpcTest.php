@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\AgentFileLocation;
+use Revolution\Copilot\Enums\AgentToolCategoryId;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingProvider;
 use Revolution\Copilot\Rpc\PendingProviderModels;
@@ -11,11 +13,14 @@ use Revolution\Copilot\Rpc\PendingServerInstructions;
 use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\ProviderModelConfig;
 use Revolution\Copilot\Types\Rpc\AgentDiscoveryPathList;
+use Revolution\Copilot\Types\Rpc\AgentsCreateFileRequest;
 use Revolution\Copilot\Types\Rpc\AgentsCustomAgentInitialModelDecisionRequest;
+use Revolution\Copilot\Types\Rpc\AgentsGenerateFileContentRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetAvailableBuiltinsRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinDefinitionRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinListingDefinitionRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateNameRequest;
 use Revolution\Copilot\Types\Rpc\InstructionDiscoveryPathList;
 use Revolution\Copilot\Types\Rpc\InstructionsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\ModelProviderDiscoverRequest;
@@ -124,6 +129,92 @@ describe('PendingServerAgents', function () {
             ->and($listing->definitionJson)->toBe('{"name":"explore"}')
             ->and($decision->targetModel)->toBe('model-b')
             ->and($decision->reasoningEffort)->toBe('high');
+    });
+});
+
+describe('PendingServerAgents file creation', function () {
+    it('validates a proposed agent name', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('agents.validateName', ['name' => 'Code Review'])
+            ->andReturn(['valid' => true]);
+
+        $result = (new PendingServerAgents($client))->validateName(
+            new AgentsValidateNameRequest('Code Review'),
+        );
+
+        expect($result->valid)->toBeTrue();
+    });
+
+    it('returns typed selectable tool categories', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('agents.listToolCategories', [])
+            ->andReturn(['categories' => [[
+                'id' => 'shell',
+                'label' => 'Shell',
+                'tools' => ['run'],
+            ]]]);
+
+        $result = (new PendingServerAgents($client))->listToolCategories();
+
+        expect($result->categories[0]->id)->toBe(AgentToolCategoryId::Shell)
+            ->and($result->categories[0]->tools)->toBe(['run']);
+    });
+
+    it('generates agent definition Markdown', function () {
+        $request = new AgentsGenerateFileContentRequest(
+            name: 'Code Review',
+            description: 'Reviews changes',
+            tools: ['read_file'],
+            instructions: 'Review the code.',
+        );
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('agents.generateFileContent', [
+                'name' => 'Code Review',
+                'description' => 'Reviews changes',
+                'tools' => ['read_file'],
+                'instructions' => 'Review the code.',
+            ])
+            ->andReturn(['content' => "---\nname: Code Review\n---"]);
+
+        $result = (new PendingServerAgents($client))->generateFileContent($request);
+
+        expect($result->content)->toBe("---\nname: Code Review\n---");
+    });
+
+    it('creates an agent definition file', function () {
+        $request = new AgentsCreateFileRequest(
+            name: 'Code Review',
+            description: 'Reviews changes',
+            instructions: 'Review the code.',
+            enabledCategories: [AgentToolCategoryId::Read, AgentToolCategoryId::Edit],
+            location: AgentFileLocation::Project,
+            projectPath: '/workspace',
+            userConfigDir: '/home/user/.copilot',
+        );
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('agents.createFile', [
+                'name' => 'Code Review',
+                'description' => 'Reviews changes',
+                'instructions' => 'Review the code.',
+                'enabledCategories' => ['read', 'edit'],
+                'location' => 'project',
+                'projectPath' => '/workspace',
+                'userConfigDir' => '/home/user/.copilot',
+            ])
+            ->andReturn(['kind' => 'success', 'filePath' => '/workspace/.github/agents/code-review.md']);
+
+        $result = (new PendingServerAgents($client))->createFile($request);
+
+        expect($result->kind->value)->toBe('success')
+            ->and($result->filePath)->toBe('/workspace/.github/agents/code-review.md');
     });
 });
 

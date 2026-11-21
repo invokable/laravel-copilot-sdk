@@ -6,9 +6,13 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\AgentDiscoveryPathList;
+use Revolution\Copilot\Types\Rpc\AgentsCreateFileRequest;
+use Revolution\Copilot\Types\Rpc\AgentsCreateFileResult;
 use Revolution\Copilot\Types\Rpc\AgentsCustomAgentInitialModelDecisionRequest;
 use Revolution\Copilot\Types\Rpc\AgentsCustomAgentInitialModelDecisionResult;
 use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
+use Revolution\Copilot\Types\Rpc\AgentsGenerateFileContentRequest;
+use Revolution\Copilot\Types\Rpc\AgentsGenerateFileContentResult;
 use Revolution\Copilot\Types\Rpc\AgentsGetAvailableBuiltinsRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetAvailableBuiltinsResult;
 use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinDefinitionRequest;
@@ -17,6 +21,9 @@ use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinListingDefinitionRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinListingDefinitionResult;
 use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinsResult;
 use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
+use Revolution\Copilot\Types\Rpc\AgentsListToolCategoriesResult;
+use Revolution\Copilot\Types\Rpc\AgentsValidateNameRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateNameResult;
 use Revolution\Copilot\Types\Rpc\ServerAgentList;
 
 /**
@@ -126,6 +133,66 @@ class PendingServerAgents
 
         return AgentsCustomAgentInitialModelDecisionResult::fromArray(
             $this->client->request('agents.customAgentInitialModelDecision', $paramsArray),
+        );
+    }
+
+    /**
+     * Checks whether a proposed agent name can produce a usable filename.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function validateName(AgentsValidateNameRequest|array $params): AgentsValidateNameResult
+    {
+        $paramsArray = ($params instanceof AgentsValidateNameRequest
+            ? $params
+            : AgentsValidateNameRequest::fromArray($params))->toArray();
+
+        return AgentsValidateNameResult::fromArray(
+            $this->client->request('agents.validateName', $paramsArray),
+        );
+    }
+
+    /**
+     * Returns the selectable tool categories for custom agents.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function listToolCategories(): AgentsListToolCategoriesResult
+    {
+        return AgentsListToolCategoriesResult::fromArray(
+            $this->client->request('agents.listToolCategories', []),
+        );
+    }
+
+    /**
+     * Renders agent definition Markdown without accessing the filesystem.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function generateFileContent(AgentsGenerateFileContentRequest|array $params): AgentsGenerateFileContentResult
+    {
+        $paramsArray = ($params instanceof AgentsGenerateFileContentRequest
+            ? $params
+            : AgentsGenerateFileContentRequest::fromArray($params))->toArray();
+
+        return AgentsGenerateFileContentResult::fromArray(
+            $this->client->request('agents.generateFileContent', $paramsArray),
+        );
+    }
+
+    /**
+     * Creates a custom agent definition file.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function createFile(AgentsCreateFileRequest|array $params): AgentsCreateFileResult
+    {
+        $paramsArray = ($params instanceof AgentsCreateFileRequest
+            ? $params
+            : AgentsCreateFileRequest::fromArray($params))->toArray();
+
+        return AgentsCreateFileResult::fromArray(
+            $this->client->request('agents.createFile', $paramsArray),
         );
     }
 }
