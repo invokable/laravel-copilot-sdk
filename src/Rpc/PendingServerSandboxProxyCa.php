@@ -6,9 +6,9 @@ namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\SandboxConfig;
-use Revolution\Copilot\Types\Rpc\SandboxProxyCaCreateResult;
 use Revolution\Copilot\Types\Rpc\SandboxProxyCaCreateForConfigDirParams;
 use Revolution\Copilot\Types\Rpc\SandboxProxyCaCreateForConfigDirResult;
+use Revolution\Copilot\Types\Rpc\SandboxProxyCaCreateResult;
 use Revolution\Copilot\Types\Rpc\SandboxProxyCaDeclineParams;
 use Revolution\Copilot\Types\Rpc\SandboxProxyCaGetDeclinedParams;
 use Revolution\Copilot\Types\Rpc\SandboxProxyCaGetStatusForConfigDirParams;

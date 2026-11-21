@@ -56,7 +56,7 @@ secrets の使用例は [MCP・コネクター](server-mcp.md) を参照して�
 
 ## Git・環境・サンドボックス・ポリシー
 
-`git()`からブランチや作業ディレクトリ、Git remoteの情報を取得し、`gitHubRepository()`と`gitHubOwners()`からGitHubリポジトリや所有者を探索できます。`environments()`はMission Control環境、`sandbox()`と`sandboxProxyCa()`はサンドボックス対応状況やProxy CA、`contentExclusion()`は除外ポリシーの検証、`managedSettings()`と`userSettings()`は設定を扱います。設定ファイルの個別キー削除と表示用の値のマスキングは`settings()`から行えます。
+`git()`からブランチや作業ディレクトリ、Git remoteの情報を取得し、`gitHubRepository()`と`gitHubOwners()`からGitHubリポジトリや所有者を探索できます。`environments()`はMission Control環境、`sandbox()`と`sandboxProxyCa()`はサンドボックス対応状況やProxy CAを扱います。Proxy CAは設定ディレクトリごとの作成・信頼・削除やローテーションのほか、インストール辞退の記録、証明書ファイルの信頼にも対応します。`contentExclusion()`は除外ポリシーの検証、`managedSettings()`と`userSettings()`は設定を扱います。設定ファイルの個別キー削除と表示用の値のマスキングは`settings()`から行えます。
 
 `gitHubRepository()->getById()`はGitHubリポジトリIDからowner/nameを解決し、`lookupBranchPullRequest()`は指定したhead ownerとブランチを、優先順に指定したリポジトリで検索します。どちらも`authInfo`をそのまま渡します。`getById()`の結果は`repository`にowner/nameを含み、見つからない場合は`null`です。Pull Request検索の`status`は`found`、`no-token`、`no-pr`、`lookup-failed`のいずれかで、未知の値は文字列のまま保持されるため例外になりません。`pullRequest`は見つかった場合の連想配列で、それ以外は`null`です。
 
