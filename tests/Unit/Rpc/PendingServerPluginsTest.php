@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\MarketplaceMigrationStatus;
+use Revolution\Copilot\Enums\PluginActivationStatus;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerPlugins;
 use Revolution\Copilot\Rpc\PendingServerPluginsBuiltin;
@@ -10,10 +12,13 @@ use Revolution\Copilot\Transport\StdioTransport;
 use Revolution\Copilot\Types\Rpc\MarketplaceAddResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceBrowseResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceListResult;
+use Revolution\Copilot\Types\Rpc\MarketplaceMigrationResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceRefreshResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceRemoveResult;
 use Revolution\Copilot\Types\Rpc\PluginInstallResult;
 use Revolution\Copilot\Types\Rpc\PluginList;
+use Revolution\Copilot\Types\Rpc\PluginsActivateRequest;
+use Revolution\Copilot\Types\Rpc\PluginsActivateResult;
 use Revolution\Copilot\Types\Rpc\PluginsBuiltinSetRequest;
 use Revolution\Copilot\Types\Rpc\PluginsDisableRequest;
 use Revolution\Copilot\Types\Rpc\PluginsEnableRequest;
@@ -28,6 +33,23 @@ use Revolution\Copilot\Types\Rpc\PluginUpdateAllResult;
 use Revolution\Copilot\Types\Rpc\PluginUpdateResult;
 
 describe('PendingServerPlugins', function () {
+    it('activates a built-in plugin with a typed or array request', function ($params) {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('plugins.activate', ['name' => 'browser-use'])
+            ->andReturn(['status' => 'failed', 'message' => 'Hook failed']);
+
+        $result = (new PendingServerPlugins($client))->activate($params);
+
+        expect($result)->toBeInstanceOf(PluginsActivateResult::class)
+            ->and($result->status)->toBe(PluginActivationStatus::Failed)
+            ->and($result->message)->toBe('Hook failed');
+    })->with([
+        fn () => new PluginsActivateRequest('browser-use'),
+        [['name' => 'browser-use']],
+    ]);
+
     it('provides built-in and marketplace operations', function () {
         $client = new JsonRpcClient(new StdioTransport(
             fopen('php://memory', 'r'),
@@ -207,6 +229,20 @@ describe('PendingServerPluginsBuiltin', function () {
 });
 
 describe('PendingServerPluginsMarketplaces', function () {
+    it('migrates the retired default marketplace without parameters', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('plugins.marketplaces.migrateRetiredDefault', [])
+            ->andReturn(['status' => 'migrated', 'marketplace' => 'official']);
+
+        $result = (new PendingServerPluginsMarketplaces($client))->migrateRetiredDefault();
+
+        expect($result)->toBeInstanceOf(MarketplaceMigrationResult::class)
+            ->and($result->status)->toBe(MarketplaceMigrationStatus::Migrated)
+            ->and($result->marketplace)->toBe('official');
+    });
+
     it('lists registered marketplaces and decodes their metadata', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

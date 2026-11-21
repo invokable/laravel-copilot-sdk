@@ -8,6 +8,8 @@ use Revolution\Copilot\Enums\CatalogNegotiationRefusedReason;
 use Revolution\Copilot\Enums\CatalogReferenceInstallationFailureReason;
 use Revolution\Copilot\Enums\CatalogReferenceInstallationOutcomeKind;
 use Revolution\Copilot\Enums\CatalogReferenceInstallationResultKind;
+use Revolution\Copilot\Enums\MarketplaceMigrationStatus;
+use Revolution\Copilot\Enums\PluginActivationStatus;
 use Revolution\Copilot\Enums\PluginInstallationManagementOutcomeKind;
 use Revolution\Copilot\Enums\PluginInstallationMcpTransport;
 use Revolution\Copilot\Enums\PluginInstallationOutcomeKind;
@@ -16,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\CatalogMaterializationReference;
 use Revolution\Copilot\Types\Rpc\CatalogPlanInstallFromReferenceRequest;
 use Revolution\Copilot\Types\Rpc\CatalogReferenceInstallationOutcome;
 use Revolution\Copilot\Types\Rpc\CatalogReferenceInstallationResult;
+use Revolution\Copilot\Types\Rpc\MarketplaceMigrationResult;
 use Revolution\Copilot\Types\Rpc\PluginApplyInstallRequest;
 use Revolution\Copilot\Types\Rpc\PluginInstallationManagementOutcome;
 use Revolution\Copilot\Types\Rpc\PluginInstallationManagementResult;
@@ -24,6 +27,8 @@ use Revolution\Copilot\Types\Rpc\PluginInstallationResult;
 use Revolution\Copilot\Types\Rpc\PluginInstallationReview;
 use Revolution\Copilot\Types\Rpc\PluginInstallPlan;
 use Revolution\Copilot\Types\Rpc\PluginPlanInstallRequest;
+use Revolution\Copilot\Types\Rpc\PluginsActivateRequest;
+use Revolution\Copilot\Types\Rpc\PluginsActivateResult;
 
 function verifiedPluginTypesPlanData(): array
 {
@@ -71,6 +76,49 @@ function verifiedPluginTypesPlanData(): array
 }
 
 describe('verified Agent Plugin installation types', function () {
+    it('round-trips built-in activation requests and all activation statuses', function () {
+        $request = ['name' => 'browser-use'];
+        expect(PluginsActivateRequest::fromArray($request)->toArray())->toBe($request)
+            ->and((new PluginsActivateRequest('browser-use'))->toArray())->toBe($request);
+
+        foreach ([
+            'activated' => PluginActivationStatus::Activated,
+            'notFound' => PluginActivationStatus::NotFound,
+            'disabled' => PluginActivationStatus::Disabled,
+            'noHooks' => PluginActivationStatus::NoHooks,
+            'failed' => PluginActivationStatus::Failed,
+            'timedOut' => PluginActivationStatus::TimedOut,
+        ] as $status => $expected) {
+            $data = ['status' => $status];
+            $result = PluginsActivateResult::fromArray($data);
+            expect($result->status)->toBe($expected)
+                ->and($result->message)->toBeNull()
+                ->and($result->toArray())->toBe($data);
+        }
+
+        $failure = ['status' => 'failed', 'message' => ''];
+        expect(PluginsActivateResult::fromArray($failure)->toArray())->toBe($failure);
+    });
+
+    it('round-trips all marketplace migration statuses and optional marketplace', function () {
+        foreach ([
+            'alreadyRan' => MarketplaceMigrationStatus::AlreadyRan,
+            'notApplicable' => MarketplaceMigrationStatus::NotApplicable,
+            'alreadyRegistered' => MarketplaceMigrationStatus::AlreadyRegistered,
+            'blockedByManagedPolicy' => MarketplaceMigrationStatus::BlockedByManagedPolicy,
+            'migrated' => MarketplaceMigrationStatus::Migrated,
+        ] as $status => $expected) {
+            $data = ['status' => $status];
+            $result = MarketplaceMigrationResult::fromArray($data);
+            expect($result->status)->toBe($expected)
+                ->and($result->marketplace)->toBeNull()
+                ->and($result->toArray())->toBe($data);
+        }
+
+        $migration = ['status' => 'migrated', 'marketplace' => 'official'];
+        expect(MarketplaceMigrationResult::fromArray($migration)->toArray())->toBe($migration);
+    });
+
     it('round-trips all three install-planning requests', function () {
         $contract = new CatalogClientContract(3, ['agent-plugin-confirmed-installation']);
         $reference = new CatalogMaterializationReference('resource-1', 'revision-1', '1.0.0', 'sha256:descriptor', 'sha256:bundle');

@@ -11,6 +11,8 @@ use Revolution\Copilot\Types\Rpc\PluginInstallationResult;
 use Revolution\Copilot\Types\Rpc\PluginInstallResult;
 use Revolution\Copilot\Types\Rpc\PluginList;
 use Revolution\Copilot\Types\Rpc\PluginPlanInstallRequest;
+use Revolution\Copilot\Types\Rpc\PluginsActivateRequest;
+use Revolution\Copilot\Types\Rpc\PluginsActivateResult;
 use Revolution\Copilot\Types\Rpc\PluginsDisableRequest;
 use Revolution\Copilot\Types\Rpc\PluginsEnableRequest;
 use Revolution\Copilot\Types\Rpc\PluginsInstallRequest;
@@ -144,6 +146,22 @@ class PendingServerPlugins
             : PluginsDisableRequest::fromArray($params))->toArray();
 
         $this->client->request('plugins.disable', $paramsArray);
+    }
+
+    /**
+     * Run a built-in plugin's sessionStart hook without a session.
+     *
+     * @experimental
+     */
+    public function activate(PluginsActivateRequest|array $params): PluginsActivateResult
+    {
+        $paramsArray = ($params instanceof PluginsActivateRequest
+            ? $params
+            : PluginsActivateRequest::fromArray($params))->toArray();
+
+        return PluginsActivateResult::fromArray(
+            $this->client->request('plugins.activate', $paramsArray),
+        );
     }
 
     /**

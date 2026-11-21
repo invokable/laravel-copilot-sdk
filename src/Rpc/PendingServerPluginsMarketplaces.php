@@ -8,6 +8,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\MarketplaceAddResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceBrowseResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceListResult;
+use Revolution\Copilot\Types\Rpc\MarketplaceMigrationResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceRefreshResult;
 use Revolution\Copilot\Types\Rpc\MarketplaceRemoveResult;
 use Revolution\Copilot\Types\Rpc\PluginsMarketplacesAddRequest;
@@ -33,6 +34,18 @@ class PendingServerPluginsMarketplaces
     {
         return MarketplaceListResult::fromArray(
             $this->client->request('plugins.marketplaces.list', []),
+        );
+    }
+
+    /**
+     * Restore the retired default marketplace when retained installations require it.
+     *
+     * @experimental
+     */
+    public function migrateRetiredDefault(): MarketplaceMigrationResult
+    {
+        return MarketplaceMigrationResult::fromArray(
+            $this->client->request('plugins.marketplaces.migrateRetiredDefault', []),
         );
     }
 
