@@ -59,6 +59,49 @@ $proxyCa = $client->rpc()->sandboxProxyCa();
 $relevant = $proxyCa->checkRelevance(['enabled' => true]);
 $installable = $proxyCa->checkInstallationSupport();
 
+// configDir単位でProxy CAを作成・確認・ローテーション・信頼
+use Revolution\Copilot\Types\Rpc\SandboxProxyCaCreateForConfigDirParams;
+use Revolution\Copilot\Types\Rpc\SandboxProxyCaGetStatusForConfigDirParams;
+use Revolution\Copilot\Types\Rpc\SandboxProxyCaRotateForConfigDirParams;
+use Revolution\Copilot\Types\Rpc\SandboxProxyCaTrustForConfigDirParams;
+use Revolution\Copilot\Types\Rpc\SandboxProxyCaRemoveForConfigDirParams;
+use Revolution\Copilot\Types\Rpc\SandboxProxyCaDeclineParams;
+use Revolution\Copilot\Types\Rpc\SandboxProxyCaGetDeclinedParams;
+use Revolution\Copilot\Types\Rpc\SandboxProxyCaRotateIfUntrustedParams;
+use Revolution\Copilot\Types\Rpc\SandboxProxyCaTrustCertificateRequest;
+
+$configDir = '/home/user/copilot-profile';
+$status = $proxyCa->getStatusForConfigDir(new SandboxProxyCaGetStatusForConfigDirParams(
+    configDir: $configDir,
+    sandboxConfig: ['enabled' => true],
+));
+$created = $proxyCa->createForConfigDir(new SandboxProxyCaCreateForConfigDirParams(configDir: $configDir));
+$rotated = $proxyCa->rotateForConfigDir(new SandboxProxyCaRotateForConfigDirParams(configDir: $configDir));
+$trusted = $proxyCa->trustForConfigDir(new SandboxProxyCaTrustForConfigDirParams(configDir: $configDir));
+$removed = $proxyCa->removeForConfigDir(new SandboxProxyCaRemoveForConfigDirParams(configDir: $configDir));
+
+// インストールを辞退したときだけ記録する。設定ファイルやOS信頼ストアは変更しない。
+$hostContext = [
+    'configDir' => $configDir,
+    'homeDirectory' => '/home/user',
+    'environment' => ['COPILOT_HOME' => $configDir],
+];
+$declined = $proxyCa->getDeclined(new SandboxProxyCaGetDeclinedParams(...$hostContext));
+$proxyCa->decline(new SandboxProxyCaDeclineParams(...$hostContext));
+
+// 信頼されていない場合のみローテーション
+$rotated = $proxyCa->rotateIfUntrusted(new SandboxProxyCaRotateIfUntrustedParams(
+    configDir: $configDir,
+    sandboxConfig: ['enabled' => true],
+));
+
+// 証明書ファイルを指定してOS信頼ストアへ登録（OSの認証確認が表示される場合がある）
+$trustedCertificate = $proxyCa->trustCertificate(new SandboxProxyCaTrustCertificateRequest(
+    certificateFile: '/path/to/proxy-ca.pem',
+    allowHosts: ['registry.example.com'],
+    configDir: $configDir,
+));
+
 use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionRequest;
 use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestRequest;
 use Revolution\Copilot\Types\Rpc\SessionSandboxGetRemoteMcpEgressRequest;
