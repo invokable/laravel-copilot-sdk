@@ -10,6 +10,8 @@ use Revolution\Copilot\Types\Rpc\FetchCancelResult;
 use Revolution\Copilot\Types\Rpc\FetchCreateResult;
 use Revolution\Copilot\Types\Rpc\FetchReadParams;
 use Revolution\Copilot\Types\Rpc\FetchReadResult;
+use Revolution\Copilot\Types\Rpc\FetchResolveProxyParams;
+use Revolution\Copilot\Types\Rpc\FetchResolveProxyResult;
 use Revolution\Copilot\Types\Rpc\FetchSendParams;
 use Revolution\Copilot\Types\Rpc\FetchSendResult;
 
@@ -59,6 +61,17 @@ class PendingServerFetch
 
         return FetchCancelResult::fromArray(
             $this->client->request('fetch.cancel', $paramsArray),
+        );
+    }
+
+    public function resolveProxy(FetchResolveProxyParams|array $params): FetchResolveProxyResult
+    {
+        $paramsArray = ($params instanceof FetchResolveProxyParams
+            ? $params
+            : FetchResolveProxyParams::fromArray($params))->toArray();
+
+        return FetchResolveProxyResult::fromArray(
+            $this->client->request('fetch.resolveProxy', $paramsArray),
         );
     }
 }
