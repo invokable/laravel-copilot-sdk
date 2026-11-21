@@ -35,6 +35,7 @@ Copilot::client()->listModels();
 
 - [モデル・ツール・アカウント](rpc/server-models.md)
 - [ローカルモデル（Azure ML）](rpc/server-local-models.md)
+- [ファイルロギング](rpc/server-logging.md)
 - [MCP・コネクター](rpc/server-mcp.md)
 - [設定・管理設定](rpc/server-settings.md)
 - [HTTP推論・ファイルシステム](rpc/server-inference.md)

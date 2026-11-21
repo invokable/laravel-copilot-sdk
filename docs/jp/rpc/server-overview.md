@@ -14,6 +14,12 @@ ServerRpc のメソッドをカテゴリー別にまとめた概要です。使�
 
 providersConfig の使用例は [設定・管理設定](server-settings.md) を参照してください。
 
+## ファイルロギング（experimental）
+
+`logging()->file()`は、ホストが許可した出力先を使うランタイムファイルロガーを提供します。`open()`でロガーを開き、`write()`で秘匿化されたレコードを追加し、`flush()`で書き込みの完了を待ちます。`close()`はフラッシュしてロガーを閉じ、クローズ後はその`logId`を再利用できません。
+
+使用例は [ファイルロギング](server-logging.md) を参照してください。
+
 ## 記録済みトラジェクトリの分類（experimental）
 
 `taskAnalytics()->classifyTrajectory()`はセッションを作成せず、記録済みのCopilotイベントまたはATIFデータを分類します。アーカイブされたツールは実行されず、会話履歴や分類テレメトリにも追加されません。`events`は入力順のまま渡し、`classifiers`、`maxConcurrentRequests`、`judge`、`previousResult`を指定できます。`validateOnly: true`なら推論せず、ローカル検証結果だけを取得できます。

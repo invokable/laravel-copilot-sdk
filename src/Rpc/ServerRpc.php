@@ -112,6 +112,16 @@ class ServerRpc
     }
 
     /**
+     * Experimental runtime file logging operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function logging(): PendingServerLogging
+    {
+        return new PendingServerLogging($this->client);
+    }
+
+    /**
      * Server-scoped slash command RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.
