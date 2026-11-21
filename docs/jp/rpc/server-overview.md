@@ -66,7 +66,7 @@ gitHubRepository の使用例は [Git・GitHub](server-git.md) を参照して�
 
 Fetchの`allocateRequestId()`、`request()`、`executeOperation()`と、Releaseの`abandonRequest()`、`getSnapshot()`、`downloadAsset()`はExtensionsから呼び出せません。現在のLaravel SDKは両グループの`cancel` RPCを公開していないため、実行中の操作をSDKからキャンセルできません。`abandonRequest()`は未使用のRelease request IDを破棄する操作であり、実行中の操作を停止するものではありません。
 
-`fetch()`は共有ネットワークトランスポートを使う汎用HTTPリクエスト用の実験的APIです。`create()`で接続所有のハンドルを作成し、必須の`responseMode`を指定して`send()`します。`stream`では`read()`で本文をチャンク単位に読み、`text`では本文全体をUTF-8テキストとして取得し、`file`ではランタイムホスト上の`destinationPath`へ本文を書き込みます。不要になったハンドルは`cancel()`で破棄します。認証情報を使わない場合、またはファイルをストリーミングする場合にも利用できます。
+`fetch()`は共有ネットワークトランスポートを使う汎用HTTPリクエスト用の実験的APIです。`create()`で接続所有のハンドルを作成し、必須の`responseMode`を指定して`send()`します。`stream`では`read()`で本文をチャンク単位に読み、`text`では本文全体をUTF-8テキストとして取得し、`file`ではランタイムホスト上の`destinationPath`へ本文を書き込みます。不要になったハンドルは`cancel()`で破棄します。認証情報を使わない場合、またはファイルをストリーミングする場合にも利用できます。対象URLに接続せずに候補プロキシ経路を確認する場合は`resolveProxy()`を使います。
 
 ## ローカルモデル・HTTP推論・ファイルシステム
 

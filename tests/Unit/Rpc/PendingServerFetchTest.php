@@ -8,7 +8,10 @@ use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Types\Rpc\FetchCancelResult;
 use Revolution\Copilot\Types\Rpc\FetchCreateResult;
 use Revolution\Copilot\Types\Rpc\FetchHeader;
+use Revolution\Copilot\Types\Rpc\FetchProxyRoute;
 use Revolution\Copilot\Types\Rpc\FetchReadResult;
+use Revolution\Copilot\Types\Rpc\FetchResolveProxyParams;
+use Revolution\Copilot\Types\Rpc\FetchResolveProxyResult;
 use Revolution\Copilot\Types\Rpc\FetchSendResult;
 
 describe('PendingServerFetch', function () {
@@ -134,5 +137,56 @@ describe('PendingServerFetch', function () {
             ->and($read->body)->toBe('Y2h1bms=')
             ->and($canceled)->toBeInstanceOf(FetchCancelResult::class)
             ->and($canceled->canceled)->toBeTrue();
+    });
+
+    it('reports proxy routes without contacting the target', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('fetch.resolveProxy', ['url' => 'https://example.com/resource'])
+            ->andReturn([
+                'routes' => [
+                    ['proxyUrl' => 'http://proxy.example:8080'],
+                    [],
+                ],
+                'source' => 'pac',
+            ]);
+
+        $result = (new ServerRpc($client))->fetch()->resolveProxy(
+            new FetchResolveProxyParams(url: 'https://example.com/resource'),
+        );
+
+        expect($result)->toBeInstanceOf(FetchResolveProxyResult::class)
+            ->and($result->source)->toBe('pac')
+            ->and($result->routes)->toHaveCount(2)
+            ->and($result->routes[0])->toBeInstanceOf(FetchProxyRoute::class)
+            ->and($result->routes[0]->proxyUrl)->toBe('http://proxy.example:8080')
+            ->and($result->routes[1]->proxyUrl)->toBeNull()
+            ->and($result->toArray())->toBe([
+                'routes' => [
+                    ['proxyUrl' => 'http://proxy.example:8080'],
+                    [],
+                ],
+                'source' => 'pac',
+            ]);
+    });
+
+    it('accepts resolve-proxy array params', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('fetch.resolveProxy', ['url' => 'https://example.org'])
+            ->andReturn([
+                'routes' => [[]],
+                'source' => 'bypass',
+            ]);
+
+        $result = (new ServerRpc($client))->fetch()->resolveProxy([
+            'url' => 'https://example.org',
+        ]);
+
+        expect($result->source)->toBe('bypass')
+            ->and($result->routes)->toHaveCount(1)
+            ->and($result->routes[0]->proxyUrl)->toBeNull();
     });
 });

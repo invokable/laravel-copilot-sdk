@@ -53,6 +53,25 @@ $client = Copilot::client([
 $sessions = Copilot::client()->rpc()->sessions();
 ```
 
+## fetch のプロキシ経路（experimental）
+
+`fetch()->resolveProxy()`は、対象URLに対して`fetch()->send()`が使用する候補プロキシ経路を、対象URLへ接続せずに確認します。PACスクリプトの取得は行われる場合がありますが、対象のURLには接続しません。認証情報は返されないため、プロキシ経由で接続するクライアントは別途認証処理を行う必要があります。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+$result = Copilot::client()->rpc()->fetch()->resolveProxy([
+    'url' => 'https://example.com/resource',
+]);
+
+foreach ($result->routes as $route) {
+    // proxyUrlがない場合は直接接続
+    dump($route->proxyUrl);
+}
+
+dump($result->source);
+```
+
 ## network (experimental: ネットワークコールバック)
 
 `network()->setProvider()`で、クライアント側に登録したプロキシ解決・Kerberos認証コールバックをランタイムに通知します。通常は`Client`の`network`オプションから自動登録されるため、直接呼び出す必要はありません。`NetworkSetProviderRequest`のコールバック項目は、対応するハンドラーが登録済みであることを示します。RPCの戻り値はありません。利用するランタイムは`network.setProvider` RPCをサポートしている必要があり、未対応の場合はクライアント起動時に更新を案内する例外が発生します。
