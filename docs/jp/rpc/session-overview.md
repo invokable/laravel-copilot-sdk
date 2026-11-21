@@ -38,7 +38,9 @@ SessionRpc のメソッドをカテゴリー別にまとめた概要です。使
 
 ## Accounts・認証・Providers
 
-`accounts()`は`enumerate()`によるアカウント／プロバイダー／ログインアカウントの列挙、`get()`・`set()`、`begin()`・`advance()`・`cancel()`による対話型ログインを扱います。`gitHubAuth()`はセッションの認証状態と資格情報、`provider()`と`providers()`はモデル接続先やプロバイダーアダプター、`connectors()`はセッションのコネクター接続を扱います。
+`accounts()`は`list()`によるアカウント一覧、`getActive()`による選択中アカウントの取得、`lastErrors()`による認証エラーの取得、`switchActive()`・`logout()`・`setCredentials()`によるアカウント操作を扱います。`loginList()`はログインに再利用できる保存済みIDを取得し、`begin()`・`advance()`・`cancel()`は対話型ログインを扱います。`authProviders()->list()`は認証プロバイダーを一覧します。これらのRPCはexperimentalです。
+
+`gitHubAuth()`はセッションの認証状態と資格情報、`provider()`と`providers()`はモデル接続先やプロバイダーアダプター、`connectors()`はセッションのコネクター接続を扱います。使用例は [ログ・シェル・使用量・テレメトリ・認証](session-activity.md) を参照してください。
 
 ## 履歴・キュー・ログ・使用量
 

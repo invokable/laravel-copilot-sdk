@@ -161,6 +161,12 @@ class SessionRpc
         return new PendingSessionAccounts($this->client, $this->sessionId);
     }
 
+    /** Experimental session authentication provider operations. */
+    public function authProviders(): PendingSessionAuthProviders
+    {
+        return new PendingSessionAuthProviders($this->client, $this->sessionId);
+    }
+
     /**
      * Diagnostics RPC operations.
      *

@@ -14,7 +14,7 @@ readonly class AuthReadValue implements Arrayable
      */
     public function __construct(
         public string $kind,
-        public ?AccountStatus $account = null,
+        public ?Account $account = null,
         public ?AuthStatusDto $status = null,
         public array $errors = [],
         public ?array $authInfo = null,
@@ -25,7 +25,7 @@ readonly class AuthReadValue implements Arrayable
         return new self(
             kind: (string) ($data['kind'] ?? ''),
             account: isset($data['account']) && is_array($data['account'])
-                ? AccountStatus::fromArray($data['account'])
+                ? Account::fromArray($data['account'])
                 : null,
             status: isset($data['status']) && is_array($data['status'])
                 ? AuthStatusDto::fromArray($data['status'])
