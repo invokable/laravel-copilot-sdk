@@ -28,7 +28,8 @@
 - `plugin-directories.md`: プラグインディレクトリの使い方
 - `remote-sessions.md`: リモートセッション
 - `resume.md`: セッションの再開方法
-- `rpc.md`: RPCクラスの説明
+- `rpc.md`: RPCレイヤーの説明
+- `rpc/*.md`: RPCの機能別ページ
 - `send-on.md`: Session `on()`で途中のメッセージを受け取る
 - `session-config.md`: SessionConfigクラスの詳細
 - `session-context.md`: SessionContext
