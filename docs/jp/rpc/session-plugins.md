@@ -18,6 +18,19 @@ $update = $session->rpc()->plugins()->checkUpdate(new SessionPluginsCheckUpdateR
     marketplace: 'official',
 )); // SessionPluginsCheckUpdateResult
 // $update->updateAvailable が true の場合のみ更新あり
+// plugin marketplaces (experimental: マーケットプレイスの更新確認・検索)
+use Revolution\Copilot\Types\Rpc\PluginMarketplaceCheckUpdateRequest;
+use Revolution\Copilot\Types\Rpc\PluginMarketplaceSearchRequest;
+
+$marketplaceUpdate = $session->rpc()->plugins()->marketplaces()->checkUpdate(
+    new PluginMarketplaceCheckUpdateRequest(name: 'official'),
+); // MarketplaceCheckUpdateResult
+// 利用可否が不明なマーケットプレイスはエラー。checkout の取得・更新は行わない
+$search = $session->rpc()->plugins()->marketplaces()->search(
+    new PluginMarketplaceSearchRequest(query: 'lint', forceRefresh: true),
+); // PluginMarketplaceSearchResult
+// $search->plugins は一致したプラグイン、$search->errors はマーケットプレイスごとの部分エラー
+// Agent Finder ではなく、設定済みマーケットプレイス全体を検索する
 // プラグインをリロード
 $session->rpc()->plugins()->reload();
 // オプションを指定してリロード
