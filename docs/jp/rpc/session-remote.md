@@ -102,9 +102,24 @@ $trustedCertificate = $proxyCa->trustCertificate(new SandboxProxyCaTrustCertific
     configDir: $configDir,
 ));
 
+use Revolution\Copilot\Enums\SandboxConfigSource;
 use Revolution\Copilot\Types\Rpc\SandboxDisableForSessionRequest;
 use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestRequest;
 use Revolution\Copilot\Types\Rpc\SessionSandboxGetRemoteMcpEgressRequest;
+use Revolution\Copilot\Types\Rpc\SessionSandboxResetSessionChoicesRequest;
+
+// 実効設定・出所・セッションの一時的な選択を取得
+$state = $session->rpc()->sandbox()->getState();
+// $state->config, $state->configSource, $state->disabledForSession,
+// $state->autoApproveBypass, $state->sessionOverride, $state->incarnation, $state->revision
+
+// 一時的な選択をクリアし、保存済み設定を現在の管理ポリシーの下で採用
+$state = $session->rpc()->sandbox()->resetSessionChoices(new SessionSandboxResetSessionChoicesRequest(
+    config: ['enabled' => true],
+    configSource: SandboxConfigSource::USER_ENABLED,
+));
+// config は SandboxConfig、JSON値（nullを含む）を指定可能。配列入力も可。
+// configSource は保存済み設定の出所であり、管理ポリシーを回避する権限にはならない。
 
 // サンドボックス強制状態を取得
 $status = $session->rpc()->sandbox()->getEnforcementStatus();

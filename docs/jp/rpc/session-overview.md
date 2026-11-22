@@ -50,4 +50,6 @@ SessionRpc のメソッドをカテゴリー別にまとめた概要です。使
 
 `sendMessages()`は複数メッセージを1ターンで実行し、`suspend()`・`shutdown()`でセッションを停止します。`interruptMainTurn()`はメインターン、`cancelAllBackgroundAgents()`はバックグラウンドエージェントを個別に制御します。`remote()`と`visibility()`はリモート公開・共有状態、`sandbox()`はセッションのサンドボックス、`managedSettings()`はセッションスコープの管理設定、`contentExclusion()`はパス判定、`metadata()`はクライアント所有メタデータ、`canvas()`はCanvas連携を扱います。
 
+`sandbox()->getState()`は実効設定と一時的な選択を取得し、`resetSessionChoices()`は一時的な選択をクリアして保存済み設定を管理ポリシーの下で採用します。使用例は [リモート・サンドボックス](session-remote.md) を参照してください。
+
 `managedSettings()->refresh()`は管理設定を再取得し、追跡中のポリシー適用を待ちます。使用例は [管理設定・debug・履歴](session-settings.md) を参照してください。
