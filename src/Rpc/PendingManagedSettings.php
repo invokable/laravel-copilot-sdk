@@ -28,6 +28,20 @@ class PendingManagedSettings
     }
 
     /**
+     * Refresh managed settings and wait for tracked policy application.
+     *
+     * @experimental This method is experimental and may change or be removed.
+     */
+    public function refresh(): ManagedSettingsResolvedData
+    {
+        return ManagedSettingsResolvedData::fromArray(
+            $this->client->request('session.managedSettings.refresh', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
      * Read the current managed settings snapshot without waiting for policy application.
      *
      * @experimental This method is experimental and may change or be removed.
