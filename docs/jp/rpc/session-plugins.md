@@ -10,6 +10,14 @@ $session->rpc()->plugins()->list();
 // 同名の直接インストールを指定する場合、list() の directSourceId を names に渡す
 $session->rpc()->plugins()->enable(['names' => ['opaque-direct-source-id']]);
 $session->rpc()->plugins()->disable(['names' => ['opaque-direct-source-id']]);
+// キャッシュ済みカタログとバージョンを比較（checkoutの取得・更新やインストールは行わない）
+use Revolution\Copilot\Types\Rpc\SessionPluginsCheckUpdateRequest;
+
+$update = $session->rpc()->plugins()->checkUpdate(new SessionPluginsCheckUpdateRequest(
+    name: 'eslint',
+    marketplace: 'official',
+)); // SessionPluginsCheckUpdateResult
+// $update->updateAvailable が true の場合のみ更新あり
 // プラグインをリロード
 $session->rpc()->plugins()->reload();
 // オプションを指定してリロード

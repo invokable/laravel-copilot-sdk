@@ -6,6 +6,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingPlugins;
 use Revolution\Copilot\Types\Rpc\PluginList;
 use Revolution\Copilot\Types\Rpc\SessionPluginDefaults;
+use Revolution\Copilot\Types\Rpc\SessionPluginsCheckUpdateRequest;
+use Revolution\Copilot\Types\Rpc\SessionPluginsCheckUpdateResult;
 use Revolution\Copilot\Types\Rpc\TeamPluginMarketplace;
 
 describe('PendingPlugins', function () {
@@ -75,6 +77,30 @@ describe('PendingPlugins', function () {
             ->and($result->teamDefaultEnabledPlugins)->toBe(['team/plugin@marketplace' => false])
             ->and($result->extraKnownMarketplaces['team-marketplace'])->toBeInstanceOf(TeamPluginMarketplace::class)
             ->and($result->extraKnownMarketplaces['team-marketplace']->source->repo)->toBe('team/plugins');
+    });
+
+    it('checks for plugin updates with the typed request and result', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.plugins.checkUpdate', [
+                'name' => 'eslint',
+                'marketplace' => 'official',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn([
+                'updateAvailable' => true,
+                'installedVersion' => '1.0.0',
+                'latestVersion' => '1.1.0',
+            ]);
+
+        $pending = new PendingPlugins($client, 'session-abc');
+        $result = $pending->checkUpdate(new SessionPluginsCheckUpdateRequest('eslint', 'official'));
+
+        expect($result)->toBeInstanceOf(SessionPluginsCheckUpdateResult::class)
+            ->and($result->updateAvailable)->toBeTrue()
+            ->and($result->installedVersion)->toBe('1.0.0')
+            ->and($result->latestVersion)->toBe('1.1.0');
     });
 
     it('passes directSourceId values through session plugin enable and disable', function () {
