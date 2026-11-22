@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\MarketplaceCheckUpdateResult;
+use Revolution\Copilot\Types\Rpc\PluginMarketplaceCheckUpdateRequest;
+use Revolution\Copilot\Types\Rpc\PluginMarketplaceSearchRequest;
+use Revolution\Copilot\Types\Rpc\PluginMarketplaceSearchResult;
 
 /**
  * Plugin marketplace RPC operations.
@@ -41,6 +45,30 @@ class PendingMarketplaces
     public function refresh(array $params = []): array
     {
         return $this->request('session.plugins.marketplaces.refresh', $params);
+    }
+
+    public function checkUpdate(PluginMarketplaceCheckUpdateRequest|array $params): MarketplaceCheckUpdateResult
+    {
+        $paramsArray = ($params instanceof PluginMarketplaceCheckUpdateRequest
+            ? $params
+            : PluginMarketplaceCheckUpdateRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return MarketplaceCheckUpdateResult::fromArray(
+            $this->client->request('session.plugins.marketplaces.checkUpdate', $paramsArray),
+        );
+    }
+
+    public function search(PluginMarketplaceSearchRequest|array $params): PluginMarketplaceSearchResult
+    {
+        $paramsArray = ($params instanceof PluginMarketplaceSearchRequest
+            ? $params
+            : PluginMarketplaceSearchRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return PluginMarketplaceSearchResult::fromArray(
+            $this->client->request('session.plugins.marketplaces.search', $paramsArray),
+        );
     }
 
     protected function request(string $method, array $params = []): array

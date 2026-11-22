@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingPlugins;
+use Revolution\Copilot\Types\Rpc\MarketplaceCheckUpdateResult;
 use Revolution\Copilot\Types\Rpc\PluginList;
+use Revolution\Copilot\Types\Rpc\PluginMarketplaceCheckUpdateRequest;
+use Revolution\Copilot\Types\Rpc\PluginMarketplaceSearchRequest;
+use Revolution\Copilot\Types\Rpc\PluginMarketplaceSearchResult;
 use Revolution\Copilot\Types\Rpc\SessionPluginDefaults;
 use Revolution\Copilot\Types\Rpc\SessionPluginsCheckUpdateRequest;
 use Revolution\Copilot\Types\Rpc\SessionPluginsCheckUpdateResult;
@@ -101,6 +105,69 @@ describe('PendingPlugins', function () {
             ->and($result->updateAvailable)->toBeTrue()
             ->and($result->installedVersion)->toBe('1.0.0')
             ->and($result->latestVersion)->toBe('1.1.0');
+    });
+
+    it('checks for marketplace plugin updates with the typed request and result', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.plugins.marketplaces.checkUpdate', [
+                'name' => 'official',
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn([
+                'updateAvailable' => true,
+                'installedVersion' => '1.0.0',
+                'latestVersion' => '1.1.0',
+                'notFetched' => false,
+            ]);
+
+        $pending = new PendingPlugins($client, 'session-abc');
+        $result = $pending->marketplaces()->checkUpdate(new PluginMarketplaceCheckUpdateRequest('official'));
+
+        expect($result)->toBeInstanceOf(MarketplaceCheckUpdateResult::class)
+            ->and($result->updateAvailable)->toBeTrue()
+            ->and($result->installedVersion)->toBe('1.0.0')
+            ->and($result->latestVersion)->toBe('1.1.0')
+            ->and($result->notFetched)->toBeFalse();
+    });
+
+    it('searches configured marketplaces with typed results and preserves partial errors', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.plugins.marketplaces.search', [
+                'query' => 'lint',
+                'forceRefresh' => false,
+                'sessionId' => 'session-abc',
+            ])
+            ->andReturn([
+                'plugins' => [[
+                    'name' => 'eslint',
+                    'marketplace' => 'official',
+                    'installSpec' => 'eslint@official',
+                    'installed' => true,
+                    'metadata' => [],
+                    'live' => [
+                        'enabled' => false,
+                        'installedFrom' => 'official',
+                    ],
+                ]],
+                'errors' => [[
+                    'marketplace' => 'team',
+                    'error' => 'Marketplace unavailable',
+                    'scope' => 'workspace',
+                ]],
+            ]);
+
+        $pending = new PendingPlugins($client, 'session-abc');
+        $result = $pending->marketplaces()->search(new PluginMarketplaceSearchRequest('lint', false));
+
+        expect($result)->toBeInstanceOf(PluginMarketplaceSearchResult::class)
+            ->and($result->plugins[0]->name)->toBe('eslint')
+            ->and($result->plugins[0]->live->enabled)->toBeFalse()
+            ->and($result->errors[0]->marketplace)->toBe('team')
+            ->and($result->errors[0]->scope)->toBe('workspace');
     });
 
     it('passes directSourceId values through session plugin enable and disable', function () {
