@@ -2,16 +2,98 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Enums\SandboxConfigSource;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingSandbox;
+use Revolution\Copilot\Rpc\SessionRpc;
+use Revolution\Copilot\Types\Rpc\SandboxConfig;
 use Revolution\Copilot\Types\Rpc\SandboxCredentialSuggestionsResult;
 use Revolution\Copilot\Types\Rpc\SandboxEnforcementStatus;
 use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestRequest;
 use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestResult;
 use Revolution\Copilot\Types\Rpc\SessionSandboxGetRemoteMcpEgressRequest;
 use Revolution\Copilot\Types\Rpc\SessionSandboxGetRemoteMcpEgressResult;
+use Revolution\Copilot\Types\Rpc\SessionSandboxGetStateResult;
+use Revolution\Copilot\Types\Rpc\SessionSandboxResetSessionChoicesRequest;
+use Revolution\Copilot\Types\Rpc\SessionSandboxResetSessionChoicesResult;
 
 describe('PendingSandbox', function () {
+    it('returns the effective sandbox state for the current session', function () {
+        $data = [
+            'incarnation' => 1,
+            'revision' => 3,
+            'config' => ['enabled' => true],
+            'configSource' => 'repository_policy',
+            'disabledForSession' => false,
+            'autoApproveBypass' => false,
+            'sessionOverride' => null,
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('session.sandbox.getState', ['sessionId' => 'session-abc'])
+            ->andReturn($data);
+
+        $result = (new SessionRpc($client, 'session-abc'))->sandbox()->getState();
+
+        expect($result)->toBeInstanceOf(SessionSandboxGetStateResult::class)
+            ->and($result->configSource)->toBe(SandboxConfigSource::REPOSITORY_POLICY)
+            ->and($result->toArray())->toBe($data);
+    });
+
+    it('resets session choices using a typed saved preference', function () {
+        $data = [
+            'incarnation' => 1,
+            'revision' => 4,
+            'config' => ['enabled' => true],
+            'configSource' => 'user_enabled',
+            'disabledForSession' => false,
+            'autoApproveBypass' => false,
+            'sessionOverride' => null,
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('session.sandbox.resetSessionChoices', [
+                'config' => ['enabled' => true],
+                'configSource' => 'user_enabled',
+                'sessionId' => 'session-abc',
+            ])->andReturn($data);
+
+        $result = (new SessionRpc($client, 'session-abc'))->sandbox()->resetSessionChoices(
+            new SessionSandboxResetSessionChoicesRequest(new SandboxConfig(enabled: true), SandboxConfigSource::USER_ENABLED),
+        );
+
+        expect($result)->toBeInstanceOf(SessionSandboxResetSessionChoicesResult::class)
+            ->and($result->toArray())->toBe($data);
+    });
+
+    it('resets array preferences with the current session id and preserves null config', function () {
+        $data = [
+            'incarnation' => 2,
+            'revision' => 1,
+            'config' => null,
+            'configSource' => 'future_source',
+            'disabledForSession' => true,
+            'autoApproveBypass' => true,
+            'sessionOverride' => false,
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('session.sandbox.resetSessionChoices', [
+                'config' => null,
+                'configSource' => 'user_disabled',
+                'sessionId' => 'session-abc',
+            ])->andReturn($data);
+
+        $result = (new SessionRpc($client, 'session-abc'))->sandbox()->resetSessionChoices([
+            'config' => null,
+            'configSource' => 'user_disabled',
+            'sessionId' => 'another-session',
+        ]);
+
+        expect($result->configSource)->toBe('future_source')
+            ->and($result->toArray())->toBe($data);
+    });
+
     it('returns sandbox enforcement status', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

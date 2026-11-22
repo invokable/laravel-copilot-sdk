@@ -13,6 +13,9 @@ use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestRequest;
 use Revolution\Copilot\Types\Rpc\SandboxGrantPathForRequestResult;
 use Revolution\Copilot\Types\Rpc\SessionSandboxGetRemoteMcpEgressRequest;
 use Revolution\Copilot\Types\Rpc\SessionSandboxGetRemoteMcpEgressResult;
+use Revolution\Copilot\Types\Rpc\SessionSandboxGetStateResult;
+use Revolution\Copilot\Types\Rpc\SessionSandboxResetSessionChoicesRequest;
+use Revolution\Copilot\Types\Rpc\SessionSandboxResetSessionChoicesResult;
 
 /**
  * Pending sandbox RPC operations for a session.
@@ -25,6 +28,35 @@ class PendingSandbox
         protected JsonRpcClient $client,
         protected string $sessionId,
     ) {}
+
+    /**
+     * Return the effective sandbox configuration and session choices.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function getState(): SessionSandboxGetStateResult
+    {
+        return SessionSandboxGetStateResult::fromArray(
+            $this->client->request('session.sandbox.getState', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Clear temporary session choices and adopt the supplied saved preference.
+     *
+     * @experimental This API is experimental and may change or be removed.
+     */
+    public function resetSessionChoices(SessionSandboxResetSessionChoicesRequest|array $params): SessionSandboxResetSessionChoicesResult
+    {
+        $paramsArray = ($params instanceof SessionSandboxResetSessionChoicesRequest ? $params : SessionSandboxResetSessionChoicesRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SessionSandboxResetSessionChoicesResult::fromArray(
+            $this->client->request('session.sandbox.resetSessionChoices', $paramsArray),
+        );
+    }
 
     /**
      * Return managed sandbox enforcement state for this session.
