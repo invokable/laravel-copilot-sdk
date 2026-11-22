@@ -147,6 +147,10 @@ $session->rpc()->permissions()->locations()->addToolApproval(
 // フォルダ信頼状態の確認と追加
 $trusted = $session->rpc()->permissions()->folderTrust()->isTrusted(['path' => '/path/to/repo']);
 $session->rpc()->permissions()->folderTrust()->addTrusted(new FolderTrustAddParams(path: '/path/to/repo'));
+// 現在の作業ディレクトリだけをセッション内で信頼する (experimental)
+// path は現在の作業ディレクトリと一致する必要があり、保存済みの信頼フォルダ一覧は変更しない
+$result = $session->rpc()->permissions()->folderTrust()->addSessionTrusted(['path' => '/path/to/repo']);
+// $result->success
 
 // commands: セッションで利用可能なスラッシュコマンド一覧を取得
 use Revolution\Copilot\Types\Rpc\CommandsListRequest;

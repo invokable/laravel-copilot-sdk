@@ -7,6 +7,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingPermissions;
 use Revolution\Copilot\Rpc\PendingPermissionsFolderTrust;
 use Revolution\Copilot\Rpc\PendingPermissionsLocations;
+use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\FolderTrustAddParams;
 use Revolution\Copilot\Types\Rpc\FolderTrustAddResult;
 use Revolution\Copilot\Types\Rpc\FolderTrustCheckParams;
@@ -110,4 +111,24 @@ it('sends typed and array location and folder trust requests with session id', f
         ->and($added)->toBeInstanceOf(FolderTrustAddResult::class)
         ->and($added->success)->toBeTrue()
         ->and($addedFromArray->toArray())->toBe($added->toArray());
+});
+
+it('adds session folder trust with typed and array parameters', function () {
+    $client = Mockery::mock(JsonRpcClient::class);
+    $client->shouldReceive('request')
+        ->with('session.permissions.folderTrust.addSessionTrusted', [
+            'path' => '/workspace/repo',
+            'sessionId' => 'session-1',
+        ])
+        ->twice()
+        ->andReturn(['success' => true], ['success' => false]);
+
+    $folderTrust = (new SessionRpc($client, 'session-1'))->permissions()->folderTrust();
+    $added = $folderTrust->addSessionTrusted(new FolderTrustAddParams('/workspace/repo'));
+    $notAdded = $folderTrust->addSessionTrusted(['path' => '/workspace/repo', 'sessionId' => 'other-session']);
+
+    expect($added)->toBeInstanceOf(FolderTrustAddResult::class)
+        ->and($added->success)->toBeTrue()
+        ->and($notAdded)->toBeInstanceOf(FolderTrustAddResult::class)
+        ->and($notAdded->success)->toBeFalse();
 });
