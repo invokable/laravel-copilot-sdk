@@ -158,6 +158,8 @@ $result = $session->rpc()->sandbox()->grantPathForRequest(new SandboxGrantPathFo
 // サンドボックス設定を保存するホストは、必要であれば自身でパスを保存する。
 ```
 
+JSON-RPCの応答は連想配列にデコードされるため、空のJSONオブジェクト `{}` と空の配列 `[]` は区別できません。取得した `config` をそのまま再送する場合、必要な空オブジェクトは呼び出し側で `(object) []` に復元してください。送信時も空オブジェクトを表す場合は `[]` ではなく `(object) []` を使います。`SandboxConfig` 内の空の型付き設定も `toArray()` では空配列になるため、空オブジェクトが必要な場合は明示的なJSON値を指定してください。
+
 権限ハンドラでは、`$request['sandboxPathGrant']`がある場合に対象の保留中リクエストの`requestId`で呼び出します。このRPC自身が許可リクエストに応答するため、成功した場合は通常の応答を送らないよう`PermissionDecision::noResult()`を返します。
 
 ```php
