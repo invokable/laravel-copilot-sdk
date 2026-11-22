@@ -43,7 +43,7 @@ describe('ModelPickerPriceCategory', function () {
     });
 });
 
-describe('ModelPickerCategory individual case and parsing coverage', function () {
+describe('ModelPickerCategory cases and string conversion', function () {
     it('has lightweight case', function () {
         expect(ModelPickerCategory::Lightweight->value)->toBe('lightweight');
     });
@@ -67,7 +67,7 @@ describe('ModelPickerCategory individual case and parsing coverage', function ()
     });
 });
 
-describe('ModelPickerPriceCategory individual case and parsing coverage', function () {
+describe('ModelPickerPriceCategory cases and string conversion', function () {
     it('has high case', function () {
         expect(ModelPickerPriceCategory::High->value)->toBe('high');
     });
