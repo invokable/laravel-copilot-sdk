@@ -8,6 +8,8 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\PluginList;
 use Revolution\Copilot\Types\Rpc\PluginsReloadRequest;
 use Revolution\Copilot\Types\Rpc\SessionPluginDefaults;
+use Revolution\Copilot\Types\Rpc\SessionPluginsCheckUpdateRequest;
+use Revolution\Copilot\Types\Rpc\SessionPluginsCheckUpdateResult;
 use Revolution\Copilot\Types\Rpc\SessionPluginsRetryManagedRequest;
 use Revolution\Copilot\Types\Rpc\SessionPluginsRetryManagedResult;
 
@@ -46,6 +48,23 @@ class PendingPlugins
             $this->client->request('session.plugins.getDefaults', [
                 'sessionId' => $this->sessionId,
             ]),
+        );
+    }
+
+    /**
+     * Check whether an installed plugin has an update in its cached marketplace catalog.
+     *
+     * @experimental
+     */
+    public function checkUpdate(SessionPluginsCheckUpdateRequest|array $params): SessionPluginsCheckUpdateResult
+    {
+        $paramsArray = $params instanceof SessionPluginsCheckUpdateRequest
+            ? $params->toArray()
+            : SessionPluginsCheckUpdateRequest::fromArray($params)->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return SessionPluginsCheckUpdateResult::fromArray(
+            $this->client->request('session.plugins.checkUpdate', $paramsArray),
         );
     }
 
