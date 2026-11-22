@@ -147,6 +147,7 @@ describe('PendingPlugins', function () {
                     'marketplace' => 'official',
                     'installSpec' => 'eslint@official',
                     'installed' => true,
+                    'metadata' => [],
                     'live' => [
                         'enabled' => false,
                         'installedFrom' => 'official',

@@ -19,7 +19,11 @@ readonly class PluginMarketplaceSearchEntry implements Arrayable
         public string $marketplace,
         public string $installSpec,
         public bool $installed,
+        public mixed $metadata,
         public ?PluginMarketplaceLiveState $live = null,
+        public ?string $description = null,
+        public ?string $version = null,
+        public ?string $sourceUrl = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -29,18 +33,28 @@ readonly class PluginMarketplaceSearchEntry implements Arrayable
             marketplace: Arr::string($data, 'marketplace'),
             installSpec: Arr::string($data, 'installSpec'),
             installed: Arr::boolean($data, 'installed'),
+            metadata: $data['metadata'],
             live: isset($data['live']) ? PluginMarketplaceLiveState::fromArray($data['live']) : null,
+            description: isset($data['description']) ? Arr::string($data, 'description') : null,
+            version: isset($data['version']) ? Arr::string($data, 'version') : null,
+            sourceUrl: isset($data['sourceUrl']) ? Arr::string($data, 'sourceUrl') : null,
         );
     }
 
     public function toArray(): array
     {
-        return array_filter([
+        return [
             'name' => $this->name,
             'marketplace' => $this->marketplace,
             'installSpec' => $this->installSpec,
             'installed' => $this->installed,
-            'live' => $this->live?->toArray(),
-        ], fn ($value) => $value !== null);
+            ...array_filter([
+                'live' => $this->live?->toArray(),
+                'description' => $this->description,
+                'version' => $this->version,
+                'sourceUrl' => $this->sourceUrl,
+            ], fn ($value) => $value !== null),
+            'metadata' => $this->metadata,
+        ];
     }
 }

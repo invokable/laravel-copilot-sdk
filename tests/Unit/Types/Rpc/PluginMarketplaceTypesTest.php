@@ -45,11 +45,20 @@ it('round trips marketplace search results with typed plugins, live state, and e
                 'enabled' => false,
                 'installedFrom' => 'official',
             ],
+            'description' => 'Lint JavaScript files',
+            'version' => '9.0.0',
+            'sourceUrl' => 'https://example.test/eslint',
+            'metadata' => [
+                'tags' => ['lint', 'javascript'],
+                'featured' => true,
+                'details' => ['score' => 4.5, 'deprecated' => null],
+            ],
         ], [
             'name' => 'prettier',
             'marketplace' => 'team',
             'installSpec' => 'prettier@team',
             'installed' => false,
+            'metadata' => null,
         ]],
         'errors' => [[
             'marketplace' => 'unavailable',
@@ -63,7 +72,12 @@ it('round trips marketplace search results with typed plugins, live state, and e
     expect($result->plugins[0])->toBeInstanceOf(PluginMarketplaceSearchEntry::class)
         ->and($result->plugins[0]->live)->toBeInstanceOf(PluginMarketplaceLiveState::class)
         ->and($result->plugins[0]->live->enabled)->toBeFalse()
+        ->and($result->plugins[0]->description)->toBe('Lint JavaScript files')
+        ->and($result->plugins[0]->version)->toBe('9.0.0')
+        ->and($result->plugins[0]->sourceUrl)->toBe('https://example.test/eslint')
+        ->and($result->plugins[0]->metadata)->toBe($data['plugins'][0]['metadata'])
         ->and($result->plugins[1]->live)->toBeNull()
+        ->and($result->plugins[1]->metadata)->toBeNull()
         ->and($result->errors[0])->toBeInstanceOf(PluginMarketplaceSearchError::class)
         ->and($result->toArray())->toBe($data);
 });
