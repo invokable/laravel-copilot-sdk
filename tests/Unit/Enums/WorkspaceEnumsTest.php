@@ -48,7 +48,7 @@ describe('SessionSyncLevel', function () {
     });
 });
 
-describe('HostType case and parsing coverage', function () {
+describe('HostType cases and string conversion', function () {
     it('has github case', function () {
         expect(HostType::GITHUB->value)->toBe('github');
     });
@@ -67,7 +67,7 @@ describe('HostType case and parsing coverage', function () {
     });
 });
 
-describe('SessionSyncLevel individual case and parsing coverage', function () {
+describe('SessionSyncLevel cases and string conversion', function () {
     it('has local case', function () {
         expect(SessionSyncLevel::LOCAL->value)->toBe('local');
     });
