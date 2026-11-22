@@ -50,6 +50,12 @@ secrets の使用例は [MCP・コネクター](server-mcp.md) を参照して�
 
 `sessions()->hasEvents()`はセッションを開かず、ローカルの永続イベントログの有無を確認します。使用例は [セッション・ホスト・環境](server-sessions.md) を参照してください。
 
+`sessions()->import()`はセマンティックなセッション JSONL を検証し、新しいローカルセッションとして取り込む実験的APIです。`dryRun: true`ではセッションを作成しません。使用例は [セッション・ホスト・環境](server-sessions.md) を参照してください。
+
+## Memories（experimental）
+
+`memories()->import()`はセマンティックなメモリ JSONL を検証し、サーバーのアカウント・リポジトリポリシーに従って保存します。`dryRun: true`ではレコードを送信しません。使用例は [Memories](server-memories.md) を参照してください。
+
 ## クラウドエージェントタスク（experimental）
 
 `cloudTasks()`はクラウドコーディングエージェントのタスク作成・削除・取得、セッションログやリプレイの取得、共有状態の変更、タスクIDから開くセッションの解決を行います。各メソッドは対応するParams型または配列を受け取り、結果を型付きDTOで返します。作成結果の`ok`が`false`の場合、サービスによる拒否理由は`reason`と`message`、実行されたHTTPリクエストの失敗情報は`statusCode`、`errorMessage`、`errorPayloadJson`で確認できます。

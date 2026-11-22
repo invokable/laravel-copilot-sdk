@@ -202,6 +202,16 @@ class ServerRpc
     }
 
     /**
+     * Semantic memory import operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function memories(): PendingServerMemories
+    {
+        return new PendingServerMemories($this->client);
+    }
+
+    /**
      * Session lifecycle and management RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.

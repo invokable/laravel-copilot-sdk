@@ -35,6 +35,8 @@ use Revolution\Copilot\Types\Rpc\SessionsGetLastForContextRequest;
 use Revolution\Copilot\Types\Rpc\SessionsGetLastForContextResult;
 use Revolution\Copilot\Types\Rpc\SessionsHasEventsRequest;
 use Revolution\Copilot\Types\Rpc\SessionsHasEventsResult;
+use Revolution\Copilot\Types\Rpc\SessionsImportParams;
+use Revolution\Copilot\Types\Rpc\SessionsImportResult;
 use Revolution\Copilot\Types\Rpc\SessionSizes;
 use Revolution\Copilot\Types\Rpc\SessionsListRequest;
 use Revolution\Copilot\Types\Rpc\SessionsLoadDeferredRepoHooksRequest;
@@ -68,6 +70,22 @@ class PendingServerSessions
     public function __construct(
         protected JsonRpcClient $client,
     ) {}
+
+    /**
+     * Validate and import semantic session JSONL.
+     *
+     * @experimental This method may change or be removed.
+     */
+    public function import(SessionsImportParams|array $params): SessionsImportResult
+    {
+        $paramsArray = ($params instanceof SessionsImportParams
+            ? $params
+            : SessionsImportParams::fromArray($params))->toArray();
+
+        return SessionsImportResult::fromArray(
+            $this->client->request('sessions.import', $paramsArray),
+        );
+    }
 
     /**
      * Create, resume, attach, or connect to a session.
