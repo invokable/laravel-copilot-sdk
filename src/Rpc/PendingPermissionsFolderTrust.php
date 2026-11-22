@@ -45,4 +45,19 @@ class PendingPermissionsFolderTrust
             $this->client->request('session.permissions.folderTrust.addTrusted', $paramsArray),
         );
     }
+
+    /**
+     * Trust the session's current working directory without changing saved trusted folders.
+     *
+     * @experimental
+     */
+    public function addSessionTrusted(FolderTrustAddParams|array $params): FolderTrustAddResult
+    {
+        $paramsArray = ($params instanceof FolderTrustAddParams ? $params : FolderTrustAddParams::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return FolderTrustAddResult::fromArray(
+            $this->client->request('session.permissions.folderTrust.addSessionTrusted', $paramsArray),
+        );
+    }
 }
