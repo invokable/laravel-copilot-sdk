@@ -52,8 +52,12 @@ if ($result->isExcluded('/workspace/private.txt')) {
 
 `checkPaths()` は絶対パスのみを受け付け、パスはセッションの作業ディレクトリ内にある必要があります。`checks` は入力と同じ順序で返り、重複したパスもそのまま保持されます。サポートされないパス、ファイルシステム、またはポリシー評価が利用できない場合は `available: false` と空の `checks` が返ります。この場合、`isExcluded()` は常に `true` を返すため、すべてのパスを除外対象として扱ってください。`available: true` でも結果にないパスは安全側に倒して除外対象と判定します。
 
+`managedSettings()->refresh()`はデバイスポリシーを再読み込みして最新の管理設定を取得し、MCPを含む追跡中のポリシー適用を待って返します。失敗時は保持中の設定を最新として返さず、例外が伝播します。管理設定の取得にはセッション設定で`enableManagedSettings: true`を指定してください。
+
 ```php
 // managedSettings (experimental: セッションの管理設定)
+// 最新の管理設定を取得し、ポリシー適用を待つ
+$settings = $session->rpc()->managedSettings()->refresh(); // ManagedSettingsResolvedData
 // 現在保持されているスナップショットを取得（適用待ちや新しい取得は行わない）
 $snapshot = $session->rpc()->managedSettings()->getCurrentSnapshot(); // ManagedSettingsResolvedData|null
 // 現在のポリシー適用完了を待つ / ポリシーの公開完了だけを待つ
