@@ -202,6 +202,10 @@ $session->rpc()->ui()->elicitation(new UIElicitationRequest(
     requestedSchema: ['type' => 'object', 'properties' => [...]],
 ));
 
+// ui: 保留中の一時プロンプトとサービス状態をまとめて取得
+$snapshot = $session->rpc()->ui()->snapshot();
+// $snapshot->pendingUserInputRequests、$snapshot->serviceTasks など
+
 // ui: 会話履歴に追加しない一時的な問い合わせ
 $result = $session->rpc()->ui()->ephemeralQuery(new UIEphemeralQueryRequest(
     question: 'これまでの会話の要点を教えてください。',

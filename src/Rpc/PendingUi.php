@@ -7,6 +7,7 @@ namespace Revolution\Copilot\Rpc;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\SessionUiRegisterDirectAutoModeSwitchHandlerRequest;
 use Revolution\Copilot\Types\Rpc\SessionUiRegisterDirectAutoModeSwitchHandlerResult;
+use Revolution\Copilot\Types\Rpc\SessionUiSnapshotResult;
 use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 use Revolution\Copilot\Types\Rpc\UIElicitationResult;
@@ -31,6 +32,18 @@ class PendingUi
         protected JsonRpcClient $client,
         protected string $sessionId,
     ) {}
+
+    /**
+     * Read the current transient prompts and native service state for the session UI.
+     */
+    public function snapshot(): SessionUiSnapshotResult
+    {
+        return SessionUiSnapshotResult::fromArray(
+            $this->client->request('session.ui.snapshot', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
 
     /**
      * Query the current conversation context without adding to its history.

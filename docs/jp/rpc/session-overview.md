@@ -32,7 +32,7 @@ SessionRpc のメソッドをカテゴリー別にまとめた概要です。使
 
 ## Tools・Permissions・Commands・UI
 
-`tools()`と`permissions()`はイベントで届いた保留中リクエストへの応答や設定を扱います。権限の読み取りには`getAllowAll()`、`getRequired()`、`managedReviewRequired()`、`additionalDirectories()->list()`を利用できます。`permissions()->clearResumeEscalation()`は再開時に履歴から復元された権限昇格をメモリ内で解除し、成否を型付きで返します。`commands()`はコマンド一覧・実行・イベント応答、`ui()`はユーザー入力・elicitation・プラン承認などの要求への応答を提供します。`completions()`は入力候補を取得します。
+`tools()`と`permissions()`はイベントで届いた保留中リクエストへの応答や設定を扱います。権限の読み取りには`getAllowAll()`、`getRequired()`、`managedReviewRequired()`、`additionalDirectories()->list()`を利用できます。`permissions()->clearResumeEscalation()`は再開時に履歴から復元された権限昇格をメモリ内で解除し、成否を型付きで返します。`commands()`はコマンド一覧・実行・イベント応答、`ui()`はユーザー入力・elicitation・プラン承認などの要求への応答を提供します。`ui()->snapshot()`は保留中の要求、サービスやバックグラウンドエージェント、プラグイン有効化状態をまとめて取得します。`completions()`は入力候補を取得します。
 
 `permissions()->folderTrust()->addSessionTrusted()`は保存済みの信頼フォルダ一覧を変更せず、現在の作業ディレクトリをセッション内で信頼します（experimental）。
 
