@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingSessionTelemetry;
 use Revolution\Copilot\Types\Rpc\SessionTelemetryEngagement;
@@ -37,6 +38,32 @@ describe('PendingSessionTelemetry', function () {
 
         expect($engagement->engagementId)->toBeNull();
     });
+
+    it('reloads telemetry configuration for its session', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.telemetry.reload', [
+                'sessionId' => 'session-1',
+            ])
+            ->andReturn(null);
+
+        $result = (new PendingSessionTelemetry($client, 'session-1'))->reload();
+
+        expect($result)->toBeNull();
+    });
+
+    it('propagates telemetry reload failures', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.telemetry.reload', [
+                'sessionId' => 'session-1',
+            ])
+            ->andThrow(new JsonRpcException(-32000, 'Telemetry reload failed'));
+
+        (new PendingSessionTelemetry($client, 'session-1'))->reload();
+    })->throws(JsonRpcException::class, 'Telemetry reload failed');
 
     it('sends feature overrides with the session-scoped wire shape', function () {
         $client = Mockery::mock(JsonRpcClient::class);
