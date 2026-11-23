@@ -380,6 +380,16 @@ class SessionRpc
     }
 
     /**
+     * Session memory RPC operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function memory(): PendingMemory
+    {
+        return new PendingMemory($this->client, $this->sessionId);
+    }
+
+    /**
      * Session telemetry RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.
