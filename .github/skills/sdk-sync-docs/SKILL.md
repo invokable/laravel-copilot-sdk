@@ -64,6 +64,7 @@ SessionRpc pages (`$session->rpc()`):
 | `session-canvas.md` | session canvas |
 | `session-workflow.md` | feature flags, workflow |
 | `session-fs.md` | SessionFS callback handlers |
+| `session-memory.md` | session memory import |
 
 ## Update rules
 
