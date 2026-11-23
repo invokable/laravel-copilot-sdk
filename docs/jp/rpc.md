@@ -40,6 +40,7 @@ Copilot::client()->listModels();
 - [設定・管理設定](rpc/server-settings.md)
 - [HTTP推論・ファイルシステム](rpc/server-inference.md)
 - [セッション・ホスト・環境](rpc/server-sessions.md)
+- [Memories](rpc/server-memories.md)
 - [Skills・Plugins・Agents・Instructions・Extensions](rpc/server-skills-plugins.md)
 - [Git・GitHub](rpc/server-git.md)
 

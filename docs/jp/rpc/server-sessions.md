@@ -132,6 +132,32 @@ $env = Copilot::client()->rpc()->environments()->get(['environmentId' => 'env-id
 Copilot::client()->rpc()->environments()->delete(['environmentId' => 'env-id']);
 ```
 
+## sessions.import（experimental）
+
+`sessions()->import()`はセマンティックなセッション JSONL を検証し、新しいローカルセッションとして取り込みます。`jsonl`には入力全体、`inputPath`には相対添付ファイルの解決に使う入力ファイルのパス、`defaultWorkingDirectory`にはフォールバック用の絶対パスを指定します。必要に応じて`workingDirectory`と`name`で上書きできます。
+
+`dryRun: true`では検証のみを行い、セッションを作成しません。実際に取り込む場合は`dryRun: false`を指定します。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\SessionsImportParams;
+
+// sessions.import
+$result = Copilot::client()->rpc()->sessions()->import(new SessionsImportParams(
+    jsonl: $jsonl, // セマンティックなセッション JSONL の全内容
+    inputPath: '/path/to/session.jsonl',
+    defaultWorkingDirectory: '/path/to/project',
+    dryRun: true,
+));
+
+// $result->ok, $result->code, $result->message, $result->dryRun
+// $result->externalId, $result->sessionId は任意
+// $result->imported は sessions / messages / toolCalls / toolResults / attachments の件数
+// $result->diagnostics は line / code / message / 任意の externalId を含む検証結果
+```
+
+引数は配列でも指定できます。
+
 ## Runtime・Host のライフサイクル（experimental）
 
 `host.unpublishSession()` は、所有する稼働中のホストから application publication を撤回します。公開を撤回しても、元のセッション履歴、worktree、実行中の作業は削除・停止されません。すでに公開されていない場合は `unpublished` が `false` になり、application 以外の publication はエラーになります。
