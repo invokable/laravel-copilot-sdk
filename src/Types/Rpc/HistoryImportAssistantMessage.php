@@ -30,7 +30,7 @@ readonly class HistoryImportAssistantMessage implements Arrayable
                 fn (HistoryImportToolRequest|array $request) => $request instanceof HistoryImportToolRequest
                     ? $request
                     : HistoryImportToolRequest::fromArray($request),
-                Arr::array($data, 'toolRequests'),
+                array_values(Arr::array($data, 'toolRequests')),
             ) : null,
         );
     }
@@ -48,7 +48,7 @@ readonly class HistoryImportAssistantMessage implements Arrayable
                 fn (HistoryImportToolRequest|array $request) => ($request instanceof HistoryImportToolRequest
                     ? $request
                     : HistoryImportToolRequest::fromArray($request))->toArray(),
-                $this->toolRequests,
+                array_values($this->toolRequests),
             );
         }
 

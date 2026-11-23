@@ -21,7 +21,7 @@ readonly class HistoryImportUserMessage implements Arrayable
                 fn (HistoryImportAttachment|array $attachment) => $attachment instanceof HistoryImportAttachment
                     ? $attachment
                     : HistoryImportAttachment::fromArray($attachment),
-                Arr::array($data, 'attachments'),
+                array_values(Arr::array($data, 'attachments')),
             ) : null,
         );
     }
@@ -34,7 +34,7 @@ readonly class HistoryImportUserMessage implements Arrayable
                 fn (HistoryImportAttachment|array $attachment) => ($attachment instanceof HistoryImportAttachment
                     ? $attachment
                     : HistoryImportAttachment::fromArray($attachment))->toArray(),
-                $this->attachments,
+                array_values($this->attachments),
             );
         }
 

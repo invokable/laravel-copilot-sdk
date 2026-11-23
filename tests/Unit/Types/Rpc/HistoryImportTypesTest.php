@@ -74,6 +74,24 @@ describe('History import types', function () {
             ->and((new HistoryImportToolError('failed'))->toArray())->toBe(['message' => 'failed']);
     });
 
+    it('serializes sparse event, attachment and tool request lists as ordered JSON arrays', function () {
+        $attachment = ['type' => 'blob', 'mimeType' => 'text/plain', 'displayName' => 'file', 'data' => ''];
+        $toolRequest = ['name' => 'tool', 'toolCallId' => 'call'];
+        $events = [
+            2 => ['type' => 'user.message', 'data' => ['content' => 'hello', 'attachments' => [3 => $attachment]]],
+            7 => ['type' => 'assistant.message', 'data' => ['messageId' => 'm', 'content' => '', 'toolRequests' => [4 => $toolRequest]]],
+        ];
+        $expected = ['events' => [
+            ['type' => 'user.message', 'data' => ['content' => 'hello', 'attachments' => [$attachment]]],
+            ['type' => 'assistant.message', 'data' => ['messageId' => 'm', 'content' => '', 'toolRequests' => [$toolRequest]]],
+        ]];
+
+        expect((new SessionHistoryImportConversationRequest($events))->toArray())->toBe($expected)
+            ->and(SessionHistoryImportConversationRequest::fromArray(['events' => $events])->toArray())->toBe($expected)
+            ->and(json_encode((new SessionHistoryImportConversationRequest($events))->toArray(), JSON_THROW_ON_ERROR))
+            ->toBe(json_encode($expected, JSON_THROW_ON_ERROR));
+    });
+
     it('preserves every JSON argument value and distinguishes null from omission', function (mixed $value) {
         $request = ['name' => 'tool', 'toolCallId' => 'call', 'arguments' => $value];
         $invocation = ['toolCallId' => 'call', 'toolName' => 'tool', 'arguments' => $value];

@@ -19,7 +19,7 @@ readonly class SessionHistoryImportConversationRequest implements Arrayable
             fn (HistoryImportConversationEvent|array $event) => $event instanceof HistoryImportConversationEvent
                 ? $event
                 : HistoryImportConversationEvent::fromArray($event),
-            Arr::array($data, 'events'),
+            array_values(Arr::array($data, 'events')),
         ));
     }
 
@@ -29,7 +29,7 @@ readonly class SessionHistoryImportConversationRequest implements Arrayable
             fn (HistoryImportConversationEvent|array $event) => ($event instanceof HistoryImportConversationEvent
                 ? $event
                 : HistoryImportConversationEvent::fromArray($event))->toArray(),
-            $this->events,
+            array_values($this->events),
         )];
     }
 }
