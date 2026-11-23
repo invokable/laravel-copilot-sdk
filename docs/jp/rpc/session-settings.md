@@ -84,3 +84,36 @@ $session->rpc()->history()->truncate(new HistoryTruncateRequest(
     eventId: 'evt-123', // このイベントとそれ以降のすべてのイベントが削除される
 ));
 ```
+
+## history: 会話履歴の取り込み (experimental)
+
+`history()->importConversation()`は、外部の会話記録を元の順序でセッション履歴に追加します。新しいプロンプトを送る前に呼び出してください。モデルやツールは実行されず、イベントIDとタイムスタンプはランタイムが生成します。
+
+```php
+use Revolution\Copilot\Types\Rpc\HistoryImportAssistantMessage;
+use Revolution\Copilot\Types\Rpc\HistoryImportConversationEvent;
+use Revolution\Copilot\Types\Rpc\HistoryImportToolCompletion;
+use Revolution\Copilot\Types\Rpc\HistoryImportToolInvocation;
+use Revolution\Copilot\Types\Rpc\HistoryImportToolOutput;
+use Revolution\Copilot\Types\Rpc\HistoryImportToolRequest;
+use Revolution\Copilot\Types\Rpc\HistoryImportUserMessage;
+use Revolution\Copilot\Types\Rpc\SessionHistoryImportConversationRequest;
+
+// history: 外部の会話履歴を追加する
+$session->rpc()->history()->importConversation(new SessionHistoryImportConversationRequest(events: [
+    new HistoryImportConversationEvent('user.message', new HistoryImportUserMessage(content: '天気を教えて')),
+    new HistoryImportConversationEvent('assistant.message', new HistoryImportAssistantMessage(
+        messageId: 'message-1',
+        content: '天気を確認します。',
+        toolRequests: [new HistoryImportToolRequest(name: 'weather', toolCallId: 'call-1', arguments: ['city' => 'Tokyo'])],
+    )),
+    new HistoryImportConversationEvent('tool.execution_start', new HistoryImportToolInvocation(
+        toolCallId: 'call-1', toolName: 'weather', arguments: ['city' => 'Tokyo'],
+    )),
+    new HistoryImportConversationEvent('tool.execution_complete', new HistoryImportToolCompletion(
+        toolCallId: 'call-1', success: true, result: new HistoryImportToolOutput(content: '晴れ'),
+    )),
+]));
+```
+
+型付きリクエストの代わりに`['events' => [...]]`も渡せます。ユーザーメッセージにはBase64形式の`blob`添付、ツールの完了イベントには結果またはエラーを含められます。呼び出しは結果を返さず、失敗時はJSON-RPC例外が伝播します。

@@ -48,6 +48,8 @@ SessionRpc のメソッドをカテゴリー別にまとめた概要です。使
 
 `history()`は会話の圧縮（圧縮設定を含む）・中断・引き継ぎ要約・切り詰め、`queue()`は保留項目の挿入・移動・編集・削除・即時送信を提供します。`log()`、`eventLog()`、`usage()`、`quota()`、`limitPrediction()`でログやイベント、使用量と上限情報を扱います。`schedule()`ではスケジュール済みプロンプトを確認・停止できます。
 
+`history()->importConversation()`は外部の会話イベントを順番に履歴へ取り込みます（experimental）。使用例は [管理設定・debug・履歴](session-settings.md#history-会話履歴の取り込み-experimental) を参照してください。
+
 ## セッションメモリ
 
 `memory()->importRecord()`は、ユーザーが明示的に指定した1件のメモリをセッションのクラウドメモリサービスに取り込みます（experimental）。使用例とポリシーについては [セッションメモリ](session-memory.md) を参照してください。
