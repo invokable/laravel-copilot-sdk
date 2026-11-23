@@ -88,6 +88,7 @@ Copilot::start(function (CopilotSession $session) {
 - [キュー・スケジュール・タスク](rpc/session-queue-tasks.md)
 - [リモート・サンドボックス](rpc/session-remote.md)
 - [セッション情報・ローカルセッション管理](rpc/session-info.md)
+- [セッションメモリ](rpc/session-memory.md)
 - [Session canvas](rpc/session-canvas.md)
 - [Feature Flags・Workflow](rpc/session-workflow.md)
 - [SessionFS コールバック](rpc/session-fs.md)
