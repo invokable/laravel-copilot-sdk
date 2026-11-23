@@ -58,6 +58,9 @@ $telemetry = $session->rpc()->telemetry();
 $engagement = $telemetry->getEngagementId();
 // $engagement->engagementId - 利用可能な場合のエンゲージメントID。取得できない場合はnull
 
+$telemetry->reload();
+// セッションの設定ディレクトリから OpenTelemetry 設定を再読み込みします。
+
 $telemetry->setFeatureOverrides(new TelemetrySetFeatureOverridesRequest(
     features: ['feature-key' => 'override-value'],
 ));

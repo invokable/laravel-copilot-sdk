@@ -35,6 +35,18 @@ class PendingSessionTelemetry
     }
 
     /**
+     * Reload the local OpenTelemetry configuration for this session.
+     *
+     * @experimental
+     */
+    public function reload(): void
+    {
+        $this->client->request('session.telemetry.reload', [
+            'sessionId' => $this->sessionId,
+        ]);
+    }
+
+    /**
      * Replace the feature overrides attached to subsequent telemetry events.
      *
      * @experimental
