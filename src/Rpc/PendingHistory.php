@@ -20,6 +20,7 @@ use Revolution\Copilot\Types\Rpc\HistorySetCompactionConfigRequest;
 use Revolution\Copilot\Types\Rpc\HistorySummarizeForHandoffResult;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
+use Revolution\Copilot\Types\Rpc\SessionHistoryImportConversationRequest;
 
 /**
  * Pending history RPC operations for a session.
@@ -32,6 +33,21 @@ class PendingHistory
         protected JsonRpcClient $client,
         protected string $sessionId,
     ) {}
+
+    /**
+     * Append an external conversation without executing models or tools.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function importConversation(SessionHistoryImportConversationRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof SessionHistoryImportConversationRequest
+            ? $params
+            : SessionHistoryImportConversationRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.history.importConversation', $paramsArray);
+    }
 
     /**
      * Abort an in-progress manual history compaction.

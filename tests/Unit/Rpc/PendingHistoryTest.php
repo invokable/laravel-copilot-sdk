@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\ReasoningEffort;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingHistory;
+use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\HistoryAbortManualCompactionResult;
 use Revolution\Copilot\Types\Rpc\HistoryCancelBackgroundCompactionResult;
 use Revolution\Copilot\Types\Rpc\HistoryCompactRequest;
@@ -18,8 +20,37 @@ use Revolution\Copilot\Types\Rpc\HistorySetCompactionConfigRequest;
 use Revolution\Copilot\Types\Rpc\HistorySummarizeForHandoffResult;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateRequest;
 use Revolution\Copilot\Types\Rpc\HistoryTruncateResult;
+use Revolution\Copilot\Types\Rpc\SessionHistoryImportConversationRequest;
 
 describe('PendingHistory', function () {
+    it('imports conversation events in order with the session id and returns nothing', function (bool $typed) {
+        $events = [
+            ['type' => 'user.message', 'data' => ['content' => 'Hello']],
+            ['type' => 'assistant.message', 'data' => ['messageId' => 'm', 'content' => 'Checking']],
+            ['type' => 'tool.execution_start', 'data' => ['toolCallId' => 'call', 'toolName' => 'lookup']],
+            ['type' => 'tool.execution_complete', 'data' => ['toolCallId' => 'call', 'success' => true, 'result' => ['content' => 'Done']]],
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('session.history.importConversation', ['events' => $events, 'sessionId' => 'session-abc'])
+            ->andReturn(null);
+
+        $result = (new SessionRpc($client, 'session-abc'))->history()->importConversation(
+            $typed ? new SessionHistoryImportConversationRequest($events) : ['events' => $events, 'sessionId' => 'other'],
+        );
+
+        expect($result)->toBeNull();
+    })->with([true, false]);
+
+    it('propagates conversation import errors', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('session.history.importConversation', ['events' => [], 'sessionId' => 'session-abc'])
+            ->andThrow(new JsonRpcException(-32000, 'Import failed'));
+
+        (new SessionRpc($client, 'session-abc'))->history()->importConversation(['events' => []]);
+    })->throws(JsonRpcException::class, 'Import failed');
+
     it('sets compaction config with the session id and returns nothing', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
