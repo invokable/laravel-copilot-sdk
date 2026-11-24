@@ -44,6 +44,7 @@ ServerRpc pages (`Copilot::client()->rpc()`):
 | `server-memories.md` | semantic memory import |
 | `server-skills-plugins.md` | skills, catalog, plugins, agents, instructions, extensions, agentRegistry, lsp |
 | `server-git.md` | git, GitHub repository/owners, fetch, release |
+| `server-logging.md` | file logging |
 
 SessionRpc pages (`$session->rpc()`):
 
