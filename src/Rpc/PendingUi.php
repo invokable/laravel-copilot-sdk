@@ -35,6 +35,8 @@ class PendingUi
 
     /**
      * Read the current transient prompts and native service state for the session UI.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
      */
     public function snapshot(): SessionUiSnapshotResult
     {
