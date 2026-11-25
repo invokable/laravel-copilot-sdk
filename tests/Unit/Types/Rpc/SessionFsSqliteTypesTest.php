@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Enums\SessionFSErrorCode;
+use Revolution\Copilot\Enums\SessionFsErrorCode;
 use Revolution\Copilot\Enums\SessionFSSqliteQueryType;
-use Revolution\Copilot\Types\Rpc\SessionFSError;
+use Revolution\Copilot\Types\Rpc\SessionFsError;
 use Revolution\Copilot\Types\Rpc\SessionFsSetProviderCapabilities;
 use Revolution\Copilot\Types\Rpc\SessionFsSetProviderRequest;
 use Revolution\Copilot\Types\Rpc\SessionFsSqliteExistsRequest;
@@ -272,7 +272,7 @@ describe('SessionFsSqliteQueryResult', function () {
     });
 
     it('can be created with error', function () {
-        $error = new SessionFSError(code: SessionFSErrorCode::UNKNOWN, message: 'SQL error');
+        $error = new SessionFsError(code: SessionFsErrorCode::UNKNOWN, message: 'SQL error');
         $result = new SessionFsSqliteQueryResult(
             columns: [],
             rows: [],
@@ -280,8 +280,8 @@ describe('SessionFsSqliteQueryResult', function () {
             error: $error,
         );
 
-        expect($result->error)->toBeInstanceOf(SessionFSError::class)
-            ->and($result->error->code)->toBe(SessionFSErrorCode::UNKNOWN);
+        expect($result->error)->toBeInstanceOf(SessionFsError::class)
+            ->and($result->error->code)->toBe(SessionFsErrorCode::UNKNOWN);
     });
 
     it('can be created from array', function () {
@@ -304,8 +304,8 @@ describe('SessionFsSqliteQueryResult', function () {
             'error' => ['code' => 'UNKNOWN', 'message' => 'table not found'],
         ]);
 
-        expect($result->error)->toBeInstanceOf(SessionFSError::class)
-            ->and($result->error->code)->toBe(SessionFSErrorCode::UNKNOWN)
+        expect($result->error)->toBeInstanceOf(SessionFsError::class)
+            ->and($result->error->code)->toBe(SessionFsErrorCode::UNKNOWN)
             ->and($result->error->message)->toBe('table not found');
     });
 

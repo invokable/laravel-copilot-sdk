@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Enums\SessionFSErrorCode;
+use Revolution\Copilot\Enums\SessionFsErrorCode;
 use Revolution\Copilot\Enums\SessionFSSqliteQueryType;
 use Revolution\Copilot\Enums\SessionFSSqliteTransactionErrorClass;
 use Revolution\Copilot\Types\Rpc\SessionFsEntry;
@@ -116,7 +116,7 @@ describe('SessionFs result errors', function () {
         $result = SessionFsStatResult::fromArray($data);
 
         expect($result->error)->toBeInstanceOf(SessionFsError::class)
-            ->and($result->error->code)->toBe(SessionFSErrorCode::ENOENT)
+            ->and($result->error->code)->toBe(SessionFsErrorCode::ENOENT)
             ->and($result->toArray())->toBe($data);
     });
 

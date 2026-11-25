@@ -7,7 +7,7 @@ namespace Revolution\Copilot\Enums;
 /**
  * Session filesystem error classification.
  */
-enum SessionFSErrorCode: string
+enum SessionFsErrorCode: string
 {
     case ENOENT = 'ENOENT';
     case UNKNOWN = 'UNKNOWN';
