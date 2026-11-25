@@ -5,35 +5,37 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Types\Rpc;
 
 use Illuminate\Contracts\Support\Arrayable;
-use Revolution\Copilot\Enums\SessionFSErrorCode;
+use Revolution\Copilot\Enums\SessionFsErrorCode;
 
 /**
- * Describes a filesystem error.
+ * Structured filesystem error returned by a SessionFs provider callback.
  */
-readonly class SessionFSError implements Arrayable
+readonly class SessionFsError implements Arrayable
 {
-    /**
-     * @param  SessionFSErrorCode  $code  Error classification
-     * @param  ?string  $message  Free-form detail about the error, for logging/diagnostics
-     */
     public function __construct(
-        public SessionFSErrorCode $code,
+        public SessionFsErrorCode|string $code,
         public ?string $message = null,
+        public ?bool $writeChanged = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
+        $code = $data['code'] ?? SessionFsErrorCode::UNKNOWN->value;
+        $code = is_string($code) ? (SessionFsErrorCode::tryFrom($code) ?? $code) : SessionFsErrorCode::UNKNOWN;
+
         return new self(
-            code: SessionFSErrorCode::from($data['code']),
+            code: $code,
             message: $data['message'] ?? null,
+            writeChanged: isset($data['writeChanged']) ? (bool) $data['writeChanged'] : null,
         );
     }
 
     public function toArray(): array
     {
         return array_filter([
-            'code' => $this->code->value,
+            'code' => $this->code instanceof SessionFsErrorCode ? $this->code->value : $this->code,
             'message' => $this->message,
-        ], fn ($v) => $v !== null);
+            'writeChanged' => $this->writeChanged,
+        ], static fn ($value) => $value !== null);
     }
 }

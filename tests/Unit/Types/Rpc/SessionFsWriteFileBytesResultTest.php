@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Revolution\Copilot\Enums\SessionFSErrorCode;
-use Revolution\Copilot\Types\Rpc\SessionFSError;
+use Revolution\Copilot\Enums\SessionFsErrorCode;
+use Revolution\Copilot\Types\Rpc\SessionFsError;
 use Revolution\Copilot\Types\Rpc\SessionFsWriteFileBytesResult;
 
 describe('SessionFsWriteFileBytesResult', function () {
@@ -15,8 +15,8 @@ describe('SessionFsWriteFileBytesResult', function () {
             ],
         ]);
 
-        expect($result->error)->toBeInstanceOf(SessionFSError::class)
-            ->and($result->error->code)->toBe(SessionFSErrorCode::ENOENT)
+        expect($result->error)->toBeInstanceOf(SessionFsError::class)
+            ->and($result->error->code)->toBe(SessionFsErrorCode::ENOENT)
             ->and($result->error->message)->toBe('File not found');
     });
 
@@ -29,8 +29,8 @@ describe('SessionFsWriteFileBytesResult', function () {
 
     it('converts a nested error to array data', function () {
         $result = new SessionFsWriteFileBytesResult(
-            error: new SessionFSError(
-                code: SessionFSErrorCode::UNKNOWN,
+            error: new SessionFsError(
+                code: SessionFsErrorCode::UNKNOWN,
                 message: 'Unexpected filesystem error',
             ),
         );

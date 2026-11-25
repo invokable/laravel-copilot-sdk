@@ -7,7 +7,7 @@ namespace Revolution\Copilot\Concerns\Session;
 use Revolution\Copilot\Contracts\SessionFsBinaryProvider;
 use Revolution\Copilot\Contracts\SessionFsProvider;
 use Revolution\Copilot\Contracts\SessionFsSqliteProvider;
-use Revolution\Copilot\Enums\SessionFSErrorCode;
+use Revolution\Copilot\Enums\SessionFsErrorCode;
 use Revolution\Copilot\Enums\SessionFSSqliteQueryType;
 use Revolution\Copilot\Enums\SessionFSSqliteTransactionErrorClass;
 use Revolution\Copilot\Exceptions\JsonRpcException;
@@ -94,7 +94,7 @@ trait HasSessionFs
     {
         $provider = $this->requireSessionFsProvider();
         if (! $this->supportsSessionFsBinary($provider)) {
-            return (new SessionFsReadFileBytesResult('', new SessionFsError(SessionFSErrorCode::UNKNOWN, 'Binary reads are not supported')))->toArray();
+            return (new SessionFsReadFileBytesResult('', new SessionFsError(SessionFsErrorCode::UNKNOWN, 'Binary reads are not supported')))->toArray();
         }
 
         try {
@@ -116,16 +116,16 @@ trait HasSessionFs
     {
         $provider = $this->requireSessionFsProvider();
         if (! $this->supportsSessionFsBinary($provider)) {
-            return (new SessionFsError(SessionFSErrorCode::UNKNOWN, 'Binary writes are not supported'))->toArray();
+            return (new SessionFsError(SessionFsErrorCode::UNKNOWN, 'Binary writes are not supported'))->toArray();
         }
 
         if (strlen($request->content) > 67_106_816) {
-            return (new SessionFsError(SessionFSErrorCode::UNKNOWN, 'sessionFs.writeFileBytes content exceeds the binary write limit'))->toArray();
+            return (new SessionFsError(SessionFsErrorCode::UNKNOWN, 'sessionFs.writeFileBytes content exceeds the binary write limit'))->toArray();
         }
 
         $bytes = base64_decode($request->content, true);
         if ($bytes === false || base64_encode($bytes) !== $request->content || strlen($bytes) > 50_330_112) {
-            return (new SessionFsError(SessionFSErrorCode::UNKNOWN, 'invalid sessionFs.writeFileBytes base64 content'))->toArray();
+            return (new SessionFsError(SessionFsErrorCode::UNKNOWN, 'invalid sessionFs.writeFileBytes base64 content'))->toArray();
         }
 
         try {
@@ -178,7 +178,7 @@ trait HasSessionFs
         $provider = $this->requireSessionFsProvider();
         $method = SessionFsProviderSupport::filesystemMethod($provider, 'stat');
         if ($method === null) {
-            return $this->failedSessionFsStat(new SessionFsError(SessionFSErrorCode::UNKNOWN, 'sessionFs.stat is not supported by this provider'));
+            return $this->failedSessionFsStat(new SessionFsError(SessionFsErrorCode::UNKNOWN, 'sessionFs.stat is not supported by this provider'));
         }
 
         try {
@@ -220,7 +220,7 @@ trait HasSessionFs
         $provider = $this->requireSessionFsProvider();
         $method = SessionFsProviderSupport::filesystemMethod($provider, 'readdir');
         if ($method === null) {
-            return (new SessionFsReaddirResult([], new SessionFsError(SessionFSErrorCode::UNKNOWN, 'sessionFs.readdir is not supported by this provider')))->toArray();
+            return (new SessionFsReaddirResult([], new SessionFsError(SessionFsErrorCode::UNKNOWN, 'sessionFs.readdir is not supported by this provider')))->toArray();
         }
 
         try {
@@ -235,7 +235,7 @@ trait HasSessionFs
         $provider = $this->requireSessionFsProvider();
         $method = SessionFsProviderSupport::filesystemMethod($provider, 'readdirWithTypes');
         if ($method === null) {
-            return (new SessionFsReaddirWithTypesResult([], new SessionFsError(SessionFSErrorCode::UNKNOWN, 'sessionFs.readdirWithTypes is not supported by this provider')))->toArray();
+            return (new SessionFsReaddirWithTypesResult([], new SessionFsError(SessionFsErrorCode::UNKNOWN, 'sessionFs.readdirWithTypes is not supported by this provider')))->toArray();
         }
 
         try {
@@ -390,7 +390,7 @@ trait HasSessionFs
 
     private function unsupportedSessionFsOperation(string $operation): array
     {
-        return (new SessionFsError(SessionFSErrorCode::UNKNOWN, "sessionFs.{$operation} is not supported by this provider"))->toArray();
+        return (new SessionFsError(SessionFsErrorCode::UNKNOWN, "sessionFs.{$operation} is not supported by this provider"))->toArray();
     }
 
     private function requireSessionFsProvider(): SessionFsProvider|array
@@ -414,7 +414,7 @@ trait HasSessionFs
         $isNotFound = $errorCode === 'ENOENT' || $errorCode === 2;
 
         return new SessionFsError(
-            code: $isNotFound ? SessionFSErrorCode::ENOENT : SessionFSErrorCode::UNKNOWN,
+            code: $isNotFound ? SessionFsErrorCode::ENOENT : SessionFsErrorCode::UNKNOWN,
             message: $exception->getMessage(),
         );
     }

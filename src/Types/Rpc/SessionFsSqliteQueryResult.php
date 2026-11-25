@@ -17,14 +17,14 @@ readonly class SessionFsSqliteQueryResult implements Arrayable
      * @param  list<string>  $columns  Column names from the result set
      * @param  list<array<string, mixed>>  $rows  For SELECT: array of row objects. For others: empty array.
      * @param  int  $rowsAffected  Number of rows affected (for INSERT/UPDATE/DELETE)
-     * @param  ?SessionFSError  $error  Filesystem error if execution failed
+     * @param  ?SessionFsError  $error  Filesystem error if execution failed
      * @param  ?float  $lastInsertRowid  Last inserted row ID (for INSERT)
      */
     public function __construct(
         public array $columns,
         public array $rows,
         public int $rowsAffected,
-        public ?SessionFSError $error = null,
+        public ?SessionFsError $error = null,
         public ?float $lastInsertRowid = null,
     ) {}
 
@@ -34,7 +34,7 @@ readonly class SessionFsSqliteQueryResult implements Arrayable
             columns: Arr::array($data, 'columns', []),
             rows: Arr::array($data, 'rows', []),
             rowsAffected: Arr::integer($data, 'rowsAffected', 0),
-            error: isset($data['error']) ? SessionFSError::fromArray($data['error']) : null,
+            error: isset($data['error']) ? SessionFsError::fromArray($data['error']) : null,
             lastInsertRowid: isset($data['lastInsertRowid']) ? (float) $data['lastInsertRowid'] : null,
         );
     }

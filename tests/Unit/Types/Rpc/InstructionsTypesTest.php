@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\InstructionSourceLocation;
 use Revolution\Copilot\Enums\InstructionSourceType;
-use Revolution\Copilot\Enums\SessionFSErrorCode;
+use Revolution\Copilot\Enums\SessionFsErrorCode;
 use Revolution\Copilot\Types\Rpc\InstructionsGetSourcesResult;
 use Revolution\Copilot\Types\Rpc\InstructionsSources;
-use Revolution\Copilot\Types\Rpc\SessionFSError;
+use Revolution\Copilot\Types\Rpc\SessionFsError;
 
-describe('SessionFSError', function () {
+describe('SessionFsError', function () {
     it('can be created from array with all fields', function () {
-        $error = SessionFSError::fromArray([
+        $error = SessionFsError::fromArray([
             'code' => 'ENOENT',
             'message' => 'File not found',
         ]);
 
-        expect($error->code)->toBe(SessionFSErrorCode::ENOENT)
+        expect($error->code)->toBe(SessionFsErrorCode::ENOENT)
             ->and($error->message)->toBe('File not found');
     });
 
     it('can be created without optional message', function () {
-        $error = SessionFSError::fromArray(['code' => 'UNKNOWN']);
+        $error = SessionFsError::fromArray(['code' => 'UNKNOWN']);
 
-        expect($error->code)->toBe(SessionFSErrorCode::UNKNOWN)
+        expect($error->code)->toBe(SessionFsErrorCode::UNKNOWN)
             ->and($error->message)->toBeNull();
     });
 
     it('converts to array', function () {
-        $error = SessionFSError::fromArray([
+        $error = SessionFsError::fromArray([
             'code' => 'ENOENT',
             'message' => 'File not found',
         ]);
@@ -40,7 +40,7 @@ describe('SessionFSError', function () {
     });
 
     it('filters null message in toArray', function () {
-        $error = new SessionFSError(code: SessionFSErrorCode::UNKNOWN);
+        $error = new SessionFsError(code: SessionFsErrorCode::UNKNOWN);
 
         expect($error->toArray())->not->toHaveKey('message');
     });
