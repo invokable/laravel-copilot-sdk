@@ -38,6 +38,18 @@ $session->rpc()->tools()->execute([
 
 // execute() は通常のネイティブツール呼び出しパイプラインを通るため、権限確認を迂回しない。
 // ツールに承認が必要な場合は、通常どおりSessionConfigのonPermissionRequestハンドラーが処理する。
+// 保留中の外部ツール呼び出しの進捗を報告（experimental）
+use Revolution\Copilot\Types\Rpc\SessionToolsReportProgressRequest;
+
+$session->rpc()->tools()->reportProgress(new SessionToolsReportProgressRequest(
+    requestId: '...',
+    message: '処理中...',
+));
+// 配列でも指定可能。sessionId は現在のセッションの値が使われる
+$session->rpc()->tools()->reportProgress(['requestId' => '...', 'message' => '処理中...']);
+// tool.execution_progress イベントとして通知される。空のメッセージや未知・完了済みの要求は無視される
+// RPC エラーは JsonRpcException として伝播する
+
 $session->rpc()->tools()->handlePendingToolCall(new HandlePendingToolCallRequest(
     requestId: '...',
     result: 'ツールの実行結果',
