@@ -18,5 +18,6 @@ testbench.yaml export-ignore
 .gitmodules export-ignore
 copilot-sdk export-ignore
 /docs export-ignore
+/.ai export-ignore
 
 .github/workflows/*.lock.yml linguist-generated=true
