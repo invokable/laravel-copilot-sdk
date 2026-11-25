@@ -34,6 +34,12 @@ providersConfig の使用例は [設定・管理設定](server-settings.md) を�
 
 secrets の使用例は [MCP・コネクター](server-mcp.md) を参照してください。
 
+## Extension approvals（experimental）
+
+`permissions()->extensionApprovals()`は、プラグイン拡張機能のユーザー単位の承認を`grant()`で保存し、`list()`で一覧取得し、`revoke()`で取り消します。`grant()`は保留中の要求への通常の応答より前に呼び出しますが、応答自体は行いません。`list()`と`revoke()`は`sessionId`の有無により、接続済みセッションまたはサーバーの設定プロファイルを対象にします。
+
+使用例は [Permissions](server-permissions.md) を参照してください。
+
 ## Skills・Plugins・Agents・Instructions・Extensions
 
 各グループから探索や利用可能なパスの取得、設定変更、再読み込みを行えます。`commands()`は組み込みコマンド一覧、`hooks()`はセッション開始前のフック探索を提供します。SkillsとPluginsは有効化・無効化やインストール管理に対応し、Agentsは組み込みエージェント情報の取得に加え、名前検証、ツール分類の一覧取得、定義Markdownの生成、ファイル作成を行えます。Extensionsは永続化された拡張機能を探索・有効化・無効化します。`lsp()`ではサーバー全体の言語サーバー設定の一覧を取得できます。

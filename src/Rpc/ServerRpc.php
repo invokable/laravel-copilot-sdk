@@ -340,6 +340,16 @@ class ServerRpc
     }
 
     /**
+     * Server-level permissions RPC operations.
+     *
+     * @experimental
+     */
+    public function permissions(): PendingServerPermissions
+    {
+        return new PendingServerPermissions($this->client);
+    }
+
+    /**
      * Server-level instructions RPC operations.
      *
      * @experimental This API group is experimental and may change or be removed.
