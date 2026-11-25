@@ -42,6 +42,7 @@ ServerRpc pages (`Copilot::client()->rpc()`):
 | `server-permissions.md` | server-side permission grants, listing, and revocation |
 | `server-inference.md` | llmInference HTTP hooks, sessionFs provider registration, extension launch resolution, network callbacks |
 | `server-sessions.md` | persisted sessions, host support, environments, runtime/host lifecycle, cloudTasks, taskAnalytics |
+| `server-context-board.md` | context board consolidation prompt |
 | `server-memories.md` | semantic memory import |
 | `server-skills-plugins.md` | skills, catalog, plugins, agents, instructions, extensions, agentRegistry, lsp |
 | `server-git.md` | git, GitHub repository/owners, fetch, release |

@@ -202,6 +202,16 @@ class ServerRpc
     }
 
     /**
+     * Context board consolidation operations.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function contextBoard(): PendingServerContextBoard
+    {
+        return new PendingServerContextBoard($this->client);
+    }
+
+    /**
      * Semantic memory import operations.
      *
      * @experimental This API group is experimental and may change or be removed.

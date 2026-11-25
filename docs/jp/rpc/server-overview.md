@@ -60,6 +60,10 @@ secrets の使用例は [MCP・コネクター](server-mcp.md) を参照して�
 
 `sessions()->import()`はセマンティックなセッション JSONL を検証し、新しいローカルセッションとして取り込む実験的APIです。`dryRun: true`ではセッションを作成しません。使用例は [セッション・ホスト・環境](server-sessions.md) を参照してください。
 
+## Context Board（experimental）
+
+`contextBoard()->getConsolidationPrompt()`は、コンテキストボードの統合エージェント向けにランタイムが管理する指示プロンプトを返します。使用例は [Context Board](server-context-board.md) を参照してください。
+
 ## Memories（experimental）
 
 `memories()->import()`はセマンティックなメモリ JSONL を検証し、サーバーのアカウント・リポジトリポリシーに従って保存します。`dryRun: true`ではレコードを送信しません。使用例は [Memories](server-memories.md) を参照してください。
