@@ -8,6 +8,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
 use Revolution\Copilot\Types\Rpc\PendingExternalToolRequestList;
+use Revolution\Copilot\Types\Rpc\SessionToolsReportProgressRequest;
 use Revolution\Copilot\Types\Rpc\ToolResultExpanded;
 use Revolution\Copilot\Types\Rpc\ToolsExecuteRequest;
 use Revolution\Copilot\Types\Rpc\ToolsGetCurrentMetadataResult;
@@ -41,6 +42,19 @@ class PendingTools
         return HandlePendingToolCallResult::fromArray(
             $this->client->request('session.tools.handlePendingToolCall', $paramsArray),
         );
+    }
+
+    /**
+     * Report progress for a pending external tool call.
+     *
+     * @experimental
+     */
+    public function reportProgress(SessionToolsReportProgressRequest|array $params): void
+    {
+        $paramsArray = ($params instanceof SessionToolsReportProgressRequest ? $params : SessionToolsReportProgressRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        $this->client->request('session.tools.reportProgress', $paramsArray);
     }
 
     /**
