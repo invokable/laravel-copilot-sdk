@@ -39,6 +39,7 @@ ServerRpc pages (`Copilot::client()->rpc()`):
 | `server-local-models.md` | Azure ML local model management |
 | `server-mcp.md` | MCP server config, registry search, catalog install/uninstall, discovery, secrets |
 | `server-settings.md` | user settings, contentExclusion, managedSettings, settings files, providersConfig |
+| `server-permissions.md` | server-side permission grants, listing, and revocation |
 | `server-inference.md` | llmInference HTTP hooks, sessionFs provider registration, extension launch resolution, network callbacks |
 | `server-sessions.md` | persisted sessions, host support, environments, runtime/host lifecycle, cloudTasks, taskAnalytics |
 | `server-memories.md` | semantic memory import |

@@ -38,6 +38,7 @@ Copilot::client()->listModels();
 - [ファイルロギング](rpc/server-logging.md)
 - [MCP・コネクター](rpc/server-mcp.md)
 - [設定・管理設定](rpc/server-settings.md)
+- [Permissions](rpc/server-permissions.md)
 - [HTTP推論・ファイルシステム](rpc/server-inference.md)
 - [セッション・ホスト・環境](rpc/server-sessions.md)
 - [Memories](rpc/server-memories.md)
