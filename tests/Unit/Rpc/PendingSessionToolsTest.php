@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\TaskCompletionOutcome;
 use Revolution\Copilot\Enums\ToolResultType;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingTools;
+use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallRequest;
 use Revolution\Copilot\Types\Rpc\HandlePendingToolCallResult;
+use Revolution\Copilot\Types\Rpc\SessionToolsReportProgressRequest;
 use Revolution\Copilot\Types\Rpc\ToolResultExpanded;
 use Revolution\Copilot\Types\Rpc\ToolResultNewMessage;
 use Revolution\Copilot\Types\Rpc\ToolsExecuteRequest;
@@ -16,6 +19,74 @@ use Revolution\Copilot\Types\Rpc\ToolsInitializeAndValidateResult;
 use Revolution\Copilot\Types\Rpc\ToolsSetRequest;
 
 describe('PendingSessionTools', function () {
+    it('round trips progress request parameters and requires both strings', function () {
+        $data = ['requestId' => 'req-1', 'message' => 'Working'];
+        $request = SessionToolsReportProgressRequest::fromArray($data);
+
+        expect($request->requestId)->toBe('req-1')
+            ->and($request->message)->toBe('Working')
+            ->and($request->toArray())->toBe($data)
+            ->and(fn () => SessionToolsReportProgressRequest::fromArray(['requestId' => 'req-1']))->toThrow(InvalidArgumentException::class)
+            ->and(fn () => SessionToolsReportProgressRequest::fromArray(['message' => 'Working']))->toThrow(InvalidArgumentException::class)
+            ->and(fn () => SessionToolsReportProgressRequest::fromArray(['requestId' => 1, 'message' => 'Working']))->toThrow(InvalidArgumentException::class)
+            ->and(fn () => SessionToolsReportProgressRequest::fromArray(['requestId' => 'req-1', 'message' => null]))->toThrow(InvalidArgumentException::class);
+    });
+
+    it('reports progress using typed parameters', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.tools.reportProgress', [
+                'requestId' => 'req-1',
+                'message' => 'Working',
+                'sessionId' => 'test-session-id',
+            ])
+            ->andReturnNull();
+
+        $result = (new SessionRpc($client, 'test-session-id'))->tools()->reportProgress(
+            new SessionToolsReportProgressRequest(requestId: 'req-1', message: 'Working'),
+        );
+
+        expect($result)->toBeNull();
+    });
+
+    it('reports array progress parameters using the current session id', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.tools.reportProgress', [
+                'requestId' => 'req-2',
+                'message' => '',
+                'sessionId' => 'test-session-id',
+            ])
+            ->andReturnNull();
+
+        $result = (new PendingTools($client, 'test-session-id'))->reportProgress([
+            'requestId' => 'req-2',
+            'message' => '',
+            'sessionId' => 'some-other-session',
+        ]);
+
+        expect($result)->toBeNull();
+    });
+
+    it('propagates progress reporting errors', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.tools.reportProgress', [
+                'requestId' => 'req-1',
+                'message' => 'Working',
+                'sessionId' => 'test-session-id',
+            ])
+            ->andThrow(new JsonRpcException(-32000, 'Progress failed'));
+
+        (new PendingTools($client, 'test-session-id'))->reportProgress([
+            'requestId' => 'req-1',
+            'message' => 'Working',
+        ]);
+    })->throws(JsonRpcException::class, 'Progress failed');
+
     it('initializes and validates runtime tools for the session', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
