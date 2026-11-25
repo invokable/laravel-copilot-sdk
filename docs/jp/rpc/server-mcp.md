@@ -135,6 +135,25 @@ $result = Copilot::client()->rpc()->mcp()->discover();
 // $result->servers は DiscoveredMcpServer の配列
 ```
 
+## mcp secrets（実験的）
+
+レガシー MCP 設定のクレデンシャルをランタイム所有のストアに保存・削除します。インストール所有のクレデンシャルはインストール API を使用してください。`configDir` を省略するとランタイムの設定ルートが使われます。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+use Revolution\Copilot\Types\Rpc\McpSecretsDeleteParams;
+use Revolution\Copilot\Types\Rpc\McpSecretsDeleteServerParams;
+use Revolution\Copilot\Types\Rpc\McpSecretsSaveParams;
+
+$secrets = Copilot::client()->rpc()->mcp()->secrets();
+$result = $secrets->save(new McpSecretsSaveParams(secretId: $secretId, value: $credential));
+// $result->usedKeychain は true ならキーチェーン、false ならファイルバックエンド
+$secrets->delete(new McpSecretsDeleteParams(secretId: $secretId));
+$secrets->deleteServer(new McpSecretsDeleteServerParams(serverName: 'my-server'));
+```
+
+`/` を含むサーバー名は共有クレデンシャルの所有権を維持するため、MCP 設定の削除を使用してください。これは以下の `secrets()` によるマスキングとは別の API です。
+
 ## secrets (experimental: シークレットのマスク)
 
 実験的な`secrets()->addFilterValues()`は、ホストが生成した動的シークレットをCLIのredaction filterに登録し、session logsやexportsでマスクします。

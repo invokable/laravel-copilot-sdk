@@ -66,6 +66,16 @@ class PendingServerMcpConfig
     }
 
     /**
+     * Legacy MCP configuration credential operations.
+     *
+     * @experimental
+     */
+    public function secrets(): PendingServerMcpSecrets
+    {
+        return new PendingServerMcpSecrets($this->client);
+    }
+
+    /**
      * Determine whether GitHub MCP tools can be replaced by the host's GitHub CLI.
      *
      * @experimental
