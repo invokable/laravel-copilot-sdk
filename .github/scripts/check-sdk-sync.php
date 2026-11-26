@@ -484,7 +484,7 @@ final class SdkSyncAudit
         $source = $this->withoutComments($typescript);
         $body = $this->block($source, '/export function '.preg_quote($function, '/').'\([^)]*\)\s*\{/');
         preg_match_all(
-            '/\w+\s*:\s*async\s*\(([^)]*)\)\s*(?::\s*Promise<([^>]+)>)?\s*=>\s*/s',
+            '/\w+\s*:\s*(?:async\s*\(([^)]*)\)\s*(?::\s*Promise<([^>]+)>)?\s*=>|\(\(\)\s*=>\s*\{)/s',
             $body,
             $matches,
             PREG_SET_ORDER | PREG_OFFSET_CAPTURE,
@@ -506,7 +506,7 @@ final class SdkSyncAudit
                 );
             }
 
-            if (preg_match('/connection\.sendRequest\(\s*["\']([^"\']+)["\']/', $expression, $wireMethod)) {
+            if (preg_match('/(?:connection\.sendRequest|sendCancellableRequest(?:<[^>]+>)?|sendRequestWithSignal)\(\s*(?:connection,\s*)?["\']([^"\']+)["\']/', $expression, $wireMethod)) {
                 $methods[] = $wireMethod[1];
             }
         }
