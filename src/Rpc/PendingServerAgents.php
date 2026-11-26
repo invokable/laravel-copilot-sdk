@@ -24,6 +24,10 @@ use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\AgentsListToolCategoriesResult;
 use Revolution\Copilot\Types\Rpc\AgentsValidateNameRequest;
 use Revolution\Copilot\Types\Rpc\AgentsValidateNameResult;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnAgentNameRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnAgentNameResult;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnCwdRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnCwdResult;
 use Revolution\Copilot\Types\Rpc\ServerAgentList;
 
 /**
@@ -149,6 +153,38 @@ class PendingServerAgents
 
         return AgentsValidateNameResult::fromArray(
             $this->client->request('agents.validateName', $paramsArray),
+        );
+    }
+
+    /**
+     * Validates a spawn agent name against caller-visible agents without loading them.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function validateSpawnAgentName(AgentsValidateSpawnAgentNameRequest|array $params): AgentsValidateSpawnAgentNameResult
+    {
+        $paramsArray = ($params instanceof AgentsValidateSpawnAgentNameRequest
+            ? $params
+            : AgentsValidateSpawnAgentNameRequest::fromArray($params))->toArray();
+
+        return AgentsValidateSpawnAgentNameResult::fromArray(
+            $this->client->request('agents.validateSpawnAgentName', $paramsArray),
+        );
+    }
+
+    /**
+     * Validates a spawn working directory on the runtime host.
+     *
+     * @experimental This API group is experimental and may change or be removed.
+     */
+    public function validateSpawnCwd(AgentsValidateSpawnCwdRequest|array $params): AgentsValidateSpawnCwdResult
+    {
+        $paramsArray = ($params instanceof AgentsValidateSpawnCwdRequest
+            ? $params
+            : AgentsValidateSpawnCwdRequest::fromArray($params))->toArray();
+
+        return AgentsValidateSpawnCwdResult::fromArray(
+            $this->client->request('agents.validateSpawnCwd', $paramsArray),
         );
     }
 

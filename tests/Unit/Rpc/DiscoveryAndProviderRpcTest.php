@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use Revolution\Copilot\Enums\AgentFileLocation;
 use Revolution\Copilot\Enums\AgentToolCategoryId;
+use Revolution\Copilot\Enums\SpawnAgentNameValidationReason;
+use Revolution\Copilot\Enums\SpawnCwdValidationReason;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingProvider;
 use Revolution\Copilot\Rpc\PendingProviderModels;
@@ -21,6 +24,8 @@ use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinDefinitionRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetBuiltinListingDefinitionRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\AgentsValidateNameRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnAgentNameRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnCwdRequest;
 use Revolution\Copilot\Types\Rpc\InstructionDiscoveryPathList;
 use Revolution\Copilot\Types\Rpc\InstructionsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\ModelProviderDiscoverRequest;
@@ -35,6 +40,7 @@ use Revolution\Copilot\Types\Rpc\SessionProvidersModelsDiagnoseRequest;
 use Revolution\Copilot\Types\Rpc\SessionProvidersModelsDiagnoseResult;
 use Revolution\Copilot\Types\Rpc\SessionProviderUpdateModelRequest;
 use Revolution\Copilot\Types\Rpc\SessionProviderUpdateProviderRequest;
+use Revolution\Copilot\Types\Rpc\SpawnValidatableAgent;
 
 describe('PendingServerAgents', function () {
     it('calls agents.discover and returns ServerAgentList', function () {
@@ -133,6 +139,57 @@ describe('PendingServerAgents', function () {
 });
 
 describe('PendingServerAgents file creation', function () {
+    it('validates spawn names using typed and array parameters', function () {
+        $params = ['name' => 'review', 'customAgents' => [['name' => 'review', 'id' => 'team/review']], 'builtinNames' => ['explore']];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->twice()
+            ->with('agents.validateSpawnAgentName', $params)
+            ->andReturn(['ok' => true], ['ok' => false, 'reason' => 'unknown-agent', 'message' => 'Unknown agent']);
+        $agents = new PendingServerAgents($client);
+
+        $success = $agents->validateSpawnAgentName(new AgentsValidateSpawnAgentNameRequest(
+            'review', [new SpawnValidatableAgent('review', 'team/review')], ['explore'],
+        ));
+        $failure = $agents->validateSpawnAgentName($params);
+
+        expect($success->toArray())->toBe(['ok' => true])
+            ->and($failure->ok)->toBeFalse()
+            ->and($failure->reason)->toBe(SpawnAgentNameValidationReason::UnknownAgent)
+            ->and($failure->message)->toBe('Unknown agent');
+    });
+
+    it('validates spawn directories using typed and array parameters', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->twice()
+            ->with('agents.validateSpawnCwd', ['cwd' => '/workspace'])
+            ->andReturn(['ok' => true], ['ok' => false, 'reason' => 'cwd-not-found', 'message' => 'Not found']);
+        $agents = new PendingServerAgents($client);
+
+        $success = $agents->validateSpawnCwd(new AgentsValidateSpawnCwdRequest('/workspace'));
+        $failure = $agents->validateSpawnCwd(['cwd' => '/workspace']);
+
+        expect($success->toArray())->toBe(['ok' => true])
+            ->and($failure->ok)->toBeFalse()
+            ->and($failure->reason)->toBe(SpawnCwdValidationReason::CwdNotFound)
+            ->and($failure->message)->toBe('Not found');
+    });
+
+    it('propagates spawn validation RPC errors', function (string $method, string $wireMethod, array $params) {
+        $exception = new JsonRpcException(-32603, 'RPC failed');
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()->with($wireMethod, $params)->andThrow($exception);
+
+        try {
+            (new PendingServerAgents($client))->$method($params);
+            $this->fail('Expected the RPC exception.');
+        } catch (JsonRpcException $caught) {
+            expect($caught)->toBe($exception);
+        }
+    })->with([
+        ['validateSpawnAgentName', 'agents.validateSpawnAgentName', ['name' => 'review', 'customAgents' => [], 'builtinNames' => []]],
+        ['validateSpawnCwd', 'agents.validateSpawnCwd', ['cwd' => '/workspace']],
+    ]);
+
     it('validates a proposed agent name', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

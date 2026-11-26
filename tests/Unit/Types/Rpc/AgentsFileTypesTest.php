@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\AgentFileLocation;
 use Revolution\Copilot\Enums\AgentsCreateFileResultKind;
 use Revolution\Copilot\Enums\AgentToolCategoryId;
+use Revolution\Copilot\Enums\SpawnAgentNameValidationReason;
+use Revolution\Copilot\Enums\SpawnCwdValidationReason;
 use Revolution\Copilot\Types\Rpc\AgentsCreateFileRequest;
 use Revolution\Copilot\Types\Rpc\AgentsCreateFileResult;
 use Revolution\Copilot\Types\Rpc\AgentsGenerateFileContentRequest;
@@ -12,9 +14,53 @@ use Revolution\Copilot\Types\Rpc\AgentsGenerateFileContentResult;
 use Revolution\Copilot\Types\Rpc\AgentsListToolCategoriesResult;
 use Revolution\Copilot\Types\Rpc\AgentsValidateNameRequest;
 use Revolution\Copilot\Types\Rpc\AgentsValidateNameResult;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnAgentNameRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnAgentNameResult;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnCwdRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnCwdResult;
 use Revolution\Copilot\Types\Rpc\AgentToolCategory;
+use Revolution\Copilot\Types\Rpc\SpawnValidatableAgent;
 
 describe('custom agent file RPC types', function () {
+    it('round-trips spawn validation requests including nested agents', function () {
+        $data = [
+            'name' => 'review',
+            'customAgents' => [['name' => 'review', 'id' => 'team/review'], ['name' => 'other']],
+            'builtinNames' => ['explore'],
+        ];
+        $request = AgentsValidateSpawnAgentNameRequest::fromArray($data);
+
+        expect($request->customAgents[0])->toBeInstanceOf(SpawnValidatableAgent::class)
+            ->and($request->toArray())->toBe($data)
+            ->and((new AgentsValidateSpawnAgentNameRequest('explore', [], []))->toArray())->toBe([
+                'name' => 'explore', 'customAgents' => [], 'builtinNames' => [],
+            ])
+            ->and(AgentsValidateSpawnCwdRequest::fromArray(['cwd' => '/workspace'])->toArray())
+            ->toBe(['cwd' => '/workspace']);
+    });
+
+    it('round-trips spawn validation results including unknown reasons', function () {
+        $nameResult = AgentsValidateSpawnAgentNameResult::fromArray([
+            'ok' => false, 'reason' => 'unknown-agent', 'message' => 'Unknown agent',
+        ]);
+        $cwdResult = AgentsValidateSpawnCwdResult::fromArray([
+            'ok' => false, 'reason' => 'cwd-not-directory', 'message' => 'Not a directory',
+        ]);
+
+        expect($nameResult->reason)->toBe(SpawnAgentNameValidationReason::UnknownAgent)
+            ->and($nameResult->toArray())->toBe(['ok' => false, 'reason' => 'unknown-agent', 'message' => 'Unknown agent'])
+            ->and($cwdResult->reason)->toBe(SpawnCwdValidationReason::CwdNotDirectory)
+            ->and($cwdResult->toArray())->toBe(['ok' => false, 'reason' => 'cwd-not-directory', 'message' => 'Not a directory'])
+            ->and(AgentsValidateSpawnCwdResult::fromArray(['ok' => false, 'reason' => 'cwd-not-found'])->reason)
+            ->toBe(SpawnCwdValidationReason::CwdNotFound)
+            ->and(AgentsValidateSpawnAgentNameResult::fromArray(['ok' => true])->toArray())->toBe(['ok' => true])
+            ->and(AgentsValidateSpawnCwdResult::fromArray(['ok' => true])->toArray())->toBe(['ok' => true])
+            ->and(AgentsValidateSpawnAgentNameResult::fromArray(['ok' => false, 'reason' => 'future-name'])->toArray())
+            ->toBe(['ok' => false, 'reason' => 'future-name'])
+            ->and(AgentsValidateSpawnCwdResult::fromArray(['ok' => false, 'reason' => 'future-cwd'])->toArray())
+            ->toBe(['ok' => false, 'reason' => 'future-cwd']);
+    });
+
     it('round-trips name validation and content generation values', function () {
         $nameRequest = AgentsValidateNameRequest::fromArray(['name' => 'Code Review']);
         $nameResult = AgentsValidateNameResult::fromArray(['valid' => false]);
