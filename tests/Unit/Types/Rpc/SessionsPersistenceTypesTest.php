@@ -5,10 +5,13 @@ declare(strict_types=1);
 use Revolution\Copilot\Enums\EventsReadDirection;
 use Revolution\Copilot\Types\Rpc\SessionBulkDeleteResult;
 use Revolution\Copilot\Types\Rpc\SessionList;
+use Revolution\Copilot\Types\Rpc\SessionNameMatch;
 use Revolution\Copilot\Types\Rpc\SessionPruneResult;
 use Revolution\Copilot\Types\Rpc\SessionsBulkDeleteRequest;
 use Revolution\Copilot\Types\Rpc\SessionsCheckInUseRequest;
 use Revolution\Copilot\Types\Rpc\SessionsCheckInUseResult;
+use Revolution\Copilot\Types\Rpc\SessionsFindByNameRequest;
+use Revolution\Copilot\Types\Rpc\SessionsFindByNameResult;
 use Revolution\Copilot\Types\Rpc\SessionsFindByPrefixRequest;
 use Revolution\Copilot\Types\Rpc\SessionsFindByPrefixResult;
 use Revolution\Copilot\Types\Rpc\SessionsFindByTaskIdRequest;
@@ -61,6 +64,13 @@ it('round trips persisted session RPC types through arrays', function () {
         new SessionsFindByPrefixRequest(prefix: 'prefix'),
         new SessionsFindByPrefixResult(sessionId: 'session-id'),
         new SessionsFindByPrefixResult,
+        new SessionsFindByNameRequest(name: 'name'),
+        new SessionsFindByNameRequest(name: 'name', configDir: '/profiles/work'),
+        new SessionNameMatch(sessionId: 'session-id', name: 'name'),
+        new SessionsFindByNameResult(matches: [
+            new SessionNameMatch(sessionId: 'session-id', name: 'name'),
+        ]),
+        new SessionsFindByNameResult(matches: []),
         new SessionsGetLastForContextRequest(context: new SessionContext(cwd: '/workspace')),
         new SessionsGetLastForContextRequest,
         new SessionsGetLastForContextResult(sessionId: 'session-id'),
@@ -99,3 +109,12 @@ it('round trips persisted session RPC types through arrays', function () {
 it('defaults a missing event log existence result to false', function () {
     expect(SessionsHasEventsResult::fromArray([])->toArray())->toBe(['exists' => false]);
 });
+
+it('requires name lookup fields', function (string $class, array $data) {
+    $class::fromArray($data);
+})->with([
+    'request name' => [SessionsFindByNameRequest::class, []],
+    'result matches' => [SessionsFindByNameResult::class, []],
+    'match session ID' => [SessionNameMatch::class, ['name' => 'name']],
+    'match name' => [SessionNameMatch::class, ['sessionId' => 'session-id']],
+])->throws(InvalidArgumentException::class);

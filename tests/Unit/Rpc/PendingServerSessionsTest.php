@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use Revolution\Copilot\Enums\EventsReadDirection;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerSessions;
+use Revolution\Copilot\Rpc\ServerRpc;
 use Revolution\Copilot\Types\Rpc\ConnectRemoteSessionParams;
 use Revolution\Copilot\Types\Rpc\EventsReadResult;
 use Revolution\Copilot\Types\Rpc\InstalledPlugin;
@@ -26,6 +28,8 @@ use Revolution\Copilot\Types\Rpc\SessionsCloseRequest;
 use Revolution\Copilot\Types\Rpc\SessionsCloseResult;
 use Revolution\Copilot\Types\Rpc\SessionsEnrichMetadataRequest;
 use Revolution\Copilot\Types\Rpc\SessionsEnrichMetadataResult;
+use Revolution\Copilot\Types\Rpc\SessionsFindByNameRequest;
+use Revolution\Copilot\Types\Rpc\SessionsFindByNameResult;
 use Revolution\Copilot\Types\Rpc\SessionsFindByPrefixResult;
 use Revolution\Copilot\Types\Rpc\SessionsFindByTaskIdResult;
 use Revolution\Copilot\Types\Rpc\SessionsForkRequest;
@@ -250,6 +254,61 @@ describe('PendingServerSessions', function () {
         'event log exists with typed request' => [true, true],
         'metadata only with typed request' => [false, true],
     ]);
+
+    it('finds all sessions by name using array or typed parameters', function (bool $typed) {
+        $params = ['name' => ' My Session ', 'configDir' => '/profiles/work'];
+        $matches = [
+            ['sessionId' => 'session-1', 'name' => 'My Session'],
+            ['sessionId' => 'session-2', 'name' => 'my session'],
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('sessions.findByName', $params)
+            ->andReturn(['matches' => $matches]);
+
+        $result = (new ServerRpc($client))->sessions()->findByName(
+            $typed ? SessionsFindByNameRequest::fromArray($params) : $params,
+        );
+
+        expect($result)->toBeInstanceOf(SessionsFindByNameResult::class)
+            ->and($result->matches[0]->sessionId)->toBe('session-1')
+            ->and($result->matches[1]->name)->toBe('my session')
+            ->and($result->toArray())->toBe(['matches' => $matches]);
+    })->with([false, true]);
+
+    it('returns an empty list when no session name matches', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('sessions.findByName', ['name' => 'missing'])
+            ->andReturn(['matches' => []]);
+
+        $result = (new ServerRpc($client))->sessions()->findByName(['name' => 'missing']);
+
+        expect($result->matches)->toBe([])
+            ->and($result->toArray())->toBe(['matches' => []]);
+    });
+
+    it('requires a name before sending a name lookup', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldNotReceive('request');
+
+        (new ServerRpc($client))->sessions()->findByName([]);
+    })->throws(InvalidArgumentException::class);
+
+    it('propagates name lookup JSON-RPC errors', function () {
+        $exception = new JsonRpcException(-32000, 'Lookup failed');
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('sessions.findByName', ['name' => 'session'])
+            ->andThrow($exception);
+
+        try {
+            (new ServerRpc($client))->sessions()->findByName(['name' => 'session']);
+            test()->fail('Expected the original JSON-RPC exception.');
+        } catch (JsonRpcException $caught) {
+            expect($caught)->toBe($exception);
+        }
+    });
 
     it('returns null session IDs when lookup RPCs find no match', function () {
         $client = Mockery::mock(JsonRpcClient::class);

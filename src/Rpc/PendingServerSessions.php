@@ -24,6 +24,8 @@ use Revolution\Copilot\Types\Rpc\SessionsCreateWorkspaceRequest;
 use Revolution\Copilot\Types\Rpc\SessionsCreateWorkspaceResult;
 use Revolution\Copilot\Types\Rpc\SessionsEnrichMetadataRequest;
 use Revolution\Copilot\Types\Rpc\SessionsEnrichMetadataResult;
+use Revolution\Copilot\Types\Rpc\SessionsFindByNameRequest;
+use Revolution\Copilot\Types\Rpc\SessionsFindByNameResult;
 use Revolution\Copilot\Types\Rpc\SessionsFindByPrefixRequest;
 use Revolution\Copilot\Types\Rpc\SessionsFindByPrefixResult;
 use Revolution\Copilot\Types\Rpc\SessionsFindByTaskIdRequest;
@@ -168,6 +170,22 @@ class PendingServerSessions
 
         return SessionsFindByPrefixResult::fromArray(
             $this->client->request('sessions.findByPrefix', $paramsArray),
+        );
+    }
+
+    /**
+     * Find persisted session candidates by friendly name.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function findByName(SessionsFindByNameRequest|array $params): SessionsFindByNameResult
+    {
+        $paramsArray = ($params instanceof SessionsFindByNameRequest
+            ? $params
+            : SessionsFindByNameRequest::fromArray($params))->toArray();
+
+        return SessionsFindByNameResult::fromArray(
+            $this->client->request('sessions.findByName', $paramsArray),
         );
     }
 
