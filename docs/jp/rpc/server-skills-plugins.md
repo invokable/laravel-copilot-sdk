@@ -19,6 +19,8 @@ use Revolution\Copilot\Types\Rpc\AgentsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGenerateFileContentRequest;
 use Revolution\Copilot\Types\Rpc\AgentsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\AgentsValidateNameRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnAgentNameRequest;
+use Revolution\Copilot\Types\Rpc\AgentsValidateSpawnCwdRequest;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\CatalogGetGeneratedFeedRequest;
 use Revolution\Copilot\Types\Rpc\CatalogGetSavedFeedRequest;
@@ -49,6 +51,7 @@ use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
 use Revolution\Copilot\Types\Rpc\SkillsInstallSourceRequest;
 use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceRequest;
 use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
+use Revolution\Copilot\Types\Rpc\SpawnValidatableAgent;
 
 // skills (サーバーレベルのスキル管理)
 // スキルの探索
@@ -284,6 +287,19 @@ $validation = $agents->validateName(new AgentsValidateNameRequest(name: 'Code Re
 if ($validation->valid) {
     $categories = $agents->listToolCategories();
     // $categories->categories は AgentToolCategory の配列
+}
+
+// スポーン前のエージェント名と作業ディレクトリの検証 (experimental)
+$nameCheck = $agents->validateSpawnAgentName(new AgentsValidateSpawnAgentNameRequest(
+    name: 'review',
+    customAgents: [new SpawnValidatableAgent(name: 'review', id: 'team/review')],
+    builtinNames: ['explore'],
+));
+$cwdCheck = $agents->validateSpawnCwd(new AgentsValidateSpawnCwdRequest(cwd: '/path/to/project'));
+if (! $nameCheck->ok || ! $cwdCheck->ok) {
+    // reason は既知の enum または未知の文字列、message は任意
+    $nameReason = $nameCheck->reason;
+    $cwdReason = $cwdCheck->reason;
 }
 
 // エージェント定義のMarkdownを生成 (experimental)

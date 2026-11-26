@@ -46,6 +46,8 @@ secrets の使用例は [MCP・コネクター](server-mcp.md) を参照して�
 
 `plugins()->activate()` はビルトインプラグインのフックを実行し、`plugins()->marketplaces()->migrateRetiredDefault()` は必要な廃止済み既定マーケットプレイスを復元します。どちらも実験的 API です。
 
+`agents()->validateSpawnAgentName()` は呼び出し元が渡したカスタムエージェントとビルトイン名に対して名前を検証し、探索や読み込みは行いません。`agents()->validateSpawnCwd()` はランタイムホスト上で作業ディレクトリを検証し、stat 失敗時は `cwd-not-found`、ディレクトリ以外は `cwd-not-directory` を返します。どちらも実験的 API で、成功時は `reason` と `message` が省略されます。
+
 使用例は [Skills・Plugins・Agents・Instructions・Extensions](server-skills-plugins.md) を参照してください。
 
 ## カタログとインストール
