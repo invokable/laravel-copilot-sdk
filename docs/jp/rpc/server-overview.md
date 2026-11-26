@@ -58,6 +58,8 @@ secrets の使用例は [MCP・コネクター](server-mcp.md) を参照して�
 
 `sessions()->hasEvents()`はセッションを開かず、ローカルの永続イベントログの有無を確認します。使用例は [セッション・ホスト・環境](server-sessions.md) を参照してください。
 
+`sessions()->findByName()`は、セッションを開かずに友好名に一致するローカルの永続セッション候補をすべて返す実験的APIです。使用例と検索条件は [セッション・ホスト・環境](server-sessions.md#sessionsfindbynameexperimental) を参照してください。
+
 `sessions()->import()`はセマンティックなセッション JSONL を検証し、新しいローカルセッションとして取り込む実験的APIです。`dryRun: true`ではセッションを作成しません。使用例は [セッション・ホスト・環境](server-sessions.md) を参照してください。
 
 ## Context Board（experimental）

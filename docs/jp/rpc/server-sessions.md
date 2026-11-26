@@ -132,6 +132,27 @@ $env = Copilot::client()->rpc()->environments()->get(['environmentId' => 'env-id
 Copilot::client()->rpc()->environments()->delete(['environmentId' => 'env-id']);
 ```
 
+## sessions.findByName（experimental）
+
+`findByName()`は設定済みのローカルセッションプロファイルから友好名に一致する候補をすべて返します。`configDir`を指定すると別のプロファイルを検索できます。検索語は空白の除去、Unicode のケースフォールディングと正規化後に照合されます（保存済みの名前はトリムされません）。空白のみの検索語は一致なしになります。
+
+候補は再開可能な履歴の存在を保証せず、結果の順序も一定ではありません。
+
+```php
+use Revolution\Copilot\Facades\Copilot;
+
+// sessions.findByName
+$result = Copilot::client()->rpc()->sessions()->findByName([
+    'name' => 'My session',
+    // 'configDir' => '/path/to/profile', // 省略時はサーバーの設定を使用
+]);
+
+foreach ($result->matches as $match) {
+    echo $match->sessionId;
+    echo $match->name;
+}
+```
+
 ## sessions.import（experimental）
 
 `sessions()->import()`はセマンティックなセッション JSONL を検証し、新しいローカルセッションとして取り込みます。`jsonl`には入力全体、`inputPath`には相対添付ファイルの解決に使う入力ファイルのパス、`defaultWorkingDirectory`にはフォールバック用の絶対パスを指定します。必要に応じて`workingDirectory`と`name`で上書きできます。
