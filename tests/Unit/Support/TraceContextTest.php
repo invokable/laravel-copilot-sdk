@@ -59,6 +59,34 @@ describe('TraceContext', function () {
         expect(true)->toBeTrue(); // no exception thrown
     });
 
+    it('detaches a restored scope', function () {
+        $scope = new class
+        {
+            public bool $detached = false;
+
+            public function detach(): void
+            {
+                $this->detached = true;
+            }
+        };
+
+        TraceContext::detach($scope);
+
+        expect($scope->detached)->toBeTrue();
+    });
+
+    it('ignores errors when detaching a scope', function () {
+        $scope = new class
+        {
+            public function detach(): void
+            {
+                throw new RuntimeException('detach failed');
+            }
+        };
+
+        expect(fn () => TraceContext::detach($scope))->not->toThrow(RuntimeException::class);
+    });
+
     it('reports OpenTelemetry as not available in test environment', function () {
         expect(TraceContext::isOpenTelemetryAvailable())->toBeFalse();
     });
