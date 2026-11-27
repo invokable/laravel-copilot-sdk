@@ -86,6 +86,7 @@ use Revolution\Copilot\Types\Rpc\PermissionLocationApplyParams;
 use Revolution\Copilot\Types\Rpc\PermissionLocationResolveParams;
 use Revolution\Copilot\Types\Rpc\PermissionsLocationsAddToolApprovalDetailsCommands;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsManagedReviewRequiredRequest;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsNotifyPendingPromptShownRequest;
 
 $session->rpc()->permissions()->handlePendingPermissionRequest(new PermissionDecisionRequest(
     requestId: '...',
@@ -129,6 +130,14 @@ $session->rpc()->permissions()->modifyRules(new PermissionsModifyRulesParams(
 ));
 // 権限プロンプトを表示したことを通知
 $session->rpc()->permissions()->notifyPromptShown(new PermissionPromptShownNotification(message: 'tool permission prompt'));
+// 保留中の権限要求のプロンプトを表示したことを通知（experimental）
+$result = $session->rpc()->permissions()->notifyPendingPromptShown(
+    new SessionPermissionsNotifyPendingPromptShownRequest(requestId: '...'),
+);
+// ランタイムが保持するメッセージと元の通知オーナーで通知フックを発火する。
+// 要求が既に存在しない場合は $result->success が false。
+// 配列でも指定可能。sessionId は現在のセッションの値が使われる。
+$session->rpc()->permissions()->notifyPendingPromptShown(['requestId' => '...']);
 // 再開時に履歴から復元された権限昇格をメモリ内で解除
 $result = $session->rpc()->permissions()->clearResumeEscalation();
 // $result->success

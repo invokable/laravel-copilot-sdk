@@ -36,6 +36,8 @@ SessionRpc のメソッドをカテゴリー別にまとめた概要です。使
 
 `tools()->reportProgress()`は保留中の外部ツール呼び出しの進捗を報告します（experimental）。
 
+`permissions()->notifyPendingPromptShown()`は保留中の権限プロンプトの表示をランタイムへ通知します（experimental）。
+
 `permissions()->folderTrust()->addSessionTrusted()`は保存済みの信頼フォルダ一覧を変更せず、現在の作業ディレクトリをセッション内で信頼します（experimental）。
 
 使用例は [Tools・Permissions・Commands・UI](session-tools.md) を参照してください。
