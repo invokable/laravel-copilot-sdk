@@ -27,6 +27,7 @@ use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredResult;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsGetAllowAllResult;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsManagedReviewRequiredRequest;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsNotifyPendingPromptShownRequest;
 
 /**
  * Pending session-scoped permissions RPC operations.
@@ -238,6 +239,21 @@ class PendingPermissions
 
         return PermissionsNotifyPromptShownResult::fromArray(
             $this->client->request('session.permissions.notifyPromptShown', $paramsArray),
+        );
+    }
+
+    /**
+     * Notify that a pending permission prompt was shown to the user.
+     *
+     * @experimental
+     */
+    public function notifyPendingPromptShown(SessionPermissionsNotifyPendingPromptShownRequest|array $params): PermissionsNotifyPromptShownResult
+    {
+        $paramsArray = ($params instanceof SessionPermissionsNotifyPendingPromptShownRequest ? $params : SessionPermissionsNotifyPendingPromptShownRequest::fromArray($params))->toArray();
+        $paramsArray['sessionId'] = $this->sessionId;
+
+        return PermissionsNotifyPromptShownResult::fromArray(
+            $this->client->request('session.permissions.notifyPendingPromptShown', $paramsArray),
         );
     }
 

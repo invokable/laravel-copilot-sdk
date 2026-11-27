@@ -10,6 +10,7 @@ use Revolution\Copilot\JsonRpc\JsonRpcMessage;
 use Revolution\Copilot\Rpc\PendingPermissions;
 use Revolution\Copilot\Rpc\PendingPermissionsPaths;
 use Revolution\Copilot\Rpc\PendingPermissionsUrls;
+use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\PendingPermissionRequestList;
 use Revolution\Copilot\Types\Rpc\PermissionDecisionRequest;
 use Revolution\Copilot\Types\Rpc\PermissionPathsAddParams;
@@ -40,6 +41,7 @@ use Revolution\Copilot\Types\Rpc\PermissionsUrlsSetUnrestrictedModeResult;
 use Revolution\Copilot\Types\Rpc\PermissionUrlsSetUnrestrictedModeParams;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsGetAllowAllResult;
 use Revolution\Copilot\Types\Rpc\SessionPermissionsManagedReviewRequiredRequest;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsNotifyPendingPromptShownRequest;
 
 /**
  * Build a started JsonRpcClient backed by a mock transport.
@@ -76,6 +78,7 @@ function makePermissionsClient(array &$sentMessages): JsonRpcClient
                     ],
                     'session.permissions.getRequired' => false,
                     'session.permissions.managedReviewRequired' => true,
+                    'session.permissions.notifyPendingPromptShown' => ['success' => $request['params']['requestId'] !== 'missing'],
                     default => ['success' => true],
                 };
                 $response = JsonRpcMessage::response($request['id'], $result);
@@ -428,6 +431,38 @@ describe('PendingSessionPermissions', function () {
             ->and($decoded['method'])->toBe('session.permissions.notifyPromptShown')
             ->and($decoded['params']['message'])->toBe('Prompt was shown')
             ->and($decoded['params']['sessionId'])->toBe('session-abc');
+    });
+
+    it('notifies that a pending prompt was shown using typed parameters', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $result = (new SessionRpc($client, 'session-abc'))->permissions()->notifyPendingPromptShown(
+            new SessionPermissionsNotifyPendingPromptShownRequest(requestId: 'req-1'),
+        );
+
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+        expect($result)->toBeInstanceOf(PermissionsNotifyPromptShownResult::class)
+            ->and($result->success)->toBeTrue()
+            ->and($decoded['method'])->toBe('session.permissions.notifyPendingPromptShown')
+            ->and($decoded['params'])->toBe(['requestId' => 'req-1', 'sessionId' => 'session-abc']);
+    });
+
+    it('uses the current session for an array notification and maps a missing request', function () {
+        $sentMessages = [];
+        $client = makePermissionsClient($sentMessages);
+
+        $result = (new SessionRpc($client, 'session-abc'))->permissions()->notifyPendingPromptShown([
+            'requestId' => 'missing',
+            'sessionId' => 'another-session',
+        ]);
+
+        $decoded = decodePermissionsJsonMessage($sentMessages[0]);
+        expect($result)->toBeInstanceOf(PermissionsNotifyPromptShownResult::class)
+            ->and($result->success)->toBeFalse()
+            ->and($result->toArray())->toBe(['success' => false])
+            ->and($decoded['method'])->toBe('session.permissions.notifyPendingPromptShown')
+            ->and($decoded['params'])->toBe(['requestId' => 'missing', 'sessionId' => 'session-abc']);
     });
 
     it('paths list/add/update/check methods send correct RPC methods', function () {

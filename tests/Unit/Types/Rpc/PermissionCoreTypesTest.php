@@ -18,6 +18,7 @@ use Revolution\Copilot\Types\Rpc\PermissionsPendingRequestsRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredRequest;
 use Revolution\Copilot\Types\Rpc\PermissionsSetRequiredResult;
 use Revolution\Copilot\Types\Rpc\PermissionsUrlsSetUnrestrictedModeResult;
+use Revolution\Copilot\Types\Rpc\SessionPermissionsNotifyPendingPromptShownRequest;
 
 describe('permission core enums', function () {
     it('exposes permission decision kinds', function () {
@@ -63,6 +64,13 @@ describe('pending permission request core types', function () {
 
         expect($notification->message)->toBe('Tool permission requested')
             ->and($notification->toArray())->toBe(['message' => 'Tool permission requested']);
+    });
+
+    it('round trips a pending permission prompt shown request', function () {
+        $request = SessionPermissionsNotifyPendingPromptShownRequest::fromArray(['requestId' => 'req-1']);
+
+        expect($request->requestId)->toBe('req-1')
+            ->and($request->toArray())->toBe(['requestId' => 'req-1']);
     });
 });
 
