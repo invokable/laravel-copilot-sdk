@@ -6,8 +6,69 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\McpTransportType;
 use Revolution\Copilot\Enums\ServerSource;
 use Revolution\Copilot\Types\Rpc\DiscoveredMcpServer;
+use Revolution\Copilot\Types\Rpc\InstalledPlugin;
+use Revolution\Copilot\Types\Rpc\McpDiscoverPluginServersRequest;
+use Revolution\Copilot\Types\Rpc\McpDiscoverPluginServersResult;
 use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
+
+describe('McpDiscoverPluginServersRequest', function () {
+    it('round trips installed plugins and optional settings', function () {
+        $data = [
+            'installedPlugins' => [[
+                'name' => 'example',
+                'marketplace' => 'community',
+                'installed_at' => '2026-01-01',
+                'enabled' => false,
+                'cache_path' => '/plugins/example',
+            ]],
+            'builtinPluginNames' => [],
+            'configDir' => '/config',
+            'homeDirectory' => '/home/user',
+        ];
+
+        $request = McpDiscoverPluginServersRequest::fromArray($data);
+
+        expect($request)->toBeInstanceOf(Arrayable::class)
+            ->and($request->installedPlugins[0])->toBeInstanceOf(InstalledPlugin::class)
+            ->and($request->toArray())->toBe($data);
+    });
+
+    it('accepts typed and array plugins and keeps an empty required list', function () {
+        $plugin = new InstalledPlugin(name: 'example', marketplace: 'community', installedAt: '2026-01-01', enabled: true);
+
+        expect((new McpDiscoverPluginServersRequest(installedPlugins: []))->toArray())->toBe(['installedPlugins' => []])
+            ->and((new McpDiscoverPluginServersRequest(installedPlugins: [$plugin, $plugin->toArray()]))->toArray())
+            ->toBe(['installedPlugins' => [$plugin->toArray(), $plugin->toArray()]]);
+    });
+
+    it('rejects a missing or invalid installed plugins field', function (array $data) {
+        McpDiscoverPluginServersRequest::fromArray($data);
+    })->with([[[]], [['installedPlugins' => null]], [['installedPlugins' => 'invalid']]])->throws(InvalidArgumentException::class);
+});
+
+describe('McpDiscoverPluginServersResult', function () {
+    it('round trips server configurations and optional server lists', function () {
+        $data = [
+            'mcpServers' => [
+                'local' => ['type' => 'stdio', 'command' => 'example', 'args' => [], 'extra' => ['key' => 'value']],
+                'remote' => ['type' => 'http', 'url' => 'https://example.com'],
+            ],
+            'disabledServers' => [],
+            'enabledServers' => ['local'],
+        ];
+
+        $result = McpDiscoverPluginServersResult::fromArray($data);
+
+        expect($result)->toBeInstanceOf(Arrayable::class)
+            ->and($result->toArray())->toBe($data);
+    });
+
+    it('omits absent optional server lists', function () {
+        expect(McpDiscoverPluginServersResult::fromArray(['mcpServers' => []])->toArray())
+            ->toBe(['mcpServers' => []]);
+    });
+});
 
 describe('McpDiscoverRequest', function () {
     it('can be created with working directory', function () {

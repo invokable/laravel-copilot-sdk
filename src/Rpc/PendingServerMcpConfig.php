@@ -13,6 +13,8 @@ use Revolution\Copilot\Types\Rpc\McpConfigEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigList;
 use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
+use Revolution\Copilot\Types\Rpc\McpDiscoverPluginServersRequest;
+use Revolution\Copilot\Types\Rpc\McpDiscoverPluginServersResult;
 use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
 use Revolution\Copilot\Types\Rpc\McpPlanInstallRequest;
@@ -142,6 +144,22 @@ class PendingServerMcpConfig
 
         return McpDiscoverResult::fromArray(
             $this->client->request('mcp.discover', $paramsArray),
+        );
+    }
+
+    /**
+     * Preview MCP server configurations from plugins without starting servers.
+     *
+     * @experimental
+     */
+    public function discoverPluginServers(McpDiscoverPluginServersRequest|array $params): McpDiscoverPluginServersResult
+    {
+        $paramsArray = ($params instanceof McpDiscoverPluginServersRequest
+            ? $params
+            : McpDiscoverPluginServersRequest::fromArray($params))->toArray();
+
+        return McpDiscoverPluginServersResult::fromArray(
+            $this->client->request('mcp.discoverPluginServers', $paramsArray),
         );
     }
 
