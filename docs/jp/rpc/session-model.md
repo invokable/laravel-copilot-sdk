@@ -6,6 +6,8 @@ RPC 全体の概要とページ一覧は [RPC](../rpc.md) を参照してくだ�
 
 `model()->startupAdmission()`は、カタログの取得や認証情報の解決を行わず、キャッシュ済みの起動時モデル状態を取得する実験的RPCです。起動時設定を適用したあと、対話型ホストが`claimEnablement: true`を指定すると、カタログが準備済みの場合に限り、セッション内で1回限りの有効化プロンプトを要求できます。要求は所有ホストと共有され、セッションの存続期間に限定されます。結果の`selectedModel`、`catalogReady`、`requiresEnablement`で状態を確認でき、今回要求を消費した場合は`claimedEnablement`が`true`になり、`modelToEnable`に対象モデルが入ります。
 
+`model()->getSelectionPolicy()`は、モデル選択UI向けの価格倍率、有効化要否、許可されたreasoning effort、選択可能なコンテキストティアを返す実験的RPCです。キャッシュ済み・登録済みカタログを読むだけで、カタログの取得や認証情報の解決は行いません。先に`model()->list()`を呼んでください。カタログが未準備の場合は`ready`が`false`です。`models`はキャッシュ済みカタログ順で、追加の登録済みモデルが続きます。
+
 ```php
 // model
 $session->rpc()->model()->getCurrent();
@@ -43,6 +45,18 @@ $session->rpc()->model()->switchTo(new ModelSwitchToRequest(
 $models = $session->rpc()->model()->list();
 $models->auto?->tiers; // アカウントで利用可能なAuto routing preference
 $session->rpc()->model()->list(new ModelListRequest(skipCache: true)); // キャッシュをスキップ
+
+// キャッシュ済みカタログのモデル選択ポリシーを取得（experimental）
+$selectionPolicy = $session->rpc()->model()->getSelectionPolicy();
+if ($selectionPolicy->ready) {
+    foreach ($selectionPolicy->models as $model) {
+        // $model->modelId、providerId、multiplier、needsEnablement、pickerCategory、priceCategory
+        // $model->reasoningEfforts、defaultReasoningEffort、defaultContextTier
+        foreach ($model->contextTiers ?? [] as $tier) {
+            // $tier->value（選択ID）、$tier->name（表示ラベル）
+        }
+    }
+}
 
 // Auto routing preference を変更する（selected modelは変えない、experimental）
 $session->rpc()->model()->switchAutoTier(new ModelSwitchAutoTierRequest(autoTier: AutoTier::BALANCE));
