@@ -132,4 +132,19 @@ describe('PendingServerAccount', function () {
             ->and($result->status)->toBe('already_subscribed')
             ->and($result->message)->toBe('Already enrolled');
     });
+
+    it('returns the result of signing out the current account', function (bool $result) {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('account.logoutCurrent', [])
+            ->andReturn($result);
+
+        $pending = new PendingServerAccount($client);
+
+        expect($pending->logoutCurrent())->toBe($result);
+    })->with([
+        'signed out' => true,
+        'no active account' => false,
+    ]);
 });
