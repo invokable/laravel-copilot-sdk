@@ -39,6 +39,7 @@ use Revolution\Copilot\Types\Rpc\PluginsMarketplacesAddRequest;
 use Revolution\Copilot\Types\Rpc\PluginsMarketplacesBrowseRequest;
 use Revolution\Copilot\Types\Rpc\PluginsMarketplacesRefreshRequest;
 use Revolution\Copilot\Types\Rpc\PluginsMarketplacesRemoveRequest;
+use Revolution\Copilot\Types\Rpc\PluginsScanDirectoriesRequest;
 use Revolution\Copilot\Types\Rpc\PluginsUninstallRequest;
 use Revolution\Copilot\Types\Rpc\PluginsUpdateRequest;
 use Revolution\Copilot\Types\Rpc\SkillApplyInstallRequest;
@@ -225,6 +226,14 @@ $result = Copilot::client()->rpc()->skills()->getDiscoveryPaths(
 
 $plugins = Copilot::client()->rpc()->plugins();
 $result = $plugins->list(); // 返り値は PluginList
+// experimental: インストールや有効化をせず、指定順にディレクトリを検査
+$preview = $plugins->scanDirectories(new PluginsScanDirectoriesRequest(
+    paths: ['plugins/first', 'plugins/second'],
+    workingDirectory: '/workspace',
+));
+$preview->plugins; // 認識されたプラグインの InstalledPlugin 配列
+$preview->directories; // 対応する PluginDirectoryMetadata 配列
+$preview->warnings; // マニフェストなどの診断
 $installed = $plugins->install(new PluginsInstallRequest(source: 'eslint@official'));
 $plugins->uninstall(new PluginsUninstallRequest(name: 'eslint@official'));
 $plugins->update(new PluginsUpdateRequest(name: 'eslint@official'));
