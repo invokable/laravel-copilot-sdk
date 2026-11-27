@@ -13,9 +13,13 @@ use Revolution\Copilot\Types\Rpc\SkillInstallationManagementResult;
 use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillsDiscoverRequest;
+use Revolution\Copilot\Types\Rpc\SkillsGetCacheGenerationResult;
 use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\SkillsInstallSourceRequest;
 use Revolution\Copilot\Types\Rpc\SkillsInstallSourceResult;
+use Revolution\Copilot\Types\Rpc\SkillsInvalidateResult;
+use Revolution\Copilot\Types\Rpc\SkillsLoadRequest;
+use Revolution\Copilot\Types\Rpc\SkillsLoadResult;
 use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceOutcome;
 use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceRequest;
 
@@ -63,6 +67,52 @@ class PendingServerSkills
 
         return ServerSkillList::fromArray(
             $this->client->request('skills.discover', $paramsArray),
+        );
+    }
+
+    /**
+     * Load skill definitions and diagnostics.
+     *
+     * @experimental
+     */
+    public function load(SkillsLoadRequest|array $params): SkillsLoadResult
+    {
+        $paramsArray = ($params instanceof SkillsLoadRequest
+            ? $params
+            : SkillsLoadRequest::fromArray($params))->toArray();
+
+        foreach (['enabledPlugins', 'teamDefaultEnabledPlugins'] as $key) {
+            if (isset($paramsArray[$key]) && $paramsArray[$key] === []) {
+                $paramsArray[$key] = (object) [];
+            }
+        }
+
+        return SkillsLoadResult::fromArray(
+            $this->client->request('skills.load', $paramsArray),
+        );
+    }
+
+    /**
+     * Invalidate the parsed skill cache.
+     *
+     * @experimental
+     */
+    public function invalidate(): SkillsInvalidateResult
+    {
+        return SkillsInvalidateResult::fromArray(
+            $this->client->request('skills.invalidate', (object) []),
+        );
+    }
+
+    /**
+     * Read the current skill cache generation without scanning sources.
+     *
+     * @experimental
+     */
+    public function getCacheGeneration(): SkillsGetCacheGenerationResult
+    {
+        return SkillsGetCacheGenerationResult::fromArray(
+            $this->client->request('skills.getCacheGeneration', (object) []),
         );
     }
 

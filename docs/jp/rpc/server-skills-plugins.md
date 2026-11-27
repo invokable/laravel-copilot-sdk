@@ -50,6 +50,7 @@ use Revolution\Copilot\Types\Rpc\SkillPlanInstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillPlanUninstallRequest;
 use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
 use Revolution\Copilot\Types\Rpc\SkillsInstallSourceRequest;
+use Revolution\Copilot\Types\Rpc\SkillsLoadRequest;
 use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceRequest;
 use Revolution\Copilot\Types\Rpc\SkillsGetDiscoveryPathsRequest;
 use Revolution\Copilot\Types\Rpc\SpawnValidatableAgent;
@@ -63,6 +64,18 @@ $result = Copilot::client()->rpc()->skills()->discover(new SkillsDiscoverRequest
     projectPaths: ['/path/to/project'],
     skillDirectories: ['/custom/skills'],
 ));
+
+// スキル定義の本文と診断を読み込み、キャッシュ世代を管理 (experimental)
+$skills = Copilot::client()->rpc()->skills();
+$loaded = $skills->load(new SkillsLoadRequest(cwd: '/workspace', checkSources: true));
+foreach ($loaded->skills as $skill) {
+    // $skill->content はフロントマターを含む定義本文
+}
+$warnings = $loaded->warnings;
+$errors = $loaded->errors;
+$configurationWarnings = $loaded->configurationWarnings; // 省略時は null
+$generation = $skills->getCacheGeneration()->generation; // ソースを走査しない
+$newGeneration = $skills->invalidate()->generation; // 次回 load 時に定義を再読み込み
 
 // 無効化するスキルの設定
 Copilot::client()->rpc()->skills()->config()->setDisabledSkills(

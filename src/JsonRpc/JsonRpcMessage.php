@@ -17,7 +17,7 @@ readonly class JsonRpcMessage implements Arrayable, Jsonable
     public function __construct(
         public string|int|null $id = null,
         public ?string $method = null,
-        public array $params = [],
+        public array|\stdClass $params = [],
         public mixed $result = null,
         public ?array $error = null,
         ?bool $hasId = null,
@@ -28,7 +28,7 @@ readonly class JsonRpcMessage implements Arrayable, Jsonable
     /**
      * Create a request message.
      */
-    public static function request(string|int $id, string $method, array $params = []): self
+    public static function request(string|int $id, string $method, array|\stdClass $params = []): self
     {
         return new self(id: $id, method: $method, params: $params, hasId: true);
     }

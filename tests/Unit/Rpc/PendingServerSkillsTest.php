@@ -21,12 +21,59 @@ use Revolution\Copilot\Types\Rpc\SkillsConfigSetDisabledSkillsRequest;
 use Revolution\Copilot\Types\Rpc\SkillsConfigSetSkillDisabledRequest;
 use Revolution\Copilot\Types\Rpc\SkillsDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\SkillSetEnabledRequest;
+use Revolution\Copilot\Types\Rpc\SkillsGetCacheGenerationResult;
 use Revolution\Copilot\Types\Rpc\SkillsInstallSourceRequest;
 use Revolution\Copilot\Types\Rpc\SkillsInstallSourceResult;
+use Revolution\Copilot\Types\Rpc\SkillsInvalidateResult;
+use Revolution\Copilot\Types\Rpc\SkillsLoadRequest;
+use Revolution\Copilot\Types\Rpc\SkillsLoadResult;
 use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceInventory;
 use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceOutcome;
 use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceRequest;
 use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceResult;
+
+describe('server skill definitions and cache', function () {
+    it('sends typed and array load requests and returns definitions', function (bool $typed) {
+        $params = ['cwd' => '/workspace', 'useCache' => false, 'enabledPlugins' => []];
+        $result = [
+            'skills' => [], 'warnings' => ['warning'], 'errors' => ['error'],
+            'displayCwd' => '/workspace', 'cacheGeneration' => 3, 'sourcesChanged' => false,
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('skills.load', Mockery::on(fn ($value) => $value['cwd'] === '/workspace'
+                && $value['useCache'] === false && json_encode($value['enabledPlugins']) === '{}'))
+            ->andReturn($result);
+
+        $response = (new PendingServerSkills($client))->load($typed ? SkillsLoadRequest::fromArray($params) : $params);
+
+        expect($response)->toBeInstanceOf(SkillsLoadResult::class)
+            ->and($response->toArray())->toBe($result);
+    })->with([true, false]);
+
+    it('rejects load requests without cwd before sending', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldNotReceive('request');
+
+        (new PendingServerSkills($client))->load([]);
+    })->throws(InvalidArgumentException::class);
+
+    it('sends empty objects for cache operations', function (string $method, string $wire, string $type) {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with($wire, Mockery::on(fn ($params) => json_encode($params) === '{}'))
+            ->andReturn(['generation' => 7]);
+
+        $result = (new PendingServerSkills($client))->$method();
+
+        expect($result)->toBeInstanceOf($type)
+            ->and($result->generation)->toBe(7)
+            ->and($result->toArray())->toBe(['generation' => 7]);
+    })->with([
+        ['invalidate', 'skills.invalidate', SkillsInvalidateResult::class],
+        ['getCacheGeneration', 'skills.getCacheGeneration', SkillsGetCacheGenerationResult::class],
+    ]);
+});
 
 describe('ServerSkill', function () {
     it('can be created from array with all fields', function () {

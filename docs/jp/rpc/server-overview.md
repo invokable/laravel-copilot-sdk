@@ -48,6 +48,8 @@ secrets の使用例は [MCP・コネクター](server-mcp.md) を参照して�
 
 各グループから探索や利用可能なパスの取得、設定変更、再読み込みを行えます。`commands()`は組み込みコマンド一覧、`hooks()`はセッション開始前のフック探索を提供します。SkillsとPluginsは有効化・無効化やインストール管理に対応し、Agentsは組み込みエージェント情報の取得に加え、名前検証、ツール分類の一覧取得、定義Markdownの生成、ファイル作成を行えます。Extensionsは永続化された拡張機能を探索・有効化・無効化します。`lsp()`ではサーバー全体の言語サーバー設定の一覧を取得できます。
 
+Skills の `load()` は定義本文と診断を取得し、`invalidate()` と `getCacheGeneration()` は解析済みスキルキャッシュの世代を管理します（experimental）。
+
 `plugins()->activate()` はビルトインプラグインのフックを実行し、`plugins()->marketplaces()->migrateRetiredDefault()` は必要な廃止済み既定マーケットプレイスを復元します。どちらも実験的 API です。
 
 `plugins()->scanDirectories()` は指定したプラグインディレクトリをインストールや有効化をせずに検査し、認識されたプラグイン、ディレクトリ情報と診断を返す実験的 API です。

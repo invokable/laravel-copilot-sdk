@@ -6,6 +6,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Revolution\Copilot\Enums\ElicitationAction;
 use Revolution\Copilot\Enums\ExtensionSource;
 use Revolution\Copilot\Enums\ExtensionStatus;
+use Revolution\Copilot\Enums\LocalSkillDefinitionSource;
 use Revolution\Copilot\Enums\McpServerStatus;
 use Revolution\Copilot\Enums\ServerSource;
 use Revolution\Copilot\Types\Rpc\AgentReloadResult;
@@ -17,6 +18,8 @@ use Revolution\Copilot\Types\Rpc\ExtensionInfo;
 use Revolution\Copilot\Types\Rpc\ExtensionList;
 use Revolution\Copilot\Types\Rpc\ExtensionsDisableRequest;
 use Revolution\Copilot\Types\Rpc\ExtensionsEnableRequest;
+use Revolution\Copilot\Types\Rpc\InstalledPlugin;
+use Revolution\Copilot\Types\Rpc\LocalSkillDefinition;
 use Revolution\Copilot\Types\Rpc\McpDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpServerInfo;
@@ -28,10 +31,16 @@ use Revolution\Copilot\Types\Rpc\PluginsScanDirectoriesRequest;
 use Revolution\Copilot\Types\Rpc\PluginsScanDirectoriesResult;
 use Revolution\Copilot\Types\Rpc\SkillInfo;
 use Revolution\Copilot\Types\Rpc\SkillList;
+use Revolution\Copilot\Types\Rpc\SkillScanInputs;
+use Revolution\Copilot\Types\Rpc\SkillScanSource;
 use Revolution\Copilot\Types\Rpc\SkillsDisableRequest;
 use Revolution\Copilot\Types\Rpc\SkillsEnableRequest;
+use Revolution\Copilot\Types\Rpc\SkillsGetCacheGenerationResult;
 use Revolution\Copilot\Types\Rpc\SkillsGetInvokedResult;
+use Revolution\Copilot\Types\Rpc\SkillsInvalidateResult;
 use Revolution\Copilot\Types\Rpc\SkillsInvokedSkill;
+use Revolution\Copilot\Types\Rpc\SkillsLoadRequest;
+use Revolution\Copilot\Types\Rpc\SkillsLoadResult;
 use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
 
@@ -40,6 +49,94 @@ describe('plugin directory scan types', function () {
         $data = ['paths' => ['first', 'second'], 'workingDirectory' => ''];
 
         expect(PluginsScanDirectoriesRequest::fromArray($data)->toArray())->toBe($data);
+    });
+
+    describe('server skill load types', function () {
+        it('round trips every request field including nested scan inputs and plugins', function () {
+            $data = [
+                'cwd' => '/workspace',
+                'configDir' => '/config',
+                'homeDirectory' => '/home',
+                'environmentSkillDirectories' => '',
+                'builtinDirectory' => '/builtin',
+                'inputs' => [
+                    'customDirectories' => ['/custom'],
+                    'skillSources' => [[
+                        'path' => '/plugin/skills', 'source' => 'plugin', 'pluginId' => 'id',
+                        'pluginName' => 'plugin', 'pluginVersion' => '1', 'tier' => 'first',
+                    ]],
+                    'commandSources' => [['path' => '/commands', 'source' => 'future-source']],
+                    'traversalDirectory' => '/workspace', 'projectRoot' => '/workspace',
+                ],
+                'additionalPlugins' => [[
+                    'name' => 'plugin', 'marketplace' => 'market', 'installed_at' => 'today', 'enabled' => false,
+                ]],
+                'enabledPlugins' => ['plugin' => false],
+                'teamDefaultEnabledPlugins' => ['plugin' => true],
+                'enableConfigDiscovery' => false,
+                'enableSkills' => true,
+                'ignoredSkillLocations' => [],
+                'blockUserAndWorkspaceSkills' => false,
+                'useCache' => false,
+                'checkSources' => true,
+                'checkOnly' => false,
+            ];
+
+            $request = SkillsLoadRequest::fromArray($data);
+
+            expect($request->inputs->skillSources[0]->source)->toBe(LocalSkillDefinitionSource::Plugin)
+                ->and($request->inputs->commandSources[0]->source)->toBe('future-source')
+                ->and($request->additionalPlugins[0])->toBeInstanceOf(InstalledPlugin::class)
+                ->and($request->toArray())->toEqual($data);
+        });
+
+        it('round trips all result fields and preserves unknown source values', function () {
+            $definition = [
+                'name' => 'review', 'description' => 'Review', 'source' => 'future-source',
+                'filePath' => '/workspace/SKILL.md', 'baseDir' => '/workspace',
+                'allowedTools' => ['read'], 'content' => 'content',
+                'userInvocable' => true, 'disableModelInvocation' => false, 'isCommand' => false,
+                'repositoryBoundary' => '/workspace', 'argumentHint' => 'path', 'pluginName' => 'plugin',
+                'pluginVersion' => '1', 'invocationName' => 'review',
+            ];
+            $data = [
+                'skills' => [$definition], 'warnings' => ['warning'], 'errors' => ['error'],
+                'configurationWarnings' => ['configuration warning'], 'displayCwd' => '/workspace',
+                'cacheGeneration' => 0, 'sourcesChanged' => false,
+            ];
+            $result = SkillsLoadResult::fromArray($data);
+
+            expect($result->skills[0])->toBeInstanceOf(LocalSkillDefinition::class)
+                ->and($result->skills[0]->source)->toBe('future-source')
+                ->and($result->toArray())->toEqual($data);
+
+            unset($data['configurationWarnings']);
+            expect(SkillsLoadResult::fromArray($data)->toArray())->toEqual($data);
+
+            $definition['source'] = 'project';
+            expect(LocalSkillDefinition::fromArray($definition)->source)
+                ->toBe(LocalSkillDefinitionSource::Project);
+        });
+
+        it('rejects missing required result fields', function (string $field) {
+            $data = [
+                'skills' => [], 'warnings' => [], 'errors' => [], 'displayCwd' => '/workspace',
+                'cacheGeneration' => 0, 'sourcesChanged' => false,
+            ];
+            unset($data[$field]);
+            SkillsLoadResult::fromArray($data);
+        })->with(['skills', 'warnings', 'errors', 'displayCwd', 'cacheGeneration', 'sourcesChanged'])
+            ->throws(InvalidArgumentException::class);
+
+        it('rejects missing required nested fields and cache generations', function (string $class, array $data) {
+            $class::fromArray($data);
+        })->with([
+            [SkillScanInputs::class, ['customDirectories' => [], 'skillSources' => []]],
+            [SkillScanSource::class, ['path' => '/skills']],
+            [LocalSkillDefinition::class, ['source' => 'project']],
+            [SkillsInvalidateResult::class, []],
+            [SkillsGetCacheGenerationResult::class, []],
+        ])->throws(InvalidArgumentException::class);
     });
 
     it('round trips plugin records, directory metadata, and warnings', function () {
