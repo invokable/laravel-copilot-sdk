@@ -10,6 +10,7 @@ use Revolution\Copilot\Enums\McpServerCardEmbeddedKind;
 use Revolution\Copilot\Enums\McpServerCardMediaType;
 use Revolution\Copilot\Enums\McpServerCardUrlKind;
 use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
+use Revolution\Copilot\Exceptions\JsonRpcException;
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
 use Revolution\Copilot\Rpc\PendingServerMcpConfig;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
@@ -21,6 +22,8 @@ use Revolution\Copilot\Types\Rpc\McpConfigEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigList;
 use Revolution\Copilot\Types\Rpc\McpConfigRemoveRequest;
 use Revolution\Copilot\Types\Rpc\McpConfigUpdateRequest;
+use Revolution\Copilot\Types\Rpc\McpDiscoverPluginServersRequest;
+use Revolution\Copilot\Types\Rpc\McpDiscoverPluginServersResult;
 use Revolution\Copilot\Types\Rpc\McpDiscoverRequest;
 use Revolution\Copilot\Types\Rpc\McpDiscoverResult;
 use Revolution\Copilot\Types\Rpc\McpInstallationInput;
@@ -37,6 +40,38 @@ use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsRequest;
 use Revolution\Copilot\Types\Rpc\McpShouldExcludeGitHubToolsResult;
 
 describe('PendingServerMcpConfig', function () {
+    it('calls plugin server discovery with typed or array parameters', function (bool $typed) {
+        $params = ['installedPlugins' => [], 'builtinPluginNames' => ['example'], 'configDir' => '/config'];
+        $response = ['mcpServers' => ['example' => ['type' => 'http', 'url' => 'https://example.com']]];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('mcp.discoverPluginServers', $params)
+            ->andReturn($response);
+
+        $result = (new PendingServerMcpConfig($client))->discoverPluginServers(
+            $typed ? McpDiscoverPluginServersRequest::fromArray($params) : $params,
+        );
+
+        expect($result)->toBeInstanceOf(McpDiscoverPluginServersResult::class)
+            ->and($result->toArray())->toBe($response);
+    })->with([true, false]);
+
+    it('rejects missing plugin lists before making an RPC request', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldNotReceive('request');
+
+        (new PendingServerMcpConfig($client))->discoverPluginServers([]);
+    })->throws(InvalidArgumentException::class);
+
+    it('propagates plugin server discovery RPC errors', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')->once()
+            ->with('mcp.discoverPluginServers', ['installedPlugins' => []])
+            ->andThrow(new JsonRpcException(-32601, 'Method not found'));
+
+        (new PendingServerMcpConfig($client))->discoverPluginServers(['installedPlugins' => []]);
+    })->throws(JsonRpcException::class, 'Method not found');
+
     it('calls mcp.config.list and returns result', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
