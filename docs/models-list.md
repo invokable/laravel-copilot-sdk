@@ -26,14 +26,16 @@ The available models may change depending on Copilot CLI updates and your organi
  │ gpt-5.6-sol          │ GPT-5.6 Sol                 │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.6-luna         │ GPT-5.6 Luna                │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ gpt-5.3-codex        │ GPT-5.3-Codex               │ 400000             │ Yes            │ Yes                       │ Yes                         │
+ │ mai-code-2           │ MAI Code 2                  │ 1050000            │ Yes            │ Yes                       │ Yes                         │
+ │ mai-code-2-flash     │ MAI Code 2 Flash            │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  │ mai-code-1.1-flash   │ MAI-Code-1.1-Flash          │ 256000             │ Yes            │ Yes                       │ Yes                         │
+ │ gemini-4-neon        │ Gemini 4 Neon               │ 1048576            │ Yes            │ Yes                       │ No                          │
+ │ gemini-4-hydrogen    │ Gemini 4 Hydrogen           │ 1048576            │ Yes            │ Yes                       │ No                          │
  │ gemini-4-carbon      │ Gemini 4 Carbon             │ 1000000            │ Yes            │ Yes                       │ No                          │
  │ gemini-4-argon       │ Gemini 4 Argon              │ 1048576            │ Yes            │ Yes                       │ No                          │
+ │ gemini-3.8-flash     │ Gemini 3.8 Flash            │ 1048576            │ Yes            │ Yes                       │ No                          │
  │ grok-4.7             │ Grok 4.7                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ grok-4.6             │ Grok 4.6                    │ 500000             │ Yes            │ Yes                       │ Yes                         │
  │ kimi-k3              │ Kimi K3                     │ 1048576            │ Yes            │ Yes                       │ Yes                         │
- │ gemini-4-hydrogen    │ Gemini 4 Hydrogen           │ 1048576            │ Yes            │ Yes                       │ No                          │
- │ mai-code-2-flash     │ MAI Code 2 Flash            │ 1050000            │ Yes            │ Yes                       │ Yes                         │
- │ mai-code-2           │ MAI Code 2                  │ 1050000            │ Yes            │ Yes                       │ Yes                         │
  └──────────────────────┴─────────────────────────────┴────────────────────┴────────────────┴───────────────────────────┴─────────────────────────────┘
 ```
