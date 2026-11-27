@@ -132,4 +132,14 @@ class PendingServerAccount
             $this->client->request('account.logout', $paramsArray),
         );
     }
+
+    /**
+     * Log out the current Copilot-managed account.
+     *
+     * @experimental
+     */
+    public function logoutCurrent(): bool
+    {
+        return (bool) $this->client->request('account.logoutCurrent', []);
+    }
 }
