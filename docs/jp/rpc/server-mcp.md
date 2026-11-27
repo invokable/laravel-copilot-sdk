@@ -10,6 +10,7 @@ use Revolution\Copilot\Enums\OptionsUpdateToolFilterPrecedence;
 use Revolution\Copilot\Types\Rpc\CatalogClientContract;
 use Revolution\Copilot\Types\Rpc\McpApplyInstallRequest;
 use Revolution\Copilot\Types\Rpc\McpApplyUninstallRequest;
+use Revolution\Copilot\Types\Rpc\McpDiscoverPluginServersRequest;
 use Revolution\Copilot\Types\Rpc\McpInstallationOperationRequest;
 use Revolution\Copilot\Types\Rpc\McpInstallationsRequest;
 use Revolution\Copilot\Types\Rpc\McpPlanUninstallRequest;
@@ -133,7 +134,20 @@ Copilot::client()->rpc()->mcp()->discover(new McpDiscoverRequest(
 // 引数なしで実行可能
 $result = Copilot::client()->rpc()->mcp()->discover();
 // $result->servers は DiscoveredMcpServer の配列
+
+// プラグイン由来のMCPサーバー設定をプレビュー (experimental)
+// $installedPlugins は InstalledPlugin またはその配列形式のリスト
+$preview = Copilot::client()->rpc()->mcp()->discoverPluginServers(
+    new McpDiscoverPluginServersRequest(
+        installedPlugins: $installedPlugins,
+        builtinPluginNames: ['example'],
+    ),
+);
+// $preview->mcpServers はサーバー名をキーとする設定の配列
+// $preview->disabledServers と $preview->enabledServers は存在しない場合 null
 ```
+
+`discoverPluginServers()` はプラグイン集合のみを対象とし、ユーザーやワークスペースの設定はマージせず、サーバーも起動しません。`installedPlugins` は必須で、空の配列も指定できます。必要に応じて `configDir` と `homeDirectory` を指定できます。設定にはシークレットが含まれる可能性があるため、ログ出力には注意してください。
 
 ## mcp secrets（実験的）
 
