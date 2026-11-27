@@ -117,7 +117,7 @@ class JsonRpcClient
      */
     public function request(
         string $method,
-        array $params = [],
+        array|\stdClass $params = [],
         ?float $timeout = 30.0,
         ?CancellationToken $signal = null,
     ): mixed {

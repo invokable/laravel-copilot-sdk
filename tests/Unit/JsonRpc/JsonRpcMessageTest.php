@@ -6,6 +6,12 @@ use Revolution\Copilot\JsonRpc\JsonRpcMessage;
 
 describe('JsonRpcMessage', function () {
     describe('requests', function () {
+        it('encodes an explicitly empty object as object parameters', function () {
+            $message = JsonRpcMessage::request('test-id', 'skills.invalidate', (object) []);
+
+            expect($message->toJson())->toContain('"params":{}');
+        });
+
         it('can create a request message', function () {
             $message = JsonRpcMessage::request('test-id', 'test.method', ['param1' => 'value1']);
 
