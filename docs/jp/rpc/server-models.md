@@ -47,6 +47,10 @@ $enrollment = Copilot::client()->rpc()->account()->subscribeCopilotFree([
 ]);
 // $enrollment->kind / $enrollment->status / $enrollment->message
 
+// 現在のCopilot管理アカウントからサインアウト（experimental）
+$signedOut = Copilot::client()->rpc()->account()->logoutCurrent();
+// サインアウトした場合はtrue、対象アカウントがない場合はfalse
+
 // tools largeOutput (experimental: 期限切れの大きなツール出力の整理)
 Copilot::client()->rpc()->tools()->largeOutput()->cleanup();
 ```
