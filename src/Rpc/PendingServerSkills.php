@@ -82,8 +82,8 @@ class PendingServerSkills
             : SkillsLoadRequest::fromArray($params))->toArray();
 
         foreach (['enabledPlugins', 'teamDefaultEnabledPlugins'] as $key) {
-            if (isset($paramsArray[$key]) && $paramsArray[$key] === []) {
-                $paramsArray[$key] = (object) [];
+            if (isset($paramsArray[$key])) {
+                $paramsArray[$key] = (object) $paramsArray[$key];
             }
         }
 

@@ -24,6 +24,7 @@ readonly class InstalledPlugin implements Arrayable
         public mixed $source = null,
         public ?string $sourceSha = null,
         public ?string $installedFrom = null,
+        public mixed $installedSource = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -38,6 +39,7 @@ readonly class InstalledPlugin implements Arrayable
             source: $data['source'] ?? null,
             sourceSha: $data['source_sha'] ?? null,
             installedFrom: $data['installed_from'] ?? null,
+            installedSource: $data['installed_source'] ?? null,
         );
     }
 
@@ -53,6 +55,7 @@ readonly class InstalledPlugin implements Arrayable
             'source' => $this->source,
             'source_sha' => $this->sourceSha,
             'installed_from' => $this->installedFrom,
+            'installed_source' => $this->installedSource,
         ], fn ($value): bool => $value !== null);
     }
 }

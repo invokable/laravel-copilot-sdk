@@ -70,6 +70,7 @@ describe('plugin directory scan types', function () {
                 ],
                 'additionalPlugins' => [[
                     'name' => 'plugin', 'marketplace' => 'market', 'installed_at' => 'today', 'enabled' => false,
+                    'installed_source' => ['source' => 'local', 'path' => '/plugin'],
                 ]],
                 'enabledPlugins' => ['plugin' => false],
                 'teamDefaultEnabledPlugins' => ['plugin' => true],

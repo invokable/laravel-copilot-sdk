@@ -34,7 +34,10 @@ use Revolution\Copilot\Types\Rpc\SkillsRemoveSourceResult;
 
 describe('server skill definitions and cache', function () {
     it('sends typed and array load requests and returns definitions', function (bool $typed) {
-        $params = ['cwd' => '/workspace', 'useCache' => false, 'enabledPlugins' => []];
+        $params = [
+            'cwd' => '/workspace', 'useCache' => false, 'enabledPlugins' => [],
+            'teamDefaultEnabledPlugins' => ['0' => false],
+        ];
         $result = [
             'skills' => [], 'warnings' => ['warning'], 'errors' => ['error'],
             'displayCwd' => '/workspace', 'cacheGeneration' => 3, 'sourcesChanged' => false,
@@ -42,7 +45,8 @@ describe('server skill definitions and cache', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')->once()
             ->with('skills.load', Mockery::on(fn ($value) => $value['cwd'] === '/workspace'
-                && $value['useCache'] === false && json_encode($value['enabledPlugins']) === '{}'))
+                && $value['useCache'] === false && json_encode($value['enabledPlugins']) === '{}'
+                && json_encode($value['teamDefaultEnabledPlugins']) === '{"0":false}'))
             ->andReturn($result);
 
         $response = (new PendingServerSkills($client))->load($typed ? SkillsLoadRequest::fromArray($params) : $params);
