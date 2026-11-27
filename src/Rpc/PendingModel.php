@@ -23,6 +23,7 @@ use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchFusionTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
+use Revolution\Copilot\Types\Rpc\SessionModelGetSelectionPolicyResult;
 use Revolution\Copilot\Types\Rpc\SessionModelList;
 
 /**
@@ -42,6 +43,20 @@ class PendingModel
     {
         return CurrentModel::fromArray(
             $this->client->request('session.model.getCurrent', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Get cached model selection policy for this session.
+     *
+     * @experimental This method is part of an experimental API and may change or be removed.
+     */
+    public function getSelectionPolicy(): SessionModelGetSelectionPolicyResult
+    {
+        return SessionModelGetSelectionPolicyResult::fromArray(
+            $this->client->request('session.model.getSelectionPolicy', [
                 'sessionId' => $this->sessionId,
             ]),
         );
