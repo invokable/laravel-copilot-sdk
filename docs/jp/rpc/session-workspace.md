@@ -64,7 +64,16 @@ $session->rpc()->skills()->reload();
 $session->rpc()->skills()->ensureLoaded(); // 未読込のスキルを読み込む（再読込はしない）
 $invoked = $session->rpc()->skills()->getInvoked();
 // $invoked->skills - セッション中に呼び出されたスキルの履歴
+$definitions = $session->rpc()->skills()->getDefinitions();
+// $definitions->skills - LocalSkillDefinition の配列
+// $definitions->warnings, $definitions->errors, $definitions->displayCwd
+$diagnostics = $session->rpc()->skills()->getDiagnostics();
+// $diagnostics->warnings, $diagnostics->errors
 ```
+
+`getDefinitions()`はスキル在庫の読み込みを保証し、無効化されたものを含むローカルスキルの定義を正規の優先順位で返します。プロバイダー由来のスキルは含まず、別途discoveryを実行する必要はありません。各定義の`content`にはYAMLフロントマターを含む全文が入ります。
+
+`getDiagnostics()`は直近の読み込み時の警告とエラーを返します。定義の再読み込みやMCP discoveryの待機は行いません。どちらもexperimentalです。
 
 ## autopilotObjective
 
