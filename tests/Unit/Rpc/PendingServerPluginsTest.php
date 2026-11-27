@@ -27,12 +27,44 @@ use Revolution\Copilot\Types\Rpc\PluginsMarketplacesAddRequest;
 use Revolution\Copilot\Types\Rpc\PluginsMarketplacesBrowseRequest;
 use Revolution\Copilot\Types\Rpc\PluginsMarketplacesRefreshRequest;
 use Revolution\Copilot\Types\Rpc\PluginsMarketplacesRemoveRequest;
+use Revolution\Copilot\Types\Rpc\PluginsScanDirectoriesRequest;
+use Revolution\Copilot\Types\Rpc\PluginsScanDirectoriesResult;
 use Revolution\Copilot\Types\Rpc\PluginsUninstallRequest;
 use Revolution\Copilot\Types\Rpc\PluginsUpdateRequest;
 use Revolution\Copilot\Types\Rpc\PluginUpdateAllResult;
 use Revolution\Copilot\Types\Rpc\PluginUpdateResult;
 
 describe('PendingServerPlugins', function () {
+    it('scans directories with a typed or array request', function ($params) {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('plugins.scanDirectories', [
+                'paths' => ['plugins/first', 'plugins/second'],
+                'workingDirectory' => '/workspace',
+            ])
+            ->andReturn([
+                'plugins' => [[
+                    'name' => 'example',
+                    'marketplace' => 'local',
+                    'installed_at' => '2026-01-01',
+                    'enabled' => true,
+                ]],
+                'directories' => [['pluginPath' => '/workspace/plugins/first']],
+                'warnings' => ['Invalid manifest'],
+            ]);
+
+        $result = (new PendingServerPlugins($client))->scanDirectories($params);
+
+        expect($result)->toBeInstanceOf(PluginsScanDirectoriesResult::class)
+            ->and($result->plugins[0]->name)->toBe('example')
+            ->and($result->directories[0]->pluginPath)->toBe('/workspace/plugins/first')
+            ->and($result->warnings)->toBe(['Invalid manifest']);
+    })->with([
+        fn () => new PluginsScanDirectoriesRequest(['plugins/first', 'plugins/second'], '/workspace'),
+        [['paths' => ['plugins/first', 'plugins/second'], 'workingDirectory' => '/workspace']],
+    ]);
+
     it('activates a built-in plugin with a typed or array request', function ($params) {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')

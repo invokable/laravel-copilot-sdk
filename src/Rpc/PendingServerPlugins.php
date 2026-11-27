@@ -16,6 +16,8 @@ use Revolution\Copilot\Types\Rpc\PluginsActivateResult;
 use Revolution\Copilot\Types\Rpc\PluginsDisableRequest;
 use Revolution\Copilot\Types\Rpc\PluginsEnableRequest;
 use Revolution\Copilot\Types\Rpc\PluginsInstallRequest;
+use Revolution\Copilot\Types\Rpc\PluginsScanDirectoriesRequest;
+use Revolution\Copilot\Types\Rpc\PluginsScanDirectoriesResult;
 use Revolution\Copilot\Types\Rpc\PluginsUninstallRequest;
 use Revolution\Copilot\Types\Rpc\PluginsUpdateRequest;
 use Revolution\Copilot\Types\Rpc\PluginUpdateAllResult;
@@ -71,6 +73,22 @@ class PendingServerPlugins
     {
         return PluginList::fromArray(
             $this->client->request('plugins.list', []),
+        );
+    }
+
+    /**
+     * Inspect plugin directories without installing or activating them.
+     *
+     * @experimental
+     */
+    public function scanDirectories(PluginsScanDirectoriesRequest|array $params): PluginsScanDirectoriesResult
+    {
+        $paramsArray = ($params instanceof PluginsScanDirectoriesRequest
+            ? $params
+            : PluginsScanDirectoriesRequest::fromArray($params))->toArray();
+
+        return PluginsScanDirectoriesResult::fromArray(
+            $this->client->request('plugins.scanDirectories', $paramsArray),
         );
     }
 

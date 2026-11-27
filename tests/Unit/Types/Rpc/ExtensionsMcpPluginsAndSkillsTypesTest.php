@@ -21,8 +21,11 @@ use Revolution\Copilot\Types\Rpc\McpDisableRequest;
 use Revolution\Copilot\Types\Rpc\McpEnableRequest;
 use Revolution\Copilot\Types\Rpc\McpServerInfo;
 use Revolution\Copilot\Types\Rpc\McpServerList;
+use Revolution\Copilot\Types\Rpc\PluginDirectoryMetadata;
 use Revolution\Copilot\Types\Rpc\PluginInfo;
 use Revolution\Copilot\Types\Rpc\PluginList;
+use Revolution\Copilot\Types\Rpc\PluginsScanDirectoriesRequest;
+use Revolution\Copilot\Types\Rpc\PluginsScanDirectoriesResult;
 use Revolution\Copilot\Types\Rpc\SkillInfo;
 use Revolution\Copilot\Types\Rpc\SkillList;
 use Revolution\Copilot\Types\Rpc\SkillsDisableRequest;
@@ -31,6 +34,58 @@ use Revolution\Copilot\Types\Rpc\SkillsGetInvokedResult;
 use Revolution\Copilot\Types\Rpc\SkillsInvokedSkill;
 use Revolution\Copilot\Types\Rpc\UIElicitationRequest;
 use Revolution\Copilot\Types\Rpc\UIElicitationResponse;
+
+describe('plugin directory scan types', function () {
+    it('round trips requests in precedence order including an empty working directory', function () {
+        $data = ['paths' => ['first', 'second'], 'workingDirectory' => ''];
+
+        expect(PluginsScanDirectoriesRequest::fromArray($data)->toArray())->toBe($data);
+    });
+
+    it('round trips plugin records, directory metadata, and warnings', function () {
+        $data = [
+            'plugins' => [[
+                'name' => 'example',
+                'marketplace' => 'local',
+                'installed_at' => '2026-01-01',
+                'enabled' => false,
+                'cache_path' => '/plugins/example',
+                'source' => ['type' => 'future-source'],
+            ]],
+            'directories' => [[
+                'pluginPath' => '/plugins/example',
+                'canonicalDirectory' => '/real/example',
+                'description' => 'Example',
+            ], ['pluginPath' => '/plugins/other']],
+            'warnings' => ['Unknown manifest field'],
+        ];
+
+        $result = PluginsScanDirectoriesResult::fromArray($data);
+
+        expect($result->plugins[0]->source)->toBe(['type' => 'future-source'])
+            ->and($result->directories[0])->toBeInstanceOf(PluginDirectoryMetadata::class)
+            ->and($result->directories[1]->description)->toBeNull()
+            ->and($result->toArray())->toBe($data);
+    });
+
+    it('preserves empty result arrays', function () {
+        $data = ['plugins' => [], 'directories' => [], 'warnings' => []];
+
+        expect(PluginsScanDirectoriesResult::fromArray($data)->toArray())->toBe($data);
+    });
+
+    it('rejects missing required fields', function (string $type, array $data) {
+        $type::fromArray($data);
+    })->with([
+        [PluginsScanDirectoriesRequest::class, ['workingDirectory' => '/workspace']],
+        [PluginsScanDirectoriesRequest::class, ['paths' => []]],
+        [PluginDirectoryMetadata::class, []],
+        [PluginsScanDirectoriesResult::class, ['directories' => [], 'warnings' => []]],
+        [PluginsScanDirectoriesResult::class, ['plugins' => [], 'warnings' => []]],
+        [PluginsScanDirectoriesResult::class, ['plugins' => [], 'directories' => []]],
+        [PluginsScanDirectoriesResult::class, ['plugins' => [], 'directories' => [[]], 'warnings' => []]],
+    ])->throws(InvalidArgumentException::class);
+});
 
 describe('SkillInfo', function () {
     it('can be created from array', function () {
