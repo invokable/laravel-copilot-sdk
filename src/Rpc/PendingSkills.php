@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Revolution\Copilot\Rpc;
 
 use Revolution\Copilot\JsonRpc\JsonRpcClient;
+use Revolution\Copilot\Types\Rpc\SessionSkillsGetDefinitionsResult;
 use Revolution\Copilot\Types\Rpc\SkillList;
 use Revolution\Copilot\Types\Rpc\SkillsDisableRequest;
 use Revolution\Copilot\Types\Rpc\SkillsEnableRequest;
 use Revolution\Copilot\Types\Rpc\SkillsGetInvokedResult;
+use Revolution\Copilot\Types\Rpc\SkillsLoadDiagnostics;
 
 /**
  * Pending skills RPC operations for a session.
@@ -73,6 +75,34 @@ class PendingSkills
     {
         return SkillsGetInvokedResult::fromArray(
             $this->client->request('session.skills.getInvoked', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Get the session's local skill definitions and loading diagnostics.
+     *
+     * @experimental
+     */
+    public function getDefinitions(): SessionSkillsGetDefinitionsResult
+    {
+        return SessionSkillsGetDefinitionsResult::fromArray(
+            $this->client->request('session.skills.getDefinitions', [
+                'sessionId' => $this->sessionId,
+            ]),
+        );
+    }
+
+    /**
+     * Get the latest skill loading diagnostics without reloading.
+     *
+     * @experimental
+     */
+    public function getDiagnostics(): SkillsLoadDiagnostics
+    {
+        return SkillsLoadDiagnostics::fromArray(
+            $this->client->request('session.skills.getDiagnostics', [
                 'sessionId' => $this->sessionId,
             ]),
         );
