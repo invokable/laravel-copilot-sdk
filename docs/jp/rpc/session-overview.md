@@ -8,7 +8,7 @@ SessionRpc のメソッドをカテゴリー別にまとめた概要です。使
 
 ## モデル・モード・名前・プラン
 
-`model()`で現在のモデル確認や切り替え、reasoning effort・Auto tier・許可モデルの設定を行えます。`mode()`はモード、`name()`はセッション名、`plan()`はプラン本文とSQLite todoの読み書きを扱います。
+`model()`で現在のモデル確認や切り替え、reasoning effort・Auto tier・許可モデルの設定、キャッシュ済みモデル選択ポリシーの取得を行えます。`mode()`はモード、`name()`はセッション名、`plan()`はプラン本文とSQLite todoの読み書きを扱います。
 
 ## ワークスペース・インストラクション・LSP
 

@@ -12,8 +12,10 @@ use Revolution\Copilot\Rpc\SessionRpc;
 use Revolution\Copilot\Types\Rpc\CurrentModel;
 use Revolution\Copilot\Types\Rpc\ModelApplyStartupOverlayRequest;
 use Revolution\Copilot\Types\Rpc\ModelClearStartupSeedRequest;
+use Revolution\Copilot\Types\Rpc\ModelContextTierOption;
 use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesRequest;
 use Revolution\Copilot\Types\Rpc\ModelGetReasoningSummariesResult;
+use Revolution\Copilot\Types\Rpc\ModelSelectionPolicyEntry;
 use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortRequest;
 use Revolution\Copilot\Types\Rpc\ModelSetReasoningEffortResult;
 use Revolution\Copilot\Types\Rpc\ModelStartupAdmissionRequest;
@@ -23,8 +25,86 @@ use Revolution\Copilot\Types\Rpc\ModelSwitchAutoTierResult;
 use Revolution\Copilot\Types\Rpc\ModelSwitchFusionTierRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToRequest;
 use Revolution\Copilot\Types\Rpc\ModelSwitchToResult;
+use Revolution\Copilot\Types\Rpc\SessionModelGetSelectionPolicyResult;
 
 describe('PendingModel', function () {
+    it('gets and round trips cached selection policy with typed model entries', function () {
+        $response = [
+            'ready' => true,
+            'models' => [
+                [
+                    'modelId' => 'model-a',
+                    'providerId' => 'provider-a',
+                    'multiplier' => 1.5,
+                    'needsEnablement' => true,
+                    'pickerCategory' => 'future-picker-category',
+                    'priceCategory' => 'future-price-category',
+                    'reasoningEfforts' => ['high', 'future-effort'],
+                    'defaultReasoningEffort' => 'future-effort',
+                    'contextTiers' => [
+                        ['value' => 'future-tier', 'name' => '256K'],
+                    ],
+                    'defaultContextTier' => 'future-tier',
+                ],
+                [
+                    'modelId' => 'registered-model',
+                    'multiplier' => 0.0,
+                    'needsEnablement' => false,
+                    'reasoningEfforts' => [],
+                    'contextTiers' => [],
+                ],
+                [
+                    'modelId' => 'model-without-tiers',
+                    'multiplier' => 1.0,
+                    'needsEnablement' => false,
+                    'reasoningEfforts' => [],
+                ],
+            ],
+        ];
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.model.getSelectionPolicy', ['sessionId' => 'session-xyz'])
+            ->andReturn($response);
+
+        $result = (new SessionRpc($client, 'session-xyz'))->model()->getSelectionPolicy();
+
+        expect($result)->toBeInstanceOf(SessionModelGetSelectionPolicyResult::class)
+            ->and($result->ready)->toBeTrue()
+            ->and($result->models[0])->toBeInstanceOf(ModelSelectionPolicyEntry::class)
+            ->and($result->models[0]->modelId)->toBe('model-a')
+            ->and($result->models[0]->providerId)->toBe('provider-a')
+            ->and($result->models[0]->multiplier)->toBe(1.5)
+            ->and($result->models[0]->needsEnablement)->toBeTrue()
+            ->and($result->models[0]->pickerCategory)->toBe('future-picker-category')
+            ->and($result->models[0]->priceCategory)->toBe('future-price-category')
+            ->and($result->models[0]->reasoningEfforts)->toBe(['high', 'future-effort'])
+            ->and($result->models[0]->defaultReasoningEffort)->toBe('future-effort')
+            ->and($result->models[0]->contextTiers[0])->toBeInstanceOf(ModelContextTierOption::class)
+            ->and($result->models[0]->contextTiers[0]->value)->toBe('future-tier')
+            ->and($result->models[0]->contextTiers[0]->name)->toBe('256K')
+            ->and($result->models[0]->defaultContextTier)->toBe('future-tier')
+            ->and($result->models[1]->contextTiers)->toBe([])
+            ->and($result->models[2]->contextTiers)->toBeNull()
+            ->and($result->models[2]->providerId)->toBeNull()
+            ->and($result->toArray())->toBe($response);
+    });
+
+    it('returns an empty selection policy when the catalog is not ready', function () {
+        $client = Mockery::mock(JsonRpcClient::class);
+        $client->shouldReceive('request')
+            ->once()
+            ->with('session.model.getSelectionPolicy', ['sessionId' => 'session-xyz'])
+            ->andReturn(['ready' => false, 'models' => []]);
+
+        $result = (new SessionRpc($client, 'session-xyz'))->model()->getSelectionPolicy();
+
+        expect($result)->toBeInstanceOf(SessionModelGetSelectionPolicyResult::class)
+            ->and($result->ready)->toBeFalse()
+            ->and($result->models)->toBe([])
+            ->and($result->toArray())->toBe(['ready' => false, 'models' => []]);
+    });
+
     it('claims startup admission with typed parameters and returns the cached model state', function () {
         $client = Mockery::mock(JsonRpcClient::class);
         $client->shouldReceive('request')
