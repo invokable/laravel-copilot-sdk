@@ -627,11 +627,14 @@ $config = new SessionConfig(
         userPolicy: new SandboxConfigUserPolicy(
             network: new SandboxConfigUserPolicyNetwork(
                 allowedHosts: ['api.example.com'],
+                extraCaCertificates: ['/path/to/ca.pem'],
             ),
         ),
     ),
 );
 ```
+
+`extraCaCertificates`は、組み込みプロキシ経由の通信でシステムルートに加えて信頼する公開CA証明書のPEMファイルの絶対パスです。組み込みプロキシが有効な場合にのみ適用されます。信頼できるCAのみを指定し、秘密鍵を含めないでください。
 
 資格情報マスキングは環境変数名と許可するHTTPSホストを指定します。実際の資格情報値は設定に含めません。
 

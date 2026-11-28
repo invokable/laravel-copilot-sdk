@@ -73,7 +73,11 @@ describe('plugin, sandbox, and shutdown types', function () {
             'enabled' => true,
             'userPolicy' => [
                 'filesystem' => ['readwritePaths' => ['/tmp/project']],
-                'network' => ['allowedHosts' => ['example.test'], 'blockedHosts' => ['evil.test']],
+                'network' => [
+                    'allowedHosts' => ['example.test'],
+                    'blockedHosts' => ['evil.test'],
+                    'extraCaCertificates' => ['/path/to/ca.pem'],
+                ],
             ],
         ]);
 
@@ -81,7 +85,25 @@ describe('plugin, sandbox, and shutdown types', function () {
             ->and($sandbox->userPolicy)->toBeInstanceOf(SandboxConfigUserPolicy::class)
             ->and($sandbox->userPolicy->filesystem)->toBeInstanceOf(SandboxConfigUserPolicyFilesystem::class)
             ->and($sandbox->userPolicy->network)->toBeInstanceOf(SandboxConfigUserPolicyNetwork::class)
-            ->and($sandbox->toArray()['userPolicy']['network']['blockedHosts'])->toBe(['evil.test']);
+            ->and($sandbox->toArray()['userPolicy']['network']['blockedHosts'])->toBe(['evil.test'])
+            ->and($sandbox->toArray()['userPolicy']['network']['extraCaCertificates'])->toBe(['/path/to/ca.pem']);
+    });
+
+    it('round trips extra sandbox CA certificates, including an empty list', function (array $certificates) {
+        $network = SandboxConfigUserPolicyNetwork::fromArray(['extraCaCertificates' => $certificates]);
+
+        expect($network->toArray())->toBe(['extraCaCertificates' => $certificates])
+            ->and((new SandboxConfigUserPolicyNetwork(extraCaCertificates: $certificates))->toArray())
+            ->toBe(['extraCaCertificates' => $certificates]);
+    })->with([
+        'certificate paths' => [['/path/to/ca.pem', '/path/to/other-ca.pem']],
+        'empty list' => [[]],
+    ]);
+
+    it('omits extra sandbox CA certificates when not specified or null', function () {
+        expect((new SandboxConfigUserPolicyNetwork)->toArray())->not->toHaveKey('extraCaCertificates')
+            ->and(SandboxConfigUserPolicyNetwork::fromArray(['extraCaCertificates' => null])->toArray())
+            ->not->toHaveKey('extraCaCertificates');
     });
 
     it('exposes adaptive thinking support for model metadata', function () {

@@ -19,6 +19,7 @@ readonly class SandboxConfigUserPolicyNetwork implements Arrayable
         public ?bool $allowOutbound = null,
         public ?bool $allowLocalNetwork = null,
         public SandboxConfigUserPolicyNetworkProxy|array|null $proxy = null,
+        public ?array $extraCaCertificates = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -33,6 +34,7 @@ readonly class SandboxConfigUserPolicyNetwork implements Arrayable
             proxy: $proxy !== null && ! $proxy instanceof SandboxConfigUserPolicyNetworkProxy
                 ? SandboxConfigUserPolicyNetworkProxy::fromArray($proxy)
                 : $proxy,
+            extraCaCertificates: $data['extraCaCertificates'] ?? null,
         );
     }
 
@@ -46,6 +48,7 @@ readonly class SandboxConfigUserPolicyNetwork implements Arrayable
             'proxy' => $this->proxy instanceof SandboxConfigUserPolicyNetworkProxy
                 ? $this->proxy->toArray()
                 : $this->proxy,
+            'extraCaCertificates' => $this->extraCaCertificates,
         ], fn ($value) => $value !== null);
     }
 }
